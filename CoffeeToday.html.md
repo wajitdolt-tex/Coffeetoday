@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -362,7 +364,14 @@ const PH=[
   {date:'2026-10-13',name:'วันคล้ายวันสวรรคต ร.9'},{date:'2026-12-05',name:'วันคล้ายวันพระบรมราชสมภพ ร.9'},
   {date:'2026-12-31',name:'วันสิ้นปี'}
 ];
-function getPH(d){return PH.find(h=>h.date===d)||null;}
+function toDateStr(d){
+  if(!d)return'';
+  var s=String(d).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
+  try{var dt=new Date(s);if(!isNaN(dt.getTime())){var y=dt.getFullYear();var m=String(dt.getMonth()+1).padStart(2,'0');var day=String(dt.getDate()).padStart(2,'0');return y+'-'+m+'-'+day;}}catch(e){}
+  return s;
+}
+function getPH(d){var ds=toDateStr(d);return PH.find(h=>h.date===ds)||null;}
 
 // ตารางเวลาสาขา: start=เวลาเข้างานมาตรฐาน, hours=ชั่วโมงปกติก่อน OT
 const BRANCH_SCHEDULE={
@@ -375,7 +384,8 @@ function getSched(branch){return BRANCH_SCHEDULE[branch]||{start:'09:00',hours:9
 function calcLate(branch,clockIn){
   var s=getSched(branch);
   var sm=+s.start.split(':')[0]*60+ +s.start.split(':')[1];
-  var im=+clockIn.split(':')[0]*60+ +clockIn.split(':')[1];
+  var ci=toTimeStr(clockIn);
+  var im=+ci.split(':')[0]*60+ +ci.split(':')[1];
   return Math.max(0,im-sm);
 }
 
@@ -385,8 +395,9 @@ function calcLate(branch,clockIn){
 function calcOT(branch,clockIn,clockOut){
   var s=getSched(branch);
   var sm=+s.start.split(':')[0]*60+ +s.start.split(':')[1];
-  var im=+clockIn.split(':')[0]*60+ +clockIn.split(':')[1];
-  var om=+clockOut.split(':')[0]*60+ +clockOut.split(':')[1];
+  var ci=toTimeStr(clockIn),co=toTimeStr(clockOut);
+  var im=+ci.split(':')[0]*60+ +ci.split(':')[1];
+  var om=+co.split(':')[0]*60+ +co.split(':')[1];
   if(om<=im)return{hours:0,hoursOT:0,lateMinutes:0};
   var late=Math.max(0,im-sm);
   var totalMins=om-im;
@@ -498,7 +509,7 @@ function getPayPeriods(){
   return periods.sort((a,b)=>a.start-b.start);
 }
 function getCurPPKey(){var now=new Date(),y=now.getFullYear(),m=now.getMonth(),s=now.getDate()>=16?new Date(y,m,16):new Date(y,m-1,16);return s.getFullYear()+'-'+String(s.getMonth()+1).padStart(2,'0');}
-function logsInPP(key){var[y,m]=key.split('-').map(Number),s=new Date(y,m-1,16),e=new Date(y,m,15);return logs.filter(l=>{var d=new Date(l.date+'T00:00:00');return d>=s&&d<=e;});}
+function logsInPP(key){var parts=key.split('-').map(Number),y=parts[0],m=parts[1],s=new Date(y,m-1,16),e=new Date(y,m,15);return logs.filter(l=>{try{var ds=toDateStr(l.date);var d=new Date(ds+'T00:00:00');return d>=s&&d<=e;}catch(ex){return false;}});}
 function getPPLabel(key){var p=getPayPeriods().find(x=>x.key===key);return p?p.label:key;}
 function populatePPSelects(){
   var periods=getPayPeriods(),cur=getCurPPKey();
@@ -577,7 +588,7 @@ function updateCOPreview(){
   var empId=document.getElementById('modalEmp').value,box=document.getElementById('clockInfoBox');
   if(!empId){box.style.display='none';return;}
   var ds=new Date().toISOString().split('T')[0],ts=new Date().toTimeString().slice(0,5);
-  var entry=logs.find(l=>l.empId===empId&&l.date===ds&&!l.clockOut);
+  var entry=logs.find(l=>l.empId===empId&&toDateStr(l.date)===ds&&!l.clockOut);
   if(!entry){box.style.display='none';return;}
   var emp=employees.find(e=>e.id===empId);
   var branch=entry.branch||(emp?emp.branch:'')||currentBranch;
@@ -600,7 +611,7 @@ async function submitClock(){
   try{
     if(clockAction==='in'){
       // ตรวจสอบว่าเป็นวันนี้เท่านั้น (ไม่อนุญาตย้อนหลัง)
-      if(logs.find(l=>l.empId===empId&&l.date===ds&&!l.clockOut)){showToast('เข้างานแล้ววันนี้','error');return;}
+      if(logs.find(l=>l.empId===empId&&toDateStr(l.date)===ds&&!l.clockOut)){showToast('เข้างานแล้ววันนี้','error');return;}
       var emp=employees.find(e=>e.id===empId);
       var branch=currentBranch||(emp?emp.branch:'')||'';
       var sched=getSched(branch);
@@ -612,7 +623,7 @@ async function submitClock(){
       await api('addLog',log);logs.push(log);
       showToast('✅ บันทึกเข้างาน'+lateMsg+(ph?' ('+ph.name+')':''),'success');
     } else {
-      var entry=logs.find(l=>l.empId===empId&&l.date===ds&&!l.clockOut);
+      var entry=logs.find(l=>l.empId===empId&&toDateStr(l.date)===ds&&!l.clockOut);
       if(!entry){showToast('ไม่พบบันทึกเข้างานวันนี้','error');return;}
       var emp2=employees.find(e=>e.id===empId);
       var branch2=entry.branch||(emp2?emp2.branch:'')||currentBranch;
@@ -706,7 +717,7 @@ function renderMyLog(){
   if(!myLogs.length){tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="ei">📭</div>ยังไม่มีบันทึก</div></td></tr>';return;}
   var eMap={};employees.forEach(e=>eMap[e.id]={name:e.name,branch:e.branch});
   tbody.innerHTML=myLogs.map(function(l){
-    var ei=eMap[l.empId]||{},ph=getPH(l.date);
+    var ei=eMap[l.empId]||{},ph=getPH(toDateStr(l.date));
     var late=Number(l.lateMinutes)||0;
     var lateCell=late>0?'<span class="badge badge-late">⚠️ สาย '+late+' นาที</span>':'<span style="color:#10b981;font-size:11px">✅</span>';
     var commDisplay=l.type==='commission'
@@ -715,11 +726,11 @@ function renderMyLog(){
         (l.commRate?' <span style="font-size:10px;color:var(--muted)">(×'+Math.round(l.commRate*100)+'%)</span>':'')
       :'—';
     return '<tr'+(ph?' class="ph-row"':'')+'>'+
-      '<td>'+fmtDate(l.date)+(ph?' <span class="badge badge-phday">'+ph.name+'</span>':'')+  '</td>'+
+      '<td>'+fmtDate(toDateStr(l.date))+(ph?' <span class="badge badge-phday">'+ph.name+'</span>':'')+  '</td>'+
       '<td style="font-size:11px;color:var(--mid);font-weight:600">'+brL(l.branch||ei.branch)+'</td>'+
-      '<td><span class="badge badge-in">'+l.clockIn+'</span></td>'+
+      '<td><span class="badge badge-in">'+fmtTime(l.clockIn)+'</span></td>'+
       '<td>'+lateCell+'</td>'+
-      '<td>'+(l.clockOut&&l.clockOut!=='00:00'?'<span class="badge badge-out">'+l.clockOut+'</span>':l.type==='commission'?'—':'<span style="color:var(--warning);font-size:11px">รอ</span>')+'</td>'+
+      '<td>'+(l.clockOut&&l.clockOut!=='00:00'?'<span class="badge badge-out">'+fmtTime(l.clockOut)+'</span>':l.type==='commission'?'—':'<span style="color:var(--warning);font-size:11px">รอ</span>')+'</td>'+
       '<td>'+(l.hours!=null&&l.hours!==''&&l.type!=='commission'?Number(l.hours)+' ชม.':'—')+'</td>'+
       '<td>'+(Number(l.hoursOT||0)>0?'<span style="color:#b45309;font-weight:600">'+l.hoursOT+' ชม.</span>':'—')+'</td>'+
       '<td>'+autoTypeBadge(l)+'</td>'+
@@ -745,8 +756,8 @@ function renderDashboard(){
   var ppKey=getCurPPKey(),pl=logsInPP(ppKey);
   var tN=pl.reduce((s,l)=>s+(Number(l.hours)||0),0),tO=pl.reduce((s,l)=>s+(Number(l.hoursOT)||0),0);
   var hotH=pl.filter(l=>['holiday_ot','public_holiday'].includes(l.type)).reduce((s,l)=>s+(Number(l.hours)||0),0);
-  var hwD=new Set(pl.filter(l=>l.type==='holiday_work').map(l=>l.date+'_'+l.empId)).size;
-  var wD=new Set(pl.map(l=>l.date)).size;
+  var hwD=new Set(pl.filter(l=>l.type==='holiday_work').map(l=>toDateStr(l.date)+'_'+l.empId)).size;
+  var wD=new Set(pl.map(l=>toDateStr(l.date))).size;
   document.getElementById('statsRow').innerHTML=
     '<div class="stat-card c1"><div class="stat-num">'+tN.toFixed(1)+'</div><div class="stat-label">ชม.ปกติ (รอบนี้)</div></div>'+
     '<div class="stat-card c2"><div class="stat-num">'+tO.toFixed(1)+'</div><div class="stat-label">OT (ชม.)</div></div>'+
@@ -761,10 +772,10 @@ function renderDashboard(){
       '<td>'+el.reduce((s,l)=>s+(Number(l.hours)||0),0).toFixed(1)+'</td>'+
       '<td>'+el.reduce((s,l)=>s+(Number(l.hoursOT)||0),0).toFixed(1)+'</td>'+
       '<td>'+el.filter(l=>['holiday_ot','public_holiday'].includes(l.type)).reduce((s,l)=>s+(Number(l.hours)||0),0).toFixed(1)+'</td>'+
-      '<td>'+new Set(el.filter(l=>l.type==='holiday_work').map(l=>l.date)).size+' วัน</td>'+
+      '<td>'+new Set(el.filter(l=>l.type==='holiday_work').map(l=>toDateStr(l.date))).size+' วัน</td>'+
       '<td>'+(totalSales?'฿'+totalSales.toLocaleString():'—')+'</td>'+
       '<td>฿'+comm.toLocaleString()+'</td>'+
-      '<td>'+new Set(el.map(l=>l.date)).size+'</td></tr>';
+      '<td>'+new Set(el.map(l=>toDateStr(l.date))).size+'</td></tr>';
   }).join('');
 }
 function renderAllLogs(){
@@ -777,18 +788,18 @@ function renderAllLogs(){
   var tbody=document.getElementById('allLogsTable');
   if(!filtered.length){tbody.innerHTML='<tr><td colspan="12"><div class="empty-state"><div class="ei">📭</div>ไม่พบรายการ</div></td></tr>';return;}
   tbody.innerHTML=filtered.map(function(l){
-    var ei=eMap[l.empId]||{},ph=getPH(l.date);
+    var ei=eMap[l.empId]||{},ph=getPH(toDateStr(l.date));
     var late=Number(l.lateMinutes)||0;
     var lateCell=late>0?'<span class="badge badge-late">สาย '+late+'น.</span>':'<span style="color:#10b981;font-size:11px">✅</span>';
     var commDisp=l.type==='commission'?(l.sales?'ยอด ฿'+Number(l.sales).toLocaleString()+' → ':'')+
       '<span style="color:var(--success);font-weight:600">฿'+Number(l.commission||0).toLocaleString()+'</span>':'—';
     return '<tr'+(ph?' class="ph-row"':'')+'>'+
-      '<td>'+fmtDate(l.date)+(ph?' <span class="badge badge-phday" style="font-size:10px">'+ph.name+'</span>':'')+  '</td>'+
+      '<td>'+fmtDate(toDateStr(l.date))+(ph?' <span class="badge badge-phday" style="font-size:10px">'+ph.name+'</span>':'')+  '</td>'+
       '<td style="font-size:11px;color:var(--mid);font-weight:600">'+brL(l.branch||ei.branch)+'</td>'+
       '<td><strong>'+(ei.name||'—')+'</strong></td>'+
-      '<td><span class="badge badge-in">'+l.clockIn+'</span></td>'+
+      '<td><span class="badge badge-in">'+fmtTime(l.clockIn)+'</span></td>'+
       '<td>'+lateCell+'</td>'+
-      '<td>'+(l.clockOut&&l.clockOut!=='00:00'?'<span class="badge badge-out">'+l.clockOut+'</span>':l.type==='commission'?'—':'<span style="color:var(--warning);font-size:11px">รอ</span>')+'</td>'+
+      '<td>'+(l.clockOut&&l.clockOut!=='00:00'?'<span class="badge badge-out">'+fmtTime(l.clockOut)+'</span>':l.type==='commission'?'—':'<span style="color:var(--warning);font-size:11px">รอ</span>')+'</td>'+
       '<td>'+(l.hours!=null&&l.hours!==''&&l.type!=='commission'?Number(l.hours)+' ชม.':'—')+'</td>'+
       '<td>'+(Number(l.hoursOT||0)>0?'<span style="color:#b45309;font-weight:600">'+l.hoursOT+' ชม.</span>':'—')+'</td>'+
       '<td>'+autoTypeBadge(l)+'</td>'+
@@ -808,13 +819,13 @@ function buildSummaryHTML(emp,el,ppKey,showSent){
   var ot=el.reduce((s,l)=>s+(Number(l.hoursOT)||0),0);
   var hot=el.filter(l=>l.type==='holiday_ot').reduce((s,l)=>s+(Number(l.hours)||0),0);
   var ph=el.filter(l=>l.type==='public_holiday').reduce((s,l)=>s+(Number(l.hours)||0),0);
-  var hwDays=new Set(el.filter(l=>l.type==='holiday_work').map(l=>l.date)).size;
+  var hwDays=new Set(el.filter(l=>l.type==='holiday_work').map(l=>toDateStr(l.date))).size;
   var hwPay=hwDays*(emp.dailyWage||0)*2;
   var commLogs=el.filter(l=>l.type==='commission');
   var totalSales=commLogs.reduce((s,l)=>s+(Number(l.sales)||0),0);
   var comm=commLogs.reduce((s,l)=>s+(Number(l.commission)||0),0);
   var otPay=ot*(emp.otRate||50),hotPay=(hot+ph)*(emp.holidayRate||100);
-  var days=new Set(el.map(l=>l.date)).size;
+  var days=new Set(el.map(l=>toDateStr(l.date))).size;
   var total=(emp.salary||0)+otPay+hotPay+hwPay+comm;
   var sched=getSched(emp.branch);
   return '<div class="summary-report">'+
@@ -953,13 +964,27 @@ function renderHolidayTable(){
   document.getElementById('phTable').innerHTML=PH.map((h,i)=>'<tr><td>'+(i+1)+'</td><td><strong>'+fmtDate(h.date)+'</strong></td><td>'+h.name+'</td></tr>').join('');
 }
 function populateEmpSel(selId){document.getElementById(selId).innerHTML='<option value="">— เลือกพนักงาน —</option>'+employees.filter(e=>e.active).map(e=>'<option value="'+e.id+'">'+e.name+' ('+brL(e.branch)+')</option>').join('');}
-function hRaw(a,b){var ah=+a.split(':')[0],am=+a.split(':')[1],bh=+b.split(':')[0],bm=+b.split(':')[1],d=(bh*60+bm)-(ah*60+am);return d>0?d/60:0;}
+function toTimeStr(t){
+  if(!t)return'00:00';
+  var s=String(t).trim();
+  if(/^\d{1,2}:\d{2}/.test(s))return s.slice(0,5);
+  try{var dt=new Date(s);if(!isNaN(dt.getTime())){var bk=new Date(dt.toLocaleString('en-US',{timeZone:'Asia/Bangkok'}));return String(bk.getHours()).padStart(2,'0')+':'+String(bk.getMinutes()).padStart(2,'0');}}catch(e){}
+  return s.slice(0,5);
+}
+function hRaw(a,b){var at=toTimeStr(a),bt=toTimeStr(b);var ah=+at.split(':')[0],am=+at.split(':')[1],bh=+bt.split(':')[0],bm=+bt.split(':')[1],d=(bh*60+bm)-(ah*60+am);return d>0?d/60:0;}
 function autoTypeBadge(l){
   if(l.type==='split')return'<span class="badge badge-normal">ปกติ</span><span class="badge badge-ot">+OT</span>';
   var m={normal:['badge-normal','ปกติ'],split:['badge-ot','ปกติ+OT'],ot:['badge-ot','OT'],holiday_ot:['badge-holiday','OT วันหยุด'],public_holiday:['badge-ph','นักขัตฤกษ์'],holiday_work:['badge-hw','วันหยุด×2'],commission:['badge-commission','ยอดขาย/คอม']};
   var r=m[l.type]||['badge-normal',l.type];return'<span class="badge '+r[0]+'">'+r[1]+'</span>';
 }
-function fmtDate(d){if(!d)return'—';return new Date(d+'T00:00:00').toLocaleDateString('th-TH',{year:'numeric',month:'short',day:'numeric'});}
+function fmtTime(t){
+  if(!t||t==='00:00')return t||'—';
+  var s=String(t).trim();
+  if(/^\d{1,2}:\d{2}$/.test(s))return s;
+  try{var dt=new Date(s);if(!isNaN(dt.getTime()))return dt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok',hour12:false});}catch(e){}
+  return s;
+}
+function fmtDate(d){if(!d)return"—";try{var s=String(d).trim();if(/^\d{4}-\d{2}-\d{2}$/.test(s))return new Date(s+"T00:00:00").toLocaleDateString("th-TH",{year:"numeric",month:"short",day:"numeric"});var dt=new Date(s);if(!isNaN(dt.getTime()))return dt.toLocaleDateString("th-TH",{year:"numeric",month:"short",day:"numeric",timeZone:"Asia/Bangkok"});return s;}catch(e){return String(d);}}
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 var toastTimer;

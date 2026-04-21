@@ -427,7 +427,7 @@ function calcCommission(branch,sales){
   var tier=getCommTier(branch,sales);
   if(!tier)return{commission:0,tier:null,diff:0};
   var diff=sales-tier.min;
-  return{commission:Math.round(diff*tier.rate),tier:tier,diff:diff};
+  return{commission:+(diff*tier.rate).toFixed(2),tier:tier,diff:diff};
 }
 function getTierInfoHTML(branch){
   var t=COMM_TIERS[branch];
@@ -660,8 +660,8 @@ function onSalesInput(){
     document.getElementById('commSalesDisplay').textContent=sales.toLocaleString();
     document.getElementById('commDiffDisplay').textContent=r.diff.toLocaleString();
     document.getElementById('commRateDisplay').textContent=r.tier.label;
-    document.getElementById('commAmountDisplay').textContent=r.commission.toLocaleString();
-    document.getElementById('commCalcFormula').textContent='('+sales.toLocaleString()+' − '+r.tier.min.toLocaleString()+') × '+r.tier.label+' = ฿'+r.commission.toLocaleString();
+    document.getElementById('commAmountDisplay').textContent=Number(r.commission).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('commCalcFormula').textContent='('+sales.toLocaleString()+' − '+r.tier.min.toLocaleString()+') × '+r.tier.label+' = ฿'+Number(r.commission).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
     calc.style.display='block';noT.style.display='none';
   } else {calc.style.display='none';noT.style.display='block';}
 }
@@ -678,7 +678,7 @@ async function saveCommission(){
   var log={id:genId(),empId:selectedEmpId,date:date,branch:currentBranch,clockIn:'00:00',clockOut:'00:00',hours:0,hoursOT:0,type:'commission',sales:sales,commDiff:r.diff,commission:r.commission,commRate:r.tier?r.tier.rate:0,note:note};
   try{
     await api('addLog',log);logs.push(log);
-    if(r.tier)showToast('💰 คอม ฿'+r.commission.toLocaleString()+' ('+r.tier.label+')','success');
+    if(r.tier)showToast('💰 คอม ฿'+Number(r.commission).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+' ('+r.tier.label+')','success');
     else showToast('📋 บันทึกยอด ฿'+sales.toLocaleString()+' (ไม่ถึงขั้นต่ำ)','');
     document.getElementById('commSales').value='';document.getElementById('commNote').value='';
     document.getElementById('commCalcResult').style.display='none';document.getElementById('commNoTier').style.display='none';
@@ -722,7 +722,7 @@ function renderMyLog(){
     var lateCell=late>0?'<span class="badge badge-late">⚠️ สาย '+late+' นาที</span>':'<span style="color:#10b981;font-size:11px">✅</span>';
     var commDisplay=l.type==='commission'
       ?(l.sales?'<span style="font-size:11px;color:var(--muted)">ยอด ฿'+Number(l.sales).toLocaleString()+'</span><br>':'')+
-        '<span style="color:var(--success);font-weight:600">฿'+Number(l.commission||0).toLocaleString()+'</span>'+
+        '<span style="color:var(--success);font-weight:600">฿'+Number(l.commission||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</span>'+
         (l.commRate?' <span style="font-size:10px;color:var(--muted)">(×'+Math.round(l.commRate*100)+'%)</span>':'')
       :'—';
     return '<tr'+(ph?' class="ph-row"':'')+'>'+
@@ -774,7 +774,7 @@ function renderDashboard(){
       '<td>'+el.filter(l=>['holiday_ot','public_holiday'].includes(l.type)).reduce((s,l)=>s+(Number(l.hours)||0),0).toFixed(1)+'</td>'+
       '<td>'+new Set(el.filter(l=>l.type==='holiday_work').map(l=>toDateStr(l.date))).size+' วัน</td>'+
       '<td>'+(totalSales?'฿'+totalSales.toLocaleString():'—')+'</td>'+
-      '<td>฿'+comm.toLocaleString()+'</td>'+
+      '<td>฿'+Number(comm).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
       '<td>'+new Set(el.map(l=>toDateStr(l.date))).size+'</td></tr>';
   }).join('');
 }
@@ -792,7 +792,7 @@ function renderAllLogs(){
     var late=Number(l.lateMinutes)||0;
     var lateCell=late>0?'<span class="badge badge-late">สาย '+late+'น.</span>':'<span style="color:#10b981;font-size:11px">✅</span>';
     var commDisp=l.type==='commission'?(l.sales?'ยอด ฿'+Number(l.sales).toLocaleString()+' → ':'')+
-      '<span style="color:var(--success);font-weight:600">฿'+Number(l.commission||0).toLocaleString()+'</span>':'—';
+      '<span style="color:var(--success);font-weight:600">฿'+Number(l.commission||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</span>':'—';
     return '<tr'+(ph?' class="ph-row"':'')+'>'+
       '<td>'+fmtDate(toDateStr(l.date))+(ph?' <span class="badge badge-phday" style="font-size:10px">'+ph.name+'</span>':'')+  '</td>'+
       '<td style="font-size:11px;color:var(--mid);font-weight:600">'+brL(l.branch||ei.branch)+'</td>'+
@@ -841,10 +841,10 @@ function buildSummaryHTML(emp,el,ppKey,showSent){
     '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">OT ปกติ (฿'+(emp.otRate||50)+'/ชม.)</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+ot.toFixed(2)+' ชม. = ฿'+otPay.toLocaleString()+'</td></tr>'+
     '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">OT วันหยุด/นักขัตฤกษ์ (฿'+(emp.holidayRate||100)+'/ชม.)</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+((hot+ph)).toFixed(2)+' ชม. = ฿'+hotPay.toLocaleString()+'</td></tr>'+
     '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">ทำงานวันหยุด ×2 (฿'+(emp.dailyWage||0)+'/วัน)</td><td style="padding:8px 4px;font-weight:600;text-align:right;color:var(--accent)">'+hwDays+' วัน = ฿'+hwPay.toLocaleString()+'</td></tr>'+
-    '<tr><td style="padding:8px 4px;color:var(--muted)">ค่าคอมมิชชั่น'+(totalSales?' (ยอดขายรวม ฿'+totalSales.toLocaleString()+')':'')+  '</td><td style="padding:8px 4px;font-weight:600;text-align:right;color:var(--success)">฿'+comm.toLocaleString()+'</td></tr>'+
+    '<tr><td style="padding:8px 4px;color:var(--muted)">ค่าคอมมิชชั่น'+(totalSales?' (ยอดขายรวม ฿'+totalSales.toLocaleString()+')':'')+  '</td><td style="padding:8px 4px;font-weight:600;text-align:right;color:var(--success)">฿'+Number(comm).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td></tr>'+
     '</table>'+
     '<div class="sum-total-box"><div style="font-size:13px;opacity:.7;margin-bottom:4px">เงินเดือนฐาน ฿'+(emp.salary||0).toLocaleString()+' + รายการต่างๆ</div>'+
-    '<div class="amount">฿'+total.toLocaleString()+'</div><div style="font-size:12px;opacity:.6;margin-top:4px">ยอดรวมทั้งสิ้น</div></div></div>';
+    '<div class="amount">฿'+Number(total).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div><div style="font-size:12px;opacity:.6;margin-top:4px">ยอดรวมทั้งสิ้น</div></div></div>';
 }
 function renderSummary(){
   var ppKey=document.getElementById('summaryPayPeriod').value,empF=document.getElementById('summaryEmp').value,branchF=document.getElementById('summaryBranch').value;

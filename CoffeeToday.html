@@ -990,7 +990,7 @@ function buildSummaryHTML(emp,el,ppKey,showSent){
   var comm=+commLogs.reduce(function(s,l){return s+getCommFromLog(l,emp.branch);},0).toFixed(2);
   var hotTotal=hot+phOld+hwOT;
   var otPay=ot*(emp.otRate||50),hotPay=hotTotal*(emp.holidayRate||100);
-  var days=new Set(el.map(l=>toDateStr(l.date))).size;
+  var days=new Set(el.filter(l=>l.type!=='commission').map(l=>toDateStr(l.date))).size;
   var total=(emp.salary||0)+otPay+hotPay+hwPay+comm;
   var sched=getSched(emp.branch);
   return '<div class="summary-report">'+

@@ -810,7 +810,16 @@ async function confirmSendSummary(){
   var pl=logsInPP(ps.ppKey).filter(l=>l.empId===ps.empId);
   var norm=pl.filter(l=>l.type!=='holiday_work').reduce((s,l)=>s+(Number(l.hours)||0),0);
   var ot=pl.reduce((s,l)=>s+(Number(l.hoursOT)||0),0);
-  var comm=pl.reduce((s,l)=>s+(Number(l.commission)||0),0);
+  // คำนวณค่าคอมจาก employees ในรอบปัจจุบัน
+  var comm=0;
+  employees.filter(function(e){return e.active;}).forEach(function(emp){
+    pl.filter(function(l){return l.empId===emp.id&&l.type==='commission';}).forEach(function(l){
+      var sales=Number(l.sales)||0;
+      if(sales>0){var tier=getCommTier(emp.branch,sales);if(tier){comm+=+((sales-tier.min)*tier.rate).toFixed(2);return;}}
+      comm+=Number(l.commission)||0;
+    });
+  });
+  comm=+comm.toFixed(2);
   var hwDays=new Set(pl.filter(l=>l.type==='holiday_work').map(l=>l.date)).size;
   var sub={id:genId(),empId:ps.empId,empName:emp.name,branch:emp.branch,ppKey:ps.ppKey,sentAt:new Date().toISOString(),status:'pending',norm:norm,ot:ot,comm:comm,hwDays:hwDays};
   try{await api('addSubmission',sub);submissions.push(sub);closeModal('sendSummaryModal');showToast('📤 ส่งสรุปให้ HR สำเร็จ','success');}
@@ -876,7 +885,11 @@ function renderDashboard(){
     var el=pl.filter(l=>l.empId===e.id);
     var e2=e;
     var totalSales=el.filter(l=>l.type==='commission').reduce((s,l)=>s+(Number(l.sales)||0),0);
-    var comm=el.filter(l=>l.type==='commission').reduce(function(s,l){var c=Number(l.commission)||0;if(Number(l.sales)>0){var tier=getCommTier(e2.branch,Number(l.sales));if(tier){var rc=+((Number(l.sales)-tier.min)*tier.rate).toFixed(2);if(rc>c)c=rc;}}return s+c;},0);
+    var comm=+el.filter(l=>l.type==='commission').reduce(function(s,l){
+      var sales=Number(l.sales)||0;
+      if(sales>0){var tier=getCommTier(e2.branch,sales);if(tier)return s++(( sales-tier.min)*tier.rate).toFixed(2)*1;}
+      return s+(Number(l.commission)||0);
+    },0).toFixed(2);
     return '<tr><td><strong>'+e.name+'</strong></td><td style="font-size:11px;color:var(--mid);font-weight:600">'+brL(e.branch)+'</td>'+
       '<td>'+el.reduce((s,l)=>s+(Number(l.hours)||0),0).toFixed(1)+'</td>'+
       '<td>'+el.reduce((s,l)=>s+(Number(l.hoursOT)||0),0).toFixed(1)+'</td>'+
@@ -936,18 +949,16 @@ function buildSummaryHTML(emp,el,ppKey,showSent){
   var hwPay=hwDays*(emp.dailyWage||0)*1; // ได้เพิ่มจากปกติอีก 1 เท่า
   var commLogs=el.filter(l=>l.type==='commission');
   var totalSales=commLogs.reduce((s,l)=>s+(Number(l.sales)||0),0);
+  // คำนวณค่าคอมจาก sales เสมอ ไม่ว่าข้อมูลเก่าจะเป็น 0 หรือไม่
   var comm=commLogs.reduce(function(s,l){
-    var c=Number(l.commission)||0;
-    // fallback: ถ้า commission=0 แต่มี sales → คำนวณใหม่จาก tier เสมอ
-    if(Number(l.sales)>0){
-      var tier=getCommTier(emp.branch, Number(l.sales));
-      if(tier){
-        var recalc=+((Number(l.sales)-tier.min)*tier.rate).toFixed(2);
-        if(recalc>c) c=recalc; // ใช้ค่าที่มากกว่า (กรณีข้อมูลเก่าเก็บ 0)
-      }
+    var sales=Number(l.sales)||0;
+    if(sales>0){
+      var tier=getCommTier(emp.branch, sales);
+      if(tier) return s++(( sales-tier.min)*tier.rate).toFixed(2)*1;
     }
-    return s+c;
+    return s+(Number(l.commission)||0);
   },0);
+  comm=+comm.toFixed(2);
   var hotTotal=hot+phOld+hwOT;
   var otPay=ot*(emp.otRate||50),hotPay=hotTotal*(emp.holidayRate||100);
   var days=new Set(el.map(l=>toDateStr(l.date))).size;

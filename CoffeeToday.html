@@ -874,8 +874,9 @@ function renderDashboard(){
     '<div class="stat-card c5"><div class="stat-num">'+wD+'</div><div class="stat-label">วันทำงาน</div></div>';
   document.getElementById('empSummaryTable').innerHTML=employees.filter(e=>e.active).map(function(e){
     var el=pl.filter(l=>l.empId===e.id);
+    var e2=e;
     var totalSales=el.filter(l=>l.type==='commission').reduce((s,l)=>s+(Number(l.sales)||0),0);
-    var comm=el.reduce((s,l)=>s+(Number(l.commission)||0),0);
+    var comm=el.filter(l=>l.type==='commission').reduce(function(s,l){var c=Number(l.commission)||0;if(Number(l.sales)>0){var tier=getCommTier(e2.branch,Number(l.sales));if(tier){var rc=+((Number(l.sales)-tier.min)*tier.rate).toFixed(2);if(rc>c)c=rc;}}return s+c;},0);
     return '<tr><td><strong>'+e.name+'</strong></td><td style="font-size:11px;color:var(--mid);font-weight:600">'+brL(e.branch)+'</td>'+
       '<td>'+el.reduce((s,l)=>s+(Number(l.hours)||0),0).toFixed(1)+'</td>'+
       '<td>'+el.reduce((s,l)=>s+(Number(l.hoursOT)||0),0).toFixed(1)+'</td>'+
@@ -937,12 +938,13 @@ function buildSummaryHTML(emp,el,ppKey,showSent){
   var totalSales=commLogs.reduce((s,l)=>s+(Number(l.sales)||0),0);
   var comm=commLogs.reduce(function(s,l){
     var c=Number(l.commission)||0;
-    // fallback: ถ้า commission=0 แต่มี sales และ commRate → คำนวณใหม่
-    if(c===0 && Number(l.sales)>0 && Number(l.commRate)>0){
-      var diff=Number(l.sales)-0; // commDiff อาจไม่มี ใช้ sales แทน
-      // หา tier จริงๆ
+    // fallback: ถ้า commission=0 แต่มี sales → คำนวณใหม่จาก tier เสมอ
+    if(Number(l.sales)>0){
       var tier=getCommTier(emp.branch, Number(l.sales));
-      if(tier) c=+(( Number(l.sales)-tier.min)*tier.rate).toFixed(2);
+      if(tier){
+        var recalc=+((Number(l.sales)-tier.min)*tier.rate).toFixed(2);
+        if(recalc>c) c=recalc; // ใช้ค่าที่มากกว่า (กรณีข้อมูลเก่าเก็บ 0)
+      }
     }
     return s+c;
   },0);
@@ -1462,6 +1464,20 @@ function checkManRowDate(n){
   window._dupCancelTarget = {el: dateEl, n: n};
   openModal('dupPinModal');
   setTimeout(function(){document.getElementById('dupPinInput').focus();},150);
+}
+
+async function recalcOldData(){
+  var el=document.getElementById('recalcStatus');
+  el.textContent='กำลังคำนวณใหม่...';
+  try{
+    var res=await api('recalcOldData',{});
+    el.textContent='✅ อัปเดตแล้ว '+res.updated+' รายการ';
+    // reload logs
+    var lRes=await api('getLogs',{});
+    logs=lRes.logs||[];
+    renderDashboard();renderAllLogs();
+    showToast('✅ คำนวณใหม่สำเร็จ '+res.updated+' รายการ','success');
+  }catch(e){el.textContent='❌ '+e.message;showToast('ล้มเหลว: '+e.message,'error');}
 }
 
 // INIT

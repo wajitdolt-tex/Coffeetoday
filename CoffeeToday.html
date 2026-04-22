@@ -1,3 +1,4 @@
+
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -319,6 +320,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
       <button class="btn btn-dark" style="margin-bottom:14px" onclick="addManRow()">➕ เพิ่มรายการ</button>
       <br>
       <button class="btn btn-success" onclick="saveManualAll()">💾 บันทึกทั้งหมด</button>
+      <button class="btn btn-gold btn-sm" style="margin-left:8px" onclick="confirmManualDup()">🔐 ยืนยัน PIN เพื่อบันทึกซ้ำ</button>
       <span id="manSaveStatus" style="font-size:13px;color:var(--muted);margin-left:12px"></span>
     </div>
   </div>
@@ -326,6 +328,26 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     <div class="card"><div class="card-title">📅 วันหยุดนักขัตฤกษ์ ปี 2569</div>
       <p style="font-size:13px;color:var(--muted);margin-bottom:14px">อ้างอิงจากประกาศสำนักงาน อัปเดต 05/01/69</p>
       <div class="table-wrap"><table><thead><tr><th>#</th><th>วันที่</th><th>วันหยุด</th></tr></thead><tbody id="phTable"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ยืนยัน PIN บันทึกซ้ำ -->
+
+<div class="modal-overlay" id="dupPinModal">
+  <div class="modal">
+    <div class="modal-title">🔐 ยืนยันการแก้ไข</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px" id="dupPinMsg">วันที่นี้มีข้อมูลอยู่แล้ว กรุณาใส่รหัส HR เพื่อยืนยันการบันทึกซ้ำ</p>
+    <div class="form-group">
+      <label>รหัสฝ่ายบุคคล</label>
+      <input type="password" id="dupPinInput" maxlength="4" placeholder="••••"
+        style="font-size:24px;letter-spacing:8px;text-align:center"
+        onkeydown="if(event.key==='Enter')confirmDupPin()">
+    </div>
+    <div style="color:var(--danger);font-size:13px;font-weight:600;height:20px;margin-top:6px" id="dupPinError"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="cancelDupPin()">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="confirmDupPin()">✅ ยืนยัน</button>
     </div>
   </div>
 </div>
@@ -682,7 +704,7 @@ async function submitClock(){
       var otMsg=hoursOT2>0?' OT '+hoursOT2+' ชม.':'';
       showToast('🚪 ออกงาน'+lateMsg2+otMsg,'success');
     }
-    closeModal('clockModal');renderMyLog();renderEmpCards();
+    if(clockAction==='out'){closeModal('clockModal');renderMyLog();renderEmpCards();}
   }catch(e){showToast('บันทึกล้มเหลว: '+e.message,'error');}
   finally{btn.innerHTML=clockAction==='in'?'บันทึกเข้างาน':'บันทึกออกงาน';btn.disabled=false;}
 }
@@ -1040,7 +1062,17 @@ async function saveManualAll(){
     var type=document.getElementById('mrType_'+n).value;
     var salesVal=parseFloat(document.getElementById('mrSales_'+n).value)||0;
     var note=document.getElementById('mrNote_'+n).value;
-    if(!date||!inT){fail++;continue;}
+    if(!date||!inT){fail++;statusEl.textContent='⚠️ รายการที่ '+(i+1)+' ไม่มีวันที่หรือเวลาเข้างาน';continue;}
+    // เช็ค dup: ถ้ามีข้อมูลวันนั้นแล้ว ต้องใส่ PIN (เฉพาะ type ที่ไม่ใช่ commission)
+    var ds=date;
+    var dupFound=logs.find(function(l){return l.empId===empId&&toDateStr(l.date)===ds&&l.type!=='commission';});
+    if(dupFound && !rows[i].dataset.hrConfirmed){
+      fail++;
+      var msg='รายการที่ '+(i+1)+' วันที่ '+fmtDate(ds)+' มีข้อมูลอยู่แล้ว ต้องยืนยัน PIN HR';
+      statusEl.textContent=msg;
+      showToast(msg,'error');
+      continue;
+    }
     var hours=null,hoursOT=0,lateMinutes=0;
     if(outT){
       var sp=['holiday_ot','public_holiday','holiday_work'].includes(type);
@@ -1048,7 +1080,6 @@ async function saveManualAll(){
       else{var r2=calcOT(branch,inT,outT);hours=r2.hours;hoursOT=Math.floor(r2.hoursOT);lateMinutes=r2.lateMinutes;}
     }
     var ft=(hours!==null&&hoursOT>0&&!['holiday_ot','public_holiday','holiday_work'].includes(type))?'split':type;
-    // ทำงานวันหยุด + OT → holiday_work + บันทึก hoursOT เป็น holiday_ot rate
     var rc=salesVal>0?calcCommission(branch,salesVal):{commission:0,tier:null,diff:0};
     var log={id:genId(),empId:empId,date:date,branch:branch,clockIn:inT,clockOut:outT||'',
       hours:hours||'',hoursOT:hoursOT,type:ft,lateMinutes:lateMinutes,
@@ -1238,6 +1269,66 @@ function renderYearlySummary(){
 
 function printYearly(){
   window.print();
+}
+
+// ============================================================
+//  DUPLICATE DATE PIN CHECK
+// ============================================================
+var _dupPinCallback = null;
+
+function checkDupDate(empId, date, branch, onConfirm, msgOverride) {
+  // หาว่ามี log ของวันนั้นอยู่แล้วไหม (ไม่นับ commission)
+  var ds = toDateStr(date) || date;
+  var existing = logs.find(function(l){
+    return l.empId === empId && toDateStr(l.date) === ds && l.type !== 'commission';
+  });
+  if (!existing) {
+    // ไม่มีข้อมูลซ้ำ ทำต่อได้เลย
+    onConfirm();
+    return;
+  }
+  // มีข้อมูลซ้ำ → ขอ PIN
+  _dupPinCallback = onConfirm;
+  document.getElementById('dupPinInput').value = '';
+  document.getElementById('dupPinError').textContent = '';
+  document.getElementById('dupPinMsg').textContent = msgOverride ||
+    ('วันที่ ' + fmtDate(ds) + ' มีข้อมูลอยู่แล้ว กรุณาใส่รหัส HR เพื่อยืนยันการบันทึกซ้ำ');
+  openModal('dupPinModal');
+  setTimeout(function(){ document.getElementById('dupPinInput').focus(); }, 150);
+}
+
+function confirmDupPin() {
+  var v = document.getElementById('dupPinInput').value;
+  if (v === HR_PIN) {
+    closeModal('dupPinModal');
+    if (_dupPinCallback) { _dupPinCallback(); _dupPinCallback = null; }
+  } else {
+    document.getElementById('dupPinError').textContent = 'รหัสไม่ถูกต้อง';
+    document.getElementById('dupPinInput').value = '';
+  }
+}
+function cancelDupPin() {
+  closeModal('dupPinModal');
+  _dupPinCallback = null;
+}
+function confirmManualDup(){
+  // ขอ PIN แล้วถ้าถูก set data-hr-confirmed ทุก row แล้วบันทึก
+  checkDupDate('__force__','__force__','',function(){
+    // PIN ถูก → mark ทุก row ว่า confirmed แล้ว saveManualAll
+    document.querySelectorAll('.man-row').forEach(function(r){r.dataset.hrConfirmed='1';});
+    saveManualAll();
+  },'ใส่รหัส HR เพื่ออนุญาตบันทึกทับข้อมูลเดิม');
+  // override: checkDupDate จะเช็ค existing ก่อน แต่เราส่ง force ให้มันผ่าน
+  // แก้: ให้ popup PIN ขึ้นตรงๆ
+  _dupPinCallback = function(){
+    document.querySelectorAll('.man-row').forEach(function(r){r.dataset.hrConfirmed='1';});
+    saveManualAll();
+  };
+  document.getElementById('dupPinInput').value='';
+  document.getElementById('dupPinError').textContent='';
+  document.getElementById('dupPinMsg').textContent='ใส่รหัส HR เพื่ออนุญาตบันทึกทับข้อมูลเดิม';
+  openModal('dupPinModal');
+  setTimeout(function(){document.getElementById('dupPinInput').focus();},150);
 }
 
 // INIT

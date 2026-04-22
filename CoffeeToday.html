@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 
 <html lang="th">
 <head>
@@ -223,6 +222,12 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
   </div>
   <div class="tab-content active" id="tab-dashboard">
     <div id="statsRow" class="stats-row"></div>
+    <div class="card" style="background:#fffbeb;border:1.5px solid #fcd34d">
+      <div class="card-title" style="color:#92400e">🔧 แก้ไขข้อมูลเก่า</div>
+      <p style="font-size:13px;color:#92400e;margin-bottom:12px">กดปุ่มนี้เพื่อแก้ไข hoursOT ของข้อมูลเก่าทั้งหมด ให้ตัดเศษนาทีออก (เช่น 1.05 → 1) ทำครั้งเดียวพอครับ</p>
+      <button class="btn btn-gold" onclick="fixOldOT()">🔧 แก้ไข OT เก่าทั้งหมด</button>
+      <span id="fixOTStatus" style="font-size:13px;color:var(--muted);margin-left:12px"></span>
+    </div>
     <div class="card"><div class="card-title">📈 สรุปพนักงานแต่ละคน (รอบปัจจุบัน)</div>
       <div class="table-wrap"><table>
         <thead><tr><th>พนักงาน</th><th>สาขา</th><th>ชม.ปกติ</th><th>OT</th><th>OT วันหยุด</th><th>วันหยุด×2</th><th>ยอดขายรวม</th><th>คอมมิชชั่น</th><th>วันทำงาน</th></tr></thead>
@@ -963,8 +968,8 @@ function addManRow(){
         '</select></div>'+
     '</div>'+
     '<div class="form-row">'+
-      '<div class="form-group"><label>เข้างาน *</label><input type="time" id="mrIn_'+n+'"></div>'+
-      '<div class="form-group"><label>ออกงาน</label><input type="time" id="mrOut_'+n+'"></div>'+
+      '<div class="form-group"><label>เข้างาน * (HH:MM)</label><input type="text" id="mrIn_'+n+'" placeholder="เช่น 09:00" maxlength="5" style="font-family:monospace;font-size:16px;letter-spacing:2px"></div>'+
+      '<div class="form-group"><label>ออกงาน (HH:MM)</label><input type="text" id="mrOut_'+n+'" placeholder="เช่น 20:00" maxlength="5" style="font-family:monospace;font-size:16px;letter-spacing:2px"></div>'+
     '</div>'+
     '<div class="form-row">'+
       '<div class="form-group"><label>ยอดขาย (฿)</label><input type="number" id="mrSales_'+n+'" placeholder="0" min="0" oninput="calcManComm('+n+')"></div>'+
@@ -1050,6 +1055,32 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 var toastTimer;
 function showToast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='show '+(type||'');clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.className='';},4000);}
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+// FIX OLD OT
+async function fixOldOT(){
+  var statusEl=document.getElementById('fixOTStatus');
+  statusEl.textContent='กำลังตรวจสอบ...';
+  var toFix=logs.filter(function(l){
+    var ot=Number(l.hoursOT);
+    return ot>0 && ot!==Math.floor(ot);
+  });
+  if(!toFix.length){statusEl.textContent='✅ ไม่พบข้อมูลที่ต้องแก้ไข';return;}
+  statusEl.textContent='พบ '+toFix.length+' รายการ กำลังแก้ไข...';
+  var ok=0,fail=0;
+  for(var i=0;i<toFix.length;i++){
+    var l=toFix[i];
+    var newOT=Math.floor(Number(l.hoursOT));
+    // hours เพิ่มกลับ (เศษที่ตัดออก → รวมเข้า hours ปกติ)
+    var newHours=+(Number(l.hours||0)+(Number(l.hoursOT)-newOT)).toFixed(2);
+    try{
+      await api('updateLog',{id:l.id,clockOut:l.clockOut,hours:newHours,hoursOT:newOT,type:l.type,note:l.note,lateMinutes:l.lateMinutes||0});
+      l.hours=newHours; l.hoursOT=newOT;
+      ok++;
+    }catch(e){fail++;}
+  }
+  statusEl.textContent='✅ แก้ไขสำเร็จ '+ok+' รายการ'+(fail?' (ล้มเหลว '+fail+')'  :'');
+  if(ok>0){renderDashboard();}
+}
 
 // INIT
 if(currentBranch)document.getElementById('branchSelect').value=currentBranch;

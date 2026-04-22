@@ -320,7 +320,6 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
       <button class="btn btn-dark" style="margin-bottom:14px" onclick="addManRow()">➕ เพิ่มรายการ</button>
       <br>
       <button class="btn btn-success" onclick="saveManualAll()">💾 บันทึกทั้งหมด</button>
-      <button class="btn btn-gold btn-sm" style="margin-left:8px" onclick="confirmManualDup()">🔐 ยืนยัน PIN เพื่อบันทึกซ้ำ</button>
       <span id="manSaveStatus" style="font-size:13px;color:var(--muted);margin-left:12px"></span>
     </div>
   </div>
@@ -1110,14 +1109,12 @@ async function saveManualAll(){
     var salesVal=parseFloat(document.getElementById('mrSales_'+n).value)||0;
     var note=document.getElementById('mrNote_'+n).value;
     if(!date||!inT){fail++;statusEl.textContent='⚠️ รายการที่ '+(i+1)+' ไม่มีวันที่หรือเวลาเข้างาน';continue;}
-    // เช็ค dup: ถ้ามีข้อมูลวันนั้นแล้ว ต้องใส่ PIN (เฉพาะ type ที่ไม่ใช่ commission)
     var ds=date;
+    // เช็ค dup: ถ้ามีข้อมูลวันนั้นแล้ว และยังไม่ได้ยืนยัน PIN → ข้ามไป
     var dupFound=logs.find(function(l){return l.empId===empId&&toDateStr(l.date)===ds&&l.type!=='commission';});
     if(dupFound && !rows[i].dataset.hrConfirmed){
       fail++;
-      var msg='รายการที่ '+(i+1)+' วันที่ '+fmtDate(ds)+' มีข้อมูลอยู่แล้ว ต้องยืนยัน PIN HR';
-      statusEl.textContent=msg;
-      showToast(msg,'error');
+      showToast('รายการที่ '+(i+1)+': วันที่ '+fmtDate(ds)+' ต้องยืนยัน PIN ก่อน (เลือกวันที่ใหม่อีกครั้ง)','error');
       continue;
     }
     var hours=null,hoursOT=0,lateMinutes=0;
@@ -1356,6 +1353,7 @@ function confirmDupPin() {
   var v = document.getElementById('dupPinInput').value;
   if (v === HR_PIN) {
     closeModal('dupPinModal');
+    window._dupCancelTarget = null;
     if (_dupPinCallback) { _dupPinCallback(); _dupPinCallback = null; }
   } else {
     document.getElementById('dupPinError').textContent = 'รหัสไม่ถูกต้อง';
@@ -1365,23 +1363,59 @@ function confirmDupPin() {
 function cancelDupPin() {
   closeModal('dupPinModal');
   _dupPinCallback = null;
+  // ถ้า cancel ให้ล้างวันที่กลับ
+  if(window._dupCancelTarget){
+    window._dupCancelTarget.el.value = '';
+    var row = document.getElementById('manRow_'+window._dupCancelTarget.n);
+    if(row){ row.dataset.hrConfirmed=''; row.style.borderColor=''; }
+    window._dupCancelTarget = null;
+  }
 }
-function confirmManualDup(){
-  // ขอ PIN แล้วถ้าถูก set data-hr-confirmed ทุก row แล้วบันทึก
-  checkDupDate('__force__','__force__','',function(){
-    // PIN ถูก → mark ทุก row ว่า confirmed แล้ว saveManualAll
-    document.querySelectorAll('.man-row').forEach(function(r){r.dataset.hrConfirmed='1';});
-    saveManualAll();
-  },'ใส่รหัส HR เพื่ออนุญาตบันทึกทับข้อมูลเดิม');
-  // override: checkDupDate จะเช็ค existing ก่อน แต่เราส่ง force ให้มันผ่าน
-  // แก้: ให้ popup PIN ขึ้นตรงๆ
+function checkManRowDate(n){
+  var dateEl = document.getElementById('mrDate_'+n);
+  var ds = dateEl.value;
+  if(!ds) return;
+  var empId = document.getElementById('manEmp').value;
+  if(!empId) return;
+  // เช็คว่ามีข้อมูลวันนั้นอยู่แล้วไหม
+  var existing = logs.find(function(l){
+    return l.empId===empId && toDateStr(l.date)===ds && l.type!=='commission';
+  });
+  if(!existing){
+    // ไม่มีข้อมูล ใช้ได้ปกติ
+    var row = document.getElementById('manRow_'+n);
+    if(row) { row.dataset.hrConfirmed=''; row.style.borderColor=''; }
+    return;
+  }
+  // มีข้อมูลแล้ว → popup PIN ทันที
   _dupPinCallback = function(){
-    document.querySelectorAll('.man-row').forEach(function(r){r.dataset.hrConfirmed='1';});
-    saveManualAll();
+    // PIN ผ่าน → mark row นี้ว่า confirmed
+    var row = document.getElementById('manRow_'+n);
+    if(row){
+      row.dataset.hrConfirmed='1';
+      row.style.borderColor='var(--gold)';
+      // แสดง label แจ้งเตือน
+      var lbl = row.querySelector('.dup-confirmed-label');
+      if(!lbl){
+        lbl = document.createElement('div');
+        lbl.className='dup-confirmed-label';
+        lbl.style.cssText='font-size:11px;color:var(--gold);font-weight:600;margin-bottom:6px';
+        lbl.textContent='🔐 ยืนยันแล้ว — จะบันทึกทับข้อมูลเดิมวันที่ '+fmtDate(ds);
+        row.insertBefore(lbl, row.querySelector('.man-row-header').nextSibling);
+      }
+    }
+  };
+  // ถ้าไม่ผ่าน PIN → ล้างวันที่กลับ
+  var oldCallback = _dupPinCallback;
+  _dupPinCallback = function(){
+    oldCallback();
   };
   document.getElementById('dupPinInput').value='';
   document.getElementById('dupPinError').textContent='';
-  document.getElementById('dupPinMsg').textContent='ใส่รหัส HR เพื่ออนุญาตบันทึกทับข้อมูลเดิม';
+  document.getElementById('dupPinMsg').textContent=
+    'วันที่ '+fmtDate(ds)+' มีข้อมูลอยู่แล้ว ใส่รหัส HR เพื่อยืนยันการแก้ไข';
+  // ถ้ากด Cancel → ล้างวันที่
+  window._dupCancelTarget = {el: dateEl, n: n};
   openModal('dupPinModal');
   setTimeout(function(){document.getElementById('dupPinInput').focus();},150);
 }

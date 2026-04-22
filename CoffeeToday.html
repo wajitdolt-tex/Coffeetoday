@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 
 <html lang="th">
 <head>
@@ -226,18 +227,16 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
   </div>
   <div class="tab-content active" id="tab-dashboard">
     <div id="statsRow" class="stats-row"></div>
-    <div class="card" style="background:#fffbeb;border:1.5px solid #fcd34d">
-      <div class="card-title" style="color:#92400e">🔧 แก้ไขข้อมูลเก่า</div>
-      <p style="font-size:13px;color:#92400e;margin-bottom:12px">กดปุ่มนี้เพื่อแก้ไข hoursOT ของข้อมูลเก่าทั้งหมด ให้ตัดเศษนาทีออก (เช่น 1.05 → 1) ทำครั้งเดียวพอครับ</p>
-      <button class="btn btn-gold" onclick="fixOldOT()">🔧 แก้ไข OT เก่าทั้งหมด</button>
-      <span id="fixOTStatus" style="font-size:13px;color:var(--muted);margin-left:12px"></span>
-    </div>
-    <div class="card"><div class="card-title">📈 สรุปพนักงานแต่ละคน (รอบปัจจุบัน)</div>
-      <div class="table-wrap"><table>
-        <thead><tr><th>พนักงาน</th><th>สาขา</th><th>ชม.ปกติ</th><th>OT</th><th>OT วันหยุด</th><th>วันหยุด×2</th><th>ยอดขายรวม</th><th>คอมมิชชั่น</th><th>วันทำงาน</th><th>สาย (นาที)</th></tr></thead>
-        <tbody id="empSummaryTable"></tbody>
-      </table></div>
-    </div>
+
+```
+<div class="card"><div class="card-title">📈 สรุปพนักงานแต่ละคน (รอบปัจจุบัน)</div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>พนักงาน</th><th>สาขา</th><th>ชม.ปกติ</th><th>OT</th><th>OT วันหยุด</th><th>วันหยุด×2</th><th>ยอดขายรวม</th><th>คอมมิชชั่น</th><th>วันทำงาน</th><th>สาย (นาที)</th></tr></thead>
+    <tbody id="empSummaryTable"></tbody>
+  </table></div>
+</div>
+```
+
   </div>
   <div class="tab-content" id="tab-allLogs">
     <div class="filter-row">
@@ -853,7 +852,6 @@ function buildSummaryHTML(emp,el,ppKey,showSent){
     '</div>'+
     '<table style="width:100%;font-size:13px;border-collapse:collapse">'+
     '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">วันทำงาน</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+days+' วัน</td></tr>'+
-    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">ชั่วโมงปกติ</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+norm.toFixed(2)+' ชม.</td></tr>'+
     '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">OT ปกติ (฿'+(emp.otRate||50)+'/ชม.)</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+ot.toFixed(2)+' ชม. = ฿'+otPay.toLocaleString()+'</td></tr>'+
     '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">OT วันหยุด/นักขัตฤกษ์/วันหยุดล่วงเวลา (฿'+(emp.holidayRate||100)+'/ชม.)</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+hotTotal.toFixed(2)+' ชม. = ฿'+hotPay.toLocaleString()+'</td></tr>'+
     '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">ทำงานวันหยุด ×2 (฿'+(emp.dailyWage||0)+'/วัน)</td><td style="padding:8px 4px;font-weight:600;text-align:right;color:var(--accent)">'+hwDays+' วัน = ฿'+hwPay.toLocaleString()+'</td></tr>'+
@@ -979,7 +977,7 @@ function addManRow(){
     '</div>'+
     '<div class="form-row">'+
       '<div class="form-group"><label>ยอดขาย (฿)</label><input type="number" id="mrSales_'+n+'" placeholder="0" min="0" oninput="calcManComm('+n+')"></div>'+
-      '<div class="form-group"><label>ค่าคอมมิชชั่น</label><div id="mrCommDisplay_'+n+'" style="padding:8px 0;font-size:13px;color:var(--success);font-weight:600">—</div></div>'+
+      '<div class="form-group"><label>ค่าคอมมิชชั่น (คำนวณอัตโนมัติ)</label><div id="mrCommDisplay_'+n+'" style="padding:10px 0;font-size:14px;color:var(--success);font-weight:700">—</div></div>'+
     '</div>'+
     '<div class="form-row full"><div class="form-group"><label>หมายเหตุ</label><input type="text" id="mrNote_'+n+'" placeholder="หมายเหตุ..."></div></div>';
   document.getElementById('manRows').appendChild(div);
@@ -1023,7 +1021,7 @@ async function saveManualAll(){
     var rc=salesVal>0?calcCommission(branch,salesVal):{commission:0,tier:null,diff:0};
     var log={id:genId(),empId:empId,date:date,branch:branch,clockIn:inT,clockOut:outT||'',
       hours:hours||'',hoursOT:hoursOT,type:ft,lateMinutes:lateMinutes,
-      sales:salesVal||'',commDiff:rc.diff||'',commission:rc.commission,commRate:rc.tier?rc.tier.rate:0,note:note};
+      sales:salesVal||'',commDiff:rc.diff||0,commission:rc.commission,commRate:rc.tier?rc.tier.rate:0,note:note};
     try{await api('addLog',log);logs.push(log);ok++;}
     catch(e){fail++;}
   }
@@ -1061,32 +1059,6 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 var toastTimer;
 function showToast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='show '+(type||'');clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.className='';},4000);}
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
-
-// FIX OLD OT
-async function fixOldOT(){
-  var statusEl=document.getElementById('fixOTStatus');
-  statusEl.textContent='กำลังตรวจสอบ...';
-  var toFix=logs.filter(function(l){
-    var ot=Number(l.hoursOT);
-    return ot>0 && ot!==Math.floor(ot);
-  });
-  if(!toFix.length){statusEl.textContent='✅ ไม่พบข้อมูลที่ต้องแก้ไข';return;}
-  statusEl.textContent='พบ '+toFix.length+' รายการ กำลังแก้ไข...';
-  var ok=0,fail=0;
-  for(var i=0;i<toFix.length;i++){
-    var l=toFix[i];
-    var newOT=Math.floor(Number(l.hoursOT));
-    // hours เพิ่มกลับ (เศษที่ตัดออก → รวมเข้า hours ปกติ)
-    var newHours=+(Number(l.hours||0)+(Number(l.hoursOT)-newOT)).toFixed(2);
-    try{
-      await api('updateLog',{id:l.id,clockOut:l.clockOut,hours:newHours,hoursOT:newOT,type:l.type,note:l.note,lateMinutes:l.lateMinutes||0});
-      l.hours=newHours; l.hoursOT=newOT;
-      ok++;
-    }catch(e){fail++;}
-  }
-  statusEl.textContent='✅ แก้ไขสำเร็จ '+ok+' รายการ'+(fail?' (ล้มเหลว '+fail+')'  :'');
-  if(ok>0){renderDashboard();}
-}
 
 // INIT
 if(currentBranch)document.getElementById('branchSelect').value=currentBranch;

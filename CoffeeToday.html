@@ -237,7 +237,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 ```
 <div class="card"><div class="card-title">📈 สรุปพนักงานแต่ละคน (รอบปัจจุบัน)</div>
   <div class="table-wrap"><table>
-    <thead><tr><th>พนักงาน</th><th>สาขา</th><th>ชม.ปกติ</th><th>OT</th><th>OT วันหยุด</th><th>วันหยุด×2</th><th>ยอดขายรวม</th><th>คอมมิชชั่น</th><th>วันทำงาน</th><th>สาย (นาที)</th></tr></thead>
+    <thead><tr><th>พนักงาน</th><th>สาขา</th><th>ชม.ปกติ</th><th>OT</th><th>OT วันหยุด</th><th>วันหยุด×2</th><th>คอมมิชชั่น</th><th>วันทำงาน</th><th>สาย (นาที)</th></tr></thead>
     <tbody id="empSummaryTable"></tbody>
   </table></div>
 </div>
@@ -732,15 +732,17 @@ async function submitClock(){
       var branch2=entry.branch||(emp2?emp2.branch:'')||currentBranch;
       var note=document.getElementById('modalNote').value;
       var hours2,hoursOT2,type2,late2=0;
-      var sp=['holiday_ot','public_holiday','holiday_work'].includes(entry.type);
+      // holiday_ot, public_holiday = นับชั่วโมงรวมทั้งหมด ไม่มี OT แยก
+      // holiday_work = คำนวณ OT ได้ แต่ OT นั้นคิดอัตราวันหยุด (100/ชม.)
+      var sp=['holiday_ot','public_holiday'].includes(entry.type);
       if(sp){
         hours2=+hRaw(entry.clockIn,ts).toFixed(2);hoursOT2=0;type2=entry.type;
       } else {
         var r=calcOT(branch2,entry.clockIn,ts);
         hours2=r.hours;hoursOT2=r.hoursOT;late2=r.lateMinutes;
-        // ถ้าวันนั้นเป็นทำงานวันหยุด และมี OT → type เป็น holiday_ot
-        if(entry.type==='holiday_work'&&hoursOT2>0){type2='holiday_work';/* OT จะถูกบันทึกเป็น holiday_ot แยก row */}
-        else type2=hoursOT2>0?'split':entry.type;
+        type2=hoursOT2>0?'split':entry.type;
+        // holiday_work ที่มี OT → ยัง type=holiday_work แต่ hoursOT จะคิดอัตรา holidayRate ในสรุป
+        if(entry.type==='holiday_work') type2='holiday_work';
       }
       await api('updateLog',{id:entry.id,clockOut:ts,hours:hours2,hoursOT:hoursOT2,type:type2,note:note,lateMinutes:late2});
       Object.assign(entry,{clockOut:ts,hours:hours2,hoursOT:hoursOT2,type:type2,note:note,lateMinutes:late2});
@@ -879,7 +881,6 @@ function renderDashboard(){
       '<td>'+el.reduce((s,l)=>s+(Number(l.hoursOT)||0),0).toFixed(1)+'</td>'+
       '<td>'+el.filter(l=>['holiday_ot','public_holiday'].includes(l.type)).reduce((s,l)=>s+(Number(l.hours)||0),0).toFixed(1)+'</td>'+
       '<td>'+new Set(el.filter(l=>l.type==='holiday_work').map(l=>toDateStr(l.date))).size+' วัน</td>'+
-      '<td>'+(totalSales?'฿'+totalSales.toLocaleString():'—')+'</td>'+
       '<td>฿'+Number(comm).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
       '<td>'+new Set(el.map(l=>toDateStr(l.date))).size+'</td>'+
       '<td>'+(function(){var t=el.reduce(function(s,l){return s+(Number(l.lateMinutes)||0);},0);return t>0?'<span style="color:#ef4444;font-weight:600">'+t+' นาที</span>':'<span style="color:#10b981">—</span>';})()+'</td></tr>';
@@ -923,19 +924,28 @@ async function deleteLogHR(id){
   catch(e){showToast('ลบล้มเหลว: '+e.message,'error');}
 }
 function buildSummaryHTML(emp,el,ppKey,showSent){
-  var norm=el.filter(l=>l.type!=='holiday_work').reduce((s,l)=>s+(Number(l.hours)||0),0);
-  // OT ปกติ = hoursOT ของ rows ที่ไม่ใช่ holiday_work
-  var ot=el.filter(l=>l.type!=='holiday_work').reduce((s,l)=>s+(Number(l.hoursOT)||0),0);
-  // OT วันหยุด = hours ของ holiday_ot + public_holiday + hoursOT ของ holiday_work (OT ที่เกิดจากวันหยุด)
+  var norm=el.filter(l=>!['holiday_work','public_holiday'].includes(l.type)).reduce((s,l)=>s+(Number(l.hours)||0),0);
+  // OT ปกติ = hoursOT ของ type normal/split เท่านั้น
+  var ot=el.filter(l=>['normal','split'].includes(l.type)).reduce((s,l)=>s+(Number(l.hoursOT)||0),0);
+  // OT วันหยุด = hoursOT ของ holiday_work ทั้งหมด + hours ของ holiday_ot (กรณีบันทึกแบบเก่า)
   var hot=el.filter(l=>l.type==='holiday_ot').reduce((s,l)=>s+(Number(l.hours)||0),0);
-  // public_holiday เก่า + holiday_work ใหม่ รวมกันเป็นวันหยุด×2 ทั้งหมด
   var phOld=el.filter(l=>l.type==='public_holiday').reduce((s,l)=>s+(Number(l.hours)||0),0);
   var hwOT=el.filter(l=>['holiday_work','public_holiday'].includes(l.type)).reduce((s,l)=>s+(Number(l.hoursOT)||0),0);
   var hwDays=new Set(el.filter(l=>['holiday_work','public_holiday'].includes(l.type)).map(l=>toDateStr(l.date))).size;
   var hwPay=hwDays*(emp.dailyWage||0)*2;
   var commLogs=el.filter(l=>l.type==='commission');
   var totalSales=commLogs.reduce((s,l)=>s+(Number(l.sales)||0),0);
-  var comm=commLogs.reduce((s,l)=>s+(Number(l.commission)||0),0);
+  var comm=commLogs.reduce(function(s,l){
+    var c=Number(l.commission)||0;
+    // fallback: ถ้า commission=0 แต่มี sales และ commRate → คำนวณใหม่
+    if(c===0 && Number(l.sales)>0 && Number(l.commRate)>0){
+      var diff=Number(l.sales)-0; // commDiff อาจไม่มี ใช้ sales แทน
+      // หา tier จริงๆ
+      var tier=getCommTier(emp.branch, Number(l.sales));
+      if(tier) c=+(( Number(l.sales)-tier.min)*tier.rate).toFixed(2);
+    }
+    return s+c;
+  },0);
   var hotTotal=hot+phOld+hwOT;
   var otPay=ot*(emp.otRate||50),hotPay=hotTotal*(emp.holidayRate||100);
   var days=new Set(el.map(l=>toDateStr(l.date))).size;
@@ -1150,7 +1160,7 @@ async function doSaveManual(empId,branch){
     var ds=date;
     var hours=null,hoursOT=0,lateMinutes=0,ft=type;
     if(outT){
-      var sp=['holiday_ot','public_holiday','holiday_work'].includes(type);
+      var sp=['holiday_ot','public_holiday'].includes(type);
       if(sp){hours=+hRaw(inT,outT).toFixed(2);hoursOT=0;}
       else{var r2=calcOT(branch,inT,outT);hours=r2.hours;hoursOT=Math.floor(r2.hoursOT);lateMinutes=r2.lateMinutes;}
     }

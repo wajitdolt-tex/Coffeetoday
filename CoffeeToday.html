@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 
 <html lang="th">
 <head>
@@ -303,7 +304,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     <div style="margin-bottom:14px"><button class="btn btn-primary" onclick="openAddEmpModal()">➕ เพิ่มพนักงาน</button></div>
     <div class="card"><div class="card-title">👥 รายชื่อพนักงาน</div>
       <div class="table-wrap"><table>
-        <thead><tr><th>ชื่อ</th><th>สาขา</th><th>ตำแหน่ง</th><th>เงินเดือน</th><th>ค่าแรงวันหยุด/วัน×2</th><th>OT/ชม</th><th>OT วันหยุด/ชม</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+        <thead><tr><th>ชื่อ</th><th>สาขา</th><th>ตำแหน่ง</th><th>วันหยุดประจำ</th><th>เงินเดือน</th><th>ค่าแรงวันหยุด/วัน×2</th><th>OT/ชม</th><th>OT วันหยุด/ชม</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
         <tbody id="empTable"></tbody>
       </table></div>
     </div>
@@ -433,6 +434,24 @@ function toDateStr(d){
 function getPH(d){var ds=toDateStr(d);return PH.find(h=>h.date===ds)||null;}
 
 // ตารางเวลาสาขา: start=เวลาเข้างานมาตรฐาน, hours=ชั่วโมงปกติก่อน OT
+// วันหยุดประจำของพนักงานแต่ละคน (0=อาทิตย์,1=จันทร์,...,5=ศุกร์,6=เสาร์)
+const EMP_DAY_OFF={
+  'emp1': 2,  // ณพัชชนันท์ หยุดวันอังคาร
+  'emp2': 5   // ฐิตารีย์ หยุดวันศุกร์
+};
+const DAY_NAMES=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+
+function isEmpDayOff(empId, dateStr){
+  var dow = EMP_DAY_OFF[empId];
+  if(dow===undefined) return false;
+  var d = new Date(dateStr+'T00:00:00');
+  return d.getDay() === dow;
+}
+function getEmpDayOffName(empId){
+  var dow = EMP_DAY_OFF[empId];
+  return dow!==undefined ? DAY_NAMES[dow] : '';
+}
+
 const BRANCH_SCHEDULE={
   lotus:  {start:'09:00',end:'20:00',hours:9},
   passion:{start:'10:00',end:'20:00',hours:9}
@@ -610,7 +629,10 @@ function showTab(t,btn){
 function renderEmpCards(){
   var c=document.getElementById('empCards'),active=employees.filter(e=>e.active);
   if(!active.length){c.innerHTML='<p style="color:var(--muted);font-size:13px">ยังไม่มีพนักงาน หรือกำลังโหลด...</p>';return;}
-  c.innerHTML=active.map(e=>'<div class="emp-card '+(selectedEmpId===e.id?'selected':'')+'" onclick="selectEmp(\''+e.id+'\',this)"><div class="emp-avatar">'+e.name.charAt(0)+'</div><div class="emp-name">'+e.name+'</div><div style="font-size:10px;color:var(--muted);margin-top:2px">'+brL(e.branch)+'</div></div>').join('');
+  c.innerHTML=active.map(e=>{
+    var doff=EMP_DAY_OFF[e.id]!==undefined?'<div style="font-size:10px;color:#c2410c;margin-top:1px">หยุด'+DAY_NAMES[EMP_DAY_OFF[e.id]]+'</div>':'';
+    return '<div class="emp-card '+(selectedEmpId===e.id?'selected':'')+'" onclick="selectEmp(\''+e.id+'\',this)"><div class="emp-avatar">'+e.name.charAt(0)+'</div><div class="emp-name">'+e.name+'</div><div style="font-size:10px;color:var(--muted);margin-top:2px">'+brL(e.branch)+'</div>'+doff+'</div>';
+  }).join('');
 }
 function selectEmp(id,el){
   selectedEmpId=id;
@@ -641,7 +663,24 @@ function openClockModal(action){
   openModal('clockModal');
 }
 function onModalEmpChange(){checkPHWarn();if(clockAction==='out')updateCOPreview();}
-function checkPHWarn(){var ph=getPH(new Date().toISOString().split('T')[0]),w=document.getElementById('phWarning');if(ph){w.style.display='block';document.getElementById('phWarningName').textContent=ph.name;}else w.style.display='none';}
+function checkPHWarn(){
+  var ds=new Date().toISOString().split('T')[0];
+  var ph=getPH(ds);
+  var empId=document.getElementById('modalEmp').value;
+  var isDayOff=empId?isEmpDayOff(empId,ds):false;
+  var w=document.getElementById('phWarning');
+  if(ph){
+    w.style.display='block';
+    document.getElementById('phWarningName').textContent=ph.name;
+  } else if(isDayOff){
+    w.style.display='block';
+    document.getElementById('phWarningName').textContent='วันหยุดประจำ ('+getEmpDayOffName(empId)+') — จะบันทึกเป็นทำงานวันหยุด×2';
+    w.style.background='#fff7ed';w.style.borderColor='#fed7aa';w.style.color='#c2410c';
+  } else {
+    w.style.display='none';
+    w.style.background='';w.style.borderColor='';w.style.color='';
+  }
+}
 
 function updateCOPreview(){
   var empId=document.getElementById('modalEmp').value,box=document.getElementById('clockInfoBox');
@@ -954,8 +993,9 @@ async function approveSubmission(id){
 }
 function renderEmpTable(){
   document.getElementById('empTable').innerHTML=employees.map(function(e){
+    var doff=EMP_DAY_OFF[e.id]!==undefined?'<span class="badge badge-phday">หยุด'+DAY_NAMES[EMP_DAY_OFF[e.id]]+'</span>':'—';
     return '<tr><td><strong>'+e.name+'</strong></td><td style="font-size:11px;color:var(--mid);font-weight:600">'+brL(e.branch)+'</td>'+
-    '<td>'+e.role+'</td><td>฿'+Number(e.salary||0).toLocaleString()+'</td>'+
+    '<td>'+e.role+'</td><td>'+doff+'</td><td>฿'+Number(e.salary||0).toLocaleString()+'</td>'+
     '<td>฿'+Number(e.dailyWage||0).toLocaleString()+' <span style="color:var(--accent);font-size:10px;font-weight:700">×2</span></td>'+
     '<td>฿'+(e.otRate||50)+'</td><td>฿'+(e.holidayRate||100)+'</td>'+
     '<td><span class="badge '+(e.active?'badge-in':'badge-out')+'">'+(e.active?'ทำงาน':'ระงับ')+'</span></td>'+
@@ -1079,7 +1119,13 @@ async function saveManualAll(){
       if(sp){hours=+hRaw(inT,outT).toFixed(2);hoursOT=0;}
       else{var r2=calcOT(branch,inT,outT);hours=r2.hours;hoursOT=Math.floor(r2.hoursOT);lateMinutes=r2.lateMinutes;}
     }
-    var ft=(hours!==null&&hoursOT>0&&!['holiday_ot','public_holiday','holiday_work'].includes(type))?'split':type;
+    // ถ้า type = normal แต่วันนั้นเป็นวันหยุดพนักงาน → เปลี่ยนเป็น holiday_work อัตโนมัติ
+    if(type==='normal' && isEmpDayOff(empId, ds)){
+      type='holiday_work';
+      ft='holiday_work';
+    } else {
+      ft=(hours!==null&&hoursOT>0&&!['holiday_ot','public_holiday','holiday_work'].includes(type))?'split':type;
+    }
     var rc=salesVal>0?calcCommission(branch,salesVal):{commission:0,tier:null,diff:0};
     var log={id:genId(),empId:empId,date:date,branch:branch,clockIn:inT,clockOut:outT||'',
       hours:hours||'',hoursOT:hoursOT,type:ft,lateMinutes:lateMinutes,

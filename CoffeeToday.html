@@ -1097,6 +1097,44 @@ async function saveManualAll(){
   if(!empId){showToast('กรุณาเลือกพนักงาน','error');return;}
   var rows=document.querySelectorAll('.man-row');
   if(!rows.length){showToast('กรุณาเพิ่มรายการก่อน','error');return;}
+
+  // ตรวจหา dup ทุกรายการก่อน
+  var dupRows=[];
+  for(var i=0;i<rows.length;i++){
+    var n=rows[i].id.replace('manRow_','');
+    var date=document.getElementById('mrDate_'+n).value;
+    if(!date) continue;
+    var ds=date;
+    var dupFound=logs.find(function(l){return l.empId===empId&&toDateStr(l.date)===ds&&l.type!=='commission';});
+    if(dupFound && !rows[i].dataset.hrConfirmed){
+      dupRows.push({n:n,ds:ds,row:rows[i]});
+    }
+  }
+
+  // ถ้ามี dup → popup PIN ก่อน แล้วค่อยบันทึก
+  if(dupRows.length>0){
+    var dupDates=dupRows.map(function(d){return fmtDate(d.ds);}).join(', ');
+    _dupPinCallback=function(){
+      // PIN ผ่าน → mark ทุก dup row ว่า confirmed แล้วบันทึกต่อ
+      dupRows.forEach(function(d){d.row.dataset.hrConfirmed='1';});
+      doSaveManual(empId,branch);
+    };
+    window._dupCancelTarget=null;
+    document.getElementById('dupPinInput').value='';
+    document.getElementById('dupPinError').textContent='';
+    document.getElementById('dupPinMsg').textContent=
+      'พบข้อมูลซ้ำในวันที่: '+dupDates+' — ใส่รหัส HR เพื่อยืนยันการบันทึกทับ';
+    openModal('dupPinModal');
+    setTimeout(function(){document.getElementById('dupPinInput').focus();},150);
+    return;
+  }
+
+  // ไม่มี dup → บันทึกเลย
+  doSaveManual(empId,branch);
+}
+
+async function doSaveManual(empId,branch){
+  var rows=document.querySelectorAll('.man-row');
   var statusEl=document.getElementById('manSaveStatus');
   statusEl.textContent='กำลังบันทึก...';
   var ok=0,fail=0;
@@ -1108,26 +1146,17 @@ async function saveManualAll(){
     var type=document.getElementById('mrType_'+n).value;
     var salesVal=parseFloat(document.getElementById('mrSales_'+n).value)||0;
     var note=document.getElementById('mrNote_'+n).value;
-    if(!date||!inT){fail++;statusEl.textContent='⚠️ รายการที่ '+(i+1)+' ไม่มีวันที่หรือเวลาเข้างาน';continue;}
+    if(!date||!inT){fail++;continue;}
     var ds=date;
-    // เช็ค dup: ถ้ามีข้อมูลวันนั้นแล้ว และยังไม่ได้ยืนยัน PIN → ข้ามไป
-    var dupFound=logs.find(function(l){return l.empId===empId&&toDateStr(l.date)===ds&&l.type!=='commission';});
-    if(dupFound && !rows[i].dataset.hrConfirmed){
-      fail++;
-      showToast('รายการที่ '+(i+1)+': วันที่ '+fmtDate(ds)+' ต้องยืนยัน PIN ก่อน (เลือกวันที่ใหม่อีกครั้ง)','error');
-      continue;
-    }
-    var hours=null,hoursOT=0,lateMinutes=0;
+    var hours=null,hoursOT=0,lateMinutes=0,ft=type;
     if(outT){
       var sp=['holiday_ot','public_holiday','holiday_work'].includes(type);
       if(sp){hours=+hRaw(inT,outT).toFixed(2);hoursOT=0;}
       else{var r2=calcOT(branch,inT,outT);hours=r2.hours;hoursOT=Math.floor(r2.hoursOT);lateMinutes=r2.lateMinutes;}
     }
-    // ถ้า type = normal แต่วันนั้นเป็นวันหยุดพนักงาน หรือนักขัตฤกษ์ → holiday_work ×2
-    var isManDayOff = isEmpDayOff(empId, ds);
-    var isManPH = getPH(ds) !== null;
-    if(type==='normal' && (isManDayOff || isManPH)){
-      type='holiday_work';
+    var isManDayOff=isEmpDayOff(empId,ds);
+    var isManPH=getPH(ds)!==null;
+    if(type==='normal'&&(isManDayOff||isManPH)){
       ft='holiday_work';
     } else {
       ft=(hours!==null&&hoursOT>0&&!['holiday_ot','public_holiday','holiday_work'].includes(type))?'split':type;
@@ -1135,13 +1164,18 @@ async function saveManualAll(){
     var rc=salesVal>0?calcCommission(branch,salesVal):{commission:0,tier:null,diff:0};
     var log={id:genId(),empId:empId,date:date,branch:branch,clockIn:inT,clockOut:outT||'',
       hours:hours||'',hoursOT:hoursOT,type:ft,lateMinutes:lateMinutes,
-      sales:salesVal||'',commDiff:rc.diff||0,commission:rc.commission,commRate:rc.tier?rc.tier.rate:0,note:note};
+      sales:salesVal||'',commDiff:rc.diff||0,commission:rc.commission,
+      commRate:rc.tier?rc.tier.rate:0,note:note};
     try{await api('addLog',log);logs.push(log);ok++;}
     catch(e){fail++;}
   }
   statusEl.textContent='';
-  if(ok>0){showToast('✅ บันทึก '+ok+' รายการสำเร็จ'+(fail>0?' (ล้มเหลว '+fail+' รายการ)':''),'success');renderDashboard();renderAllLogs();}
-  else showToast('บันทึกล้มเหลวทั้งหมด','error');
+  if(ok>0){
+    showToast('✅ บันทึก '+ok+' รายการสำเร็จ'+(fail>0?' (ล้มเหลว '+fail+')':''),'success');
+    renderDashboard();renderAllLogs();
+  } else {
+    showToast('บันทึกล้มเหลวทั้งหมด','error');
+  }
 }
 function renderHolidayTable(){
   document.getElementById('phTable').innerHTML=PH.map((h,i)=>'<tr><td>'+(i+1)+'</td><td><strong>'+fmtDate(h.date)+'</strong></td><td>'+h.name+'</td></tr>').join('');

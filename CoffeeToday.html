@@ -815,7 +815,7 @@ async function confirmSendSummary(){
   employees.filter(function(e){return e.active;}).forEach(function(emp){
     pl.filter(function(l){return l.empId===emp.id&&l.type==='commission';}).forEach(function(l){
       var sales=Number(l.sales)||0;
-      if(sales>0){var tier=getCommTier(emp.branch,sales);if(tier){comm+=+((sales-tier.min)*tier.rate).toFixed(2);return;}}
+      if(sales>0){var tier=getCommTier(emp.branch,sales);if(tier){comm += +((sales-tier.min)*tier.rate).toFixed(2);return;}}
       comm+=Number(l.commission)||0;
     });
   });
@@ -887,7 +887,7 @@ function renderDashboard(){
     var totalSales=el.filter(l=>l.type==='commission').reduce((s,l)=>s+(Number(l.sales)||0),0);
     var comm=+el.filter(l=>l.type==='commission').reduce(function(s,l){
       var sales=Number(l.sales)||0;
-      if(sales>0){var tier=getCommTier(e2.branch,sales);if(tier)return s++(( sales-tier.min)*tier.rate).toFixed(2)*1;}
+      if(sales>0){var tier=getCommTier(e2.branch,sales);if(tier)return s + +((sales-tier.min)*tier.rate).toFixed(2);}
       return s+(Number(l.commission)||0);
     },0).toFixed(2);
     return '<tr><td><strong>'+e.name+'</strong></td><td style="font-size:11px;color:var(--mid);font-weight:600">'+brL(e.branch)+'</td>'+
@@ -954,7 +954,7 @@ function buildSummaryHTML(emp,el,ppKey,showSent){
     var sales=Number(l.sales)||0;
     if(sales>0){
       var tier=getCommTier(emp.branch, sales);
-      if(tier) return s++(( sales-tier.min)*tier.rate).toFixed(2)*1;
+      if(tier) return s + +((sales-tier.min)*tier.rate).toFixed(2);
     }
     return s+(Number(l.commission)||0);
   },0);

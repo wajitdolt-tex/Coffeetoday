@@ -130,6 +130,13 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 #toast.success{background:var(--success)}#toast.error{background:var(--danger)}
 .empty-state{text-align:center;padding:36px 20px;color:var(--muted)}
 .empty-state .ei{font-size:38px;margin-bottom:8px}
+@media print{
+  .topbar,.sync-bar,.tab-row,.filter-row,.btn,.nav-btn,#toast{display:none!important}
+  .page{display:block!important;padding:0}
+  .card{box-shadow:none;border:1px solid #ccc;margin-bottom:16px;page-break-inside:avoid}
+  .yearly-card{page-break-after:always}
+  body{background:#fff}
+}
 @media(max-width:640px){.page{padding:14px}.clock-time{font-size:36px}.form-row,.form-row.three{grid-template-columns:1fr}.stats-row{grid-template-columns:repeat(2,1fr)}.topbar{padding:0 12px;gap:8px}.topbar-brand{font-size:15px}}
 </style>
 </head>
@@ -251,12 +258,38 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     </div>
   </div>
   <div class="tab-content" id="tab-summary">
-    <div class="filter-row">
-      <div class="form-group"><label>รอบเงินเดือน</label><select id="summaryPayPeriod" onchange="renderSummary()"><option value="">เลือกรอบ...</option></select></div>
-      <div class="form-group"><label>สาขา</label><select id="summaryBranch" onchange="renderSummary()"><option value="">ทั้งหมด</option><option value="lotus">โลตัสระยอง</option><option value="passion">แพชชั่นระยอง</option></select></div>
-      <div class="form-group"><label>พนักงาน</label><select id="summaryEmp" onchange="renderSummary()"><option value="">ทั้งหมด</option></select></div>
+    <!-- แท็บเลือกมุมมอง -->
+    <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
+      <button class="btn btn-dark btn-sm" id="summaryModeBtn" onclick="setSummaryMode('period')">📅 สรุปรายรอบ</button>
+      <button class="btn btn-ghost btn-sm" id="yearlyModeBtn" onclick="setSummaryMode('yearly')">📊 สรุปรายได้ประจำปี</button>
     </div>
-    <div id="summaryCards"></div>
+
+```
+<!-- มุมมองรายรอบ -->
+<div id="summaryPeriodView">
+  <div class="filter-row">
+    <div class="form-group"><label>รอบเงินเดือน</label><select id="summaryPayPeriod" onchange="renderSummary()"><option value="">เลือกรอบ...</option></select></div>
+    <div class="form-group"><label>สาขา</label><select id="summaryBranch" onchange="renderSummary()"><option value="">ทั้งหมด</option><option value="lotus">โลตัสระยอง</option><option value="passion">แพชชั่นระยอง</option></select></div>
+    <div class="form-group"><label>พนักงาน</label><select id="summaryEmp" onchange="renderSummary()"><option value="">ทั้งหมด</option></select></div>
+  </div>
+  <div id="summaryCards"></div>
+</div>
+
+<!-- มุมมองสรุปรายได้ประจำปี -->
+<div id="summaryYearlyView" style="display:none">
+  <div class="filter-row">
+    <div class="form-group"><label>ปี (พ.ศ.)</label>
+      <select id="yearlyYear" onchange="renderYearlySummary()"></select></div>
+    <div class="form-group"><label>พนักงาน</label>
+      <select id="yearlyEmp" onchange="renderYearlySummary()"><option value="">ทั้งหมด</option></select></div>
+  </div>
+  <div style="margin-bottom:14px">
+    <button class="btn btn-dark btn-sm" onclick="printYearly()">🖨️ พิมพ์ / บันทึก PDF</button>
+  </div>
+  <div id="yearlyCards"></div>
+</div>
+```
+
   </div>
   <div class="tab-content" id="tab-submissions">
     <div class="card"><div class="card-title">📬 สรุปที่พนักงานส่งมา</div>
@@ -1058,6 +1091,155 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 var toastTimer;
 function showToast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='show '+(type||'');clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.className='';},4000);}
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+// ============================================================
+//  YEARLY SUMMARY
+// ============================================================
+var summaryMode = 'period';
+function setSummaryMode(mode){
+  summaryMode = mode;
+  document.getElementById('summaryPeriodView').style.display = mode==='period'?'block':'none';
+  document.getElementById('summaryYearlyView').style.display = mode==='yearly'?'block':'none';
+  document.getElementById('summaryModeBtn').className  = 'btn btn-sm '+(mode==='period'?'btn-dark':'btn-ghost');
+  document.getElementById('yearlyModeBtn').className   = 'btn btn-sm '+(mode==='yearly'?'btn-dark':'btn-ghost');
+  if(mode==='yearly')renderYearlySummary();
+}
+
+function populateYearlySelects(){
+  // หาปีที่มีข้อมูล
+  var years = new Set();
+  logs.forEach(function(l){
+    var ds = toDateStr(l.date);
+    if(ds && ds.length>=4){
+      var y = parseInt(ds.substring(0,4));
+      if(!isNaN(y)) years.add(y);
+    }
+  });
+  var now = new Date().getFullYear();
+  years.add(now); years.add(now-1);
+  var sorted = Array.from(years).sort(function(a,b){return b-a;});
+  var sel = document.getElementById('yearlyYear');
+  sel.innerHTML = sorted.map(function(y){
+    var be = y+543;
+    return '<option value="'+y+'"'+(y===now?' selected':'')+'>'+be+' ('+y+')</option>';
+  }).join('');
+  var empSel = document.getElementById('yearlyEmp');
+  empSel.innerHTML = '<option value="">ทั้งหมด</option>'+
+    employees.filter(function(e){return e.active;}).map(function(e){
+      return '<option value="'+e.id+'">'+e.name+'</option>';
+    }).join('');
+}
+
+function renderYearlySummary(){
+  populateYearlySelects();
+  var yearEl = document.getElementById('yearlyYear');
+  var empF   = document.getElementById('yearlyEmp').value;
+  var year   = parseInt(yearEl.value) || new Date().getFullYear();
+  var be     = year + 543;
+
+  // หา logs ของปีนั้น
+  var yearLogs = logs.filter(function(l){
+    var ds = toDateStr(l.date);
+    return ds && ds.startsWith(String(year));
+  });
+
+  var targets = employees.filter(function(e){return e.active;});
+  if(empF) targets = targets.filter(function(e){return e.id===empF;});
+
+  var container = document.getElementById('yearlyCards');
+  if(!targets.length){container.innerHTML='<div class="empty-state"><div class="ei">👥</div>ไม่พบพนักงาน</div>';return;}
+
+  container.innerHTML = targets.map(function(emp){
+    var el = yearLogs.filter(function(l){return l.empId===emp.id;});
+
+    // รายได้แต่ละเดือน
+    var monthlyData = {};
+    for(var m=1;m<=12;m++) monthlyData[m] = {salary:0,ot:0,hotOT:0,hw:0,comm:0,days:0,lateMin:0};
+
+    el.forEach(function(l){
+      var ds = toDateStr(l.date);
+      if(!ds) return;
+      var mo = parseInt(ds.substring(5,7));
+      if(!mo||mo<1||mo>12) return;
+      if(l.type==='commission'){
+        monthlyData[mo].comm += Number(l.commission||0);
+      } else {
+        monthlyData[mo].ot    += Number(l.hoursOT||0)*(emp.otRate||50);
+        if(['holiday_ot','public_holiday'].includes(l.type)) monthlyData[mo].hotOT += Number(l.hours||0)*(emp.holidayRate||100);
+        if(l.type==='holiday_work') monthlyData[mo].hw += (emp.dailyWage||0)*2;
+        monthlyData[mo].days  += new Set([ds]).size;
+        monthlyData[mo].lateMin += Number(l.lateMinutes||0);
+      }
+    });
+
+    // คำนวณ 12 เดือน
+    var totalSalary=0,totalOT=0,totalHotOT=0,totalHW=0,totalComm=0,totalLate=0;
+    var thaiMonths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+    var monthRows = '';
+    for(var m=1;m<=12;m++){
+      var d = monthlyData[m];
+      var sal = d.days>0?(emp.salary||0):0; // นับเงินเดือนเฉพาะเดือนที่มีวันทำงาน
+      var total = sal+d.ot+d.hotOT+d.hw+d.comm;
+      totalSalary+=sal; totalOT+=d.ot; totalHotOT+=d.hotOT; totalHW+=d.hw; totalComm+=d.comm; totalLate+=d.lateMin;
+      if(d.days>0||d.comm>0){
+        monthRows += '<tr style="border-bottom:1px solid var(--border)">'+
+          '<td style="padding:7px 8px">'+thaiMonths[m-1]+' '+be+'</td>'+
+          '<td style="padding:7px 8px;text-align:right">'+sal.toLocaleString()+'</td>'+
+          '<td style="padding:7px 8px;text-align:right">'+(d.ot>0?d.ot.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'—')+'</td>'+
+          '<td style="padding:7px 8px;text-align:right">'+(d.hotOT>0?d.hotOT.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'—')+'</td>'+
+          '<td style="padding:7px 8px;text-align:right">'+(d.hw>0?d.hw.toLocaleString():'—')+'</td>'+
+          '<td style="padding:7px 8px;text-align:right">'+(d.comm>0?d.comm.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'—')+'</td>'+
+          '<td style="padding:7px 8px;text-align:right;font-weight:700">'+total.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
+          '<td style="padding:7px 8px;text-align:center">'+(d.lateMin>0?'<span style="color:#ef4444;font-size:11px">'+d.lateMin+'น.</span>':'—')+'</td>'+
+        '</tr>';
+      }
+    }
+
+    var grandTotal = totalSalary+totalOT+totalHotOT+totalHW+totalComm;
+
+    return '<div class="card yearly-card" data-emp="'+emp.name+'" data-year="'+be+'">'+
+      '<div style="text-align:center;padding-bottom:14px;border-bottom:2px solid var(--border);margin-bottom:16px">'+
+        '<div style="font-family:Prompt,sans-serif;font-size:18px;font-weight:700">☕ Coffee Today</div>'+
+        '<div style="font-size:15px;font-weight:700;margin-top:6px">สรุปรายได้ประจำปี พ.ศ. '+be+'</div>'+
+        '<div style="font-size:14px;color:var(--muted);margin-top:4px">'+emp.name+' · '+brL(emp.branch)+'</div>'+
+      '</div>'+
+      '<div style="overflow-x:auto">'+
+      '<table style="width:100%;border-collapse:collapse;font-size:13px">'+
+        '<thead><tr style="background:var(--ink);color:#fff">'+
+          '<th style="padding:8px;text-align:left">เดือน</th>'+
+          '<th style="padding:8px;text-align:right">เงินเดือน</th>'+
+          '<th style="padding:8px;text-align:right">OT ปกติ</th>'+
+          '<th style="padding:8px;text-align:right">OT วันหยุด</th>'+
+          '<th style="padding:8px;text-align:right">วันหยุด×2</th>'+
+          '<th style="padding:8px;text-align:right">ค่าคอม</th>'+
+          '<th style="padding:8px;text-align:right">รวม</th>'+
+          '<th style="padding:8px;text-align:center">สาย</th>'+
+        '</tr></thead>'+
+        '<tbody>'+monthRows+'</tbody>'+
+        '<tfoot><tr style="background:#f8faff;font-weight:700;border-top:2px solid var(--ink)">'+
+          '<td style="padding:8px">รวมทั้งปี</td>'+
+          '<td style="padding:8px;text-align:right">'+totalSalary.toLocaleString()+'</td>'+
+          '<td style="padding:8px;text-align:right">'+(totalOT>0?totalOT.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'—')+'</td>'+
+          '<td style="padding:8px;text-align:right">'+(totalHotOT>0?totalHotOT.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'—')+'</td>'+
+          '<td style="padding:8px;text-align:right">'+(totalHW>0?totalHW.toLocaleString():'—')+'</td>'+
+          '<td style="padding:8px;text-align:right">'+(totalComm>0?totalComm.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'—')+'</td>'+
+          '<td style="padding:8px;text-align:right;font-size:15px;color:var(--teal)">฿'+grandTotal.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
+          '<td style="padding:8px;text-align:center">'+(totalLate>0?'<span style="color:#ef4444">'+totalLate+' น.</span>':'—')+'</td>'+
+        '</tr></tfoot>'+
+      '</table></div>'+
+      '<div style="background:linear-gradient(135deg,var(--ink),var(--mid));color:#fff;border-radius:10px;padding:14px 20px;text-align:center;margin-top:16px">'+
+        '<div style="font-size:12px;opacity:.7;margin-bottom:4px">รายได้รวมทั้งสิ้นประจำปี พ.ศ. '+be+'</div>'+
+        '<div style="font-family:Prompt,sans-serif;font-size:28px;font-weight:700">฿'+grandTotal.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div>'+
+        '<div style="font-size:11px;opacity:.5;margin-top:4px">เงินเดือน + OT + ค่าคอมมิชชั่น + วันหยุด</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function printYearly(){
+  window.print();
+}
 
 // INIT
 if(currentBranch)document.getElementById('branchSelect').value=currentBranch;

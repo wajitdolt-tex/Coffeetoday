@@ -976,12 +976,13 @@ async function deleteLogHR(id){
 }
 function buildSummaryHTML(emp,el,ppKey,showSent){
   var norm=el.filter(l=>!['holiday_work','public_holiday'].includes(l.type)).reduce((s,l)=>s+(Number(l.hours)||0),0);
-  // OT ปกติ = hoursOT ของ type normal/split เท่านั้น
-  var ot=el.filter(l=>['normal','split'].includes(l.type)).reduce((s,l)=>s+(Number(l.hoursOT)||0),0);
-  // OT วันหยุด = hoursOT ของ holiday_work ทั้งหมด + hours ของ holiday_ot (กรณีบันทึกแบบเก่า)
+  // OT วันหยุด = hoursOT ของ holiday_work + hours ของ holiday_ot (บันทึกแบบเก่า)
   var hot=el.filter(l=>l.type==='holiday_ot').reduce((s,l)=>s+(Number(l.hours)||0),0);
   var phOld=el.filter(l=>l.type==='public_holiday').reduce((s,l)=>s+(Number(l.hours)||0),0);
   var hwOT=el.filter(l=>['holiday_work','public_holiday'].includes(l.type)).reduce((s,l)=>s+(Number(l.hoursOT)||0),0);
+  // OT ปกติ = hoursOT ทั้งหมด ลบ hwOT ออก (ไม่สนว่า type จะเป็นอะไร)
+  var totalOT=el.reduce((s,l)=>s+(Number(l.hoursOT)||0),0);
+  var ot=Math.max(0, totalOT - hwOT);
   var hwDays=new Set(el.filter(l=>['holiday_work','public_holiday'].includes(l.type)).map(l=>toDateStr(l.date))).size;
   var hwPay=hwDays*(emp.dailyWage||0)*1; // ได้เพิ่มจากปกติอีก 1 เท่า
   var commLogs=el.filter(l=>l.type==='commission');
@@ -1527,4 +1528,3 @@ updateBranchUI();populatePPSelects();loadAll();
 
 </body>
 </html>
-

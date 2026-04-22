@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -73,6 +75,9 @@ tbody tr:hover{background:#f8faff}td{padding:9px 12px;vertical-align:middle}
 .badge-hw{background:#fff7ed;color:#c2410c}.badge-commission{background:#d1fae5;color:#065f46}
 .badge-in{background:#d1fae5;color:#065f46}.badge-out{background:#fee2e2;color:#991b1b}
 .badge-phday{background:#fef3c7;color:#92400e}.badge-late{background:#fee2e2;color:#991b1b}
+.man-row{background:var(--pale);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;position:relative}
+.man-row-header{font-size:12px;font-weight:700;color:var(--mid);margin-bottom:10px}
+.man-row-del{position:absolute;top:10px;right:10px;background:none;border:none;font-size:16px;cursor:pointer;color:var(--danger)}
 .badge-pending{background:#fef9c3;color:#854d0e}.badge-sent{background:#dcfce7;color:#166534}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px}
 .form-row.full{grid-template-columns:1fr}.form-row.three{grid-template-columns:1fr 1fr 1fr}
@@ -264,23 +269,18 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     </div>
   </div>
   <div class="tab-content" id="tab-manual">
-    <div class="card"><div class="card-title">✏️ บันทึกเวลาด้วยตนเอง (HR)</div>
+    <div class="card">
+      <div class="card-title">✏️ บันทึกเวลาด้วยตนเอง (HR) — เพิ่มได้หลายรายการ</div>
       <div class="form-row">
         <div class="form-group"><label>พนักงาน *</label><select id="manEmp"></select></div>
         <div class="form-group"><label>สาขา *</label><select id="manBranch"><option value="lotus">โลตัสระยอง</option><option value="passion">แพชชั่นระยอง</option></select></div>
       </div>
-      <div class="form-row full"><div class="form-group"><label>วันที่ *</label><input type="date" id="manDate"></div></div>
-      <div class="form-row">
-        <div class="form-group"><label>เข้างาน *</label><input type="time" id="manIn"></div>
-        <div class="form-group"><label>ออกงาน</label><input type="time" id="manOut"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>ประเภท</label>
-          <select id="manType"><option value="normal">ปกติ (OT อัตโนมัติ)</option><option value="holiday_ot">OT วันหยุด</option><option value="public_holiday">วันนักขัตฤกษ์</option><option value="holiday_work">ทำงานวันหยุด ×2</option></select></div>
-        <div class="form-group"><label>ยอดขาย (฿) สำหรับคอม</label><input type="number" id="manSales" placeholder="0" min="0"></div>
-      </div>
-      <div class="form-row full"><div class="form-group"><label>หมายเหตุ</label><input type="text" id="manNote" placeholder="หมายเหตุ..."></div></div>
-      <button class="btn btn-success" onclick="saveManual()">💾 บันทึก</button>
+      <!-- รายการที่จะบันทึก -->
+      <div id="manRows"></div>
+      <button class="btn btn-dark" style="margin-bottom:14px" onclick="addManRow()">➕ เพิ่มรายการ</button>
+      <br>
+      <button class="btn btn-success" onclick="saveManualAll()">💾 บันทึกทั้งหมด</button>
+      <span id="manSaveStatus" style="font-size:13px;color:var(--muted);margin-left:12px"></span>
     </div>
   </div>
   <div class="tab-content" id="tab-holidays">
@@ -410,7 +410,7 @@ function calcOT(branch,clockIn,clockOut){
     var otMins=Math.max(0,om-otStartMins);
     var normMins=totalMins-otMins;
     hours=+(normMins/60).toFixed(2);
-    hoursOT=+(otMins/60).toFixed(2);
+    hoursOT=Math.floor(otMins/60);
   }
   return{hours:Math.max(0,hours),hoursOT:Math.max(0,hoursOT),lateMinutes:late};
 }
@@ -633,7 +633,9 @@ async function submitClock(){
       } else {
         var r=calcOT(branch2,entry.clockIn,ts);
         hours2=r.hours;hoursOT2=r.hoursOT;late2=r.lateMinutes;
-        type2=hoursOT2>0?'split':entry.type;
+        // ถ้าวันนั้นเป็นทำงานวันหยุด และมี OT → type เป็น holiday_ot
+        if(entry.type==='holiday_work'&&hoursOT2>0){type2='holiday_work';/* OT จะถูกบันทึกเป็น holiday_ot แยก row */}
+        else type2=hoursOT2>0?'split':entry.type;
       }
       await api('updateLog',{id:entry.id,clockOut:ts,hours:hours2,hoursOT:hoursOT2,type:type2,note:note,lateMinutes:late2});
       Object.assign(entry,{clockOut:ts,hours:hours2,hoursOT:hoursOT2,type:type2,note:note,lateMinutes:late2});
@@ -711,7 +713,8 @@ async function confirmSendSummary(){
 // MY LOG
 function renderMyLog(){
   var tbody=document.getElementById('myLogTable');
-  var myLogs=selectedEmpId?[...logs].filter(l=>l.empId===selectedEmpId).reverse().slice(0,50):[...logs].reverse().slice(0,50);
+  if(!selectedEmpId){tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="ei">👆</div>กรุณาเลือกพนักงานด้านบน</div></td></tr>';return;}
+  var myLogs=[...logs].filter(l=>l.empId===selectedEmpId).reverse().slice(0,50);
   if(!myLogs.length){tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="ei">📭</div>ยังไม่มีบันทึก</div></td></tr>';return;}
   var eMap={};employees.forEach(e=>eMap[e.id]={name:e.name,branch:e.branch});
   tbody.innerHTML=myLogs.map(function(l){
@@ -719,9 +722,9 @@ function renderMyLog(){
     var late=Number(l.lateMinutes)||0;
     var lateCell=late>0?'<span class="badge badge-late">⚠️ สาย '+late+' นาที</span>':'<span style="color:#10b981;font-size:11px">✅</span>';
     var commDisplay=l.type==='commission'
-      ?(l.sales?'<span style="font-size:11px;color:var(--muted)">ยอด ฿'+Number(l.sales).toLocaleString()+'</span><br>':'')+
-        '<span style="color:var(--success);font-weight:600">฿'+Number(l.commission||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</span>'+
-        (l.commRate?' <span style="font-size:10px;color:var(--muted)">(×'+Math.round(l.commRate*100)+'%)</span>':'')
+      ?'<span style="font-size:11px;color:var(--muted)">ยอด ฿'+Number(l.sales||0).toLocaleString()+'</span><br>'+
+        '<span style="color:var(--success);font-weight:600">คอม ฿'+Number(l.commission||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</span>'+
+        (l.commRate?' <span style="font-size:10px;color:var(--muted)">('+Math.round(l.commRate*100)+'%)</span>':'')
       :'—';
     return '<tr'+(ph?' class="ph-row"':'')+'>'+
       '<td>'+fmtDate(toDateStr(l.date))+(ph?' <span class="badge badge-phday">'+ph.name+'</span>':'')+  '</td>'+
@@ -789,8 +792,9 @@ function renderAllLogs(){
     var ei=eMap[l.empId]||{},ph=getPH(toDateStr(l.date));
     var late=Number(l.lateMinutes)||0;
     var lateCell=late>0?'<span class="badge badge-late">สาย '+late+'น.</span>':'<span style="color:#10b981;font-size:11px">✅</span>';
-    var commDisp=l.type==='commission'?(l.sales?'ยอด ฿'+Number(l.sales).toLocaleString()+' → ':'')+
-      '<span style="color:var(--success);font-weight:600">฿'+Number(l.commission||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</span>':'—';
+    var commDisp=l.type==='commission'
+      ?'ยอด ฿'+Number(l.sales||0).toLocaleString()+'<br><span style="color:var(--success);font-weight:600">คอม ฿'+Number(l.commission||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</span>'+(l.commRate?' <span style="font-size:10px;color:var(--muted)">('+Math.round(l.commRate*100)+'%)</span>':'')
+      :'—';
     return '<tr'+(ph?' class="ph-row"':'')+'>'+
       '<td>'+fmtDate(toDateStr(l.date))+(ph?' <span class="badge badge-phday" style="font-size:10px">'+ph.name+'</span>':'')+  '</td>'+
       '<td style="font-size:11px;color:var(--mid);font-weight:600">'+brL(l.branch||ei.branch)+'</td>'+
@@ -814,15 +818,19 @@ async function deleteLogHR(id){
 }
 function buildSummaryHTML(emp,el,ppKey,showSent){
   var norm=el.filter(l=>l.type!=='holiday_work').reduce((s,l)=>s+(Number(l.hours)||0),0);
-  var ot=el.reduce((s,l)=>s+(Number(l.hoursOT)||0),0);
+  // OT ปกติ = hoursOT ของ rows ที่ไม่ใช่ holiday_work
+  var ot=el.filter(l=>l.type!=='holiday_work').reduce((s,l)=>s+(Number(l.hoursOT)||0),0);
+  // OT วันหยุด = hours ของ holiday_ot + public_holiday + hoursOT ของ holiday_work (OT ที่เกิดจากวันหยุด)
   var hot=el.filter(l=>l.type==='holiday_ot').reduce((s,l)=>s+(Number(l.hours)||0),0);
   var ph=el.filter(l=>l.type==='public_holiday').reduce((s,l)=>s+(Number(l.hours)||0),0);
+  var hwOT=el.filter(l=>l.type==='holiday_work').reduce((s,l)=>s+(Number(l.hoursOT)||0),0);
   var hwDays=new Set(el.filter(l=>l.type==='holiday_work').map(l=>toDateStr(l.date))).size;
   var hwPay=hwDays*(emp.dailyWage||0)*2;
   var commLogs=el.filter(l=>l.type==='commission');
   var totalSales=commLogs.reduce((s,l)=>s+(Number(l.sales)||0),0);
   var comm=commLogs.reduce((s,l)=>s+(Number(l.commission)||0),0);
-  var otPay=ot*(emp.otRate||50),hotPay=(hot+ph)*(emp.holidayRate||100);
+  var hotTotal=hot+ph+hwOT;
+  var otPay=ot*(emp.otRate||50),hotPay=hotTotal*(emp.holidayRate||100);
   var days=new Set(el.map(l=>toDateStr(l.date))).size;
   var total=(emp.salary||0)+otPay+hotPay+hwPay+comm;
   var sched=getSched(emp.branch);
@@ -837,7 +845,7 @@ function buildSummaryHTML(emp,el,ppKey,showSent){
     '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">วันทำงาน</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+days+' วัน</td></tr>'+
     '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">ชั่วโมงปกติ</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+norm.toFixed(2)+' ชม.</td></tr>'+
     '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">OT ปกติ (฿'+(emp.otRate||50)+'/ชม.)</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+ot.toFixed(2)+' ชม. = ฿'+otPay.toLocaleString()+'</td></tr>'+
-    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">OT วันหยุด/นักขัตฤกษ์ (฿'+(emp.holidayRate||100)+'/ชม.)</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+((hot+ph)).toFixed(2)+' ชม. = ฿'+hotPay.toLocaleString()+'</td></tr>'+
+    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">OT วันหยุด/นักขัตฤกษ์/วันหยุดล่วงเวลา (฿'+(emp.holidayRate||100)+'/ชม.)</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+hotTotal.toFixed(2)+' ชม. = ฿'+hotPay.toLocaleString()+'</td></tr>'+
     '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">ทำงานวันหยุด ×2 (฿'+(emp.dailyWage||0)+'/วัน)</td><td style="padding:8px 4px;font-weight:600;text-align:right;color:var(--accent)">'+hwDays+' วัน = ฿'+hwPay.toLocaleString()+'</td></tr>'+
     '<tr><td style="padding:8px 4px;color:var(--muted)">ค่าคอมมิชชั่น'+(totalSales?' (ยอดขายรวม ฿'+totalSales.toLocaleString()+')':'')+  '</td><td style="padding:8px 4px;font-weight:600;text-align:right;color:var(--success)">฿'+Number(comm).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td></tr>'+
     '</table>'+
@@ -931,32 +939,86 @@ async function saveEmployee(){
 }
 function populateManualForm(){
   document.getElementById('manEmp').innerHTML=employees.filter(e=>e.active).map(e=>'<option value="'+e.id+'">'+e.name+' ('+brL(e.branch)+')</option>').join('');
-  document.getElementById('manDate').value=new Date().toISOString().split('T')[0];
   if(currentBranch)document.getElementById('manBranch').value=currentBranch;
+  var rows=document.getElementById('manRows');
+  if(!rows.children.length)addManRow();
 }
-async function saveManual(){
-  var empId=document.getElementById('manEmp').value,date=document.getElementById('manDate').value;
-  var inT=document.getElementById('manIn').value,outT=document.getElementById('manOut').value;
-  var type=document.getElementById('manType').value,branch=document.getElementById('manBranch').value;
-  var salesVal=parseFloat(document.getElementById('manSales').value)||0;
-  if(!empId||!date||!inT){showToast('กรุณากรอกข้อมูลให้ครบ','error');return;}
-  var hours=null,hoursOT=0,lateMinutes=0;
-  if(outT){
-    var sp=['holiday_ot','public_holiday','holiday_work'].includes(type);
-    if(sp){hours=+hRaw(inT,outT).toFixed(2);hoursOT=0;}
-    else{var r2=calcOT(branch,inT,outT);hours=r2.hours;hoursOT=r2.hoursOT;lateMinutes=r2.lateMinutes;}
+var manRowCount=0;
+function addManRow(){
+  manRowCount++;
+  var n=manRowCount;
+  var today=new Date().toISOString().split('T')[0];
+  var div=document.createElement('div');
+  div.className='man-row';div.id='manRow_'+n;
+  div.innerHTML='<div class="man-row-header">รายการที่ '+n+'</div>'+
+    '<button class="man-row-del" onclick="delManRow('+n+')" title="ลบ">✕</button>'+
+    '<div class="form-row">'+
+      '<div class="form-group"><label>วันที่ *</label><input type="date" id="mrDate_'+n+'" value="'+today+'"></div>'+
+      '<div class="form-group"><label>ประเภท</label>'+
+        '<select id="mrType_'+n+'">'+
+          '<option value="normal">ปกติ (OT อัตโนมัติ)</option>'+
+          '<option value="holiday_ot">OT วันหยุด</option>'+
+          '<option value="public_holiday">วันนักขัตฤกษ์</option>'+
+          '<option value="holiday_work">ทำงานวันหยุด ×2</option>'+
+        '</select></div>'+
+    '</div>'+
+    '<div class="form-row">'+
+      '<div class="form-group"><label>เข้างาน *</label><input type="time" id="mrIn_'+n+'"></div>'+
+      '<div class="form-group"><label>ออกงาน</label><input type="time" id="mrOut_'+n+'"></div>'+
+    '</div>'+
+    '<div class="form-row">'+
+      '<div class="form-group"><label>ยอดขาย (฿)</label><input type="number" id="mrSales_'+n+'" placeholder="0" min="0" oninput="calcManComm('+n+')"></div>'+
+      '<div class="form-group"><label>ค่าคอมมิชชั่น</label><div id="mrCommDisplay_'+n+'" style="padding:8px 0;font-size:13px;color:var(--success);font-weight:600">—</div></div>'+
+    '</div>'+
+    '<div class="form-row full"><div class="form-group"><label>หมายเหตุ</label><input type="text" id="mrNote_'+n+'" placeholder="หมายเหตุ..."></div></div>';
+  document.getElementById('manRows').appendChild(div);
+}
+function delManRow(n){var el=document.getElementById('manRow_'+n);if(el)el.remove();}
+function calcManComm(n){
+  var sales=parseFloat(document.getElementById('mrSales_'+n).value)||0;
+  var branch=document.getElementById('manBranch').value;
+  var el=document.getElementById('mrCommDisplay_'+n);
+  if(!sales){el.textContent='—';return;}
+  var r=calcCommission(branch,sales);
+  if(r.tier)el.innerHTML='฿'+Number(r.commission).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+' <span style="font-size:11px;color:var(--muted)">('+Math.round(r.tier.rate*100)+'%)</span>';
+  else el.innerHTML='<span style="color:var(--warning)">ไม่ถึงขั้นต่ำ</span>';
+}
+async function saveManualAll(){
+  var empId=document.getElementById('manEmp').value;
+  var branch=document.getElementById('manBranch').value;
+  if(!empId){showToast('กรุณาเลือกพนักงาน','error');return;}
+  var rows=document.querySelectorAll('.man-row');
+  if(!rows.length){showToast('กรุณาเพิ่มรายการก่อน','error');return;}
+  var statusEl=document.getElementById('manSaveStatus');
+  statusEl.textContent='กำลังบันทึก...';
+  var ok=0,fail=0;
+  for(var i=0;i<rows.length;i++){
+    var n=rows[i].id.replace('manRow_','');
+    var date=document.getElementById('mrDate_'+n).value;
+    var inT=document.getElementById('mrIn_'+n).value;
+    var outT=document.getElementById('mrOut_'+n).value;
+    var type=document.getElementById('mrType_'+n).value;
+    var salesVal=parseFloat(document.getElementById('mrSales_'+n).value)||0;
+    var note=document.getElementById('mrNote_'+n).value;
+    if(!date||!inT){fail++;continue;}
+    var hours=null,hoursOT=0,lateMinutes=0;
+    if(outT){
+      var sp=['holiday_ot','public_holiday','holiday_work'].includes(type);
+      if(sp){hours=+hRaw(inT,outT).toFixed(2);hoursOT=0;}
+      else{var r2=calcOT(branch,inT,outT);hours=r2.hours;hoursOT=Math.floor(r2.hoursOT);lateMinutes=r2.lateMinutes;}
+    }
+    var ft=(hours!==null&&hoursOT>0&&!['holiday_ot','public_holiday','holiday_work'].includes(type))?'split':type;
+    // ทำงานวันหยุด + OT → holiday_work + บันทึก hoursOT เป็น holiday_ot rate
+    var rc=salesVal>0?calcCommission(branch,salesVal):{commission:0,tier:null,diff:0};
+    var log={id:genId(),empId:empId,date:date,branch:branch,clockIn:inT,clockOut:outT||'',
+      hours:hours||'',hoursOT:hoursOT,type:ft,lateMinutes:lateMinutes,
+      sales:salesVal||'',commDiff:rc.diff||'',commission:rc.commission,commRate:rc.tier?rc.tier.rate:0,note:note};
+    try{await api('addLog',log);logs.push(log);ok++;}
+    catch(e){fail++;}
   }
-  var ft=(hours!==null&&hoursOT>0&&!['holiday_ot','public_holiday','holiday_work'].includes(type))?'split':type;
-  var rc=salesVal>0?calcCommission(branch,salesVal):{commission:0,tier:null,diff:0};
-  var log={id:genId(),empId:empId,date:date,branch:branch,clockIn:inT,clockOut:outT||'',
-    hours:hours||'',hoursOT:hoursOT,type:ft,lateMinutes:lateMinutes,
-    sales:salesVal||'',commDiff:rc.diff||'',commission:rc.commission,commRate:rc.tier?rc.tier.rate:0,
-    note:document.getElementById('manNote').value};
-  try{
-    await api('addLog',log);logs.push(log);showToast('✅ บันทึกเรียบร้อย','success');
-    ['manIn','manOut','manSales','manNote'].forEach(id=>document.getElementById(id).value='');
-    renderDashboard();
-  }catch(e){showToast('บันทึกล้มเหลว: '+e.message,'error');}
+  statusEl.textContent='';
+  if(ok>0){showToast('✅ บันทึก '+ok+' รายการสำเร็จ'+(fail>0?' (ล้มเหลว '+fail+' รายการ)':''),'success');renderDashboard();renderAllLogs();}
+  else showToast('บันทึกล้มเหลวทั้งหมด','error');
 }
 function renderHolidayTable(){
   document.getElementById('phTable').innerHTML=PH.map((h,i)=>'<tr><td>'+(i+1)+'</td><td><strong>'+fmtDate(h.date)+'</strong></td><td>'+h.name+'</td></tr>').join('');

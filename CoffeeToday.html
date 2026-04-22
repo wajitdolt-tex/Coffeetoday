@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 
 <html lang="th">
 <head>
@@ -669,13 +669,20 @@ function checkPHWarn(){
   var empId=document.getElementById('modalEmp').value;
   var isDayOff=empId?isEmpDayOff(empId,ds):false;
   var w=document.getElementById('phWarning');
-  if(ph){
+  var nameEl=document.getElementById('phWarningName');
+  if(isDayOff && ph){
+    // ทับกันทั้งคู่
     w.style.display='block';
-    document.getElementById('phWarningName').textContent=ph.name;
+    w.style.background='#fff7ed';w.style.borderColor='#f97316';w.style.color='#c2410c';
+    nameEl.textContent='วันหยุดประจำ ('+getEmpDayOffName(empId)+') + นักขัตฤกษ์ ('+ph.name+') — บันทึกเป็นทำงานวันหยุด×2';
   } else if(isDayOff){
     w.style.display='block';
-    document.getElementById('phWarningName').textContent='วันหยุดประจำ ('+getEmpDayOffName(empId)+') — จะบันทึกเป็นทำงานวันหยุด×2';
     w.style.background='#fff7ed';w.style.borderColor='#fed7aa';w.style.color='#c2410c';
+    nameEl.textContent='วันหยุดประจำ ('+getEmpDayOffName(empId)+') — จะบันทึกเป็นทำงานวันหยุด×2';
+  } else if(ph){
+    w.style.display='block';
+    w.style.background='#fffbeb';w.style.borderColor='#fcd34d';w.style.color='#92400e';
+    nameEl.textContent=ph.name+' — จะบันทึกเป็นทำงานวันหยุดนักขัตฤกษ์×2';
   } else {
     w.style.display='none';
     w.style.background='';w.style.borderColor='';w.style.color='';
@@ -923,14 +930,15 @@ function buildSummaryHTML(emp,el,ppKey,showSent){
   var ot=el.filter(l=>l.type!=='holiday_work').reduce((s,l)=>s+(Number(l.hoursOT)||0),0);
   // OT วันหยุด = hours ของ holiday_ot + public_holiday + hoursOT ของ holiday_work (OT ที่เกิดจากวันหยุด)
   var hot=el.filter(l=>l.type==='holiday_ot').reduce((s,l)=>s+(Number(l.hours)||0),0);
-  var ph=el.filter(l=>l.type==='public_holiday').reduce((s,l)=>s+(Number(l.hours)||0),0);
-  var hwOT=el.filter(l=>l.type==='holiday_work').reduce((s,l)=>s+(Number(l.hoursOT)||0),0);
-  var hwDays=new Set(el.filter(l=>l.type==='holiday_work').map(l=>toDateStr(l.date))).size;
+  // public_holiday เก่า + holiday_work ใหม่ รวมกันเป็นวันหยุด×2 ทั้งหมด
+  var phOld=el.filter(l=>l.type==='public_holiday').reduce((s,l)=>s+(Number(l.hours)||0),0);
+  var hwOT=el.filter(l=>['holiday_work','public_holiday'].includes(l.type)).reduce((s,l)=>s+(Number(l.hoursOT)||0),0);
+  var hwDays=new Set(el.filter(l=>['holiday_work','public_holiday'].includes(l.type)).map(l=>toDateStr(l.date))).size;
   var hwPay=hwDays*(emp.dailyWage||0)*2;
   var commLogs=el.filter(l=>l.type==='commission');
   var totalSales=commLogs.reduce((s,l)=>s+(Number(l.sales)||0),0);
   var comm=commLogs.reduce((s,l)=>s+(Number(l.commission)||0),0);
-  var hotTotal=hot+ph+hwOT;
+  var hotTotal=hot+phOld+hwOT;
   var otPay=ot*(emp.otRate||50),hotPay=hotTotal*(emp.holidayRate||100);
   var days=new Set(el.map(l=>toDateStr(l.date))).size;
   var total=(emp.salary||0)+otPay+hotPay+hwPay+comm;
@@ -1119,8 +1127,10 @@ async function saveManualAll(){
       if(sp){hours=+hRaw(inT,outT).toFixed(2);hoursOT=0;}
       else{var r2=calcOT(branch,inT,outT);hours=r2.hours;hoursOT=Math.floor(r2.hoursOT);lateMinutes=r2.lateMinutes;}
     }
-    // ถ้า type = normal แต่วันนั้นเป็นวันหยุดพนักงาน → เปลี่ยนเป็น holiday_work อัตโนมัติ
-    if(type==='normal' && isEmpDayOff(empId, ds)){
+    // ถ้า type = normal แต่วันนั้นเป็นวันหยุดพนักงาน หรือนักขัตฤกษ์ → holiday_work ×2
+    var isManDayOff = isEmpDayOff(empId, ds);
+    var isManPH = getPH(ds) !== null;
+    if(type==='normal' && (isManDayOff || isManPH)){
       type='holiday_work';
       ft='holiday_work';
     } else {

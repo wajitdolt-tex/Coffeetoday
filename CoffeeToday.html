@@ -1,4 +1,3 @@
-
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -879,14 +878,14 @@ function buildSummaryHTML(emp,el,ppKey,showSent){
     '<div class="summary-report-header">'+
     '<div style="font-family:Prompt,sans-serif;font-size:20px;font-weight:700">☕ Coffee Today</div>'+
     '<div style="font-size:14px;color:var(--muted);margin-top:4px">สรุปการทำงาน: <strong>'+emp.name+'</strong> · '+brL(emp.branch)+'</div>'+
-    '<div style="font-size:12px;color:var(--muted)">รอบ: '+getPPLabel(ppKey)+' | เวลาเข้างาน: '+sched.start+' | OT หลัง '+sched.hours+' ชม.</div>'+
+    '<div style="font-size:12px;color:var(--muted)">รอบ: '+getPPLabel(ppKey)+' | เวลาทำงาน: '+sched.start+' – '+sched.end+' | OT หลัง '+sched.hours+' ชม.</div>'+
     (showSent?'<div style="margin-top:8px"><span class="badge badge-sent">✅ ส่งให้ HR แล้ว</span></div>':'')+
     '</div>'+
     '<table style="width:100%;font-size:13px;border-collapse:collapse">'+
     '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">วันทำงาน</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+days+' วัน</td></tr>'+
     '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">OT ปกติ (฿'+(emp.otRate||50)+'/ชม.)</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+ot.toFixed(2)+' ชม. = ฿'+otPay.toLocaleString()+'</td></tr>'+
-    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">OT วันหยุด/นักขัตฤกษ์/วันหยุดล่วงเวลา (฿'+(emp.holidayRate||100)+'/ชม.)</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+hotTotal.toFixed(2)+' ชม. = ฿'+hotPay.toLocaleString()+'</td></tr>'+
-    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">ทำงานวันหยุด ×2 (฿'+(emp.dailyWage||0)+'/วัน)</td><td style="padding:8px 4px;font-weight:600;text-align:right;color:var(--accent)">'+hwDays+' วัน = ฿'+hwPay.toLocaleString()+'</td></tr>'+
+    (hotTotal>0?'<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">OT วันหยุด/นักขัตฤกษ์ (฿'+(emp.holidayRate||100)+'/ชม.)</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+hotTotal.toFixed(2)+' ชม. = ฿'+hotPay.toLocaleString()+'</td></tr>':'')+
+    (hwDays>0?'<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">ทำงานวันหยุด ×2 (฿'+(emp.dailyWage||0)+'/วัน)</td><td style="padding:8px 4px;font-weight:600;text-align:right;color:var(--accent)">'+hwDays+' วัน = ฿'+hwPay.toLocaleString()+'</td></tr>':'')+
     '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">มาสายรวม</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+(function(){var t=el.reduce(function(s,l){return s+(Number(l.lateMinutes)||0);},0);return t>0?'<span style="color:#ef4444">'+t+' นาที ('+(el.filter(function(l){return Number(l.lateMinutes)>0;}).length)+' ครั้ง)</span>':'<span style="color:#10b981">ไม่มี</span>';})()+'</td></tr>'+
     '<tr><td style="padding:8px 4px;color:var(--muted)">ค่าคอมมิชชั่น'+(totalSales?' (ยอดขายรวม ฿'+totalSales.toLocaleString()+')':'')+  '</td><td style="padding:8px 4px;font-weight:600;text-align:right;color:var(--success)">฿'+Number(comm).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td></tr>'+
     '</table>'+

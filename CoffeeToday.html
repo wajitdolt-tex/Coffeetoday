@@ -946,7 +946,7 @@ async function saveEmployee(){
   }catch(e){showToast('บันทึกล้มเหลว: '+e.message,'error');}
 }
 function populateManualForm(){
-  document.getElementById('manEmp').innerHTML=employees.filter(e=>e.active).map(e=>'<option value="'+e.id+'">'+e.name+' ('+brL(e.branch)+')</option>').join('');
+  document.getElementById('manEmp').innerHTML=employees.filter(e=>e.active).map(e=>'<option value="'+e.id+'">'+e.name+'</option>').join('');
   if(currentBranch)document.getElementById('manBranch').value=currentBranch;
   var rows=document.getElementById('manRows');
   if(!rows.children.length)addManRow();
@@ -1031,7 +1031,7 @@ async function saveManualAll(){
 function renderHolidayTable(){
   document.getElementById('phTable').innerHTML=PH.map((h,i)=>'<tr><td>'+(i+1)+'</td><td><strong>'+fmtDate(h.date)+'</strong></td><td>'+h.name+'</td></tr>').join('');
 }
-function populateEmpSel(selId){document.getElementById(selId).innerHTML='<option value="">— เลือกพนักงาน —</option>'+employees.filter(e=>e.active).map(e=>'<option value="'+e.id+'">'+e.name+' ('+brL(e.branch)+')</option>').join('');}
+function populateEmpSel(selId){document.getElementById(selId).innerHTML='<option value="">— เลือกพนักงาน —</option>'+employees.filter(e=>e.active).map(e=>'<option value="'+e.id+'">'+e.name+'</option>').join('');}
 function toTimeStr(t){
   if(!t)return'00:00';
   var s=String(t).trim();

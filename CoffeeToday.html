@@ -425,9 +425,21 @@ const PH=[
 function toDateStr(d){
   if(!d)return'';
   var s=String(d).trim();
-  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
-  try{var dt=new Date(s);if(!isNaN(dt.getTime())){var y=dt.getFullYear();var m=String(dt.getMonth()+1).padStart(2,'0');var day=String(dt.getDate()).padStart(2,'0');return y+'-'+m+'-'+day;}}catch(e){}
-  return s;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
+    var yr=parseInt(s.substring(0,4));
+    return(yr>=2000&&yr<=2100)?s:'';
+  }
+  try{
+    var dt=new Date(s);
+    if(!isNaN(dt.getTime())){
+      var y=dt.getFullYear();
+      if(y<2000||y>2100)return''; // กรอง Date object ผิดพลาด เช่น 1899
+      var m=String(dt.getMonth()+1).padStart(2,'0');
+      var day=String(dt.getDate()).padStart(2,'0');
+      return y+'-'+m+'-'+day;
+    }
+  }catch(e){}
+  return'';
 }
 function getPH(d){var ds=toDateStr(d);return PH.find(h=>h.date===ds)||null;}
 
@@ -442,7 +454,12 @@ const DAY_NAMES=['วันอาทิตย์','วันจันทร์',
 function isEmpDayOff(empId, dateStr){
   var dow = EMP_DAY_OFF[empId];
   if(dow===undefined) return false;
-  var d = new Date(dateStr+'T00:00:00');
+  // แปลง dateStr เป็น YYYY-MM-DD ก่อนเสมอ แล้วสร้าง Date แบบ local
+  var ds = toDateStr(dateStr) || String(dateStr);
+  var parts = ds.split('-');
+  if(parts.length < 3) return false;
+  // new Date(year, month-1, day) ไม่มี timezone issue
+  var d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
   return d.getDay() === dow;
 }
 function getEmpDayOffName(empId){
@@ -594,7 +611,21 @@ function getPayPeriods(){
   return periods.sort((a,b)=>a.start-b.start);
 }
 function getCurPPKey(){var now=new Date(),y=now.getFullYear(),m=now.getMonth(),s=now.getDate()>=16?new Date(y,m,16):new Date(y,m-1,16);return s.getFullYear()+'-'+String(s.getMonth()+1).padStart(2,'0');}
-function logsInPP(key){var parts=key.split('-').map(Number),y=parts[0],m=parts[1],s=new Date(y,m-1,16),e=new Date(y,m,15);return logs.filter(l=>{try{var ds=toDateStr(l.date);var d=new Date(ds+'T00:00:00');return d>=s&&d<=e;}catch(ex){return false;}});}
+function logsInPP(key){
+  var parts=key.split('-').map(Number),y=parts[0],m=parts[1];
+  var s=new Date(y,m-1,16),e=new Date(y,m,15);
+  return logs.filter(function(l){
+    try{
+      var ds=toDateStr(l.date);
+      if(!ds){
+        // ถ้า date parse ไม่ได้ ลองดึงจาก id (timestamp) หรือข้ามไป
+        return false;
+      }
+      var d=new Date(ds+'T00:00:00');
+      return d>=s&&d<=e;
+    }catch(ex){return false;}
+  });
+}
 function getPPLabel(key){var p=getPayPeriods().find(x=>x.key===key);return p?p.label:key;}
 function populatePPSelects(){
   var periods=getPayPeriods(),cur=getCurPPKey();

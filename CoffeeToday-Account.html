@@ -329,20 +329,70 @@ tr:hover td{background:var(--bg3);}
     <div><button class="btn btn-primary" onclick="loadSummary()"><span id="s-txt">ดึงข้อมูล</span></button></div>
   </div>
   <div id="s-stats" style="display:none;">
-    <div class="grid-3" style="margin-bottom:13px;">
-      <div class="stat-box"><div class="stat-label">ยอดขายรวม</div><div class="stat-value" id="ss-sales">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">ค่าใช้จ่ายรวม</div><div class="stat-value" id="ss-exp">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">กำไร / ขาดทุน</div><div class="stat-value" id="ss-profit">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">ยอด Pay In รวม</div><div class="stat-value" id="ss-payin">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">QR สูงสุดวันที่</div><div class="stat-value" id="ss-qr" style="font-size:14px;">-</div></div>
-      <div class="stat-box"><div class="stat-label">จำนวนวันที่บันทึก</div><div class="stat-value" id="ss-days">0</div></div>
+
+```
+<!-- รายรับ รายจ่าย กำไร/ขาดทุน -->
+<div class="card" style="margin-bottom:13px;">
+  <div class="card-title">รายรับ — รายจ่าย — กำไร/ขาดทุน</div>
+  <div class="grid-3" style="margin-bottom:14px;">
+    <div class="stat-box" style="border-left:3px solid var(--green);">
+      <div class="stat-label">รายรับ (ยอดขายรวม)</div>
+      <div class="stat-value pos" id="ss-sales">฿0</div>
     </div>
-    <div class="card" style="padding:0;overflow:hidden;">
-      <div class="tbl-wrap">
-        <table><thead><tr><th>วันที่</th><th>Sub Total</th><th>Discount</th><th>ยอดสุทธิ</th><th>QR</th><th>Cash</th><th>ค่าใช้จ่าย</th><th>Pay In</th></tr></thead>
-        <tbody id="s-tbody"></tbody></table>
-      </div>
+    <div class="stat-box" style="border-left:3px solid var(--red);">
+      <div class="stat-label">รายจ่าย (ค่าใช้จ่ายหน้าร้าน)</div>
+      <div class="stat-value neg" id="ss-exp">฿0</div>
     </div>
+    <div class="stat-box" style="border-left:3px solid var(--accent);">
+      <div class="stat-label">กำไร / ขาดทุน</div>
+      <div class="stat-value" id="ss-profit">฿0</div>
+    </div>
+  </div>
+  <div class="grid-3">
+    <div class="stat-box">
+      <div class="stat-label">ยอด Pay In รวม</div>
+      <div class="stat-value" id="ss-payin">฿0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">ยอด QR รวม</div>
+      <div class="stat-value" id="ss-qr-total">฿0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">ยอด Cash รวม</div>
+      <div class="stat-value" id="ss-cash-total">฿0</div>
+    </div>
+  </div>
+</div>
+
+<!-- ค่าใช้จ่ายแยกประเภท -->
+<div class="card" style="margin-bottom:13px;">
+  <div class="card-title">ค่าใช้จ่ายแยกประเภท</div>
+  <div class="grid-3">
+    <div class="stat-box"><div class="stat-label">วัตถุดิบ CFTD</div><div class="stat-value" id="ss-cftd">฿0</div></div>
+    <div class="stat-box"><div class="stat-label">น้ำแข็ง</div><div class="stat-value" id="ss-ice">฿0</div></div>
+    <div class="stat-box"><div class="stat-label">นมเมจิ</div><div class="stat-value" id="ss-meji">฿0</div></div>
+    <div class="stat-box"><div class="stat-label">นมจินดา</div><div class="stat-value" id="ss-jinda">฿0</div></div>
+    <div class="stat-box"><div class="stat-label">โซดา</div><div class="stat-value" id="ss-soda">฿0</div></div>
+    <div class="stat-box"><div class="stat-label">ขนม TEXBZ</div><div class="stat-value" id="ss-texbz">฿0</div></div>
+  </div>
+</div>
+
+<!-- ข้อมูลเพิ่มเติม -->
+<div class="grid-3" style="margin-bottom:13px;">
+  <div class="stat-box"><div class="stat-label">QR สูงสุดวันที่</div><div class="stat-value" id="ss-qr" style="font-size:13px;">-</div></div>
+  <div class="stat-box"><div class="stat-label">ยอดขายสูงสุดวันที่</div><div class="stat-value" id="ss-maxsale" style="font-size:13px;">-</div></div>
+  <div class="stat-box"><div class="stat-label">จำนวนวันที่บันทึก</div><div class="stat-value" id="ss-days">0</div></div>
+</div>
+
+<!-- ตารางรายวัน -->
+<div class="card" style="padding:0;overflow:hidden;">
+  <div class="tbl-wrap">
+    <table><thead><tr><th>วันที่</th><th>Sub Total</th><th>Discount</th><th>ยอดสุทธิ</th><th>QR</th><th>Cash</th><th>ค่าใช้จ่าย</th><th>Pay In</th></tr></thead>
+    <tbody id="s-tbody"></tbody></table>
+  </div>
+</div>
+```
+
   </div>
   <div id="s-empty" class="empty-state"><div class="icon">📊</div><p>เลือกสาขาและเดือน แล้วกดดึงข้อมูล</p></div>
 </div>
@@ -731,31 +781,77 @@ async function loadSummary() {
 }
 
 function renderSummary(rows) {
+  // Column index mapping (matches Excel import):
+  // 0=Date, 1=Branch, 2=Cashier
+  // 3=SubTotal, 4=Discount, 5=Rounding, 6=BeforeTax
+  // 7=QR, 8=Panda, 9=Lineman, 10=Cash
+  // 11=Drinks, 12=Snacks, 13=Promo
+  // 14=ShopExp, 15=Diff, 16=PayIn
+  // 17=Account, 18=Ref
+  // 19=CFTD, 20=Ice, 21=Meji, 22=Jinda, 23=Sugar, 24=Soda, 25=Yogurt, 26=Texbz, 27=Lime, 28=Coconut
+  // 29=StdExpTotal
+
   var empty = document.getElementById('s-empty');
   var stats = document.getElementById('s-stats');
   var tbody = document.getElementById('s-tbody');
   tbody.innerHTML = '';
   if (!rows.length) { empty.style.display='block'; stats.style.display='none'; toast('ไม่พบข้อมูล','error'); return; }
   empty.style.display='none'; stats.style.display='block';
-  var tSales=0,tExp=0,tPayIn=0,maxQr=0,maxQrDate='-';
+
+  var tSales=0, tExp=0, tPayIn=0, tQr=0, tCash=0;
+  var tCftd=0, tIce=0, tMeji=0, tJinda=0, tSoda=0, tTexbz=0;
+  var maxQr=0, maxQrDate='-', maxSale=0, maxSaleDate='-';
+
   var fmt  = function(v) { return '฿' + (parseFloat(v)||0).toLocaleString('th-TH',{minimumFractionDigits:2}); };
   var fmtS = function(v) { return '฿' + Math.round(parseFloat(v)||0).toLocaleString('th-TH'); };
+  var p    = function(r,i) { return parseFloat(r[i])||0; };
+
   rows.forEach(function(r) {
-    var sales=parseFloat(r[5])||0,qr=parseFloat(r[6])||0,exp=parseFloat(r[13])||0,pi=parseFloat(r[15])||0;
-    tSales+=sales;tExp+=exp;tPayIn+=pi;
-    if(qr>maxQr){maxQr=qr;maxQrDate=r[0];}
-    var tr=document.createElement('tr');
-    tr.innerHTML='<td class="mono">'+r[0]+'</td><td class="mono">'+fmt(r[3])+'</td><td class="mono">'+fmt(r[4])+'</td><td class="mono">'+fmt(r[5])+'</td><td class="mono">'+fmt(r[6])+'</td><td class="mono">'+fmt(r[9])+'</td><td class="mono">'+fmt(r[13])+'</td><td class="mono">'+fmt(r[15])+'</td>';
+    var sales = p(r,3);   // SubTotal as รายรับ
+    var qr    = p(r,7);
+    var cash  = p(r,10);
+    var exp   = p(r,14);  // ShopExp
+    var pi    = p(r,16);  // PayIn
+
+    tSales += sales; tExp += exp; tPayIn += pi;
+    tQr += qr; tCash += cash;
+    tCftd  += p(r,19); tIce   += p(r,20);
+    tMeji  += p(r,21); tJinda += p(r,22);
+    tSoda  += p(r,24); tTexbz += p(r,26);
+
+    if (qr > maxQr)      { maxQr = qr; maxQrDate = r[0]; }
+    if (sales > maxSale) { maxSale = sales; maxSaleDate = r[0]; }
+
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="mono">'+r[0]+'</td>'
+      +'<td class="mono">'+fmt(p(r,3))+'</td>'
+      +'<td class="mono">'+fmt(p(r,4))+'</td>'
+      +'<td class="mono">'+fmt(p(r,6))+'</td>'
+      +'<td class="mono">'+fmt(p(r,7))+'</td>'
+      +'<td class="mono">'+fmt(p(r,10))+'</td>'
+      +'<td class="mono">'+fmt(p(r,14))+'</td>'
+      +'<td class="mono">'+fmt(p(r,16))+'</td>';
     tbody.appendChild(tr);
   });
-  var profit=tSales-tExp;
-  document.getElementById('ss-sales').textContent=fmtS(tSales);
-  document.getElementById('ss-exp').textContent=fmtS(tExp);
-  document.getElementById('ss-profit').textContent=fmtS(profit);
-  document.getElementById('ss-profit').className='stat-value '+(profit>=0?'pos':'neg');
-  document.getElementById('ss-payin').textContent=fmtS(tPayIn);
-  document.getElementById('ss-qr').textContent=maxQrDate+' ('+fmtS(maxQr)+')';
-  document.getElementById('ss-days').textContent=rows.length+' วัน';
+
+  var profit = tSales - tExp;
+  document.getElementById('ss-sales').textContent = fmtS(tSales);
+  document.getElementById('ss-exp').textContent   = fmtS(tExp);
+  document.getElementById('ss-profit').textContent = fmtS(profit);
+  document.getElementById('ss-profit').className  = 'stat-value ' + (profit >= 0 ? 'pos' : 'neg');
+  document.getElementById('ss-payin').textContent      = fmtS(tPayIn);
+  document.getElementById('ss-qr-total').textContent   = fmtS(tQr);
+  document.getElementById('ss-cash-total').textContent = fmtS(tCash);
+  document.getElementById('ss-cftd').textContent  = fmtS(tCftd);
+  document.getElementById('ss-ice').textContent   = fmtS(tIce);
+  document.getElementById('ss-meji').textContent  = fmtS(tMeji);
+  document.getElementById('ss-jinda').textContent = fmtS(tJinda);
+  document.getElementById('ss-soda').textContent  = fmtS(tSoda);
+  document.getElementById('ss-texbz').textContent = fmtS(tTexbz);
+  document.getElementById('ss-qr').textContent      = maxQrDate + ' (' + fmtS(maxQr) + ')';
+  document.getElementById('ss-maxsale').textContent = maxSaleDate + ' (' + fmtS(maxSale) + ')';
+  document.getElementById('ss-days').textContent    = rows.length + ' วัน';
 }
 
 function saveGsUrl() {
@@ -796,4 +892,3 @@ function toast(msg, type) {
 
 </body>
 </html>
-

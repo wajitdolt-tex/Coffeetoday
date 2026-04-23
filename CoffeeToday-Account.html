@@ -1125,8 +1125,8 @@ function renderSummary(rows) {
   var tSales=0, tExp=0, tPayIn=0, tQr=0, tLineman=0, tCash=0;
   var tCftd=0, tIce=0, tMeji=0, tJinda=0, tSoda=0, tTexbz=0;
   var maxQr=0, maxQrDate='-', maxSale=0, maxSaleDate='-';
-  var fmt  = function(v) { return '฿'+(parseFloat(v)||0).toLocaleString('th-TH',{minimumFractionDigits:2}); };
-  var fmtS = function(v) { return '฿'+Math.round(parseFloat(v)||0).toLocaleString('th-TH'); };
+  var fmt  = function(v) { return '฿'+(parseFloat(v)||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  var fmtS = function(v) { return '฿'+(parseFloat(v)||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
   var p    = function(r,i) { return parseFloat(r[i])||0; };
 
   rows.forEach(function(r) {
@@ -1240,7 +1240,7 @@ function renderYearly(results, year) {
   empty.style.display='none'; stats.style.display='block';
 
   var p    = function(r,i){ return parseFloat(r[i])||0; };
-  var fmtS = function(v){ return '฿'+Math.round(parseFloat(v)||0).toLocaleString('th-TH'); };
+  var fmtS = function(v){ return '฿'+(parseFloat(v)||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
   var ytSales=0, ytExp=0, ytPayIn=0;
 
   results.forEach(function(m) {

@@ -442,7 +442,7 @@ tr:hover td{background:var(--bg3);}
       <div class="stat-box"><div class="stat-label">นมเมจิ</div><div class="stat-value" id="ss-meji">฿0</div></div>
       <div class="stat-box"><div class="stat-label">นมจินดา</div><div class="stat-value" id="ss-jinda">฿0</div></div>
       <div class="stat-box"><div class="stat-label">โซดา</div><div class="stat-value" id="ss-soda">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">ขนม TEXBZ</div><div class="stat-value" id="ss-texbz">฿0</div></div>
+      <div class="stat-box"><div class="stat-label">Bakery</div><div class="stat-value" id="ss-bakery">฿0</div></div>
     </div>
   </div>
 
@@ -651,12 +651,12 @@ var cfg = JSON.parse(localStorage.getItem('ct_cfg') || '{}');
 
 var BRANCH_NAMES = { passione: 'แพชชั่นระยอง', lotus: 'โลตัสระยอง' };
 
-var STD_EXP_PASSIONE = ['e-ice','e-meji','e-sugar','e-soda','e-yogurt','e-texbz','e-lime','e-coconut'];
-var STD_EXP_LOTUS    = ['e-meji','e-sugar','e-soda','e-yogurt','e-texbz','e-lime','e-coconut'];
+var STD_EXP_PASSIONE = ['e-ice','e-meji','e-sugar','e-soda','e-yogurt','e-bakery','e-lime','e-coconut'];
+var STD_EXP_LOTUS    = ['e-meji','e-sugar','e-soda','e-yogurt','e-bakery','e-lime','e-coconut'];
 
 var STD_LABELS = {
   'e-ice':'น้ำแข็ง','e-meji':'นมเมจิ','e-sugar':'น้ำตาลทราย',
-  'e-soda':'โซดา','e-yogurt':'โยเกิร์ต','e-texbz':'ขนม TEXBZ',
+  'e-soda':'โซดา','e-yogurt':'โยเกิร์ต','e-bakery':'Bakery',
   'e-lime':'มะนาวสด','e-coconut':'น้ำมะพร้าว'
 };
 
@@ -1123,87 +1123,87 @@ function renderSummary(rows) {
   empty.style.display='none'; stats.style.display='block';
 
   var tSales=0, tExp=0, tPayIn=0, tQr=0, tLineman=0, tCash=0;
-  var tCftd=0, tIce=0, tMeji=0, tJinda=0, tSoda=0, tTexbz=0;
+  var tCftd=0, tIce=0, tMeji=0, tJinda=0, tSoda=0, tBakery=0;
   var maxQr=0, maxQrDate='-', maxSale=0, maxSaleDate='-';
   var fmt  = function(v) { return '฿'+(parseFloat(v)||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
-  var fmtS = function(v) { return '฿'+(parseFloat(v)||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  var fmtS = fmt;
   var p    = function(r,i) { return parseFloat(r[i])||0; };
 
   rows.forEach(function(r) {
     var sales=p(r,3), qr=p(r,7), lineman=p(r,9), cash=p(r,10), exp=p(r,14), pi=p(r,16);
     tSales+=sales; tExp+=exp; tPayIn+=pi;
     tQr+=qr; tLineman+=lineman; tCash+=cash;
-    tCftd+=p(r,19); tIce+=p(r,20); tMeji+=p(r,21); tJinda+=p(r,22);
-    tSoda+=p(r,24); tTexbz+=p(r,26);
-    if (qr>maxQr)      { maxQr=qr; maxQrDate=r[0]; }
+    tCftd  +=p(r,19); tIce   +=p(r,20);
+    tMeji  +=p(r,21); tJinda +=p(r,22);
+    tSoda  +=p(r,24); tBakery+=p(r,26);
+    if (qr>maxQr)      { maxQr=qr;    maxQrDate=r[0]; }
     if (sales>maxSale) { maxSale=sales; maxSaleDate=r[0]; }
     var tr=document.createElement('tr');
     tr.innerHTML='<td class="mono">'+r[0]+'</td><td class="mono">'+fmt(p(r,3))+'</td><td class="mono">'+fmt(p(r,4))+'</td><td class="mono">'+fmt(p(r,6))+'</td><td class="mono">'+fmt(p(r,7))+'</td><td class="mono">'+fmt(p(r,10))+'</td><td class="mono">'+fmt(p(r,14))+'</td><td class="mono">'+fmt(p(r,16))+'</td>';
     tbody.appendChild(tr);
   });
 
-  // ── คำนวณค่าใช้จ่ายจากวางบิลของเดือนนี้ (ทั้งจ่ายแล้วและยังไม่จ่าย)
-  var month = document.getElementById('s-month').value;
+  // ── ยอด Line Man บัญชีคุณซัน (ถ้ามี)
+  var month  = document.getElementById('s-month').value;
   var branch = document.getElementById('s-branch').value;
+  var lsKey  = 'ct_lineman_sun_' + branch + '_' + month;
+  var lsData = localStorage.getItem(lsKey);
+  var tLinemanSun = lsData ? (parseFloat(JSON.parse(lsData).amount)||0) : 0;
+  var tIncome = tSales + tLinemanSun;
 
-  // รายการวางบิลที่เกี่ยวกับเดือนนี้ (date หรือ due อยู่ในเดือนนี้)
+  // ── วางบิลของเดือนนี้
   var monthPayables = payables.filter(function(px) {
     var matchBranch = !branch || px.branch === branch || px.branch === BRANCH_NAMES[branch];
     var inMonth = (px.date && px.date.startsWith(month)) || (px.due && px.due.startsWith(month));
     return matchBranch && inMonth;
   });
-
-  var tPayablePaid   = 0;
-  var tPayableUnpaid = 0;
+  var tPayablePaid=0, tPayableUnpaid=0;
   monthPayables.forEach(function(px) {
-    px.paid ? (tPayablePaid += px.amount) : (tPayableUnpaid += px.amount);
+    px.paid ? (tPayablePaid+=px.amount) : (tPayableUnpaid+=px.amount);
   });
   var tPayableAll = tPayablePaid + tPayableUnpaid;
+  var tExpAll     = tExp + tPayableAll;
+  var profit      = tIncome - tExpAll;
 
-  // รายจ่ายรวมทั้งหมด = ค่าใช้จ่ายหน้าร้าน + ค่าวางบิลทั้งหมดของเดือน
-  var tExpAll = tExp + tPayableAll;
-  var profit  = tSales - tExpAll;
-
-  // รายการค้างชำระ
+  // ── รายการค้างชำระ
   var unpaidItems = monthPayables.filter(function(px) { return !px.paid; });
-  var tUnpaid = tPayableUnpaid;
   var listEl = document.getElementById('ss-unpaid-list');
   if (unpaidItems.length) {
     var html = '<div style="display:flex;flex-direction:column;gap:6px;">';
     unpaidItems.forEach(function(px) {
       var overdue = px.due && px.due < new Date().toISOString().split('T')[0];
       html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--red-t);border-radius:6px;border:1px solid rgba(184,64,64,.15);">'
-        + '<div><div style="font-size:13px;font-weight:500;">'+px.desc+'</div>'
-        + '<div style="font-size:11px;color:var(--text3);">'+(BRANCH_NAMES[px.branch]||px.branch)+' · กำหนด '+(px.due||'-')+(overdue?' ⚠':'')+'</div></div>'
-        + '<div style="font-family:\'DM Mono\',monospace;font-weight:600;color:var(--red);">฿'+px.amount.toLocaleString('th-TH',{minimumFractionDigits:2})+'</div>'
-        + '</div>';
+        +'<div><div style="font-size:13px;font-weight:500;">'+px.desc+'</div>'
+        +'<div style="font-size:11px;color:var(--text3);">'+(BRANCH_NAMES[px.branch]||px.branch)+' · กำหนด '+(px.due||'-')+(overdue?' ⚠':'')+'</div></div>'
+        +'<div style="font-family:\'DM Mono\',monospace;font-weight:600;color:var(--red);">฿'+px.amount.toLocaleString('th-TH',{minimumFractionDigits:2})+'</div>'
+        +'</div>';
     });
-    html += '</div>';
-    listEl.innerHTML = html;
+    listEl.innerHTML = html + '</div>';
   } else {
     listEl.innerHTML = '<div class="empty-state" style="padding:16px;"><p>ไม่มีรายการค้างชำระในเดือนนี้ ✓</p></div>';
   }
-  document.getElementById('ss-unpaid-total').textContent = '฿'+tUnpaid.toLocaleString('th-TH',{minimumFractionDigits:2});
+  document.getElementById('ss-unpaid-total').textContent = fmtS(tPayableUnpaid);
 
-  document.getElementById('ss-sales').textContent         = fmtS(tSales);
-  document.getElementById('ss-exp').textContent           = fmtS(tExp);
-  document.getElementById('ss-payable-paid').textContent  = fmtS(tPayableAll);
-  document.getElementById('ss-exp-total').textContent     = fmtS(tExpAll);
-  document.getElementById('ss-profit').textContent        = fmtS(profit);
-  document.getElementById('ss-profit').className          = 'stat-value '+(profit>=0?'pos':'neg');
-  document.getElementById('ss-payin').textContent         = fmtS(tPayIn);
-  document.getElementById('ss-qr-total').textContent      = fmtS(tQr);
-  document.getElementById('ss-lineman-total').textContent = fmtS(tLineman);
-  document.getElementById('ss-cash-total').textContent    = fmtS(tCash);
-  document.getElementById('ss-cftd').textContent   = fmtS(tCftd);
-  document.getElementById('ss-ice').textContent    = fmtS(tIce);
-  document.getElementById('ss-meji').textContent   = fmtS(tMeji);
-  document.getElementById('ss-jinda').textContent  = fmtS(tJinda);
-  document.getElementById('ss-soda').textContent   = fmtS(tSoda);
-  document.getElementById('ss-texbz').textContent  = fmtS(tTexbz);
-  document.getElementById('ss-qr').textContent     = maxQrDate+' ('+fmtS(maxQr)+')';
-  document.getElementById('ss-maxsale').textContent= maxSaleDate+' ('+fmtS(maxSale)+')';
-  document.getElementById('ss-days').textContent   = rows.length+' วัน';
+  var salesLabel = fmtS(tIncome) + (tLinemanSun > 0 ? ' <span style="font-size:11px;color:var(--green);font-family:Sarabun,sans-serif;">(รวม LM ฿'+tLinemanSun.toLocaleString('th-TH',{minimumFractionDigits:2})+')</span>' : '');
+  document.getElementById('ss-sales').innerHTML          = salesLabel;
+  document.getElementById('ss-exp').textContent          = fmtS(tExp);
+  document.getElementById('ss-payable-paid').textContent = fmtS(tPayableAll);
+  document.getElementById('ss-exp-total').textContent    = fmtS(tExpAll);
+  document.getElementById('ss-profit').textContent       = fmtS(profit);
+  document.getElementById('ss-profit').className         = 'stat-value '+(profit>=0?'pos':'neg');
+  document.getElementById('ss-payin').textContent        = fmtS(tPayIn);
+  document.getElementById('ss-qr-total').textContent     = fmtS(tQr);
+  document.getElementById('ss-lineman-total').textContent= fmtS(tLineman);
+  document.getElementById('ss-cash-total').textContent   = fmtS(tCash);
+  document.getElementById('ss-cftd').textContent         = fmtS(tCftd);
+  document.getElementById('ss-ice').textContent          = fmtS(tIce);
+  document.getElementById('ss-meji').textContent         = fmtS(tMeji);
+  document.getElementById('ss-jinda').textContent        = fmtS(tJinda);
+  document.getElementById('ss-soda').textContent         = fmtS(tSoda);
+  document.getElementById('ss-bakery').textContent        = fmtS(tBakery);
+  document.getElementById('ss-qr').textContent           = maxQrDate+' ('+fmtS(maxQr)+')';
+  document.getElementById('ss-maxsale').textContent      = maxSaleDate+' ('+fmtS(maxSale)+')';
+  document.getElementById('ss-days').textContent         = rows.length+' วัน';
 }
 
 var yearlyCache = {};

@@ -401,7 +401,7 @@ tr:hover td{background:var(--bg3);}
     </div>
     <div class="grid-3">
       <div class="stat-box"><div class="stat-label">ค่าใช้จ่ายหน้าร้าน</div><div class="stat-value" id="ss-exp">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">ค่าวางบิล (จ่ายแล้ว)</div><div class="stat-value" id="ss-payable-paid">฿0</div></div>
+      <div class="stat-box"><div class="stat-label">ค่าวางบิลเดือนนี้ (ทั้งหมด)</div><div class="stat-value" id="ss-payable-paid">฿0</div></div>
       <div class="stat-box"><div class="stat-label">ยอด Pay In รวม</div><div class="stat-value" id="ss-payin">฿0</div></div>
     </div>
   </div>
@@ -1142,20 +1142,35 @@ function renderSummary(rows) {
     tbody.appendChild(tr);
   });
 
-  // รายการวางบิลค้างชำระของเดือนนี้
-  var month = document.getElementById('s-month').value; // YYYY-MM
+  // ── คำนวณค่าใช้จ่ายจากวางบิลของเดือนนี้ (ทั้งจ่ายแล้วและยังไม่จ่าย)
+  var month = document.getElementById('s-month').value;
   var branch = document.getElementById('s-branch').value;
-  var unpaidItems = payables.filter(function(px) {
+
+  // รายการวางบิลที่เกี่ยวกับเดือนนี้ (date หรือ due อยู่ในเดือนนี้)
+  var monthPayables = payables.filter(function(px) {
     var matchBranch = !branch || px.branch === branch || px.branch === BRANCH_NAMES[branch];
-    var matchMonth  = !px.due || px.due.startsWith(month);
-    return !px.paid && (matchMonth || (px.date && px.date.startsWith(month)));
+    var inMonth = (px.date && px.date.startsWith(month)) || (px.due && px.due.startsWith(month));
+    return matchBranch && inMonth;
   });
-  var tUnpaid = 0;
+
+  var tPayablePaid   = 0;
+  var tPayableUnpaid = 0;
+  monthPayables.forEach(function(px) {
+    px.paid ? (tPayablePaid += px.amount) : (tPayableUnpaid += px.amount);
+  });
+  var tPayableAll = tPayablePaid + tPayableUnpaid;
+
+  // รายจ่ายรวมทั้งหมด = ค่าใช้จ่ายหน้าร้าน + ค่าวางบิลทั้งหมดของเดือน
+  var tExpAll = tExp + tPayableAll;
+  var profit  = tSales - tExpAll;
+
+  // รายการค้างชำระ
+  var unpaidItems = monthPayables.filter(function(px) { return !px.paid; });
+  var tUnpaid = tPayableUnpaid;
   var listEl = document.getElementById('ss-unpaid-list');
   if (unpaidItems.length) {
     var html = '<div style="display:flex;flex-direction:column;gap:6px;">';
     unpaidItems.forEach(function(px) {
-      tUnpaid += px.amount;
       var overdue = px.due && px.due < new Date().toISOString().split('T')[0];
       html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--red-t);border-radius:6px;border:1px solid rgba(184,64,64,.15);">'
         + '<div><div style="font-size:13px;font-weight:500;">'+px.desc+'</div>'
@@ -1170,18 +1185,9 @@ function renderSummary(rows) {
   }
   document.getElementById('ss-unpaid-total').textContent = '฿'+tUnpaid.toLocaleString('th-TH',{minimumFractionDigits:2});
 
-  // คำนวณรายจ่ายวางบิลที่จ่ายแล้วของเดือนนี้
-  var paidPayables = payables.filter(function(px) {
-    return px.paid && px.paidDate && px.paidDate.startsWith(month);
-  });
-  var tPayablePaid = paidPayables.reduce(function(a,b){return a+b.amount;},0);
-
-  var tExpAll = tExp + tPayablePaid;
-  var profit  = tSales - tExpAll;
-
   document.getElementById('ss-sales').textContent         = fmtS(tSales);
   document.getElementById('ss-exp').textContent           = fmtS(tExp);
-  document.getElementById('ss-payable-paid').textContent  = fmtS(tPayablePaid);
+  document.getElementById('ss-payable-paid').textContent  = fmtS(tPayableAll);
   document.getElementById('ss-exp-total').textContent     = fmtS(tExpAll);
   document.getElementById('ss-profit').textContent        = fmtS(profit);
   document.getElementById('ss-profit').className          = 'stat-value '+(profit>=0?'pos':'neg');

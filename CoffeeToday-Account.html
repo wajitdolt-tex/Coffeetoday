@@ -322,79 +322,146 @@ tr:hover td{background:var(--bg3);}
 <!-- ════ SUMMARY ════ -->
 
 <div id="page-summary" class="page">
-  <div class="page-header"><h1>สรุปรายเดือน</h1><p>ดึงข้อมูลจาก Google Sheets สรุปผลประจำเดือน</p></div>
-  <div class="month-row">
-    <div><label>สาขา</label><select id="s-branch"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
-    <div><label>เดือน/ปี</label><input type="month" id="s-month"></div>
-    <div><button class="btn btn-primary" onclick="loadSummary()"><span id="s-txt">ดึงข้อมูล</span></button></div>
+  <div class="page-header"><h1>สรุป</h1><p>สรุปรายเดือนและรายปี</p></div>
+
+  <!-- Sub tabs -->
+
+  <div style="display:flex;gap:4px;margin-bottom:20px;">
+    <button class="btn btn-sm" id="stab-month" onclick="switchSTab('month')" style="background:var(--accent);color:#fff;">รายเดือน</button>
+    <button class="btn btn-sm btn-outline" id="stab-year" onclick="switchSTab('year')">รายปี</button>
   </div>
-  <div id="s-stats" style="display:none;">
+
+  <!-- ════ MONTHLY ════ -->
+
+  <div id="stab-month-content">
+    <div class="month-row">
+      <div><label>สาขา</label><select id="s-branch"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
+      <div><label>เดือน/ปี</label><input type="month" id="s-month"></div>
+      <div><button class="btn btn-primary" onclick="loadSummary()"><span id="s-txt">ดึงข้อมูล</span></button></div>
+    </div>
 
 ```
-<!-- รายรับ รายจ่าย กำไร/ขาดทุน -->
-<div class="card" style="margin-bottom:13px;">
-  <div class="card-title">รายรับ — รายจ่าย — กำไร/ขาดทุน</div>
-  <div class="grid-3" style="margin-bottom:14px;">
+<div id="s-stats" style="display:none;">
+
+  <!-- รายรับ รายจ่าย กำไร -->
+  <div class="card" style="margin-bottom:13px;">
+    <div class="card-title">รายรับ — รายจ่าย — กำไร/ขาดทุน</div>
+    <div class="grid-3" style="margin-bottom:13px;">
+      <div class="stat-box" style="border-left:3px solid var(--green);">
+        <div class="stat-label">รายรับ (ยอดขายรวม)</div>
+        <div class="stat-value pos" id="ss-sales">฿0</div>
+      </div>
+      <div class="stat-box" style="border-left:3px solid var(--red);">
+        <div class="stat-label">รายจ่ายทั้งหมด</div>
+        <div class="stat-value neg" id="ss-exp-total">฿0</div>
+      </div>
+      <div class="stat-box" style="border-left:3px solid var(--accent);">
+        <div class="stat-label">กำไร / ขาดทุน</div>
+        <div class="stat-value" id="ss-profit">฿0</div>
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="stat-box"><div class="stat-label">ค่าใช้จ่ายหน้าร้าน</div><div class="stat-value" id="ss-exp">฿0</div></div>
+      <div class="stat-box"><div class="stat-label">ค่าวางบิล (จ่ายแล้ว)</div><div class="stat-value" id="ss-payable-paid">฿0</div></div>
+      <div class="stat-box"><div class="stat-label">ยอด Pay In รวม</div><div class="stat-value" id="ss-payin">฿0</div></div>
+    </div>
+  </div>
+
+  <!-- ช่องทางรับเงิน -->
+  <div class="card" style="margin-bottom:13px;">
+    <div class="card-title">ช่องทางรับเงิน</div>
+    <div class="grid-3">
+      <div class="stat-box"><div class="stat-label">QR Payment</div><div class="stat-value" id="ss-qr-total">฿0</div></div>
+      <div class="stat-box"><div class="stat-label">Line Man</div><div class="stat-value" id="ss-lineman-total">฿0</div></div>
+      <div class="stat-box"><div class="stat-label">Cash</div><div class="stat-value" id="ss-cash-total">฿0</div></div>
+    </div>
+  </div>
+
+  <!-- ค่าใช้จ่ายแยกประเภท -->
+  <div class="card" style="margin-bottom:13px;">
+    <div class="card-title">ค่าใช้จ่ายแยกประเภท (หน้าร้าน)</div>
+    <div class="grid-3">
+      <div class="stat-box"><div class="stat-label">วัตถุดิบ CFTD</div><div class="stat-value" id="ss-cftd">฿0</div></div>
+      <div class="stat-box"><div class="stat-label">น้ำแข็ง</div><div class="stat-value" id="ss-ice">฿0</div></div>
+      <div class="stat-box"><div class="stat-label">นมเมจิ</div><div class="stat-value" id="ss-meji">฿0</div></div>
+      <div class="stat-box"><div class="stat-label">นมจินดา</div><div class="stat-value" id="ss-jinda">฿0</div></div>
+      <div class="stat-box"><div class="stat-label">โซดา</div><div class="stat-value" id="ss-soda">฿0</div></div>
+      <div class="stat-box"><div class="stat-label">ขนม TEXBZ</div><div class="stat-value" id="ss-texbz">฿0</div></div>
+    </div>
+  </div>
+
+  <!-- รายการวางบิลค้างชำระของเดือนนี้ -->
+  <div class="card" style="margin-bottom:13px;">
+    <div class="card-title">รายการวางบิลค้างชำระ (เดือนนี้)</div>
+    <div id="ss-unpaid-list">
+      <div class="empty-state" style="padding:20px;"><p>ไม่มีรายการค้างชำระในเดือนนี้ ✓</p></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+      <span style="font-size:12px;color:var(--text2);">ยอดค้างชำระทั้งหมด</span>
+      <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--red);font-size:16px;" id="ss-unpaid-total">฿0</span>
+    </div>
+  </div>
+
+  <!-- ข้อมูลเพิ่มเติม -->
+  <div class="grid-3" style="margin-bottom:13px;">
+    <div class="stat-box"><div class="stat-label">QR สูงสุดวันที่</div><div class="stat-value" id="ss-qr" style="font-size:13px;">-</div></div>
+    <div class="stat-box"><div class="stat-label">ยอดขายสูงสุดวันที่</div><div class="stat-value" id="ss-maxsale" style="font-size:13px;">-</div></div>
+    <div class="stat-box"><div class="stat-label">จำนวนวันที่บันทึก</div><div class="stat-value" id="ss-days">0</div></div>
+  </div>
+
+  <!-- ตารางรายวัน -->
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div class="tbl-wrap">
+      <table><thead><tr><th>วันที่</th><th>Sub Total</th><th>Discount</th><th>ยอดสุทธิ</th><th>QR</th><th>Cash</th><th>ค่าใช้จ่าย</th><th>Pay In</th></tr></thead>
+      <tbody id="s-tbody"></tbody></table>
+    </div>
+  </div>
+</div>
+<div id="s-empty" class="empty-state"><div class="icon">📊</div><p>เลือกสาขาและเดือน แล้วกดดึงข้อมูล</p></div>
+```
+
+  </div>
+
+  <!-- ════ YEARLY ════ -->
+
+  <div id="stab-year-content" style="display:none;">
+    <div class="month-row">
+      <div><label>สาขา</label><select id="sy-branch"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
+      <div><label>ปี (ค.ศ.)</label><input type="number" id="sy-year" style="width:100px;" min="2020" max="2099"></div>
+      <div><button class="btn btn-primary" onclick="loadYearly()"><span id="sy-txt">ดึงข้อมูล</span></button></div>
+    </div>
+
+```
+<div id="sy-stats" style="display:none;">
+  <div class="grid-3" style="margin-bottom:13px;">
     <div class="stat-box" style="border-left:3px solid var(--green);">
-      <div class="stat-label">รายรับ (ยอดขายรวม)</div>
-      <div class="stat-value pos" id="ss-sales">฿0</div>
+      <div class="stat-label">รายรับรวมทั้งปี</div>
+      <div class="stat-value pos" id="sy-sales">฿0</div>
     </div>
     <div class="stat-box" style="border-left:3px solid var(--red);">
-      <div class="stat-label">รายจ่าย (ค่าใช้จ่ายหน้าร้าน)</div>
-      <div class="stat-value neg" id="ss-exp">฿0</div>
+      <div class="stat-label">รายจ่ายรวมทั้งปี</div>
+      <div class="stat-value neg" id="sy-exp">฿0</div>
     </div>
     <div class="stat-box" style="border-left:3px solid var(--accent);">
-      <div class="stat-label">กำไร / ขาดทุน</div>
-      <div class="stat-value" id="ss-profit">฿0</div>
+      <div class="stat-label">กำไร/ขาดทุนรวมทั้งปี</div>
+      <div class="stat-value" id="sy-profit">฿0</div>
     </div>
   </div>
-  <div class="grid-3">
-    <div class="stat-box">
-      <div class="stat-label">ยอด Pay In รวม</div>
-      <div class="stat-value" id="ss-payin">฿0</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-label">ยอด QR รวม</div>
-      <div class="stat-value" id="ss-qr-total">฿0</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-label">ยอด Cash รวม</div>
-      <div class="stat-value" id="ss-cash-total">฿0</div>
-    </div>
-  </div>
-</div>
 
-<!-- ค่าใช้จ่ายแยกประเภท -->
-<div class="card" style="margin-bottom:13px;">
-  <div class="card-title">ค่าใช้จ่ายแยกประเภท</div>
-  <div class="grid-3">
-    <div class="stat-box"><div class="stat-label">วัตถุดิบ CFTD</div><div class="stat-value" id="ss-cftd">฿0</div></div>
-    <div class="stat-box"><div class="stat-label">น้ำแข็ง</div><div class="stat-value" id="ss-ice">฿0</div></div>
-    <div class="stat-box"><div class="stat-label">นมเมจิ</div><div class="stat-value" id="ss-meji">฿0</div></div>
-    <div class="stat-box"><div class="stat-label">นมจินดา</div><div class="stat-value" id="ss-jinda">฿0</div></div>
-    <div class="stat-box"><div class="stat-label">โซดา</div><div class="stat-value" id="ss-soda">฿0</div></div>
-    <div class="stat-box"><div class="stat-label">ขนม TEXBZ</div><div class="stat-value" id="ss-texbz">฿0</div></div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>เดือน</th><th>รายรับ</th><th>ค่าใช้จ่าย</th><th>กำไร/ขาดทุน</th><th>Pay In</th><th>วันที่บันทึก</th></tr></thead>
+        <tbody id="sy-tbody"></tbody>
+        <tfoot id="sy-tfoot"></tfoot>
+      </table>
+    </div>
   </div>
 </div>
-
-<!-- ข้อมูลเพิ่มเติม -->
-<div class="grid-3" style="margin-bottom:13px;">
-  <div class="stat-box"><div class="stat-label">QR สูงสุดวันที่</div><div class="stat-value" id="ss-qr" style="font-size:13px;">-</div></div>
-  <div class="stat-box"><div class="stat-label">ยอดขายสูงสุดวันที่</div><div class="stat-value" id="ss-maxsale" style="font-size:13px;">-</div></div>
-  <div class="stat-box"><div class="stat-label">จำนวนวันที่บันทึก</div><div class="stat-value" id="ss-days">0</div></div>
-</div>
-
-<!-- ตารางรายวัน -->
-<div class="card" style="padding:0;overflow:hidden;">
-  <div class="tbl-wrap">
-    <table><thead><tr><th>วันที่</th><th>Sub Total</th><th>Discount</th><th>ยอดสุทธิ</th><th>QR</th><th>Cash</th><th>ค่าใช้จ่าย</th><th>Pay In</th></tr></thead>
-    <tbody id="s-tbody"></tbody></table>
-  </div>
-</div>
+<div id="sy-empty" class="empty-state"><div class="icon">📅</div><p>เลือกสาขาและปี แล้วกดดึงข้อมูล</p></div>
 ```
 
   </div>
-  <div id="s-empty" class="empty-state"><div class="icon">📊</div><p>เลือกสาขาและเดือน แล้วกดดึงข้อมูล</p></div>
 </div>
 
 <!-- ════ SETTINGS ════ -->
@@ -451,6 +518,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('pf-jinda-due').value = today;
   document.getElementById('pf-ice-due').value   = today;
   document.getElementById('s-month').value = today.slice(0,7);
+  document.getElementById('sy-year').value = new Date().getFullYear();
 
   if (cfg.gsUrl) {
     document.getElementById('gs-url').value = cfg.gsUrl;
@@ -780,17 +848,16 @@ async function loadSummary() {
   finally { txt.textContent = 'ดึงข้อมูล'; }
 }
 
-function renderSummary(rows) {
-  // Column index mapping (matches Excel import):
-  // 0=Date, 1=Branch, 2=Cashier
-  // 3=SubTotal, 4=Discount, 5=Rounding, 6=BeforeTax
-  // 7=QR, 8=Panda, 9=Lineman, 10=Cash
-  // 11=Drinks, 12=Snacks, 13=Promo
-  // 14=ShopExp, 15=Diff, 16=PayIn
-  // 17=Account, 18=Ref
-  // 19=CFTD, 20=Ice, 21=Meji, 22=Jinda, 23=Sugar, 24=Soda, 25=Yogurt, 26=Texbz, 27=Lime, 28=Coconut
-  // 29=StdExpTotal
+function switchSTab(tab) {
+  document.getElementById('stab-month-content').style.display = tab === 'month' ? 'block' : 'none';
+  document.getElementById('stab-year-content').style.display  = tab === 'year'  ? 'block' : 'none';
+  document.getElementById('stab-month').style.background = tab === 'month' ? 'var(--accent)' : 'transparent';
+  document.getElementById('stab-month').style.color      = tab === 'month' ? '#fff' : 'var(--text2)';
+  document.getElementById('stab-year').style.background  = tab === 'year'  ? 'var(--accent)' : 'transparent';
+  document.getElementById('stab-year').style.color       = tab === 'year'  ? '#fff' : 'var(--text2)';
+}
 
+function renderSummary(rows) {
   var empty = document.getElementById('s-empty');
   var stats = document.getElementById('s-stats');
   var tbody = document.getElementById('s-tbody');
@@ -798,60 +865,158 @@ function renderSummary(rows) {
   if (!rows.length) { empty.style.display='block'; stats.style.display='none'; toast('ไม่พบข้อมูล','error'); return; }
   empty.style.display='none'; stats.style.display='block';
 
-  var tSales=0, tExp=0, tPayIn=0, tQr=0, tCash=0;
+  var tSales=0, tExp=0, tPayIn=0, tQr=0, tLineman=0, tCash=0;
   var tCftd=0, tIce=0, tMeji=0, tJinda=0, tSoda=0, tTexbz=0;
   var maxQr=0, maxQrDate='-', maxSale=0, maxSaleDate='-';
-
-  var fmt  = function(v) { return '฿' + (parseFloat(v)||0).toLocaleString('th-TH',{minimumFractionDigits:2}); };
-  var fmtS = function(v) { return '฿' + Math.round(parseFloat(v)||0).toLocaleString('th-TH'); };
+  var fmt  = function(v) { return '฿'+(parseFloat(v)||0).toLocaleString('th-TH',{minimumFractionDigits:2}); };
+  var fmtS = function(v) { return '฿'+Math.round(parseFloat(v)||0).toLocaleString('th-TH'); };
   var p    = function(r,i) { return parseFloat(r[i])||0; };
 
   rows.forEach(function(r) {
-    var sales = p(r,3);   // SubTotal as รายรับ
-    var qr    = p(r,7);
-    var cash  = p(r,10);
-    var exp   = p(r,14);  // ShopExp
-    var pi    = p(r,16);  // PayIn
-
-    tSales += sales; tExp += exp; tPayIn += pi;
-    tQr += qr; tCash += cash;
-    tCftd  += p(r,19); tIce   += p(r,20);
-    tMeji  += p(r,21); tJinda += p(r,22);
-    tSoda  += p(r,24); tTexbz += p(r,26);
-
-    if (qr > maxQr)      { maxQr = qr; maxQrDate = r[0]; }
-    if (sales > maxSale) { maxSale = sales; maxSaleDate = r[0]; }
-
-    var tr = document.createElement('tr');
-    tr.innerHTML =
-      '<td class="mono">'+r[0]+'</td>'
-      +'<td class="mono">'+fmt(p(r,3))+'</td>'
-      +'<td class="mono">'+fmt(p(r,4))+'</td>'
-      +'<td class="mono">'+fmt(p(r,6))+'</td>'
-      +'<td class="mono">'+fmt(p(r,7))+'</td>'
-      +'<td class="mono">'+fmt(p(r,10))+'</td>'
-      +'<td class="mono">'+fmt(p(r,14))+'</td>'
-      +'<td class="mono">'+fmt(p(r,16))+'</td>';
+    var sales=p(r,3), qr=p(r,7), lineman=p(r,9), cash=p(r,10), exp=p(r,14), pi=p(r,16);
+    tSales+=sales; tExp+=exp; tPayIn+=pi;
+    tQr+=qr; tLineman+=lineman; tCash+=cash;
+    tCftd+=p(r,19); tIce+=p(r,20); tMeji+=p(r,21); tJinda+=p(r,22);
+    tSoda+=p(r,24); tTexbz+=p(r,26);
+    if (qr>maxQr)      { maxQr=qr; maxQrDate=r[0]; }
+    if (sales>maxSale) { maxSale=sales; maxSaleDate=r[0]; }
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td class="mono">'+r[0]+'</td><td class="mono">'+fmt(p(r,3))+'</td><td class="mono">'+fmt(p(r,4))+'</td><td class="mono">'+fmt(p(r,6))+'</td><td class="mono">'+fmt(p(r,7))+'</td><td class="mono">'+fmt(p(r,10))+'</td><td class="mono">'+fmt(p(r,14))+'</td><td class="mono">'+fmt(p(r,16))+'</td>';
     tbody.appendChild(tr);
   });
 
-  var profit = tSales - tExp;
-  document.getElementById('ss-sales').textContent = fmtS(tSales);
-  document.getElementById('ss-exp').textContent   = fmtS(tExp);
-  document.getElementById('ss-profit').textContent = fmtS(profit);
-  document.getElementById('ss-profit').className  = 'stat-value ' + (profit >= 0 ? 'pos' : 'neg');
-  document.getElementById('ss-payin').textContent      = fmtS(tPayIn);
-  document.getElementById('ss-qr-total').textContent   = fmtS(tQr);
-  document.getElementById('ss-cash-total').textContent = fmtS(tCash);
-  document.getElementById('ss-cftd').textContent  = fmtS(tCftd);
-  document.getElementById('ss-ice').textContent   = fmtS(tIce);
-  document.getElementById('ss-meji').textContent  = fmtS(tMeji);
-  document.getElementById('ss-jinda').textContent = fmtS(tJinda);
-  document.getElementById('ss-soda').textContent  = fmtS(tSoda);
-  document.getElementById('ss-texbz').textContent = fmtS(tTexbz);
-  document.getElementById('ss-qr').textContent      = maxQrDate + ' (' + fmtS(maxQr) + ')';
-  document.getElementById('ss-maxsale').textContent = maxSaleDate + ' (' + fmtS(maxSale) + ')';
-  document.getElementById('ss-days').textContent    = rows.length + ' วัน';
+  // รายการวางบิลค้างชำระของเดือนนี้
+  var month = document.getElementById('s-month').value; // YYYY-MM
+  var branch = document.getElementById('s-branch').value;
+  var unpaidItems = payables.filter(function(px) {
+    var matchBranch = !branch || px.branch === branch || px.branch === BRANCH_NAMES[branch];
+    var matchMonth  = !px.due || px.due.startsWith(month);
+    return !px.paid && (matchMonth || (px.date && px.date.startsWith(month)));
+  });
+  var tUnpaid = 0;
+  var listEl = document.getElementById('ss-unpaid-list');
+  if (unpaidItems.length) {
+    var html = '<div style="display:flex;flex-direction:column;gap:6px;">';
+    unpaidItems.forEach(function(px) {
+      tUnpaid += px.amount;
+      var overdue = px.due && px.due < new Date().toISOString().split('T')[0];
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--red-t);border-radius:6px;border:1px solid rgba(184,64,64,.15);">'
+        + '<div><div style="font-size:13px;font-weight:500;">'+px.desc+'</div>'
+        + '<div style="font-size:11px;color:var(--text3);">'+(BRANCH_NAMES[px.branch]||px.branch)+' · กำหนด '+(px.due||'-')+(overdue?' ⚠':'')+'</div></div>'
+        + '<div style="font-family:\'DM Mono\',monospace;font-weight:600;color:var(--red);">฿'+px.amount.toLocaleString('th-TH',{minimumFractionDigits:2})+'</div>'
+        + '</div>';
+    });
+    html += '</div>';
+    listEl.innerHTML = html;
+  } else {
+    listEl.innerHTML = '<div class="empty-state" style="padding:16px;"><p>ไม่มีรายการค้างชำระในเดือนนี้ ✓</p></div>';
+  }
+  document.getElementById('ss-unpaid-total').textContent = '฿'+tUnpaid.toLocaleString('th-TH',{minimumFractionDigits:2});
+
+  // คำนวณรายจ่ายวางบิลที่จ่ายแล้วของเดือนนี้
+  var paidPayables = payables.filter(function(px) {
+    return px.paid && px.paidDate && px.paidDate.startsWith(month);
+  });
+  var tPayablePaid = paidPayables.reduce(function(a,b){return a+b.amount;},0);
+
+  var tExpAll = tExp + tPayablePaid;
+  var profit  = tSales - tExpAll;
+
+  document.getElementById('ss-sales').textContent         = fmtS(tSales);
+  document.getElementById('ss-exp').textContent           = fmtS(tExp);
+  document.getElementById('ss-payable-paid').textContent  = fmtS(tPayablePaid);
+  document.getElementById('ss-exp-total').textContent     = fmtS(tExpAll);
+  document.getElementById('ss-profit').textContent        = fmtS(profit);
+  document.getElementById('ss-profit').className          = 'stat-value '+(profit>=0?'pos':'neg');
+  document.getElementById('ss-payin').textContent         = fmtS(tPayIn);
+  document.getElementById('ss-qr-total').textContent      = fmtS(tQr);
+  document.getElementById('ss-lineman-total').textContent = fmtS(tLineman);
+  document.getElementById('ss-cash-total').textContent    = fmtS(tCash);
+  document.getElementById('ss-cftd').textContent   = fmtS(tCftd);
+  document.getElementById('ss-ice').textContent    = fmtS(tIce);
+  document.getElementById('ss-meji').textContent   = fmtS(tMeji);
+  document.getElementById('ss-jinda').textContent  = fmtS(tJinda);
+  document.getElementById('ss-soda').textContent   = fmtS(tSoda);
+  document.getElementById('ss-texbz').textContent  = fmtS(tTexbz);
+  document.getElementById('ss-qr').textContent     = maxQrDate+' ('+fmtS(maxQr)+')';
+  document.getElementById('ss-maxsale').textContent= maxSaleDate+' ('+fmtS(maxSale)+')';
+  document.getElementById('ss-days').textContent   = rows.length+' วัน';
+}
+
+var yearlyCache = {};
+
+async function loadYearly() {
+  if (!cfg.gsUrl) { toast('กรุณาตั้งค่า URL ก่อน','error'); return; }
+  var branch = BRANCH_NAMES[document.getElementById('sy-branch').value];
+  var year   = document.getElementById('sy-year').value;
+  if (!year) { toast('กรุณาระบุปี','error'); return; }
+  var txt = document.getElementById('sy-txt');
+  txt.innerHTML = '<span class="loader"></span>';
+
+  var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+  var monthNames = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+  var results = [];
+  for (var i = 0; i < months.length; i++) {
+    var month = year + '-' + months[i];
+    try {
+      var res  = await fetch(cfg.gsUrl+'?branch='+encodeURIComponent(branch)+'&month='+month);
+      var data = await res.json();
+      results.push({ month: monthNames[i], ym: month, rows: data.rows || [] });
+    } catch(e) {
+      results.push({ month: monthNames[i], ym: month, rows: [] });
+    }
+  }
+  renderYearly(results, year);
+  txt.textContent = 'ดึงข้อมูล';
+}
+
+function renderYearly(results, year) {
+  var empty = document.getElementById('sy-empty');
+  var stats = document.getElementById('sy-stats');
+  var tbody = document.getElementById('sy-tbody');
+  var tfoot = document.getElementById('sy-tfoot');
+  tbody.innerHTML = ''; tfoot.innerHTML = '';
+
+  var hasData = results.some(function(r){return r.rows.length > 0;});
+  if (!hasData) { empty.style.display='block'; stats.style.display='none'; toast('ไม่พบข้อมูลในปีนี้','error'); return; }
+  empty.style.display='none'; stats.style.display='block';
+
+  var p    = function(r,i){ return parseFloat(r[i])||0; };
+  var fmtS = function(v){ return '฿'+Math.round(parseFloat(v)||0).toLocaleString('th-TH'); };
+  var ytSales=0, ytExp=0, ytPayIn=0;
+
+  results.forEach(function(m) {
+    if (!m.rows.length) return;
+    var mSales=0, mExp=0, mPayIn=0;
+    m.rows.forEach(function(r){ mSales+=p(r,3); mExp+=p(r,14); mPayIn+=p(r,16); });
+    ytSales+=mSales; ytExp+=mExp; ytPayIn+=mPayIn;
+    var profit = mSales - mExp;
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td style="font-weight:500;">'+m.month+'</td>'
+      +'<td class="mono" style="color:var(--green);">'+fmtS(mSales)+'</td>'
+      +'<td class="mono" style="color:var(--red);">'+fmtS(mExp)+'</td>'
+      +'<td class="mono" style="color:'+(profit>=0?'var(--green)':'var(--red)')+';">'+fmtS(profit)+'</td>'
+      +'<td class="mono">'+fmtS(mPayIn)+'</td>'
+      +'<td class="mono" style="color:var(--text3);">'+m.rows.length+' วัน</td>';
+    tbody.appendChild(tr);
+  });
+
+  var ytProfit = ytSales - ytExp;
+  var tfr = document.createElement('tr');
+  tfr.style.cssText = 'background:var(--bg3);font-weight:700;border-top:2px solid var(--border2);';
+  tfr.innerHTML = '<td>รวมทั้งปี '+year+'</td>'
+    +'<td class="mono" style="color:var(--green);">'+fmtS(ytSales)+'</td>'
+    +'<td class="mono" style="color:var(--red);">'+fmtS(ytExp)+'</td>'
+    +'<td class="mono" style="color:'+(ytProfit>=0?'var(--green)':'var(--red)')+';">'+fmtS(ytProfit)+'</td>'
+    +'<td class="mono">'+fmtS(ytPayIn)+'</td>'
+    +'<td></td>';
+  tfoot.appendChild(tfr);
+
+  document.getElementById('sy-sales').textContent  = fmtS(ytSales);
+  document.getElementById('sy-exp').textContent    = fmtS(ytExp);
+  document.getElementById('sy-profit').textContent = fmtS(ytProfit);
+  document.getElementById('sy-profit').className   = 'stat-value '+(ytProfit>=0?'pos':'neg');
 }
 
 function saveGsUrl() {

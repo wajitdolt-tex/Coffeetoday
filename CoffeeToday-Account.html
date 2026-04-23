@@ -122,9 +122,9 @@ tr:hover td{background:var(--bg3);}
   <div class="card">
     <div class="card-title">ข้อมูลหลัก</div>
     <div style="display:flex;gap:13px;align-items:flex-end;margin-bottom:13px;flex-wrap:wrap;">
-      <div class="form-row" style="flex:1;min-width:160px;">
+      <div class="form-row" style="width:180px;">
         <label>สาขา</label>
-        <select id="d-branch" onchange="onBranchChange()">
+        <select id="d-branch" onchange="onBranchChange()" style="width:180px;">
           <option value="passione">แพชชั่นระยอง</option>
           <option value="lotus">โลตัสระยอง</option>
         </select>
@@ -133,8 +133,11 @@ tr:hover td{background:var(--bg3);}
         <label>วันที่</label>
         <input type="date" id="d-date" style="width:150px;">
       </div>
+      <div class="form-row" style="width:160px;">
+        <label>แคชเชียร์</label>
+        <input type="text" id="d-cashier" placeholder="ชื่อพนักงาน" style="width:160px;">
+      </div>
     </div>
-    <div class="form-row"><label>แคชเชียร์</label><input type="text" id="d-cashier" placeholder="ชื่อพนักงาน"></div>
   </div>
 
   <div class="card">
@@ -175,12 +178,12 @@ tr:hover td{background:var(--bg3);}
     <div class="card-title">การส่งเงิน</div>
     <div class="grid-3">
       <div class="form-row"><label>หักค่าใช้จ่ายหน้าร้าน (฿)</label><input type="number" id="d-shop-exp" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
-      <div class="form-row"><label>เงินขาด (−) / เงินเกิน (+) (฿)</label><input type="number" id="d-diff" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
+      <div class="form-row"><label>เงินขาด (−) / เงินเกิน (+) (฿) <span class="info-pill">คำนวณอัตโนมัติ</span></label><input type="number" id="d-diff" readonly placeholder="คำนวณอัตโนมัติ"></div>
       <div class="form-row"><label>Pay In — คงเหลือส่งจริง (฿)</label><input type="number" id="d-payin" readonly placeholder="คำนวณอัตโนมัติ"></div>
     </div>
-    <div class="grid-2">
-      <div class="form-row"><label>เข้าบัญชี</label><input type="text" id="d-account" placeholder="เลขบัญชี..."></div>
-      <div class="form-row"><label>เลขอ้างอิง</label><input type="text" id="d-ref" placeholder="Reference no."></div>
+    <div class="form-row">
+      <label>เข้าบัญชี</label>
+      <input type="text" id="d-account" readonly style="background:var(--bg3);color:var(--text2);cursor:default;">
     </div>
     <div class="form-row"><label>หมายเหตุ</label><textarea id="d-note" placeholder="บันทึกเพิ่มเติม..."></textarea></div>
   </div>
@@ -687,6 +690,10 @@ document.addEventListener('DOMContentLoaded', function() {
   renderStdExpenses();
   addAccExpRow();
   addExpRow();
+  // set default account number
+  var initBranch = document.getElementById('d-branch').value;
+  var accEl = document.getElementById('d-account');
+  if (accEl) accEl.value = BRANCH_ACCOUNTS[initBranch] || '';
   renderPayables();
 });
 
@@ -697,8 +704,17 @@ function switchPage(name, btn) {
   btn.classList.add('active');
 }
 
+var BRANCH_ACCOUNTS = {
+  passione: 'ธ.กสิกรไทย  204-3-20211-4',
+  lotus:    'ธ.กสิกรไทย  204-3-20341-2'
+};
+
 function onBranchChange() {
   renderStdExpenses();
+  var branch = document.getElementById('d-branch').value;
+  var accEl  = document.getElementById('d-account');
+  if (accEl) accEl.value = BRANCH_ACCOUNTS[branch] || '';
+  calcSales();
 }
 
 function renderStdExpenses() {
@@ -724,11 +740,17 @@ function calcSales() {
   document.getElementById('d-before-tax').value = bt.toFixed(2);
   var totalSales = n('d-qr') + n('d-lineman') + n('d-cash');
   document.getElementById('d-total-sales').value = totalSales.toFixed(2);
-  var pi = n('d-cash') - n('d-shop-exp') + n('d-diff');
+  var shopExp = n('d-shop-exp');
+  var pi = n('d-cash') - shopExp;
+  // diff = PayIn - (Cash - ShopExp) → แสดงว่าขาดหรือเกิน
+  // จริงๆ diff = ยอดส่งจริง - ยอดที่ควรส่ง = cash - shopExp (ถ้าเท่ากัน diff=0)
+  // เงินขาด/เกิน = ยอดปิดกะ - shopExp - payin_expected
+  // ใช้สูตร: diff = 0 (ตั้งต้น), payin = cash - shopExp
+  document.getElementById('d-diff').value = '0.00';
   document.getElementById('d-payin').value = pi.toFixed(2);
   var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
   document.getElementById('sum-total').textContent  = fmt(totalSales);
-  document.getElementById('sum-exp').textContent    = fmt(n('d-shop-exp'));
+  document.getElementById('sum-exp').textContent    = fmt(shopExp);
   document.getElementById('sum-payin').textContent  = fmt(pi);
   calcDrinks();
 }
@@ -834,7 +856,7 @@ async function submitDaily() {
 
 function clearDaily() {
   ['d-subtotal','d-discount','d-rounding','d-qr','d-lineman','d-cash',
-   'd-snacks','d-promo','d-shop-exp','d-diff','d-account','d-ref','d-note',
+   'd-snacks','d-promo','d-shop-exp','d-account','d-note',
    'b-void','b-free','b-coupon','d-cashier'].forEach(function(id) {
     var el = document.getElementById(id); if (el) el.value = '';
   });
@@ -847,6 +869,9 @@ function clearDaily() {
   document.getElementById('extra-expenses').innerHTML = '';
   addAccExpRow(); addExpRow(); calcSales();
   document.getElementById('d-date').value = new Date().toISOString().split('T')[0];
+  // reset account to branch default
+  var br = document.getElementById('d-branch').value;
+  document.getElementById('d-account').value = BRANCH_ACCOUNTS[br] || '';
 }
 
 // ── FIXED PAYABLE ──

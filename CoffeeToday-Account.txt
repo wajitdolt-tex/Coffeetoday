@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoffeeToday — บัญชีรายวัน</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f6f3;--bg2:#fff;--bg3:#f0ede8;
+  --border:#e5e1da;--border2:#d6d1c9;
+  --accent:#8b6f47;--accent2:#6b5235;
+  --accent-t:rgba(139,111,71,.08);--accent-t2:rgba(139,111,71,.16);
+  --text:#1c1814;--text2:#7a6e62;--text3:#b0a898;
+  --green:#3d8b5e;--green-t:rgba(61,139,94,.09);
+  --red:#b84040;--red-t:rgba(184,64,64,.09);
+  --yellow:#a07820;--blue:#2563a8;--blue-t:rgba(37,99,168,.08);
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);
+  --r:10px;--r-sm:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;font-size:15px;line-height:1.6;min-height:100vh;}
+nav{position:sticky;top:0;z-index:100;background:rgba(247,246,243,.93);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:58px;}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px;letter-spacing:.04em;color:var(--accent2);}
+.logo-mark{width:28px;height:28px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;}
+.nav-tabs{display:flex;gap:2px;}
+.nav-tab{padding:6px 14px;border-radius:var(--r-sm);font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--text2);transition:all .18s;font-family:inherit;}
+.nav-tab:hover{color:var(--text);background:var(--bg3);}
+.nav-tab.active{color:var(--accent2);background:var(--accent-t2);}
+.container{max-width:960px;margin:0 auto;padding:28px 20px;}
+.page{display:none;}
+.page.active{display:block;animation:fadeUp .2s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.page-header{margin-bottom:24px;}
+.page-header h1{font-size:21px;font-weight:700;letter-spacing:-.02em;}
+.page-header p{color:var(--text2);font-size:13px;margin-top:3px;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:13px;box-shadow:var(--shadow);}
+.card-title{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-bottom:15px;display:flex;align-items:center;gap:7px;}
+.card-title::before{content:'';display:block;width:3px;height:13px;border-radius:2px;background:var(--accent);}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;}
+.grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:13px;}
+@media(max-width:600px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}}
+label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px;letter-spacing:.02em;}
+input,select,textarea{width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-family:inherit;font-size:14px;transition:border .15s,box-shadow .15s;outline:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-t);background:#fff;}
+input[type="number"]{font-family:'DM Mono',monospace;}
+input[readonly]{background:var(--bg3);color:var(--text2);cursor:not-allowed;}
+textarea{resize:vertical;min-height:60px;}
+.form-row{margin-bottom:12px;}
+.btn{padding:8px 18px;border-radius:var(--r-sm);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .18s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:var(--accent2);box-shadow:0 3px 10px var(--accent-t2);transform:translateY(-1px);}
+.btn-outline{background:transparent;color:var(--text2);border:1px solid var(--border2);}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-t);}
+.btn-danger{background:var(--red-t);color:var(--red);border:1px solid rgba(184,64,64,.18);}
+.btn-danger:hover{background:rgba(184,64,64,.15);}
+.btn-sm{padding:5px 11px;font-size:12px;}
+.divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-gray{background:var(--bg3);color:var(--text2);}
+.stat-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:13px 15px;}
+.stat-label{font-size:11px;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;}
+.stat-value{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--text);}
+.stat-value.pos{color:var(--green);}
+.stat-value.neg{color:var(--red);}
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;padding:9px 10px;color:var(--text3);font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg3);}
+td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--bg3);}
+.mono{font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);}
+.sec-label{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin-bottom:11px;}
+.expense-row{display:grid;grid-template-columns:1fr 130px 36px;gap:8px;align-items:end;margin-bottom:8px;}
+.rm-btn{width:36px;height:36px;background:var(--red-t);border:1px solid rgba(184,64,64,.15);border-radius:var(--r-sm);color:var(--red);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.rm-btn:hover{background:rgba(184,64,64,.16);}
+.p-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;}
+.p-tag.unpaid{background:var(--red-t);color:var(--red);border:1px solid rgba(184,64,64,.2);}
+.p-tag.paid{background:var(--green-t);color:var(--green);border:1px solid rgba(61,139,94,.2);}
+.p-tag:hover{opacity:.8;}
+.notice{background:rgba(160,120,32,.07);border:1px solid rgba(160,120,32,.2);border-radius:var(--r);padding:11px 15px;font-size:13px;color:var(--yellow);margin-bottom:16px;display:none;}
+.info-pill{display:inline-flex;align-items:center;background:var(--blue-t);color:var(--blue);border:1px solid rgba(37,99,168,.2);border-radius:20px;font-size:10px;font-weight:600;padding:1px 8px;margin-left:4px;vertical-align:middle;}
+.toast-wrap{position:fixed;bottom:22px;right:22px;z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
+.toast{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:10px 15px;font-size:13px;color:var(--text);max-width:280px;box-shadow:0 2px 8px rgba(0,0,0,.08),0 8px 24px rgba(0,0,0,.06);animation:slideIn .2s ease;display:flex;align-items:center;gap:8px;}
+.toast.success{border-left:3px solid var(--green);}
+.toast.error{border-left:3px solid var(--red);}
+@keyframes slideIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+.loader{display:inline-block;width:13px;height:13px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:44px 20px;color:var(--text3);}
+.empty-state .icon{font-size:26px;margin-bottom:8px;}
+.empty-state p{font-size:13px;}
+.month-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:20px;}
+.month-row select,.month-row input[type="month"]{width:auto;min-width:148px;}
+.payable-fixed-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 16px;margin-bottom:10px;}
+.payable-fixed-title{font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><div class="logo-mark">☕</div>COFFEE TODAY</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchPage('daily',this)">รายวัน</button>
+    <button class="nav-tab" onclick="switchPage('payable',this)">วางบิล</button>
+    <button class="nav-tab" onclick="switchPage('summary',this)">สรุปเดือน</button>
+    <button class="nav-tab" onclick="switchPage('settings',this)">ตั้งค่า</button>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- ════ DAILY ════ -->
+
+<div id="page-daily" class="page active">
+  <div class="page-header"><h1>บันทึกรายวันขาย</h1><p>กรอกยอดขายและค่าใช้จ่ายประจำวัน แล้วบันทึกขึ้น Google Sheets</p></div>
+  <div class="notice" id="no-sheet-warn">⚠ ยังไม่ได้ตั้งค่า Google Sheets URL — ไปที่ <strong>ตั้งค่า</strong> ก่อนบันทึก</div>
+
+  <div class="card">
+    <div class="card-title">ข้อมูลหลัก</div>
+    <div class="grid-3">
+      <div class="form-row">
+        <label>สาขา</label>
+        <select id="d-branch" onchange="onBranchChange()">
+          <option value="passione">แพชชั่นระยอง</option>
+          <option value="lotus">โลตัสระยอง</option>
+        </select>
+      </div>
+      <div class="form-row"><label>วันที่</label><input type="date" id="d-date"></div>
+      <div class="form-row"><label>แคชเชียร์</label><input type="text" id="d-cashier" placeholder="ชื่อพนักงาน"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">ยอดขาย</div>
+    <div class="grid-2">
+      <div class="form-row"><label>Sub Total — ยอดขายก่อนลด (฿)</label><input type="number" id="d-subtotal" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
+      <div class="form-row"><label>(−) Discount — ส่วนลด (฿)</label><input type="number" id="d-discount" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
+      <div class="form-row"><label>(+) Rounding — ปัดเศษ (฿)</label><input type="number" id="d-rounding" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
+      <div class="form-row"><label>Sales before TAX (฿)</label><input type="number" id="d-before-tax" readonly placeholder="คำนวณอัตโนมัติ"></div>
+    </div>
+    <hr class="divider">
+    <div class="sec-label">ช่องทางการชำระ</div>
+    <div class="grid-3">
+      <div class="form-row"><label>QR Payment (฿)</label><input type="number" id="d-qr" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
+      <div class="form-row"><label>Line Man (฿)</label><input type="number" id="d-lineman" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
+      <div class="form-row"><label>By Cash — ยอดปิดกะ (฿)</label><input type="number" id="d-cash" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
+    </div>
+    <hr class="divider">
+    <div class="sec-label">แยกประเภทยอดขาย</div>
+    <div class="grid-3">
+      <div class="form-row">
+        <label>ยอดขายขนม / ของว่าง (฿)</label>
+        <input type="number" id="d-snacks" placeholder="0.00" step="0.01" oninput="calcDrinks()">
+      </div>
+      <div class="form-row">
+        <label>ส่งเสริมการขาย (฿)</label>
+        <input type="number" id="d-promo" placeholder="0.00" step="0.01" oninput="calcDrinks()">
+      </div>
+      <div class="form-row">
+        <label>เครื่องดื่ม (฿) <span class="info-pill">คำนวณอัตโนมัติ</span></label>
+        <input type="number" id="d-drinks" readonly placeholder="ยอดขายรวม − ขนม − ส่งเสริม">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">การส่งเงิน</div>
+    <div class="grid-3">
+      <div class="form-row"><label>หักค่าใช้จ่ายหน้าร้าน (฿)</label><input type="number" id="d-shop-exp" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
+      <div class="form-row"><label>เงินขาด (−) / เงินเกิน (+) (฿)</label><input type="number" id="d-diff" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
+      <div class="form-row"><label>Pay In — คงเหลือส่งจริง (฿)</label><input type="number" id="d-payin" readonly placeholder="คำนวณอัตโนมัติ"></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-row"><label>เข้าบัญชี</label><input type="text" id="d-account" placeholder="เลขบัญชี..."></div>
+      <div class="form-row"><label>เลขอ้างอิง</label><input type="text" id="d-ref" placeholder="Reference no."></div>
+    </div>
+    <div class="form-row"><label>หมายเหตุ</label><textarea id="d-note" placeholder="บันทึกเพิ่มเติม..."></textarea></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">ค่าใช้จ่ายวัตถุดิบ (หน้าร้าน)</div>
+    <div class="grid-3" id="std-expenses-grid">
+      <!-- render by JS based on branch -->
+    </div>
+    <hr class="divider">
+    <div class="sec-label">ค่าใช้จ่ายที่ใช้เงินบัญชีร้านจ่าย</div>
+    <div id="account-expenses"></div>
+    <button class="btn btn-outline btn-sm" onclick="addAccExpRow()">+ เพิ่มรายการ</button>
+    <hr class="divider">
+    <div class="sec-label">รายการเพิ่มเติมอื่นๆ</div>
+    <div id="extra-expenses"></div>
+    <button class="btn btn-outline btn-sm" onclick="addExpRow()">+ เพิ่มรายการ</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">ใบเสร็จ</div>
+    <div class="grid-3">
+      <div class="form-row"><label>บิลเสีย (ใบ)</label><input type="number" id="b-void" placeholder="0" min="0"></div>
+      <div class="form-row"><label>บิลฟรี (ใบ)</label><input type="number" id="b-free" placeholder="0" min="0"></div>
+      <div class="form-row"><label>บิลคูปอง (ใบ)</label><input type="number" id="b-coupon" placeholder="0" min="0"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">สรุป</div>
+    <div class="grid-3">
+      <div class="stat-box"><div class="stat-label">ยอดขายรวม</div><div class="stat-value" id="sum-total">฿0.00</div></div>
+      <div class="stat-box"><div class="stat-label">ค่าใช้จ่ายหน้าร้าน</div><div class="stat-value" id="sum-exp">฿0.00</div></div>
+      <div class="stat-box"><div class="stat-label">Pay In ส่งจริง</div><div class="stat-value" id="sum-payin">฿0.00</div></div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px;padding-bottom:12px;">
+    <button class="btn btn-outline" onclick="clearDaily()">ล้างฟอร์ม</button>
+    <button class="btn btn-primary" onclick="submitDaily()" id="submit-btn"><span id="submit-text">บันทึกขึ้น Google Sheets</span></button>
+  </div>
+</div>
+
+<!-- ════ PAYABLE ════ -->
+
+<div id="page-payable" class="page">
+  <div class="page-header"><h1>ค่าใช้จ่ายที่วางบิล</h1><p>บันทึกรายการวางบิล ติดตามสถานะ ป้องกันการลืมจ่าย</p></div>
+
+  <!-- Fixed payable items (CFTD, นมจินดา, น้ำแข็ง) -->
+
+  <div class="card">
+    <div class="card-title">วัตถุดิบวางบิลประจำ</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">รายการที่วางบิลเป็นประจำ — กรอกแล้วกด "เพิ่มเข้ารายการวางบิล"</p>
+
+```
+<div class="payable-fixed-card">
+  <div class="payable-fixed-title">📦 วัตถุดิบ CFTD <span style="font-size:11px;color:var(--text3);font-weight:400;">(ทั้ง 2 สาขา)</span></div>
+  <div class="grid-4">
+    <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="pf-cftd-amount" placeholder="0.00" step="0.01"></div>
+    <div class="form-row"><label>วันที่สินค้าเข้า</label><input type="date" id="pf-cftd-indate"></div>
+    <div class="form-row"><label>เลขที่บิล</label><input type="text" id="pf-cftd-billno" placeholder="เลขบิล..."></div>
+    <div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pf-cftd-due"></div>
+  </div>
+  <div class="grid-2">
+    <div class="form-row"><label>สาขา</label><select id="pf-cftd-branch"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
+    <div class="form-row"><label>หมายเหตุ</label><input type="text" id="pf-cftd-note" placeholder="..."></div>
+  </div>
+  <button class="btn btn-primary btn-sm" onclick="addFixedPayable('cftd')">+ เพิ่มเข้ารายการ</button>
+</div>
+
+<div class="payable-fixed-card">
+  <div class="payable-fixed-title">🥛 นมจินดา <span style="font-size:11px;color:var(--text3);font-weight:400;">(ทั้ง 2 สาขา)</span></div>
+  <div class="grid-4">
+    <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="pf-jinda-amount" placeholder="0.00" step="0.01"></div>
+    <div class="form-row"><label>วันที่สินค้าเข้า</label><input type="date" id="pf-jinda-indate"></div>
+    <div class="form-row"><label>เลขที่บิล</label><input type="text" id="pf-jinda-billno" placeholder="เลขบิล..."></div>
+    <div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pf-jinda-due"></div>
+  </div>
+  <div class="grid-2">
+    <div class="form-row"><label>สาขา</label><select id="pf-jinda-branch"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
+    <div class="form-row"><label>หมายเหตุ</label><input type="text" id="pf-jinda-note" placeholder="..."></div>
+  </div>
+  <button class="btn btn-primary btn-sm" onclick="addFixedPayable('jinda')">+ เพิ่มเข้ารายการ</button>
+</div>
+
+<div class="payable-fixed-card" id="pf-ice-card">
+  <div class="payable-fixed-title">🧊 น้ำแข็ง <span style="font-size:11px;color:var(--text3);font-weight:400;">(โลตัสระยองเท่านั้น)</span></div>
+  <div class="grid-4">
+    <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="pf-ice-amount" placeholder="0.00" step="0.01"></div>
+    <div class="form-row"><label>วันที่สินค้าเข้า</label><input type="date" id="pf-ice-indate"></div>
+    <div class="form-row"><label>เลขที่บิล</label><input type="text" id="pf-ice-billno" placeholder="เลขบิล..."></div>
+    <div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pf-ice-due"></div>
+  </div>
+  <div class="form-row"><label>หมายเหตุ</label><input type="text" id="pf-ice-note" placeholder="..."></div>
+  <button class="btn btn-primary btn-sm" onclick="addFixedPayable('ice')">+ เพิ่มเข้ารายการ</button>
+</div>
+```
+
+  </div>
+
+  <!-- Manual payable -->
+
+  <div class="card">
+    <div class="card-title">เพิ่มรายการวางบิลอื่นๆ</div>
+    <div class="grid-2">
+      <div class="form-row"><label>สาขา</label><select id="p-branch"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
+      <div class="form-row"><label>วันที่วางบิล</label><input type="date" id="p-date"></div>
+      <div class="form-row"><label>รายการ / คำอธิบาย</label><input type="text" id="p-desc" placeholder="เช่น ค่าเช่า เม.ย."></div>
+      <div class="form-row"><label>หมวดหมู่</label><select id="p-cat"><option>วัตถุดิบ/สินค้า</option><option>ค่าเช่า</option><option>ค่าไฟ/น้ำ</option><option>ค่าแรง</option><option>ค่าบริการ</option><option>อุปกรณ์/ซ่อมบำรุง</option><option>อื่นๆ</option></select></div>
+      <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="p-amount" placeholder="0.00" step="0.01"></div>
+      <div class="form-row"><label>กำหนดชำระ</label><input type="date" id="p-due"></div>
+    </div>
+    <div class="form-row"><label>หมายเหตุ</label><input type="text" id="p-note" placeholder="..."></div>
+    <button class="btn btn-primary" onclick="addPayable()">+ เพิ่มรายการ</button>
+  </div>
+
+  <div style="display:flex;gap:6px;align-items:center;margin-bottom:13px;flex-wrap:wrap;">
+    <span style="font-size:12px;color:var(--text3);">กรอง:</span>
+    <button class="btn btn-sm btn-outline" id="pf-all" onclick="filterP('all')" style="border-color:var(--accent);color:var(--accent);">ทั้งหมด</button>
+    <button class="btn btn-sm btn-outline" id="pf-unpaid" onclick="filterP('unpaid')">ค้างชำระ</button>
+    <button class="btn btn-sm btn-outline" id="pf-paid" onclick="filterP('paid')">ชำระแล้ว</button>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>วันที่</th><th>สาขา</th><th>รายการ</th><th>เลขบิล</th><th>วันเข้า</th><th>จำนวน</th><th>กำหนดจ่าย</th><th>สถานะ</th><th></th></tr></thead>
+        <tbody id="p-tbody"></tbody>
+      </table>
+      <div id="p-empty" class="empty-state" style="display:none;"><div class="icon">📋</div><p>ยังไม่มีรายการ</p></div>
+    </div>
+  </div>
+
+  <div class="grid-3" style="margin-top:13px;">
+    <div class="stat-box"><div class="stat-label">ยอดรวม</div><div class="stat-value" id="p-tot-all">฿0.00</div></div>
+    <div class="stat-box"><div class="stat-label">ค้างชำระ</div><div class="stat-value neg" id="p-tot-unpaid">฿0.00</div></div>
+    <div class="stat-box"><div class="stat-label">ชำระแล้ว</div><div class="stat-value pos" id="p-tot-paid">฿0.00</div></div>
+  </div>
+  <div style="text-align:right;margin-top:13px;padding-bottom:12px;">
+    <button class="btn btn-primary btn-sm" onclick="syncPayable()">☁ บันทึกขึ้น Sheets</button>
+  </div>
+</div>
+
+<!-- ════ SUMMARY ════ -->
+
+<div id="page-summary" class="page">
+  <div class="page-header"><h1>สรุปรายเดือน</h1><p>ดึงข้อมูลจาก Google Sheets สรุปผลประจำเดือน</p></div>
+  <div class="month-row">
+    <div><label>สาขา</label><select id="s-branch"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
+    <div><label>เดือน/ปี</label><input type="month" id="s-month"></div>
+    <div><button class="btn btn-primary" onclick="loadSummary()"><span id="s-txt">ดึงข้อมูล</span></button></div>
+  </div>
+  <div id="s-stats" style="display:none;">
+    <div class="grid-3" style="margin-bottom:13px;">
+      <div class="stat-box"><div class="stat-label">ยอดขายรวม</div><div class="stat-value" id="ss-sales">฿0</div></div>
+      <div class="stat-box"><div class="stat-label">ค่าใช้จ่ายรวม</div><div class="stat-value" id="ss-exp">฿0</div></div>
+      <div class="stat-box"><div class="stat-label">กำไร / ขาดทุน</div><div class="stat-value" id="ss-profit">฿0</div></div>
+      <div class="stat-box"><div class="stat-label">ยอด Pay In รวม</div><div class="stat-value" id="ss-payin">฿0</div></div>
+      <div class="stat-box"><div class="stat-label">QR สูงสุดวันที่</div><div class="stat-value" id="ss-qr" style="font-size:14px;">-</div></div>
+      <div class="stat-box"><div class="stat-label">จำนวนวันที่บันทึก</div><div class="stat-value" id="ss-days">0</div></div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div class="tbl-wrap">
+        <table><thead><tr><th>วันที่</th><th>Sub Total</th><th>Discount</th><th>ยอดสุทธิ</th><th>QR</th><th>Cash</th><th>ค่าใช้จ่าย</th><th>Pay In</th></tr></thead>
+        <tbody id="s-tbody"></tbody></table>
+      </div>
+    </div>
+  </div>
+  <div id="s-empty" class="empty-state"><div class="icon">📊</div><p>เลือกสาขาและเดือน แล้วกดดึงข้อมูล</p></div>
+</div>
+
+<!-- ════ SETTINGS ════ -->
+
+<div id="page-settings" class="page">
+  <div class="page-header"><h1>ตั้งค่า</h1><p>เชื่อมต่อ Google Sheets และข้อมูลทั่วไป</p></div>
+  <div class="card">
+    <div class="card-title">Google Sheets Web App URL</div>
+    <div class="form-row">
+      <label>Web App URL</label>
+      <div style="display:flex;gap:8px;">
+        <input type="url" id="gs-url" placeholder="https://script.google.com/macros/s/..." style="font-family:'DM Mono',monospace;font-size:12px;">
+        <button class="btn btn-primary" onclick="saveGsUrl()" style="white-space:nowrap;">บันทึก</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:5px;font-family:'DM Mono',monospace;word-break:break-all;" id="gs-url-display"></div>
+    </div>
+    <button class="btn btn-outline btn-sm" style="margin-top:4px;" onclick="testConn()">ทดสอบการเชื่อมต่อ</button>
+  </div>
+  <div class="card">
+    <div class="card-title">ข้อมูลร้าน</div>
+    <div class="grid-2">
+      <div class="form-row"><label>สาขาหลัก</label><select id="cfg-branch"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
+      <div class="form-row"><label>รหัสพนักงาน</label><input type="text" id="cfg-user" placeholder="เช่น TXB-01"></div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="saveConfig()">บันทึกการตั้งค่า</button>
+  </div>
+</div>
+
+</div>
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+var pFilter = 'all';
+var payables = JSON.parse(localStorage.getItem('ct_payables') || '[]');
+var cfg = JSON.parse(localStorage.getItem('ct_cfg') || '{}');
+
+var BRANCH_NAMES = { passione: 'แพชชั่นระยอง', lotus: 'โลตัสระยอง' };
+
+var STD_EXP_PASSIONE = ['e-ice','e-meji','e-sugar','e-soda','e-yogurt','e-texbz','e-lime','e-coconut'];
+var STD_EXP_LOTUS    = ['e-meji','e-sugar','e-soda','e-yogurt','e-texbz','e-lime','e-coconut'];
+
+var STD_LABELS = {
+  'e-ice':'น้ำแข็ง','e-meji':'นมเมจิ','e-sugar':'น้ำตาลทราย',
+  'e-soda':'โซดา','e-yogurt':'โยเกิร์ต','e-texbz':'ขนม TEXBZ',
+  'e-lime':'มะนาวสด','e-coconut':'น้ำมะพร้าว'
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+  var today = new Date().toISOString().split('T')[0];
+  document.getElementById('d-date').value = today;
+  document.getElementById('p-date').value = today;
+  document.getElementById('p-due').value  = today;
+  document.getElementById('pf-cftd-due').value  = today;
+  document.getElementById('pf-jinda-due').value = today;
+  document.getElementById('pf-ice-due').value   = today;
+  document.getElementById('s-month').value = today.slice(0,7);
+
+  if (cfg.gsUrl) {
+    document.getElementById('gs-url').value = cfg.gsUrl;
+    document.getElementById('gs-url-display').textContent = cfg.gsUrl;
+  } else {
+    document.getElementById('no-sheet-warn').style.display = 'block';
+  }
+  if (cfg.branch) {
+    ['d-branch','p-branch','s-branch','cfg-branch',
+     'pf-cftd-branch','pf-jinda-branch'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.value = cfg.branch;
+    });
+  }
+  if (cfg.user) document.getElementById('cfg-user').value = cfg.user;
+
+  renderStdExpenses();
+  addAccExpRow();
+  addExpRow();
+  renderPayables();
+});
+
+function switchPage(name, btn) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function onBranchChange() {
+  renderStdExpenses();
+}
+
+function renderStdExpenses() {
+  var branch = document.getElementById('d-branch').value;
+  var ids = branch === 'lotus' ? STD_EXP_LOTUS : STD_EXP_PASSIONE;
+  var grid = document.getElementById('std-expenses-grid');
+  grid.innerHTML = '';
+  ids.forEach(function(id) {
+    var div = document.createElement('div');
+    div.className = 'form-row';
+    div.innerHTML = '<label>' + STD_LABELS[id] + ' (฿)</label><input type="number" id="' + id + '" placeholder="0.00" step="0.01">';
+    grid.appendChild(div);
+  });
+}
+
+function n(id) {
+  var el = document.getElementById(id);
+  return el ? (parseFloat(el.value) || 0) : 0;
+}
+
+function calcSales() {
+  var bt = n('d-subtotal') - n('d-discount') + n('d-rounding');
+  document.getElementById('d-before-tax').value = bt.toFixed(2);
+  var pi = n('d-cash') - n('d-shop-exp') + n('d-diff');
+  document.getElementById('d-payin').value = pi.toFixed(2);
+  var total = n('d-qr') + n('d-lineman') + n('d-cash');
+  var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
+  document.getElementById('sum-total').textContent  = fmt(total);
+  document.getElementById('sum-exp').textContent    = fmt(n('d-shop-exp'));
+  document.getElementById('sum-payin').textContent  = fmt(pi);
+  calcDrinks();
+}
+
+function calcDrinks() {
+  var total = n('d-qr') + n('d-lineman') + n('d-cash');
+  var drinks = total - n('d-snacks') - n('d-promo');
+  var el = document.getElementById('d-drinks');
+  if (el) el.value = drinks > 0 ? drinks.toFixed(2) : '0.00';
+}
+
+function addAccExpRow() {
+  var id = Date.now();
+  var c  = document.getElementById('account-expenses');
+  var d  = document.createElement('div');
+  d.className = 'expense-row';
+  d.id = 'ae-' + id;
+  d.innerHTML = '<div><label>รายการ</label><input type="text" placeholder="เช่น ค่าซ่อมเครื่อง..."></div>'
+    + '<div><label>จำนวน (฿)</label><input type="number" placeholder="0.00" step="0.01"></div>'
+    + '<button class="rm-btn" onclick="document.getElementById(\'ae-' + id + '\').remove()">×</button>';
+  c.appendChild(d);
+}
+
+function addExpRow() {
+  var id = Date.now();
+  var c  = document.getElementById('extra-expenses');
+  var d  = document.createElement('div');
+  d.className = 'expense-row';
+  d.id = 'er-' + id;
+  d.innerHTML = '<div><label>รายการ</label><input type="text" placeholder="ระบุรายการ..."></div>'
+    + '<div><label>จำนวน (฿)</label><input type="number" placeholder="0.00" step="0.01"></div>'
+    + '<button class="rm-btn" onclick="document.getElementById(\'er-' + id + '\').remove()">×</button>';
+  c.appendChild(d);
+}
+
+function getRowItems(containerId) {
+  var rows = document.querySelectorAll('#' + containerId + ' .expense-row');
+  var result = [];
+  rows.forEach(function(row) {
+    var ins = row.querySelectorAll('input');
+    var name = ins[0].value.trim();
+    var amount = parseFloat(ins[1].value) || 0;
+    if (name || amount) result.push({ name: name, amount: amount });
+  });
+  return result;
+}
+
+function getStdExpenses() {
+  var branch = document.getElementById('d-branch').value;
+  var ids = branch === 'lotus' ? STD_EXP_LOTUS : STD_EXP_PASSIONE;
+  var obj = {};
+  ids.forEach(function(id) { obj[id] = n(id); });
+  return obj;
+}
+
+async function submitDaily() {
+  if (!cfg.gsUrl) { toast('กรุณาตั้งค่า URL ก่อน', 'error'); return; }
+  var btn = document.getElementById('submit-btn');
+  var txt = document.getElementById('submit-text');
+  btn.disabled = true;
+  txt.innerHTML = '<span class="loader"></span> กำลังบันทึก...';
+
+  var branch = document.getElementById('d-branch').value;
+  var stdExp = getStdExpenses();
+  var stdTotal = Object.values(stdExp).reduce(function(a,b){return a+b;}, 0);
+
+  var payload = {
+    type: 'daily',
+    branch: BRANCH_NAMES[branch],
+    date: document.getElementById('d-date').value,
+    cashier: document.getElementById('d-cashier').value,
+    subtotal: n('d-subtotal'), discount: n('d-discount'), rounding: n('d-rounding'),
+    beforeTax: parseFloat(document.getElementById('d-before-tax').value) || 0,
+    qr: n('d-qr'), lineman: n('d-lineman'), cash: n('d-cash'),
+    drinks: parseFloat(document.getElementById('d-drinks').value) || 0,
+    snacks: n('d-snacks'), promo: n('d-promo'),
+    shopExp: n('d-shop-exp'), diff: n('d-diff'),
+    payIn: parseFloat(document.getElementById('d-payin').value) || 0,
+    account: document.getElementById('d-account').value,
+    ref: document.getElementById('d-ref').value,
+    note: document.getElementById('d-note').value,
+    stdExpenses: stdExp, stdExpTotal: stdTotal,
+    accountExpenses: getRowItems('account-expenses'),
+    extraExpenses:   getRowItems('extra-expenses'),
+    billVoid:   parseInt(document.getElementById('b-void').value) || 0,
+    billFree:   parseInt(document.getElementById('b-free').value) || 0,
+    billCoupon: parseInt(document.getElementById('b-coupon').value) || 0,
+    timestamp: new Date().toISOString()
+  };
+
+  try {
+    await fetch(cfg.gsUrl, { method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    toast('บันทึกสำเร็จ ✓', 'success');
+    clearDaily();
+  } catch(err) {
+    toast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    txt.textContent = 'บันทึกขึ้น Google Sheets';
+  }
+}
+
+function clearDaily() {
+  ['d-subtotal','d-discount','d-rounding','d-qr','d-lineman','d-cash',
+   'd-snacks','d-promo','d-shop-exp','d-diff','d-account','d-ref','d-note',
+   'b-void','b-free','b-coupon','d-cashier'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('d-before-tax').value = '';
+  document.getElementById('d-payin').value = '';
+  document.getElementById('d-drinks').value = '';
+  renderStdExpenses();
+  document.getElementById('account-expenses').innerHTML = '';
+  document.getElementById('extra-expenses').innerHTML = '';
+  addAccExpRow(); addExpRow(); calcSales();
+  document.getElementById('d-date').value = new Date().toISOString().split('T')[0];
+}
+
+// ── FIXED PAYABLE ──
+function addFixedPayable(type) {
+  var names = { cftd:'วัตถุดิบ CFTD', jinda:'นมจินดา', ice:'น้ำแข็ง' };
+  var amount  = parseFloat(document.getElementById('pf-' + type + '-amount').value);
+  var indate  = document.getElementById('pf-' + type + '-indate').value;
+  var billno  = document.getElementById('pf-' + type + '-billno').value.trim();
+  var due     = document.getElementById('pf-' + type + '-due').value;
+  var note    = document.getElementById('pf-' + type + '-note') ? document.getElementById('pf-' + type + '-note').value : '';
+  var branchEl = document.getElementById('pf-' + type + '-branch');
+  var branch  = branchEl ? branchEl.value : 'passione';
+
+  if (!amount || amount <= 0) { toast('กรุณาระบุจำนวนเงิน', 'error'); return; }
+
+  payables.unshift({
+    id: Date.now(), branch: branch,
+    date: new Date().toISOString().split('T')[0],
+    desc: names[type], cat: 'วัตถุดิบ/สินค้า',
+    amount: amount, due: due,
+    indate: indate, billno: billno,
+    note: note, paid: false, paidDate: null
+  });
+  savePay(); renderPayables();
+
+  document.getElementById('pf-' + type + '-amount').value = '';
+  document.getElementById('pf-' + type + '-indate').value = '';
+  document.getElementById('pf-' + type + '-billno').value = '';
+  if (document.getElementById('pf-' + type + '-note')) document.getElementById('pf-' + type + '-note').value = '';
+  toast(names[type] + ' เพิ่มแล้ว ✓', 'success');
+}
+
+// ── MANUAL PAYABLE ──
+function addPayable() {
+  var desc   = document.getElementById('p-desc').value.trim();
+  var amount = parseFloat(document.getElementById('p-amount').value);
+  if (!desc)              { toast('กรุณาระบุรายการ', 'error'); return; }
+  if (!amount || amount <= 0) { toast('กรุณาระบุจำนวนเงิน', 'error'); return; }
+  payables.unshift({
+    id: Date.now(),
+    branch: document.getElementById('p-branch').value,
+    date: document.getElementById('p-date').value,
+    desc: desc, cat: document.getElementById('p-cat').value,
+    amount: amount, due: document.getElementById('p-due').value,
+    indate: '', billno: '',
+    note: document.getElementById('p-note').value,
+    paid: false, paidDate: null
+  });
+  savePay(); renderPayables();
+  document.getElementById('p-desc').value = '';
+  document.getElementById('p-amount').value = '';
+  document.getElementById('p-note').value = '';
+  toast('เพิ่มรายการแล้ว ✓', 'success');
+}
+
+function togglePaid(id) {
+  var item = payables.find(function(p) { return p.id === id; });
+  if (!item) return;
+  item.paid = !item.paid;
+  item.paidDate = item.paid ? new Date().toISOString().split('T')[0] : null;
+  savePay(); renderPayables();
+}
+
+function delPayable(id) {
+  if (!confirm('ลบรายการนี้?')) return;
+  payables = payables.filter(function(p) { return p.id !== id; });
+  savePay(); renderPayables();
+}
+
+function savePay() { localStorage.setItem('ct_payables', JSON.stringify(payables)); }
+
+function filterP(f) {
+  pFilter = f;
+  ['all','unpaid','paid'].forEach(function(k) {
+    var el = document.getElementById('pf-' + k);
+    el.style.borderColor = k === f ? 'var(--accent)' : '';
+    el.style.color       = k === f ? 'var(--accent)' : '';
+  });
+  renderPayables();
+}
+
+function renderPayables() {
+  var tbody = document.getElementById('p-tbody');
+  var empty = document.getElementById('p-empty');
+  tbody.innerHTML = '';
+
+  var list = payables;
+  if (pFilter === 'paid')   list = payables.filter(function(p) { return p.paid; });
+  if (pFilter === 'unpaid') list = payables.filter(function(p) { return !p.paid; });
+
+  var tAll = 0, tPaid = 0, tUnpaid = 0;
+  payables.forEach(function(p) {
+    tAll += p.amount;
+    p.paid ? (tPaid += p.amount) : (tUnpaid += p.amount);
+  });
+  var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
+  document.getElementById('p-tot-all').textContent    = fmt(tAll);
+  document.getElementById('p-tot-paid').textContent   = fmt(tPaid);
+  document.getElementById('p-tot-unpaid').textContent = fmt(tUnpaid);
+
+  if (!list.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  var today = new Date().toISOString().split('T')[0];
+  list.forEach(function(item) {
+    var overdue = !item.paid && item.due && item.due < today;
+    var branchName = BRANCH_NAMES[item.branch] || item.branch;
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="mono">' + item.date + '</td>'
+      + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
+      + '<td><div style="font-size:13px;">' + item.desc + '</div>'
+        + (item.note ? '<div style="font-size:11px;color:var(--text3);">' + item.note + '</div>' : '') + '</td>'
+      + '<td class="mono">' + (item.billno || '-') + '</td>'
+      + '<td class="mono">' + (item.indate || '-') + '</td>'
+      + '<td class="mono" style="font-weight:500;">' + fmt(item.amount) + '</td>'
+      + '<td class="mono" style="' + (overdue ? 'color:var(--red);font-weight:600;' : '') + '">'
+        + (item.due || '-') + (overdue ? ' ⚠' : '') + '</td>'
+      + '<td>'
+        + '<span class="p-tag ' + (item.paid ? 'paid' : 'unpaid') + '" onclick="togglePaid(' + item.id + ')">'
+          + (item.paid ? '✓ ชำระแล้ว' : '● ค้างชำระ') + '</span>'
+        + (item.paid && item.paidDate ? '<div style="font-size:10px;color:var(--text3);margin-top:2px;">' + item.paidDate + '</div>' : '')
+        + '</td>'
+      + '<td><button class="btn btn-danger btn-sm" onclick="delPayable(' + item.id + ')">ลบ</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+async function syncPayable() {
+  if (!cfg.gsUrl) { toast('กรุณาตั้งค่า URL ก่อน', 'error'); return; }
+  try {
+    await fetch(cfg.gsUrl, { method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ type:'payable', items: payables, timestamp: new Date().toISOString() }) });
+    toast('ซิงค์ขึ้น Sheets แล้ว ✓', 'success');
+  } catch(err) { toast('เกิดข้อผิดพลาด: ' + err.message, 'error'); }
+}
+
+async function loadSummary() {
+  if (!cfg.gsUrl) { toast('กรุณาตั้งค่า URL ก่อน', 'error'); return; }
+  var txt = document.getElementById('s-txt');
+  txt.innerHTML = '<span class="loader"></span>';
+  try {
+    var branch = BRANCH_NAMES[document.getElementById('s-branch').value];
+    var month  = document.getElementById('s-month').value;
+    var res  = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branch) + '&month=' + month);
+    var data = await res.json();
+    renderSummary(data.rows || []);
+  } catch(err) { toast('ดึงข้อมูลไม่สำเร็จ: ' + err.message, 'error'); }
+  finally { txt.textContent = 'ดึงข้อมูล'; }
+}
+
+function renderSummary(rows) {
+  var empty = document.getElementById('s-empty');
+  var stats = document.getElementById('s-stats');
+  var tbody = document.getElementById('s-tbody');
+  tbody.innerHTML = '';
+  if (!rows.length) { empty.style.display='block'; stats.style.display='none'; toast('ไม่พบข้อมูล','error'); return; }
+  empty.style.display='none'; stats.style.display='block';
+  var tSales=0,tExp=0,tPayIn=0,maxQr=0,maxQrDate='-';
+  var fmt  = function(v) { return '฿' + (parseFloat(v)||0).toLocaleString('th-TH',{minimumFractionDigits:2}); };
+  var fmtS = function(v) { return '฿' + Math.round(parseFloat(v)||0).toLocaleString('th-TH'); };
+  rows.forEach(function(r) {
+    var sales=parseFloat(r[5])||0,qr=parseFloat(r[6])||0,exp=parseFloat(r[13])||0,pi=parseFloat(r[15])||0;
+    tSales+=sales;tExp+=exp;tPayIn+=pi;
+    if(qr>maxQr){maxQr=qr;maxQrDate=r[0];}
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td class="mono">'+r[0]+'</td><td class="mono">'+fmt(r[3])+'</td><td class="mono">'+fmt(r[4])+'</td><td class="mono">'+fmt(r[5])+'</td><td class="mono">'+fmt(r[6])+'</td><td class="mono">'+fmt(r[9])+'</td><td class="mono">'+fmt(r[13])+'</td><td class="mono">'+fmt(r[15])+'</td>';
+    tbody.appendChild(tr);
+  });
+  var profit=tSales-tExp;
+  document.getElementById('ss-sales').textContent=fmtS(tSales);
+  document.getElementById('ss-exp').textContent=fmtS(tExp);
+  document.getElementById('ss-profit').textContent=fmtS(profit);
+  document.getElementById('ss-profit').className='stat-value '+(profit>=0?'pos':'neg');
+  document.getElementById('ss-payin').textContent=fmtS(tPayIn);
+  document.getElementById('ss-qr').textContent=maxQrDate+' ('+fmtS(maxQr)+')';
+  document.getElementById('ss-days').textContent=rows.length+' วัน';
+}
+
+function saveGsUrl() {
+  var url = document.getElementById('gs-url').value.trim();
+  if (!url) { toast('กรุณากรอก URL', 'error'); return; }
+  cfg.gsUrl = url;
+  localStorage.setItem('ct_cfg', JSON.stringify(cfg));
+  document.getElementById('gs-url-display').textContent = url;
+  document.getElementById('no-sheet-warn').style.display = 'none';
+  toast('บันทึก URL แล้ว ✓', 'success');
+}
+
+function saveConfig() {
+  cfg.branch = document.getElementById('cfg-branch').value;
+  cfg.user   = document.getElementById('cfg-user').value.trim();
+  localStorage.setItem('ct_cfg', JSON.stringify(cfg));
+  toast('บันทึกการตั้งค่าแล้ว ✓', 'success');
+}
+
+async function testConn() {
+  if (!cfg.gsUrl) { toast('กรุณาบันทึก URL ก่อน','error'); return; }
+  try {
+    var res = await fetch(cfg.gsUrl + '?test=1');
+    toast(res.ok ? 'เชื่อมต่อสำเร็จ ✓' : 'HTTP ' + res.status, 'success');
+  } catch(e) { toast('ไม่สามารถเชื่อมต่อได้ (อาจปกติถ้า CORS block)', 'error'); }
+}
+
+function toast(msg, type) {
+  type = type || 'success';
+  var wrap = document.getElementById('toast-wrap');
+  var t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(function() { t.remove(); }, 3200);
+}
+</script>
+
+</body>
+</html>

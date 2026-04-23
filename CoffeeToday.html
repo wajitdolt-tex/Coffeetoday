@@ -1128,8 +1128,8 @@ function addManRow(){
         '</select></div>'+
     '</div>'+
     '<div class="form-row">'+
-      '<div class="form-group"><label>เข้างาน * (กรอก 4 หลัก เช่น 0955)</label><input type="text" id="mrIn_'+n+'" placeholder="0955" maxlength="5" inputmode="numeric" style="font-family:monospace;font-size:18px;letter-spacing:3px;text-align:center" oninput="autoFormatTime(this)"></div>'+
-      '<div class="form-group"><label>ออกงาน (กรอก 4 หลัก เช่น 2000)</label><input type="text" id="mrOut_'+n+'" placeholder="2000" maxlength="5" inputmode="numeric" style="font-family:monospace;font-size:18px;letter-spacing:3px;text-align:center" oninput="autoFormatTime(this)"></div>'+
+      '<div class="form-group"><label>เข้างาน *</label><input type="text" id="mrIn_'+n+'" value="00:00" maxlength="5" inputmode="numeric" style="font-family:monospace;font-size:20px;letter-spacing:4px;text-align:center;font-weight:600" oninput="autoFormatTime(this)" onfocus="if(this.value===\'00:00\')this.value=\'\'" onblur="if(this.value===\'\')this.value=\'00:00\'"></div>'+
+      '<div class="form-group"><label>ออกงาน</label><input type="text" id="mrOut_'+n+'" value="00:00" maxlength="5" inputmode="numeric" style="font-family:monospace;font-size:20px;letter-spacing:4px;text-align:center;font-weight:600" oninput="autoFormatTime(this)" onfocus="if(this.value===\'00:00\')this.value=\'\'" onblur="if(this.value===\'\')this.value=\'00:00\'"></div>'+
     '</div>'+
     '<div class="form-row">'+
       '<div class="form-group"><label>ยอดขาย (฿)</label><input type="number" id="mrSales_'+n+'" placeholder="0" min="0" oninput="calcManComm('+n+')"></div>'+

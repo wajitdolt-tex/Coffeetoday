@@ -107,6 +107,7 @@ tr:hover td{background:var(--bg3);}
     <button class="nav-tab" onclick="switchPage('payable',this)">วางบิล</button>
     <button class="nav-tab" onclick="switchPage('summary',this)">สรุปเดือน</button>
     <button class="nav-tab" onclick="switchPage('settings',this)">ตั้งค่า</button>
+    <button class="nav-tab" onclick="switchPage('admin',this)">🔒 Admin</button>
   </div>
 </nav>
 
@@ -146,7 +147,7 @@ tr:hover td{background:var(--bg3);}
     <div class="sec-label">ช่องทางการชำระ</div>
     <div class="grid-3">
       <div class="form-row"><label>QR Payment (฿)</label><input type="number" id="d-qr" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
-      <div class="form-row"><label>Line Man (฿)</label><input type="number" id="d-lineman" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
+      <div class="form-row"><label>Line Man (฿) <span style="font-weight:400;color:var(--text3);">(ยอดก่อนหัก GP)</span></label><input type="number" id="d-lineman" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
       <div class="form-row"><label>By Cash — ยอดปิดกะ (฿)</label><input type="number" id="d-cash" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
     </div>
     <hr class="divider">
@@ -277,6 +278,37 @@ tr:hover td{background:var(--bg3);}
 
   </div>
 
+  <!-- ค่าใช้จ่ายประจำเดือน -->
+
+  <div class="card">
+    <div class="card-title">ค่าใช้จ่ายประจำเดือน</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">กรอกค่าใช้จ่ายประจำเดือน แล้วกด "เพิ่มเข้ารายการ" เพื่อติดตามสถานะการชำระ</p>
+
+```
+<div class="grid-2" style="margin-bottom:10px;">
+  <div class="form-row"><label>สาขา</label>
+    <select id="pm-branch" onchange="onPmBranchChange()">
+      <option value="passione">แพชชั่นระยอง</option>
+      <option value="lotus">โลตัสระยอง</option>
+    </select>
+  </div>
+  <div class="form-row"><label>เดือน/ปี</label><input type="month" id="pm-month"></div>
+</div>
+
+<div class="grid-3" style="margin-bottom:10px;">
+  <div class="form-row"><label>ค่าเช่า (฿)</label><input type="number" id="pm-rent" placeholder="0.00" step="0.01"></div>
+  <div class="form-row"><label>ค่าน้ำ/ค่าไฟ (฿)</label><input type="number" id="pm-utility" placeholder="0.00" step="0.01"></div>
+  <div class="form-row" id="pm-aircond-row" style="display:none;"><label>ค่าแอร์ส่วนกลาง (฿)</label><input type="number" id="pm-aircond" placeholder="0.00" step="0.01"></div>
+  <div class="form-row"><label>ภาษีสิ่งปลูกสร้างและที่ดิน (฿)</label><input type="number" id="pm-tax-land" placeholder="0.00" step="0.01"></div>
+  <div class="form-row"><label>ภาษีป้าย (฿)</label><input type="number" id="pm-tax-sign" placeholder="0.00" step="0.01"></div>
+  <div class="form-row"><label>ค่าใบอนุญาตผู้ประกอบการอาหาร (฿)</label><input type="number" id="pm-license" placeholder="0.00" step="0.01"></div>
+</div>
+<div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pm-due"></div>
+<button class="btn btn-primary btn-sm" onclick="addMonthlyExpenses()">+ เพิ่มเข้ารายการทั้งหมด</button>
+```
+
+  </div>
+
   <!-- Manual payable -->
 
   <div class="card">
@@ -371,10 +403,27 @@ tr:hover td{background:var(--bg3);}
   <!-- ช่องทางรับเงิน -->
   <div class="card" style="margin-bottom:13px;">
     <div class="card-title">ช่องทางรับเงิน</div>
-    <div class="grid-3">
+    <div class="grid-3" style="margin-bottom:13px;">
       <div class="stat-box"><div class="stat-label">QR Payment</div><div class="stat-value" id="ss-qr-total">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">Line Man</div><div class="stat-value" id="ss-lineman-total">฿0</div></div>
+      <div class="stat-box"><div class="stat-label">Line Man (รวม)</div><div class="stat-value" id="ss-lineman-total">฿0</div></div>
       <div class="stat-box"><div class="stat-label">Cash</div><div class="stat-value" id="ss-cash-total">฿0</div></div>
+    </div>
+    <div style="background:var(--blue-t);border:1px solid rgba(37,99,168,.2);border-radius:var(--r-sm);padding:14px 16px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;">💳 Line Man — ยอดเข้าบัญชีคุณซัน</div>
+      <div class="grid-2">
+        <div class="form-row">
+          <label>ยอดที่ Line Man โอนเข้าบัญชีคุณซัน (฿)</label>
+          <input type="number" id="ss-lineman-sun" placeholder="กรอกหลังได้รับสรุปยอดจาก Line Man" step="0.01">
+        </div>
+        <div class="form-row">
+          <label>หมายเหตุ / รอบที่</label>
+          <input type="text" id="ss-lineman-sun-note" placeholder="เช่น รอบ 1-15 เม.ย.">
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+        <button class="btn btn-sm" style="background:var(--blue);color:#fff;" onclick="saveLinemanSun()">บันทึก</button>
+        <span style="font-size:12px;color:var(--text2);" id="ss-lineman-sun-saved"></span>
+      </div>
     </div>
   </div>
 
@@ -491,6 +540,101 @@ tr:hover td{background:var(--bg3);}
   </div>
 </div>
 
+<!-- ════ ADMIN ════ -->
+
+<div id="page-admin" class="page">
+  <div id="admin-lock">
+    <div class="page-header"><h1>🔒 Admin</h1><p>กรอกรหัสผ่านเพื่อเข้าสู่ระบบหลังบ้าน</p></div>
+    <div class="card" style="max-width:360px;">
+      <div class="card-title">รหัสผ่าน Admin</div>
+      <div class="form-row">
+        <label>รหัส 4 หลัก</label>
+        <input type="password" id="admin-pin" maxlength="4" placeholder="••••" style="font-size:22px;letter-spacing:8px;text-align:center;" oninput="checkAdminPin()">
+      </div>
+      <div id="admin-pin-error" style="color:var(--red);font-size:12px;margin-top:6px;display:none;">รหัสไม่ถูกต้อง</div>
+    </div>
+  </div>
+
+  <div id="admin-panel" style="display:none;">
+    <div class="page-header">
+      <h1>🛠 Admin Panel</h1>
+      <p>ข้อมูลหลังบ้าน Coffee Today — <span style="color:var(--red);font-size:12px;cursor:pointer;" onclick="lockAdmin()">ออกจากระบบ</span></p>
+    </div>
+
+```
+<!-- สรุปภาพรวม -->
+<div class="card">
+  <div class="card-title">ข้อมูลระบบ</div>
+  <div class="grid-3">
+    <div class="stat-box"><div class="stat-label">รายการวางบิลทั้งหมด</div><div class="stat-value" id="adm-payable-count">0</div></div>
+    <div class="stat-box"><div class="stat-label">ค้างชำระทั้งหมด</div><div class="stat-value neg" id="adm-unpaid-total">฿0</div></div>
+    <div class="stat-box"><div class="stat-label">ชำระแล้วทั้งหมด</div><div class="stat-value pos" id="adm-paid-total">฿0</div></div>
+  </div>
+</div>
+
+<!-- ตรวจสอบรายการวางบิลทั้งหมด -->
+<div class="card">
+  <div class="card-title">รายการวางบิลทั้งหมด</div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+    <select id="adm-filter-branch" onchange="renderAdminPayables()" style="width:auto;">
+      <option value="">ทุกสาขา</option>
+      <option value="passione">แพชชั่นระยอง</option>
+      <option value="lotus">โลตัสระยอง</option>
+    </select>
+    <select id="adm-filter-status" onchange="renderAdminPayables()" style="width:auto;">
+      <option value="">ทุกสถานะ</option>
+      <option value="unpaid">ค้างชำระ</option>
+      <option value="paid">ชำระแล้ว</option>
+    </select>
+    <select id="adm-filter-cat" onchange="renderAdminPayables()" style="width:auto;">
+      <option value="">ทุกหมวด</option>
+      <option>วัตถุดิบ/สินค้า</option>
+      <option>ค่าเช่า</option>
+      <option>ค่าไฟ/น้ำ</option>
+      <option>ค่าแรง</option>
+      <option>ค่าบริการ</option>
+      <option>ภาษี</option>
+      <option>อุปกรณ์/ซ่อมบำรุง</option>
+      <option>อื่นๆ</option>
+    </select>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>วันที่</th><th>สาขา</th><th>รายการ</th><th>หมวด</th><th>เลขบิล</th><th>จำนวน</th><th>กำหนดจ่าย</th><th>สถานะ</th><th>วันที่ชำระ</th></tr></thead>
+      <tbody id="adm-tbody"></tbody>
+    </table>
+    <div id="adm-empty" class="empty-state" style="display:none;"><div class="icon">📋</div><p>ไม่มีข้อมูล</p></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-top:12px;gap:8px;">
+    <button class="btn btn-outline btn-sm" onclick="exportAdminCSV()">⬇ Export CSV</button>
+  </div>
+</div>
+
+<!-- ข้อมูล Line Man คุณซัน -->
+<div class="card">
+  <div class="card-title">ยอด Line Man บัญชีคุณซัน (ทุกเดือน)</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>เดือน</th><th>สาขา</th><th>ยอดรับ</th><th>หมายเหตุ</th></tr></thead>
+      <tbody id="adm-lineman-tbody"></tbody>
+    </table>
+    <div id="adm-lineman-empty" class="empty-state" style="display:none;padding:20px;"><p>ยังไม่มีข้อมูล</p></div>
+  </div>
+</div>
+
+<!-- ล้างข้อมูล -->
+<div class="card" style="border-color:rgba(184,64,64,.3);">
+  <div class="card-title" style="color:var(--red);">⚠ Danger Zone</div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <button class="btn btn-danger btn-sm" onclick="adminClearPaid()">ลบรายการที่ชำระแล้วทั้งหมด</button>
+    <button class="btn btn-danger btn-sm" onclick="adminClearAll()">ล้างข้อมูลวางบิลทั้งหมด</button>
+  </div>
+</div>
+```
+
+  </div>
+</div>
+
 </div>
 <div class="toast-wrap" id="toast-wrap"></div>
 
@@ -519,6 +663,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('pf-jinda-due').value = today;
   document.getElementById('pf-ice-due').value   = today;
   document.getElementById('s-month').value = today.slice(0,7);
+  document.getElementById('pm-month').value = today.slice(0,7);
   document.getElementById('sy-year').value = new Date().getFullYear();
 
   if (cfg.gsUrl) {
@@ -847,8 +992,89 @@ async function loadSummary() {
     var res  = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branch) + '&month=' + month);
     var data = await res.json();
     renderSummary(data.rows || []);
+    loadLinemanSun();
   } catch(err) { toast('ดึงข้อมูลไม่สำเร็จ: ' + err.message, 'error'); }
   finally { txt.textContent = 'ดึงข้อมูล'; }
+}
+
+function onPmBranchChange() {
+  var branch = document.getElementById('pm-branch').value;
+  document.getElementById('pm-aircond-row').style.display = branch === 'lotus' ? 'block' : 'none';
+}
+
+function addMonthlyExpenses() {
+  var branch  = document.getElementById('pm-branch').value;
+  var month   = document.getElementById('pm-month').value;
+  var due     = document.getElementById('pm-due').value;
+  var today   = new Date().toISOString().split('T')[0];
+
+  var items = [
+    { id:'pm-rent',     label:'ค่าเช่า',                              cat:'ค่าเช่า' },
+    { id:'pm-utility',  label:'ค่าน้ำ/ค่าไฟ',                         cat:'ค่าไฟ/น้ำ' },
+    { id:'pm-aircond',  label:'ค่าแอร์ส่วนกลาง',                      cat:'ค่าบริการ' },
+    { id:'pm-tax-land', label:'ภาษีสิ่งปลูกสร้างและที่ดิน',           cat:'ภาษี' },
+    { id:'pm-tax-sign', label:'ภาษีป้าย',                              cat:'ภาษี' },
+    { id:'pm-license',  label:'ค่าใบอนุญาตผู้ประกอบการอาหาร',         cat:'ค่าบริการ' }
+  ];
+
+  var added = 0;
+  items.forEach(function(item) {
+    var el = document.getElementById(item.id);
+    if (!el) return;
+    var amount = parseFloat(el.value);
+    if (!amount || amount <= 0) return;
+    payables.unshift({
+      id: Date.now() + added,
+      branch: branch,
+      date: today,
+      desc: item.label + (month ? ' (' + month + ')' : ''),
+      cat: item.cat,
+      amount: amount,
+      due: due,
+      indate: '', billno: '', note: '',
+      paid: false, paidDate: null
+    });
+    added++;
+    el.value = '';
+  });
+
+  if (added === 0) { toast('กรุณากรอกยอดอย่างน้อย 1 รายการ', 'error'); return; }
+  savePay(); renderPayables();
+  toast('เพิ่ม ' + added + ' รายการแล้ว ✓', 'success');
+}
+
+function saveLinemanSun() {
+  var amount = document.getElementById('ss-lineman-sun').value;
+  var note   = document.getElementById('ss-lineman-sun-note').value;
+  var month  = document.getElementById('s-month').value;
+  var branch = document.getElementById('s-branch').value;
+  var key    = 'ct_lineman_sun_' + branch + '_' + month;
+  localStorage.setItem(key, JSON.stringify({ amount: amount, note: note }));
+  var saved  = document.getElementById('ss-lineman-sun-saved');
+  saved.textContent = 'บันทึกแล้ว ✓  ' + (note ? '(' + note + ')' : '');
+  saved.style.color = 'var(--green)';
+  toast('บันทึกยอด Line Man แล้ว ✓', 'success');
+}
+
+function loadLinemanSun() {
+  var month  = document.getElementById('s-month').value;
+  var branch = document.getElementById('s-branch').value;
+  var key    = 'ct_lineman_sun_' + branch + '_' + month;
+  var data   = localStorage.getItem(key);
+  var amountEl = document.getElementById('ss-lineman-sun');
+  var noteEl   = document.getElementById('ss-lineman-sun-note');
+  var savedEl  = document.getElementById('ss-lineman-sun-saved');
+  if (data) {
+    var d = JSON.parse(data);
+    amountEl.value = d.amount || '';
+    noteEl.value   = d.note   || '';
+    savedEl.textContent = 'บันทึกแล้ว ✓  ' + (d.note ? '(' + d.note + ')' : '');
+    savedEl.style.color = 'var(--green)';
+  } else {
+    amountEl.value = '';
+    noteEl.value   = '';
+    savedEl.textContent = '';
+  }
 }
 
 function switchSTab(tab) {
@@ -1045,6 +1271,148 @@ async function testConn() {
     var res = await fetch(cfg.gsUrl + '?test=1');
     toast(res.ok ? 'เชื่อมต่อสำเร็จ ✓' : 'HTTP ' + res.status, 'success');
   } catch(e) { toast('ไม่สามารถเชื่อมต่อได้ (อาจปกติถ้า CORS block)', 'error'); }
+}
+
+var ADMIN_PIN = '9999';
+var adminUnlocked = false;
+
+function checkAdminPin() {
+  var pin = document.getElementById('admin-pin').value;
+  var err = document.getElementById('admin-pin-error');
+  if (pin.length === 4) {
+    if (pin === ADMIN_PIN) {
+      adminUnlocked = true;
+      document.getElementById('admin-lock').style.display = 'none';
+      document.getElementById('admin-panel').style.display = 'block';
+      document.getElementById('admin-pin').value = '';
+      err.style.display = 'none';
+      renderAdminPanel();
+    } else {
+      err.style.display = 'block';
+      document.getElementById('admin-pin').value = '';
+    }
+  }
+}
+
+function lockAdmin() {
+  adminUnlocked = false;
+  document.getElementById('admin-lock').style.display = 'block';
+  document.getElementById('admin-panel').style.display = 'none';
+}
+
+function renderAdminPanel() {
+  var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
+  var tAll=0, tPaid=0, tUnpaid=0;
+  payables.forEach(function(p) {
+    tAll++;
+    p.paid ? (tPaid += p.amount) : (tUnpaid += p.amount);
+  });
+  document.getElementById('adm-payable-count').textContent = tAll;
+  document.getElementById('adm-paid-total').textContent    = fmt(tPaid);
+  document.getElementById('adm-unpaid-total').textContent  = fmt(tUnpaid);
+  renderAdminPayables();
+  renderAdminLineman();
+}
+
+function renderAdminPayables() {
+  var tbody  = document.getElementById('adm-tbody');
+  var empty  = document.getElementById('adm-empty');
+  var fBranch = document.getElementById('adm-filter-branch').value;
+  var fStatus = document.getElementById('adm-filter-status').value;
+  var fCat    = document.getElementById('adm-filter-cat').value;
+  tbody.innerHTML = '';
+
+  var list = payables.filter(function(p) {
+    if (fBranch && p.branch !== fBranch) return false;
+    if (fStatus === 'paid'   && !p.paid)  return false;
+    if (fStatus === 'unpaid' &&  p.paid)  return false;
+    if (fCat && p.cat !== fCat) return false;
+    return true;
+  });
+
+  if (!list.length) { empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  var today = new Date().toISOString().split('T')[0];
+  var fmt   = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
+
+  list.forEach(function(item) {
+    var overdue    = !item.paid && item.due && item.due < today;
+    var branchName = BRANCH_NAMES[item.branch] || item.branch;
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="mono">' + item.date + '</td>'
+      + '<td style="font-size:12px;">' + branchName + '</td>'
+      + '<td><div style="font-size:13px;">' + item.desc + '</div>'
+        + (item.note ? '<div style="font-size:11px;color:var(--text3);">' + item.note + '</div>' : '') + '</td>'
+      + '<td><span class="badge badge-gray">' + item.cat + '</span></td>'
+      + '<td class="mono">' + (item.billno || '-') + '</td>'
+      + '<td class="mono" style="font-weight:500;">' + fmt(item.amount) + '</td>'
+      + '<td class="mono" style="' + (overdue ? 'color:var(--red);font-weight:600;' : '') + '">'
+        + (item.due || '-') + (overdue ? ' ⚠' : '') + '</td>'
+      + '<td><span class="p-tag ' + (item.paid ? 'paid' : 'unpaid') + '">'
+        + (item.paid ? '✓ ชำระแล้ว' : '● ค้างชำระ') + '</span></td>'
+      + '<td class="mono">' + (item.paidDate || '-') + '</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function renderAdminLineman() {
+  var tbody = document.getElementById('adm-lineman-tbody');
+  var empty = document.getElementById('adm-lineman-empty');
+  tbody.innerHTML = '';
+  var keys = [];
+  for (var i = 0; i < localStorage.length; i++) {
+    var key = localStorage.key(i);
+    if (key && key.startsWith('ct_lineman_sun_')) keys.push(key);
+  }
+  if (!keys.length) { empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  keys.sort().reverse();
+  keys.forEach(function(key) {
+    var parts  = key.replace('ct_lineman_sun_','').split('_');
+    var branch = parts[0];
+    var month  = parts.slice(1).join('-');
+    var data   = JSON.parse(localStorage.getItem(key) || '{}');
+    var amount = parseFloat(data.amount) || 0;
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="mono">' + month + '</td>'
+      + '<td style="font-size:12px;">' + (BRANCH_NAMES[branch] || branch) + '</td>'
+      + '<td class="mono" style="color:var(--green);font-weight:500;">฿' + amount.toLocaleString('th-TH',{minimumFractionDigits:2}) + '</td>'
+      + '<td style="font-size:12px;color:var(--text2);">' + (data.note || '-') + '</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function exportAdminCSV() {
+  var headers = ['วันที่','สาขา','รายการ','หมวด','เลขบิล','จำนวน','กำหนดจ่าย','สถานะ','วันที่ชำระ','หมายเหตุ'];
+  var rows = [headers.join(',')];
+  payables.forEach(function(p) {
+    rows.push([
+      p.date, BRANCH_NAMES[p.branch]||p.branch, '"'+p.desc+'"', p.cat,
+      p.billno||'', p.amount, p.due||'',
+      p.paid?'ชำระแล้ว':'ค้างชำระ', p.paidDate||'', '"'+(p.note||'')+'"'
+    ].join(','));
+  });
+  var blob = new Blob(['\uFEFF'+rows.join('\n')], {type:'text/csv;charset=utf-8;'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href = url; a.download = 'payables_export.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function adminClearPaid() {
+  if (!confirm('ลบรายการที่ชำระแล้วทั้งหมด?')) return;
+  payables = payables.filter(function(p) { return !p.paid; });
+  savePay(); renderAdminPanel(); renderPayables();
+  toast('ลบรายการที่ชำระแล้วแล้ว', 'success');
+}
+
+function adminClearAll() {
+  if (!confirm('ล้างข้อมูลวางบิลทั้งหมด? ไม่สามารถกู้คืนได้')) return;
+  payables = [];
+  savePay(); renderAdminPanel(); renderPayables();
+  toast('ล้างข้อมูลทั้งหมดแล้ว', 'success');
 }
 
 function toast(msg, type) {

@@ -121,15 +121,18 @@ tr:hover td{background:var(--bg3);}
 
   <div class="card">
     <div class="card-title">ข้อมูลหลัก</div>
-    <div class="grid-3" style="margin-bottom:13px;">
-      <div class="form-row" style="grid-column:span 2;">
+    <div style="display:flex;gap:13px;align-items:flex-end;margin-bottom:13px;flex-wrap:wrap;">
+      <div class="form-row" style="flex:1;min-width:160px;">
         <label>สาขา</label>
         <select id="d-branch" onchange="onBranchChange()">
           <option value="passione">แพชชั่นระยอง</option>
           <option value="lotus">โลตัสระยอง</option>
         </select>
       </div>
-      <div class="form-row"><label>วันที่</label><input type="date" id="d-date"></div>
+      <div class="form-row" style="width:150px;">
+        <label>วันที่</label>
+        <input type="date" id="d-date" style="width:150px;">
+      </div>
     </div>
     <div class="form-row"><label>แคชเชียร์</label><input type="text" id="d-cashier" placeholder="ชื่อพนักงาน"></div>
   </div>

@@ -1128,8 +1128,8 @@ function addManRow(){
         '</select></div>'+
     '</div>'+
     '<div class="form-row">'+
-      '<div class="form-group"><label>เข้างาน * (HH:MM)</label><input type="text" id="mrIn_'+n+'" placeholder="เช่น 09:00" maxlength="5" style="font-family:monospace;font-size:16px;letter-spacing:2px"></div>'+
-      '<div class="form-group"><label>ออกงาน (HH:MM)</label><input type="text" id="mrOut_'+n+'" placeholder="เช่น 20:00" maxlength="5" style="font-family:monospace;font-size:16px;letter-spacing:2px"></div>'+
+      '<div class="form-group"><label>เข้างาน * (กรอก 4 หลัก เช่น 0955)</label><input type="text" id="mrIn_'+n+'" placeholder="0955" maxlength="5" inputmode="numeric" style="font-family:monospace;font-size:18px;letter-spacing:3px;text-align:center" oninput="autoFormatTime(this)"></div>'+
+      '<div class="form-group"><label>ออกงาน (กรอก 4 หลัก เช่น 2000)</label><input type="text" id="mrOut_'+n+'" placeholder="2000" maxlength="5" inputmode="numeric" style="font-family:monospace;font-size:18px;letter-spacing:3px;text-align:center" oninput="autoFormatTime(this)"></div>'+
     '</div>'+
     '<div class="form-row">'+
       '<div class="form-group"><label>ยอดขาย (฿)</label><input type="number" id="mrSales_'+n+'" placeholder="0" min="0" oninput="calcManComm('+n+')"></div>'+
@@ -1523,6 +1523,16 @@ async function recalcOldData(){
     renderDashboard();renderAllLogs();
     showToast('✅ คำนวณใหม่สำเร็จ '+res.updated+' รายการ','success');
   }catch(e){el.textContent='❌ '+e.message;showToast('ล้มเหลว: '+e.message,'error');}
+}
+
+// AUTO FORMAT TIME INPUT
+function autoFormatTime(el){
+  var v = el.value.replace(/[^0-9]/g,''); // เอาเฉพาะตัวเลข
+  if(v.length >= 3){
+    el.value = v.slice(0,2) + ':' + v.slice(2,4);
+  } else {
+    el.value = v;
+  }
 }
 
 // INIT

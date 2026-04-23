@@ -749,6 +749,7 @@ function updateCOPreview(){
 async function submitClock(){
   var empId=document.getElementById('modalEmp').value;
   if(!empId){showToast('กรุณาเลือกพนักงาน','error');return;}
+  if(!branch){showToast('กรุณาเลือกสาขา','error');return;}
   var now=new Date(),ds=now.toISOString().split('T')[0],ts=now.toTimeString().slice(0,5),ph=getPH(ds);
   var btn=document.getElementById('clockModalBtn');
   btn.innerHTML='<span class="loading-spinner"></span>กำลังบันทึก...';btn.disabled=true;
@@ -1103,8 +1104,14 @@ async function saveEmployee(){
   }catch(e){showToast('บันทึกล้มเหลว: '+e.message,'error');}
 }
 function populateManualForm(){
-  document.getElementById('manEmp').innerHTML=employees.filter(e=>e.active).map(e=>'<option value="'+e.id+'">'+e.name+'</option>').join('');
-  if(currentBranch)document.getElementById('manBranch').value=currentBranch;
+  document.getElementById('manEmp').innerHTML=
+    '<option value="">— เลือกพนักงาน —</option>'+
+    employees.filter(e=>e.active).map(e=>'<option value="'+e.id+'">'+e.name+'</option>').join('');
+  document.getElementById('manBranch').innerHTML=
+    '<option value="">— เลือกสาขา —</option>'+
+    '<option value="lotus">โลตัสระยอง</option>'+
+    '<option value="passion">แพชชั่นระยอง</option>';
+  // ไม่ pre-select ป้องกันกรอกผิด
   var rows=document.getElementById('manRows');
   if(!rows.children.length)addManRow();
 }
@@ -1128,8 +1135,8 @@ function addManRow(){
         '</select></div>'+
     '</div>'+
     '<div class="form-row">'+
-      '<div class="form-group"><label>เข้างาน *</label><input type="text" id="mrIn_'+n+'" value="00:00" maxlength="5" inputmode="numeric" style="font-family:monospace;font-size:20px;letter-spacing:4px;text-align:center;font-weight:600" oninput="autoFormatTime(this)" onfocus="if(this.value===\'00:00\')this.value=\'\'" onblur="if(this.value===\'\')this.value=\'00:00\'"></div>'+
-      '<div class="form-group"><label>ออกงาน</label><input type="text" id="mrOut_'+n+'" value="00:00" maxlength="5" inputmode="numeric" style="font-family:monospace;font-size:20px;letter-spacing:4px;text-align:center;font-weight:600" oninput="autoFormatTime(this)" onfocus="if(this.value===\'00:00\')this.value=\'\'" onblur="if(this.value===\'\')this.value=\'00:00\'"></div>'+
+      '<div class="form-group"><label>เข้างาน *</label><input type="text" id="mrIn_'+n+'" value="00:00" maxlength="5" inputmode="numeric" style="font-family:monospace;font-size:16px;letter-spacing:2px;text-align:center" oninput="autoFormatTime(this)" onfocus="if(this.value===\'00:00\')this.value=\'\'" onblur="if(this.value===\'\')this.value=\'00:00\'"></div>'+
+      '<div class="form-group"><label>ออกงาน</label><input type="text" id="mrOut_'+n+'" value="00:00" maxlength="5" inputmode="numeric" style="font-family:monospace;font-size:16px;letter-spacing:2px;text-align:center" oninput="autoFormatTime(this)" onfocus="if(this.value===\'00:00\')this.value=\'\'" onblur="if(this.value===\'\')this.value=\'00:00\'"></div>'+
     '</div>'+
     '<div class="form-row">'+
       '<div class="form-group"><label>ยอดขาย (฿)</label><input type="number" id="mrSales_'+n+'" placeholder="0" min="0" oninput="calcManComm('+n+')"></div>'+
@@ -1152,6 +1159,7 @@ async function saveManualAll(){
   var empId=document.getElementById('manEmp').value;
   var branch=document.getElementById('manBranch').value;
   if(!empId){showToast('กรุณาเลือกพนักงาน','error');return;}
+  if(!branch){showToast('กรุณาเลือกสาขา','error');return;}
   var rows=document.querySelectorAll('.man-row');
   if(!rows.length){showToast('กรุณาเพิ่มรายการก่อน','error');return;}
 

@@ -106,8 +106,8 @@ tr:hover td{background:var(--bg3);}
     <button class="nav-tab active" onclick="switchPage('daily',this)">รายวัน</button>
     <button class="nav-tab" onclick="switchPage('payable',this)">วางบิล</button>
     <button class="nav-tab" onclick="switchPage('summary',this)">สรุปเดือน</button>
-    <button class="nav-tab" onclick="switchPage('settings',this)">ตั้งค่า</button>
     <button class="nav-tab" onclick="switchPage('admin',this)">🔒 Admin</button>
+    <button class="nav-tab" onclick="switchPage('settings',this)">ตั้งค่า</button>
   </div>
 </nav>
 
@@ -121,8 +121,8 @@ tr:hover td{background:var(--bg3);}
 
   <div class="card">
     <div class="card-title">ข้อมูลหลัก</div>
-    <div class="grid-2" style="margin-bottom:13px;">
-      <div class="form-row">
+    <div class="grid-3" style="margin-bottom:13px;">
+      <div class="form-row" style="grid-column:span 2;">
         <label>สาขา</label>
         <select id="d-branch" onchange="onBranchChange()">
           <option value="passione">แพชชั่นระยอง</option>

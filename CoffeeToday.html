@@ -358,6 +358,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
   <div class="modal">
     <div class="modal-title" id="clockModalTitle">บันทึกเวลา</div>
     <div class="form-row full"><div class="form-group"><label>พนักงาน *</label><select id="modalEmp" onchange="onModalEmpChange()"></select></div></div>
+    <div class="form-row full"><div class="form-group"><label>สาขา *</label><select id="modalBranch"><option value="">— เลือกสาขา —</option><option value="lotus">โลตัสระยอง</option><option value="passion">แพชชั่นระยอง</option></select></div></div>
     <div class="ph-warning" id="phWarning">⚠️ วันนี้เป็นวันหยุดนักขัตฤกษ์: <strong id="phWarningName"></strong></div>
     <div class="info-box" id="clockInfoBox"></div>
     <div class="form-row full"><div class="form-group"><label>หมายเหตุ</label><input type="text" id="modalNote" placeholder="ไม่บังคับ..."></div></div>
@@ -689,17 +690,27 @@ function selectEmp(id,el){
 
 // CLOCK MODAL
 function openClockModal(action){
-  // sync currentBranch จาก dropdown ทุกครั้ง
   currentBranch=document.getElementById('branchSelect').value||currentBranch;
   clockAction=action;
   document.getElementById('clockModalTitle').textContent=action==='in'?'✅ บันทึกเข้างาน':'🚪 บันทึกออกงาน';
   document.getElementById('clockModalBtn').textContent=action==='in'?'บันทึกเข้างาน':'บันทึกออกงาน';
   populateEmpSel('modalEmp');
   if(selectedEmpId)document.getElementById('modalEmp').value=selectedEmpId;
+  // set สาขาใน modal
+  var mb=document.getElementById('modalBranch');
+  mb.value=currentBranch||'';
+  // ถ้าเลือกพนักงานแล้ว auto-fill สาขา
+  if(selectedEmpId){var emp=employees.find(e=>e.id===selectedEmpId);if(emp&&emp.branch)mb.value=emp.branch;}
   document.getElementById('modalNote').value='';
   document.getElementById('clockInfoBox').style.display='none';
   checkPHWarn();
-  document.getElementById('modalEmp').onchange=()=>onModalEmpChange();
+  document.getElementById('modalEmp').onchange=function(){
+    onModalEmpChange();
+    // auto-fill สาขาตามพนักงาน
+    var eid=document.getElementById('modalEmp').value;
+    var emp2=employees.find(e=>e.id===eid);
+    if(emp2&&emp2.branch)document.getElementById('modalBranch').value=emp2.branch;
+  };
   if(action==='out')updateCOPreview();
   openModal('clockModal');
 }
@@ -760,8 +771,8 @@ async function submitClock(){
       // ตรวจสอบว่าเป็นวันนี้เท่านั้น (ไม่อนุญาตย้อนหลัง)
       if(logs.find(l=>l.empId===empId&&toDateStr(l.date)===ds&&!l.clockOut)){showToast('เข้างานแล้ววันนี้','error');return;}
       var emp=employees.find(e=>e.id===empId);
-      // ดึง branch จาก dropdown → emp.branch → lotus (fallback)
-      var branch=document.getElementById('branchSelect').value||currentBranch||(emp?emp.branch:'')||'lotus';
+      var branch=document.getElementById('modalBranch').value||(emp?emp.branch:'')||'lotus';
+      if(!branch||branch===''){showToast('กรุณาเลือกสาขา','error');btn.innerHTML='บันทึกเข้างาน';btn.disabled=false;return;}
       currentBranch=branch;
       document.getElementById('branchSelect').value=branch;
       var sched=getSched(branch);
@@ -776,7 +787,7 @@ async function submitClock(){
       var entry=logs.find(l=>l.empId===empId&&toDateStr(l.date)===ds&&!l.clockOut);
       if(!entry){showToast('ไม่พบบันทึกเข้างานวันนี้','error');return;}
       var emp2=employees.find(e=>e.id===empId);
-      var branch2=entry.branch||(emp2?emp2.branch:'')||currentBranch;
+      var branch2=entry.branch||document.getElementById('modalBranch').value||(emp2?emp2.branch:'')||currentBranch||'lotus';
       var note=document.getElementById('modalNote').value;
       var hours2,hoursOT2,type2,late2=0;
       // holiday_ot, public_holiday = นับชั่วโมงรวมทั้งหมด ไม่มี OT แยก

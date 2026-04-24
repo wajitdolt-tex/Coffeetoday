@@ -199,11 +199,10 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     <button class="btn btn-gold" onclick="saveCommission()">💰 บันทึกยอดขาย</button>
   </div>
   <div class="send-card" id="sendHRCard" style="display:none">
-    <div class="card-title" style="color:#0369a1">📤 ส่งสรุปให้ฝ่ายบุคคล</div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:14px">ส่งสรุปชั่วโมงทำงาน ค่าล่วงเวลา และค่าคอมมิชชั่นให้ HR ตรวจสอบ</p>
+    <div class="card-title" style="color:#0369a1">📋 ดูสรุปการทำงาน</div>
     <div class="form-group" style="max-width:300px;margin-bottom:14px"><label>เลือกรอบเงินเดือน</label><select id="empSendPeriod"></select></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn btn-teal" onclick="openSendSummaryModal()">📋 ดูสรุปและส่งให้ HR</button>
+      <button class="btn btn-teal" onclick="openViewSummaryModal()">📋 ดูสรุปรายรอบ</button>
       <button class="btn btn-dark" onclick="openEmpYearlySummary()">📊 ดูสรุปรายได้ประจำปี</button>
     </div>
   </div>
@@ -230,7 +229,6 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     <button class="tab-btn active" onclick="showTab('dashboard',this)">📊 Dashboard</button>
     <button class="tab-btn" onclick="showTab('allLogs',this)">📋 บันทึกทั้งหมด</button>
     <button class="tab-btn" onclick="showTab('summary',this)">💰 สรุปรายรอบ</button>
-    <button class="tab-btn" onclick="showTab('submissions',this)">📬 รับสรุปจากพนักงาน</button>
     <button class="tab-btn" onclick="showTab('employees',this)">👥 พนักงาน</button>
     <button class="tab-btn" onclick="showTab('manual',this)">✏️ บันทึกเอง</button>
     <button class="tab-btn" onclick="showTab('holidays',this)">📅 วันหยุด</button>
@@ -295,14 +293,6 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 </div>
 ```
 
-  </div>
-  <div class="tab-content" id="tab-submissions">
-    <div class="card"><div class="card-title">📬 สรุปที่พนักงานส่งมา</div>
-      <div class="table-wrap"><table>
-        <thead><tr><th>วันที่ส่ง</th><th>พนักงาน</th><th>สาขา</th><th>รอบ</th><th>ชม.</th><th>OT</th><th>คอมมิชชั่น</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
-        <tbody id="submissionsTable"></tbody>
-      </table></div>
-    </div>
   </div>
   <div class="tab-content" id="tab-employees">
     <div style="margin-bottom:14px"><button class="btn btn-primary" onclick="openAddEmpModal()">➕ เพิ่มพนักงาน</button></div>
@@ -694,6 +684,10 @@ function getPayPeriods(){
 }
 function getCurPPKey(){var now=new Date(),y=now.getFullYear(),m=now.getMonth(),s=now.getDate()>=16?new Date(y,m,16):new Date(y,m-1,16);return s.getFullYear()+'-'+String(s.getMonth()+1).padStart(2,'0');}
 function logsInPP(key){
+  // normalize ppKey
+  if(key && !/^\d{4}-\d{2}$/.test(key)){
+    try{var kd=new Date(key);if(!isNaN(kd))key=kd.getFullYear()+'-'+String(kd.getMonth()+1).padStart(2,'0');}catch(e){}
+  }
   var parts=key.split('-').map(Number),y=parts[0],m=parts[1];
   var s=new Date(y,m-1,16),e=new Date(y,m,15);
   return logs.filter(function(l){
@@ -943,7 +937,17 @@ async function saveCommission(){
 }
 
 // SEND SUMMARY
-async function openSendSummaryModal(){
+async function openViewSummaryModal(){
+  var ppKey=document.getElementById('empSendPeriod').value;
+  if(!ppKey){showToast('กรุณาเลือกรอบ','error');return;}
+  var emp=employees.find(function(e){return e.id===selectedEmpId;});
+  if(!emp)return;
+  var pl=logsInPP(ppKey);
+  var el=pl.filter(function(l){return l.empId===selectedEmpId;});
+  document.getElementById('viewSubmissionContent').innerHTML=buildSummaryHTML(emp,el,ppKey,false);
+  openModal('viewSubmissionModal');
+}
+function openSendSummaryModal(){
   if(!selectedEmpId){showToast('กรุณาเลือกพนักงาน','error');return;}
   var ppKey=document.getElementById('empSendPeriod').value;
   if(!ppKey){showToast('กรุณาเลือกรอบ','error');return;}
@@ -968,7 +972,7 @@ async function confirmSendSummary(){
   });
   comm=+comm.toFixed(2);
   var hwDays=new Set(pl.filter(l=>l.type==='holiday_work').map(l=>l.date)).size;
-  var sub={id:genId(),empId:ps.empId,empName:emp.name,branch:emp.branch,ppKey:ps.ppKey,sentAt:new Date().toLocaleString('th-TH',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}),status:'pending',norm:norm,ot:ot,comm:comm,hwDays:hwDays};
+  var sub={id:genId(),empId:ps.empId,empName:emp.name,branch:emp.branch,ppKey:ps.ppKey,sentAt:(function(){var n=new Date();var th=new Date(n.toLocaleString('en-US',{timeZone:'Asia/Bangkok'}));var d=th.getDate(),mo=th.getMonth()+1,y=th.getFullYear()+543,h=th.getHours(),mi=th.getMinutes();return (d<10?'0'+d:d)+'/'+(mo<10?'0'+mo:mo)+'/'+y+' '+(h<10?'0'+h:h)+':'+(mi<10?'0'+mi:mi);}()),status:'pending',norm:norm,ot:ot,comm:comm,hwDays:hwDays};
   try{await api('addSubmission',sub);submissions.push(sub);closeModal('sendSummaryModal');showToast('📤 ส่งสรุปให้ HR สำเร็จ','success');}
   catch(e){showToast('ส่งล้มเหลว: '+e.message,'error');}
 }
@@ -1088,7 +1092,15 @@ function buildSummaryHTML(emp,el,ppKey,showSent){
   // โหลด pastPayData ใหม่
   var ppd=JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
   // หา pastPay ของ emp คนนี้ รอบนี้
-  var ppEntry=ppd.find(function(d){return d.empId===emp.id&&d.ppKey===ppKey;});
+  // normalize ppKey ถ้าเป็น Date string ให้แปลงเป็น YYYY-MM
+  function normPPKey(k){
+    if(!k) return k;
+    if(/^\d{4}-\d{2}$/.test(k)) return k; // ถูกแล้ว
+    try{var d=new Date(k);if(!isNaN(d)){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}}catch(e){}
+    return k;
+  }
+  var normKey=normPPKey(ppKey);
+  var ppEntry=ppd.find(function(d){return d.empId===emp.id&&(d.ppKey===normKey||normPPKey(d.ppKey)===normKey);});
   // ถ้ามี pastPay ให้ใช้แทนข้อมูลจาก logs
   if(ppEntry&&el.length===0){
     var otPay2=(ppEntry.ot||0)*(ppEntry.otRate||50);
@@ -1180,8 +1192,29 @@ async function renderSubmissions(){
       '<td>'+Number(s.ot||0).toFixed(1)+' ชม.</td>'+
       '<td>฿'+Number(s.comm||0).toLocaleString()+'</td>'+
       '<td><span class="badge '+(s.status==='pending'?'badge-pending':'badge-sent')+'">'+(s.status==='pending'?'รอตรวจสอบ':'รับทราบแล้ว')+'</span></td>'+
-      '<td style="display:flex;gap:5px"><button class="btn btn-dark btn-sm" onclick="viewSubmission(\''+s.id+'\')">📋</button>'+(s.status==='pending'?'<button class="btn btn-success btn-sm" onclick="approveSubmission(\''+s.id+'\')">✓</button>':'')+  '</td></tr>';
+      '<td style="display:flex;gap:5px">'+
+        '<button class="btn btn-dark btn-sm sub-view-btn" data-sid="'+s.id+'">📋</button>'+
+        (s.status==='pending'?'<button class="btn btn-success btn-sm sub-approve-btn" data-sid="'+s.id+'">✓</button>':'')+
+        '<button class="btn btn-danger btn-sm sub-del-btn" data-sid="'+s.id+'">🗑</button>'+
+      '</td></tr>';
   }).join('');
+  // event delegation บน submissionsTable
+  tbody.removeEventListener('click',tbody._subHandler);
+  tbody._subHandler=function(e){
+    var vBtn=e.target.closest('.sub-view-btn');
+    var aBtn=e.target.closest('.sub-approve-btn');
+    var dBtn=e.target.closest('.sub-del-btn');
+    if(vBtn) viewSubmission(vBtn.dataset.sid);
+    if(aBtn) approveSubmission(aBtn.dataset.sid);
+    if(dBtn) deleteSubmission(dBtn.dataset.sid);
+  };
+  tbody.addEventListener('click',tbody._subHandler);
+}
+function deleteSubmission(id){
+  if(!confirm('ลบรายการที่ส่งมานี้?'))return;
+  submissions=submissions.filter(function(s){return s.id!==id;});
+  renderSubmissions();
+  showToast('ลบเรียบร้อย','success');
 }
 function viewSubmission(id){
   var s=submissions.find(x=>x.id===id);if(!s)return;

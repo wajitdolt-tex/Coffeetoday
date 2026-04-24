@@ -1488,8 +1488,22 @@ function populateEmpSel(selId){document.getElementById(selId).innerHTML='<option
 function toTimeStr(t){
   if(!t)return'00:00';
   var s=String(t).trim();
+  // HH:MM format ปกติ
   if(/^\d{1,2}:\d{2}/.test(s))return s.slice(0,5);
-  try{var dt=new Date(s);if(!isNaN(dt.getTime())){var bk=new Date(dt.toLocaleString('en-US',{timeZone:'Asia/Bangkok'}));return String(bk.getHours()).padStart(2,'0')+':'+String(bk.getMinutes()).padStart(2,'0');}}catch(e){}
+  try{
+    var dt=new Date(s);
+    if(!isNaN(dt.getTime())){
+      var y=dt.getFullYear();
+      // Excel serial time จาก Google Sheets = ปี 1899/1900
+      // ดึง HH:MM จาก UTC โดยตรง เพราะ timezone เก่าทำให้บิดเบือน
+      if(y<=1900){
+        return String(dt.getUTCHours()).padStart(2,'0')+':'+String(dt.getUTCMinutes()).padStart(2,'0');
+      }
+      // Date ปกติ แปลงเป็นเวลาไทย
+      var bk=new Date(dt.toLocaleString('en-US',{timeZone:'Asia/Bangkok'}));
+      return String(bk.getHours()).padStart(2,'0')+':'+String(bk.getMinutes()).padStart(2,'0');
+    }
+  }catch(e){}
   return s.slice(0,5);
 }
 function hRaw(a,b){var at=toTimeStr(a),bt=toTimeStr(b);var ah=+at.split(':')[0],am=+at.split(':')[1],bh=+bt.split(':')[0],bm=+bt.split(':')[1],d=(bh*60+bm)-(ah*60+am);return d>0?d/60:0;}

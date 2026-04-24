@@ -447,6 +447,20 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('viewSubmissionModal')">ปิด</button></div>
   </div>
 </div>
+<div class="modal-overlay" id="empPinModal">
+  <div class="modal" style="max-width:320px;text-align:center">
+    <div class="modal-title">🔐 กรอกรหัสพนักงาน</div>
+    <p id="empPinName" style="font-size:13px;color:var(--muted);margin-bottom:16px"></p>
+    <input type="password" id="empPinInput" inputmode="numeric" maxlength="4"
+      placeholder="รหัส 4 หลัก"
+      style="width:100%;text-align:center;font-size:28px;letter-spacing:8px;padding:12px;border:2px solid var(--border);border-radius:10px;font-family:monospace" onkeydown="if(event.key==='Enter')confirmEmpPin()">
+    <div id="empPinError" style="color:#ef4444;font-size:13px;margin-top:8px;min-height:20px"></div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-ghost" onclick="closeModal('empPinModal')">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="confirmEmpPin()">ยืนยัน</button>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" id="empYearlyModal">
   <div class="modal wide">
     <div class="modal-title">📊 สรุปรายได้ประจำปี</div>

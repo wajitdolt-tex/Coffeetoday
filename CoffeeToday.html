@@ -733,23 +733,29 @@ function checkPHWarn(){
   var empId=document.getElementById('modalEmp').value;
   var isDayOff=empId?isEmpDayOff(empId,ds):false;
   var w=document.getElementById('phWarning');
-  var nameEl=document.getElementById('phWarningName');
-  if(isDayOff && ph){
-    // ทับกันทั้งคู่
+
+  var lines=[];
+  if(isDayOff){
+    lines.push('<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:8px;color:#c2410c;font-size:13px;font-weight:600">'+
+      '📅 วันหยุดประจำสัปดาห์: <strong>'+getEmpDayOffName(empId)+'</strong> — จะบันทึกเป็นทำงานวันหยุด×2</div>');
+  }
+  if(ph){
+    lines.push('<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fffbeb;border:1.5px solid #fcd34d;border-radius:8px;color:#92400e;font-size:13px;font-weight:600">'+
+      '🎌 วันหยุดนักขัตฤกษ์: <strong>'+ph.name+'</strong> — จะบันทึกเป็นทำงานวันหยุด×2</div>');
+  }
+
+  if(lines.length>0){
     w.style.display='block';
-    w.style.background='#fff7ed';w.style.borderColor='#f97316';w.style.color='#c2410c';
-    nameEl.textContent='วันหยุดประจำ ('+getEmpDayOffName(empId)+') + นักขัตฤกษ์ ('+ph.name+') — บันทึกเป็นทำงานวันหยุด×2';
-  } else if(isDayOff){
-    w.style.display='block';
-    w.style.background='#fff7ed';w.style.borderColor='#fed7aa';w.style.color='#c2410c';
-    nameEl.textContent='วันหยุดประจำ ('+getEmpDayOffName(empId)+') — จะบันทึกเป็นทำงานวันหยุด×2';
-  } else if(ph){
-    w.style.display='block';
-    w.style.background='#fffbeb';w.style.borderColor='#fcd34d';w.style.color='#92400e';
-    nameEl.textContent=ph.name+' — จะบันทึกเป็นทำงานวันหยุดนักขัตฤกษ์×2';
+    w.style.background='transparent';
+    w.style.border='none';
+    w.style.padding='0';
+    w.style.color='';
+    document.getElementById('phWarningName').innerHTML='';
+    // แทนที่เนื้อหาใน phWarning
+    w.innerHTML=lines.join('<div style="height:6px"></div>');
   } else {
     w.style.display='none';
-    w.style.background='';w.style.borderColor='';w.style.color='';
+    w.innerHTML='⚠️ วันนี้เป็นวันหยุดนักขัตฤกษ์: <strong id="phWarningName"></strong>';
   }
 }
 
@@ -1286,7 +1292,7 @@ function toTimeStr(t){
 function hRaw(a,b){var at=toTimeStr(a),bt=toTimeStr(b);var ah=+at.split(':')[0],am=+at.split(':')[1],bh=+bt.split(':')[0],bm=+bt.split(':')[1],d=(bh*60+bm)-(ah*60+am);return d>0?d/60:0;}
 function autoTypeBadge(l){
   if(l.type==='split')return'<span class="badge badge-normal">ปกติ</span><span class="badge badge-ot">+OT</span>';
-  var m={normal:['badge-normal','ปกติ'],split:['badge-ot','ปกติ+OT'],ot:['badge-ot','OT'],holiday_ot:['badge-holiday','OT วันหยุด'],public_holiday:['badge-ph','นักขัตฤกษ์'],holiday_work:['badge-hw','วันหยุด×2'],commission:['badge-commission','ยอดขาย/คอม']};
+  var m={normal:['badge-normal','ปกติ'],split:['badge-ot','ปกติ+OT'],ot:['badge-ot','OT'],holiday_ot:['badge-holiday','OT วันหยุด'],public_holiday:['badge-ph','🎌 นักขัตฤกษ์'],holiday_work:['badge-hw','📅 วันหยุด×2'],commission:['badge-commission','ยอดขาย/คอม']};
   var r=m[l.type]||['badge-normal',l.type];return'<span class="badge '+r[0]+'">'+r[1]+'</span>';
 }
 function fmtTime(t){

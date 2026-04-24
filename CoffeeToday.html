@@ -877,7 +877,7 @@ function updateCOPreview(){
   var empId=document.getElementById('modalEmp').value,box=document.getElementById('clockInfoBox');
   if(!empId){box.style.display='none';return;}
   var ds=new Date().toISOString().split('T')[0],ts=new Date().toTimeString().slice(0,5);
-  var entry=logs.find(l=>l.empId===empId&&toDateStr(l.date)===ds&&!l.clockOut);
+  var entry=logs.find(l=>l.empId===empId&&toDateStr(l.date)===ds&&(!l.clockOut||l.clockOut===''||l.clockOut==='00:00')&&l.clockIn&&l.clockIn!=='00:00');
   if(!entry){box.style.display='none';return;}
   var emp=employees.find(e=>e.id===empId);
   var branch=entry.branch||(emp?emp.branch:'')||currentBranch;
@@ -902,7 +902,7 @@ async function submitClock(){
   try{
     if(clockAction==='in'){
       // ตรวจสอบว่าเป็นวันนี้เท่านั้น (ไม่อนุญาตย้อนหลัง)
-      if(logs.find(l=>l.empId===empId&&toDateStr(l.date)===ds&&!l.clockOut)){showToast('เข้างานแล้ววันนี้','error');return;}
+      if(logs.find(l=>l.empId===empId&&toDateStr(l.date)===ds&&l.clockIn&&l.clockIn!=='00:00'&&(!l.clockOut||l.clockOut===''||l.clockOut==='00:00'))){showToast('เข้างานแล้ววันนี้','error');return;}
       var emp=employees.find(e=>e.id===empId);
       var branch=document.getElementById('modalBranch').value||(emp?emp.branch:'')||'';
       if(!branch){showToast('กรุณาเลือกสาขา','error');btn.innerHTML=clockAction==='in'?'บันทึกเข้างาน':'บันทึกออกงาน';btn.disabled=false;return;}
@@ -920,7 +920,7 @@ async function submitClock(){
       await api('addLog',log);logs.push(log);
       showToast('✅ บันทึกเข้างาน'+lateMsg+typeMsg,'success');
     } else {
-      var entry=logs.find(l=>l.empId===empId&&toDateStr(l.date)===ds&&!l.clockOut);
+      var entry=logs.find(l=>l.empId===empId&&toDateStr(l.date)===ds&&(!l.clockOut||l.clockOut===''||l.clockOut==='00:00')&&l.clockIn&&l.clockIn!=='00:00');
       if(!entry){showToast('ไม่พบบันทึกเข้างานวันนี้','error');return;}
       var emp2=employees.find(e=>e.id===empId);
       var branch2=entry.branch||document.getElementById('modalBranch').value||(emp2?emp2.branch:'')||currentBranch||'lotus';

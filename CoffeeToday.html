@@ -691,7 +691,6 @@ function selectEmp(id,el){
 function openClockModal(action){
   // sync currentBranch จาก dropdown ทุกครั้ง
   currentBranch=document.getElementById('branchSelect').value||currentBranch;
-  if(!currentBranch){showToast('กรุณาเลือกสาขาด้านบนก่อน','error');return;}
   clockAction=action;
   document.getElementById('clockModalTitle').textContent=action==='in'?'✅ บันทึกเข้างาน':'🚪 บันทึกออกงาน';
   document.getElementById('clockModalBtn').textContent=action==='in'?'บันทึกเข้างาน':'บันทึกออกงาน';
@@ -761,11 +760,10 @@ async function submitClock(){
       // ตรวจสอบว่าเป็นวันนี้เท่านั้น (ไม่อนุญาตย้อนหลัง)
       if(logs.find(l=>l.empId===empId&&toDateStr(l.date)===ds&&!l.clockOut)){showToast('เข้างานแล้ววันนี้','error');return;}
       var emp=employees.find(e=>e.id===empId);
-      // ดึง branch จาก dropdown ก่อน ถ้าว่างให้ใช้ branch ของพนักงานจาก Sheets
-      var branch=document.getElementById('branchSelect').value||(emp?emp.branch:'')||'';
-      if(!branch){showToast('กรุณาเลือกสาขาด้านบนก่อน','error');btn.innerHTML='บันทึกเข้างาน';btn.disabled=false;return;}
-      // sync currentBranch
+      // ดึง branch จาก dropdown → emp.branch → lotus (fallback)
+      var branch=document.getElementById('branchSelect').value||currentBranch||(emp?emp.branch:'')||'lotus';
       currentBranch=branch;
+      document.getElementById('branchSelect').value=branch;
       var sched=getSched(branch);
       var late=calcLate(branch,ts);
       var lateMsg=late>0?' ⚠️ สาย '+late+' นาที (มาตรฐาน '+sched.start+')':'';

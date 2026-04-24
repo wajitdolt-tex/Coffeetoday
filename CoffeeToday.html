@@ -1855,6 +1855,15 @@ function savePastPay(){
 function renderPPHistory(){
   var tbody=document.getElementById('ppHistoryTable');
   if(!pastPayData.length){tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="ei">📭</div>ยังไม่มีข้อมูล</div></td></tr>';return;}
+  // ลบ event listeners เก่าก่อน
+  tbody.removeEventListener('click', tbody._ppHandler);
+  tbody._ppHandler = function(e){
+    var editBtn=e.target.closest('.pp-edit-btn');
+    var delBtn=e.target.closest('.pp-del-btn');
+    if(editBtn){ editPastPay(editBtn.dataset.ppid); }
+    if(delBtn){ deletePastPay(delBtn.dataset.ppid); }
+  };
+  tbody.addEventListener('click', tbody._ppHandler);
   tbody.innerHTML=[...pastPayData].reverse().map(function(d){
     var otPay=d.ot*(d.otRate||50);
     var hotPay=d.hotOT*(d.holidayRate||100);
@@ -1871,8 +1880,8 @@ function renderPPHistory(){
       '<td>'+(d.late>0?'<span style="color:#ef4444">'+d.late+' น.</span>':'--')+'</td>'+
       '<td style="font-weight:700;color:var(--teal)">฿'+total.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
       '<td style="display:flex;gap:4px">'+
-        '<button class="btn btn-dark btn-sm" onclick="editPastPay(\"'+d.id+'\")">✏️</button>'+
-        '<button class="btn btn-danger btn-sm" onclick="deletePastPay(\"'+d.id+'\")">🗑</button>'+
+        '<button class="btn btn-dark btn-sm pp-edit-btn" data-ppid="'+d.id+'">✏️</button>'+
+        '<button class="btn btn-danger btn-sm pp-del-btn" data-ppid="'+d.id+'">🗑</button>'+
       '</td>'+
     '</tr>';
   }).join('');

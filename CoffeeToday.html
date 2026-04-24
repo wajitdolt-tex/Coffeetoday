@@ -202,7 +202,10 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     <div class="card-title" style="color:#0369a1">📤 ส่งสรุปให้ฝ่ายบุคคล</div>
     <p style="font-size:13px;color:var(--muted);margin-bottom:14px">ส่งสรุปชั่วโมงทำงาน ค่าล่วงเวลา และค่าคอมมิชชั่นให้ HR ตรวจสอบ</p>
     <div class="form-group" style="max-width:300px;margin-bottom:14px"><label>เลือกรอบเงินเดือน</label><select id="empSendPeriod"></select></div>
-    <button class="btn btn-teal" onclick="openSendSummaryModal()">📋 ดูสรุปและส่งให้ HR</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-teal" onclick="openSendSummaryModal()">📋 ดูสรุปและส่งให้ HR</button>
+      <button class="btn btn-dark" onclick="openEmpYearlySummary()">📊 ดูสรุปรายได้ประจำปี</button>
+    </div>
   </div>
   <div class="card">
     <div class="card-title">📋 บันทึกการเข้างานของฉัน</div>
@@ -452,6 +455,20 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     <div class="modal-title">📋 รายละเอียดสรุปที่ส่งมา</div>
     <div id="viewSubmissionContent"></div>
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('viewSubmissionModal')">ปิด</button></div>
+  </div>
+</div>
+<div class="modal-overlay" id="empYearlyModal">
+  <div class="modal wide">
+    <div class="modal-title">📊 สรุปรายได้ประจำปี</div>
+    <div class="form-group" style="margin-bottom:16px;max-width:200px">
+      <label>ปี (พ.ศ.)</label>
+      <select id="empYearSelect" onchange="renderEmpYearlySummary()"></select>
+    </div>
+    <div id="empYearlyContent"></div>
+    <div class="modal-actions">
+      <button class="btn btn-dark btn-sm" onclick="window.print()">🖨️ พิมพ์</button>
+      <button class="btn btn-ghost" onclick="closeModal('empYearlyModal')">ปิด</button>
+    </div>
   </div>
 </div>
 <div id="toast"></div>
@@ -1414,6 +1431,19 @@ function renderYearlySummary(){
     var ds = toDateStr(l.date);
     return ds && ds.startsWith(String(year));
   });
+  // รวม pastPayData ที่ตรงกับปีนั้น
+  var yearPastPay = pastPayData.filter(function(d){
+    if(!d.ppKey) return false;
+    var parts = d.ppKey.split('-').map(Number);
+    // ppKey = YYYY-MM ของรอบเงินเดือน (เดือนที่ 16 ถึง 15)
+    // ตรวจว่ารอบนี้อยู่ในปีที่เลือกหรือเปล่า
+    var ppYear = parts[0];
+    var ppMonth = parts[1];
+    // รอบ 16 ธ.ค. ปีก่อน - 15 ม.ค. ปีนี้ ก็นับเป็นปีนี้
+    if(ppYear === year) return true;
+    if(ppYear === year-1 && ppMonth === 12) return true;
+    return false;
+  });
 
   var targets = employees.filter(function(e){return e.active;});
   if(empF) targets = targets.filter(function(e){return e.id===empF;});
@@ -1451,7 +1481,7 @@ function renderYearlySummary(){
     var monthRows = '';
     for(var m=1;m<=12;m++){
       var d = monthlyData[m];
-      var sal = d.days>0?(emp.salary||0):0; // นับเงินเดือนเฉพาะเดือนที่มีวันทำงาน
+      var sal = (d.days>0||d.isPastPay)?(emp.salary||0):0; // นับเงินเดือนเฉพาะเดือนที่มีวันทำงาน
       var total = sal+d.ot+d.hotOT+d.hw+d.comm;
       totalSalary+=sal; totalOT+=d.ot; totalHotOT+=d.hotOT; totalHW+=d.hw; totalComm+=d.comm; totalLate+=d.lateMin;
       if(d.days>0||d.comm>0){
@@ -1610,6 +1640,35 @@ function checkManRowDate(n){
   setTimeout(function(){document.getElementById('dupPinInput').focus();},150);
 }
 
+function openEmpYearlySummary(){
+  if(!selectedEmpId){showToast('กรุณาเลือกพนักงาน','error');return;}
+  var now=new Date().getFullYear();
+  var sel=document.getElementById('empYearSelect');
+  sel.innerHTML='';
+  for(var y=now;y>=now-2;y--){
+    var be=y+543;
+    sel.innerHTML+='<option value="'+y+'">'+be+'</option>';
+  }
+  renderEmpYearlySummary();
+  openModal('empYearlyModal');
+}
+function renderEmpYearlySummary(){
+  var empId=selectedEmpId;
+  var year=parseInt(document.getElementById('empYearSelect').value)||new Date().getFullYear();
+  var emp=employees.find(function(e){return e.id===empId;});
+  if(!emp)return;
+  var container=document.getElementById('empYearlyContent');
+  // สร้าง yearly summary เหมือนใน HR
+  var tempEmpId=empId;
+  var tempYear=year;
+  // เรียกใช้ renderYearlySummary logic แต่แสดงเฉพาะคนนี้
+  document.getElementById('yearlyEmp').value=empId;
+  document.getElementById('yearlyYear').value=year;
+  renderYearlySummary();
+  // copy content
+  var src=document.getElementById('yearlyCards').innerHTML;
+  container.innerHTML=src||'<div class="empty-state"><div class="ei">📭</div>ไม่มีข้อมูล</div>';
+}
 async function recalcOldData(){
   var el=document.getElementById('recalcStatus');
   el.textContent='กำลังคำนวณใหม่...';
@@ -1728,7 +1787,10 @@ function renderPPHistory(){
       '<td style="color:var(--success)">฿'+Number(d.comm||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
       '<td>'+(d.late>0?'<span style="color:#ef4444">'+d.late+' น.</span>':'--')+'</td>'+
       '<td style="font-weight:700;color:var(--teal)">฿'+total.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
-      '<td><button class="btn btn-danger btn-sm" onclick="deletePastPay(\"'+d.id+'\")">🗑</button></td>'+
+      '<td style="display:flex;gap:4px">'+
+        '<button class="btn btn-dark btn-sm" onclick="editPastPay(\"'+d.id+'\")">✏️</button>'+
+        '<button class="btn btn-danger btn-sm" onclick="deletePastPay(\"'+d.id+'\")">🗑</button>'+
+      '</td>'+
     '</tr>';
   }).join('');
 }
@@ -1738,6 +1800,26 @@ function deletePastPay(id){
   pastPayData=pastPayData.filter(function(d){return d.id!==id;});
   localStorage.setItem('ct_pastpay',JSON.stringify(pastPayData));
   renderPPHistory();showToast('ลบเรียบร้อย');
+}
+function editPastPay(id){
+  var d=pastPayData.find(function(x){return x.id===id;});
+  if(!d)return;
+  // fill form
+  document.getElementById('ppEmp').value=d.empId;
+  document.getElementById('ppPeriod').value=d.ppKey;
+  document.getElementById('ppDays').value=d.days||0;
+  document.getElementById('ppOT').value=d.ot||0;
+  document.getElementById('ppHotOT').value=d.hotOT||0;
+  document.getElementById('ppHwDays').value=d.hwDays||0;
+  document.getElementById('ppComm').value=d.comm||0;
+  document.getElementById('ppLate').value=d.late||0;
+  // ลบรายการเก่าก่อน
+  pastPayData=pastPayData.filter(function(x){return x.id!==id;});
+  localStorage.setItem('ct_pastpay',JSON.stringify(pastPayData));
+  renderPPHistory();
+  // scroll ขึ้นไปที่ form
+  document.getElementById('ppEmp').scrollIntoView({behavior:'smooth'});
+  showToast('โหลดข้อมูลแล้ว แก้ไขแล้วกดบันทึกใหม่','success');
 }
 
 // INIT

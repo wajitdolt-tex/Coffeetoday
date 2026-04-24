@@ -457,7 +457,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 <div id="toast"></div>
 
 <script>
-// API URL — ฝังไว้แล้ว ไม่ต้องแก้
+// API URL - ฝังไว้แล้ว ไม่ต้องแก้
 const API_URL='https://script.google.com/macros/s/AKfycbw4fXghaBjjU_9PvBCFmI14kGROL_rWOp-AyqJ09HAtzZZz6EgXtWf5SY-5rukLJnoyfA/exec';
 
 // วันหยุดนักขัตฤกษ์ 2569
@@ -564,7 +564,7 @@ const COMM_TIERS={
   passion:[{min:5000,rate:.08,label:'8%'},{min:2500,rate:.04,label:'4%'},{min:1500,rate:.02,label:'2%'}]
 };
 function getCommTier(branch,sales){var t=COMM_TIERS[branch]||[];for(var i=0;i<t.length;i++){if(sales>=t[i].min)return t[i];}return null;}
-// คำนวณค่าคอมจาก log object — ใช้ sales เป็นหลัก ไม่สนข้อมูลเก่าใน commission field
+// คำนวณค่าคอมจาก log object - ใช้ sales เป็นหลัก ไม่สนข้อมูลเก่าใน commission field
 function getCommFromLog(log, branch){
   var sales = Number(log.sales)||0;
   if(sales > 0){
@@ -616,22 +616,10 @@ async function api(action,data={}){
 }
 async function loadAll(){
   try{
-    // โหลด employees ก่อน แสดงรายชื่อพนักงานได้เลย
-    var eRes=await api('getEmployees');
-    employees=eRes.employees||[];
-    renderEmpCards();
-
-    // โหลด logs และ submissions ต่อ
-    var[lRes,sRes]=await Promise.all([api('getLogs'),api('getSubmissions')]);
-    logs=lRes.logs||[];
-    submissions=sRes.submissions||[];
-    renderMyLog();
-  }catch(e){
-    showToast('โหลดข้อมูลล้มเหลว: '+e.message,'error');
-    // ถ้าโหลดไม่ได้ ยังใช้งานได้บางส่วน
-    renderEmpCards();
-    renderMyLog();
-  }
+    var[eRes,lRes,sRes]=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
+    employees=eRes.employees||[];logs=lRes.logs||[];submissions=sRes.submissions||[];
+    renderEmpCards();renderMyLog();
+  }catch(e){showToast('โหลดข้อมูลล้มเหลว: '+e.message,'error');}
 }
 
 // PIN
@@ -653,7 +641,7 @@ function logoutHR(){hrUnlocked=false;showPage('clock',document.getElementById('n
 // BRANCH
 function onBranchChange(){currentBranch=document.getElementById('branchSelect').value;localStorage.setItem('ct_branch',currentBranch);updateBranchUI();renderEmpCards();}
 function updateBranchUI(){}
-function brL(b){return BRANCHES[b]||b||'—';}
+function brL(b){return BRANCHES[b]||b||'--';}
 
 // PAY PERIODS
 function getPayPeriods(){
@@ -968,18 +956,18 @@ function renderMyLog(){
       ?'<span style="font-size:11px;color:var(--muted)">ยอด ฿'+Number(l.sales).toLocaleString()+'</span><br>'+
         '<span style="color:var(--success);font-weight:600">คอม ฿'+_commVal.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</span>'+
         (_commVal>0&&l.commRate?' <span style="font-size:10px;color:var(--muted)">('+Math.round(l.commRate*100)+'%)</span>':'')
-      :'—';
+      :'--';
     return '<tr'+(ph?' class="ph-row"':'')+'>'+
       '<td>'+fmtDate(toDateStr(l.date))+(ph?' <span class="badge badge-phday">'+ph.name+'</span>':'')+  '</td>'+
       '<td style="font-size:11px;color:var(--mid);font-weight:600">'+brL(l.branch||ei.branch)+'</td>'+
       '<td><span class="badge badge-in">'+fmtTime(l.clockIn)+'</span></td>'+
       '<td>'+lateCell+'</td>'+
-      '<td>'+(l.clockOut&&l.clockOut!=='00:00'?'<span class="badge badge-out">'+fmtTime(l.clockOut)+'</span>':l.type==='commission'?'—':'<span style="color:var(--warning);font-size:11px">รอ</span>')+'</td>'+
-      '<td>'+(l.hours!=null&&l.hours!==''&&l.type!=='commission'?Number(l.hours)+' ชม.':'—')+'</td>'+
-      '<td>'+(Number(l.hoursOT||0)>0?'<span style="color:#b45309;font-weight:600">'+l.hoursOT+' ชม.</span>':'—')+'</td>'+
+      '<td>'+(l.clockOut&&l.clockOut!=='00:00'?'<span class="badge badge-out">'+fmtTime(l.clockOut)+'</span>':l.type==='commission'?'--':'<span style="color:var(--warning);font-size:11px">รอ</span>')+'</td>'+
+      '<td>'+(l.hours!=null&&l.hours!==''&&l.type!=='commission'?Number(l.hours)+' ชม.':'--')+'</td>'+
+      '<td>'+(Number(l.hoursOT||0)>0?'<span style="color:#b45309;font-weight:600">'+l.hoursOT+' ชม.</span>':'--')+'</td>'+
       '<td>'+autoTypeBadge(l)+'</td>'+
       '<td>'+commDisplay+'</td>'+
-      '<td style="color:var(--muted);font-size:11px">'+(l.note||'—')+'</td>'+
+      '<td style="color:var(--muted);font-size:11px">'+(l.note||'--')+'</td>'+
       '</tr>';
   }).join('');
 }
@@ -1040,19 +1028,19 @@ function renderAllLogs(){
     var _commVal2=Number(l.sales||0)>0?getCommFromLog(l,_emp2.branch||l.branch||''):0;
     var commDisp=Number(l.sales||0)>0
       ?'ยอด ฿'+Number(l.sales).toLocaleString()+'<br><span style="color:var(--success);font-weight:600">คอม ฿'+_commVal2.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</span>'+(_commVal2>0&&l.commRate?' <span style="font-size:10px;color:var(--muted)">('+Math.round(l.commRate*100)+'%)</span>':'')
-      :'—';
+      :'--';
     return '<tr'+(ph?' class="ph-row"':'')+'>'+
       '<td>'+fmtDate(toDateStr(l.date))+(ph?' <span class="badge badge-phday" style="font-size:10px">'+ph.name+'</span>':'')+  '</td>'+
       '<td style="font-size:11px;color:var(--mid);font-weight:600">'+brL(l.branch||ei.branch)+'</td>'+
-      '<td><strong>'+(ei.name||'—')+'</strong></td>'+
+      '<td><strong>'+(ei.name||'--')+'</strong></td>'+
       '<td><span class="badge badge-in">'+fmtTime(l.clockIn)+'</span></td>'+
       '<td>'+lateCell+'</td>'+
-      '<td>'+(l.clockOut&&l.clockOut!=='00:00'?'<span class="badge badge-out">'+fmtTime(l.clockOut)+'</span>':l.type==='commission'?'—':'<span style="color:var(--warning);font-size:11px">รอ</span>')+'</td>'+
-      '<td>'+(l.hours!=null&&l.hours!==''&&l.type!=='commission'?Number(l.hours)+' ชม.':'—')+'</td>'+
-      '<td>'+(Number(l.hoursOT||0)>0?'<span style="color:#b45309;font-weight:600">'+l.hoursOT+' ชม.</span>':'—')+'</td>'+
+      '<td>'+(l.clockOut&&l.clockOut!=='00:00'?'<span class="badge badge-out">'+fmtTime(l.clockOut)+'</span>':l.type==='commission'?'--':'<span style="color:var(--warning);font-size:11px">รอ</span>')+'</td>'+
+      '<td>'+(l.hours!=null&&l.hours!==''&&l.type!=='commission'?Number(l.hours)+' ชม.':'--')+'</td>'+
+      '<td>'+(Number(l.hoursOT||0)>0?'<span style="color:#b45309;font-weight:600">'+l.hoursOT+' ชม.</span>':'--')+'</td>'+
       '<td>'+autoTypeBadge(l)+'</td>'+
       '<td>'+commDisp+'</td>'+
-      '<td style="font-size:11px;color:var(--muted)">'+(l.note||'—')+'</td>'+
+      '<td style="font-size:11px;color:var(--muted)">'+(l.note||'--')+'</td>'+
       '<td><button class="btn btn-danger btn-sm" onclick="deleteLogHR(\''+l.id+'\')">🗑</button></td>'+
       '</tr>';
   }).join('');
@@ -1143,7 +1131,7 @@ async function approveSubmission(id){
 }
 function renderEmpTable(){
   document.getElementById('empTable').innerHTML=employees.map(function(e){
-    var doff=EMP_DAY_OFF[e.id]!==undefined?'<span class="badge badge-phday">หยุด'+DAY_NAMES[EMP_DAY_OFF[e.id]]+'</span>':'—';
+    var doff=EMP_DAY_OFF[e.id]!==undefined?'<span class="badge badge-phday">หยุด'+DAY_NAMES[EMP_DAY_OFF[e.id]]+'</span>':'--';
     return '<tr><td><strong>'+e.name+'</strong></td><td style="font-size:11px;color:var(--mid);font-weight:600">'+brL(e.branch)+'</td>'+
     '<td>'+e.role+'</td><td>'+doff+'</td><td>฿'+Number(e.salary||0).toLocaleString()+'</td>'+
     '<td>฿'+Number(e.dailyWage||0).toLocaleString()+' <span style="color:var(--accent);font-size:10px;font-weight:700">×2</span></td>'+
@@ -1346,13 +1334,13 @@ function autoTypeBadge(l){
   var r=m[l.type]||['badge-normal',l.type];return'<span class="badge '+r[0]+'">'+r[1]+'</span>';
 }
 function fmtTime(t){
-  if(!t||t==='00:00')return t||'—';
+  if(!t||t==='00:00')return t||'--';
   var s=String(t).trim();
   if(/^\d{1,2}:\d{2}$/.test(s))return s;
   try{var dt=new Date(s);if(!isNaN(dt.getTime()))return dt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok',hour12:false});}catch(e){}
   return s;
 }
-function fmtDate(d){if(!d)return"—";try{var s=String(d).trim();if(/^\d{4}-\d{2}-\d{2}$/.test(s))return new Date(s+"T00:00:00").toLocaleDateString("th-TH",{year:"numeric",month:"short",day:"numeric"});var dt=new Date(s);if(!isNaN(dt.getTime()))return dt.toLocaleDateString("th-TH",{year:"numeric",month:"short",day:"numeric",timeZone:"Asia/Bangkok"});return s;}catch(e){return String(d);}}
+function fmtDate(d){if(!d)return"--";try{var s=String(d).trim();if(/^\d{4}-\d{2}-\d{2}$/.test(s))return new Date(s+"T00:00:00").toLocaleDateString("th-TH",{year:"numeric",month:"short",day:"numeric"});var dt=new Date(s);if(!isNaN(dt.getTime()))return dt.toLocaleDateString("th-TH",{year:"numeric",month:"short",day:"numeric",timeZone:"Asia/Bangkok"});return s;}catch(e){return String(d);}}
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 var toastTimer;
@@ -1453,12 +1441,12 @@ function renderYearlySummary(){
         monthRows += '<tr style="border-bottom:1px solid var(--border)">'+
           '<td style="padding:7px 8px">'+thaiMonths[m-1]+' '+be+'</td>'+
           '<td style="padding:7px 8px;text-align:right">'+sal.toLocaleString()+'</td>'+
-          '<td style="padding:7px 8px;text-align:right">'+(d.ot>0?d.ot.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'—')+'</td>'+
-          '<td style="padding:7px 8px;text-align:right">'+(d.hotOT>0?d.hotOT.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'—')+'</td>'+
-          '<td style="padding:7px 8px;text-align:right">'+(d.hw>0?d.hw.toLocaleString():'—')+'</td>'+
-          '<td style="padding:7px 8px;text-align:right">'+(d.comm>0?d.comm.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'—')+'</td>'+
+          '<td style="padding:7px 8px;text-align:right">'+(d.ot>0?d.ot.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td>'+
+          '<td style="padding:7px 8px;text-align:right">'+(d.hotOT>0?d.hotOT.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td>'+
+          '<td style="padding:7px 8px;text-align:right">'+(d.hw>0?d.hw.toLocaleString():'--')+'</td>'+
+          '<td style="padding:7px 8px;text-align:right">'+(d.comm>0?d.comm.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td>'+
           '<td style="padding:7px 8px;text-align:right;font-weight:700">'+total.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
-          '<td style="padding:7px 8px;text-align:center">'+(d.lateMin>0?'<span style="color:#ef4444;font-size:11px">'+d.lateMin+'น.</span>':'—')+'</td>'+
+          '<td style="padding:7px 8px;text-align:center">'+(d.lateMin>0?'<span style="color:#ef4444;font-size:11px">'+d.lateMin+'น.</span>':'--')+'</td>'+
         '</tr>';
       }
     }
@@ -1487,12 +1475,12 @@ function renderYearlySummary(){
         '<tfoot><tr style="background:#f8faff;font-weight:700;border-top:2px solid var(--ink)">'+
           '<td style="padding:8px">รวมทั้งปี</td>'+
           '<td style="padding:8px;text-align:right">'+totalSalary.toLocaleString()+'</td>'+
-          '<td style="padding:8px;text-align:right">'+(totalOT>0?totalOT.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'—')+'</td>'+
-          '<td style="padding:8px;text-align:right">'+(totalHotOT>0?totalHotOT.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'—')+'</td>'+
-          '<td style="padding:8px;text-align:right">'+(totalHW>0?totalHW.toLocaleString():'—')+'</td>'+
-          '<td style="padding:8px;text-align:right">'+(totalComm>0?totalComm.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'—')+'</td>'+
+          '<td style="padding:8px;text-align:right">'+(totalOT>0?totalOT.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td>'+
+          '<td style="padding:8px;text-align:right">'+(totalHotOT>0?totalHotOT.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td>'+
+          '<td style="padding:8px;text-align:right">'+(totalHW>0?totalHW.toLocaleString():'--')+'</td>'+
+          '<td style="padding:8px;text-align:right">'+(totalComm>0?totalComm.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td>'+
           '<td style="padding:8px;text-align:right;font-size:15px;color:var(--teal)">฿'+grandTotal.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
-          '<td style="padding:8px;text-align:center">'+(totalLate>0?'<span style="color:#ef4444">'+totalLate+' น.</span>':'—')+'</td>'+
+          '<td style="padding:8px;text-align:center">'+(totalLate>0?'<span style="color:#ef4444">'+totalLate+' น.</span>':'--')+'</td>'+
         '</tr></tfoot>'+
       '</table></div>'+
       '<div style="background:linear-gradient(135deg,var(--ink),var(--mid));color:#fff;border-radius:10px;padding:14px 20px;text-align:center;margin-top:16px">'+
@@ -1717,13 +1705,13 @@ function renderPPHistory(){
       '<td><strong>'+d.empName+'</strong></td>'+
       '<td style="font-size:12px">'+getPPLabel(d.ppKey)+'</td>'+
       '<td>'+d.days+' วัน</td>'+
-      '<td>'+(d.ot>0?d.ot+' ชม.':'—')+'</td>'+
-      '<td>'+(d.hotOT>0?d.hotOT+' ชม.':'—')+'</td>'+
-      '<td>'+(d.hwDays>0?d.hwDays+' วัน':'—')+'</td>'+
+      '<td>'+(d.ot>0?d.ot+' ชม.':'--')+'</td>'+
+      '<td>'+(d.hotOT>0?d.hotOT+' ชม.':'--')+'</td>'+
+      '<td>'+(d.hwDays>0?d.hwDays+' วัน':'--')+'</td>'+
       '<td style="color:var(--success)">฿'+Number(d.comm||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
-      '<td>'+(d.late>0?'<span style="color:#ef4444">'+d.late+' น.</span>':'—')+'</td>'+
+      '<td>'+(d.late>0?'<span style="color:#ef4444">'+d.late+' น.</span>':'--')+'</td>'+
       '<td style="font-weight:700;color:var(--teal)">฿'+total.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
-      '<td><button class="btn btn-danger btn-sm" onclick="deletePastPay(''+d.id+'')">🗑</button></td>'+
+      '<td><button class="btn btn-danger btn-sm" onclick="deletePastPay(\"'+d.id+'\")">🗑</button></td>'+
     '</tr>';
   }).join('');
 }
@@ -1735,13 +1723,11 @@ function deletePastPay(id){
   renderPPHistory();showToast('ลบเรียบร้อย');
 }
 
-// INIT — เริ่ม UI ก่อนเสมอ ไม่รอ API
-updateClock(); // เริ่มนาฬิกาทันที
+// INIT
 if(currentBranch)document.getElementById('branchSelect').value=currentBranch;
 updateBranchUI();
 populatePPSelects();
-// โหลดข้อมูลทีหลัง ไม่บล็อก UI
-setTimeout(function(){ loadAll(); }, 100);
+loadAll();
 </script>
 
 </body>

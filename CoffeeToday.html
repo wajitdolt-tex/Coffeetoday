@@ -968,7 +968,7 @@ async function confirmSendSummary(){
   });
   comm=+comm.toFixed(2);
   var hwDays=new Set(pl.filter(l=>l.type==='holiday_work').map(l=>l.date)).size;
-  var sub={id:genId(),empId:ps.empId,empName:emp.name,branch:emp.branch,ppKey:ps.ppKey,sentAt:new Date().toISOString(),status:'pending',norm:norm,ot:ot,comm:comm,hwDays:hwDays};
+  var sub={id:genId(),empId:ps.empId,empName:emp.name,branch:emp.branch,ppKey:ps.ppKey,sentAt:new Date().toLocaleString('th-TH',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}),status:'pending',norm:norm,ot:ot,comm:comm,hwDays:hwDays};
   try{await api('addSubmission',sub);submissions.push(sub);closeModal('sendSummaryModal');showToast('📤 ส่งสรุปให้ HR สำเร็จ','success');}
   catch(e){showToast('ส่งล้มเหลว: '+e.message,'error');}
 }
@@ -1172,7 +1172,7 @@ async function renderSubmissions(){
   if(!submissions.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="ei">📬</div>ยังไม่มีการส่งสรุป</div></td></tr>';return;}
   tbody.innerHTML=[...submissions].reverse().map(function(s){
     return '<tr>'+
-      '<td>'+fmtDate(s.sentAt.split('T')[0])+'<br><small style="color:var(--muted)">'+(s.sentAt.split('T')[1]?s.sentAt.split('T')[1].slice(0,5):'')+'</small></td>'+
+      '<td>'+s.sentAt+'</td>'+
       '<td><strong>'+s.empName+'</strong></td>'+
       '<td style="font-size:11px;color:var(--mid);font-weight:600">'+brL(s.branch)+'</td>'+
       '<td style="font-size:12px">'+getPPLabel(s.ppKey)+'</td>'+
@@ -1467,13 +1467,15 @@ function renderYearlySummary(){
   // รวม pastPayData ที่ตรงกับปีนั้น
   var yearPastPay = pastPayData.filter(function(d){
     if(!d.ppKey) return false;
-    var parts = d.ppKey.split('-').map(Number);
-    var ppYear = parts[0];
-    var ppMonth = parts[1];
-    // รอบที่นับเป็นปี year:
-    // - ppYear === year (รอบในปีเดียวกัน)
-    // - ppYear === year-1 && ppMonth === 12 (รอบ ธ.ค. ปีก่อน จ่ายใน ม.ค. ปีนี้)
-    return (ppYear === year) || (ppYear === year-1 && ppMonth === 12);
+    var parts=d.ppKey.split('-').map(Number);
+    var ppYear=parts[0],ppMonth=parts[1];
+    // รอบ YYYY-MM แสดงใน MM+1 ดังนั้น:
+    // - ถ้า ppYear===year และ ppMonth 1-11 → แสดงใน MM+1 ของปีนี้
+    // - ถ้า ppYear===year-1 และ ppMonth===12 → แสดงใน ม.ค. ปีนี้
+    // - ถ้า ppYear===year และ ppMonth===12 → แสดงใน ม.ค. ปีหน้า (ไม่นับ)
+    if(ppYear===year && ppMonth>=1 && ppMonth<=11) return true;
+    if(ppYear===year-1 && ppMonth===12) return true;
+    return false;
   });
 
   var targets = employees.filter(function(e){return e.active;});
@@ -1698,8 +1700,10 @@ function renderEmpYearlySummary(){
   var yearPastPay2=pastPayData.filter(function(d){
     if(!d.ppKey)return false;
     var parts=d.ppKey.split('-').map(Number);
-    var ppYear=parts[0],ppMonth=parts[1];
-    return(ppYear===year)||(ppYear===year-1&&ppMonth===12);
+    var ppY=parts[0],ppM=parts[1];
+    if(ppY===year&&ppM>=1&&ppM<=11)return true;
+    if(ppY===year-1&&ppM===12)return true;
+    return false;
   });
   var el=yearLogs.filter(function(l){return l.empId===empId;});
   var thaiMonths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
@@ -1719,8 +1723,11 @@ function renderEmpYearlySummary(){
   });
   yearPastPay2.filter(function(d){return d.empId===empId;}).forEach(function(d){
     var parts=d.ppKey.split('-').map(Number);
-    var mo=parts[1];
-    if(parts[0]===year-1&&parts[1]===12) mo=1;
+    var ppYear2=parts[0],ppMonth2=parts[1];
+    var mo=ppMonth2+1;
+    var moYear2=ppYear2;
+    if(mo>12){mo=1;moYear2=ppYear2+1;}
+    if(moYear2!==year)return;
     if(mo<1||mo>12)return;
     monthlyData2[mo].isPastPay=true;
     monthlyData2[mo].days+=d.days||0;

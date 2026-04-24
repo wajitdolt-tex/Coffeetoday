@@ -152,12 +152,13 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 <div class="topbar">
   <div class="topbar-brand">☕ Coffee<span class="dot">Today</span></div>
   <div class="topbar-center">
-    <select id="branchSelect" onchange="onBranchChange()" class="branch-sel">
-      <option value="">— เลือกสาขา —</option>
-      <option value="lotus">สาขาโลตัสระยอง</option>
-      <option value="passion">สาขาแพชชั่นระยอง</option>
-    </select>
+    <div class="topbar-brand" style="font-size:14px;opacity:.7;font-family:Sarabun,sans-serif;font-weight:400">ระบบบันทึกการเข้างาน</div>
   </div>
+  <select id="branchSelect" onchange="onBranchChange()" style="display:none">
+    <option value="">— เลือกสาขา —</option>
+    <option value="lotus">สาขาโลตัสระยอง</option>
+    <option value="passion">สาขาแพชชั่นระยอง</option>
+  </select>
   <div class="topbar-nav">
     <button class="nav-btn active" id="navClock" onclick="showPage('clock',this)">👤 พนักงาน</button>
     <button class="nav-btn" id="navHR" onclick="requireHRPin(this)">🗂 HR</button>
@@ -168,12 +169,11 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 <!-- PAGE CLOCK -->
 
 <div class="page active" id="page-clock">
-  <div class="clock-hero">
-    <div class="branch-badge-hero" id="heroBranchBadge">📍 <span id="heroBranchName"></span></div>
-    <div class="clock-time" id="liveClock">--:--:--</div>
-    <div class="clock-date" id="liveDate">--</div>
-    <div class="ph-today" id="phToday"></div>
-    <div class="clock-actions">
+  <div class="clock-hero" style="text-align:center">
+    <div class="clock-time" id="liveClock" style="font-size:64px;letter-spacing:4px">--:--:--</div>
+    <div class="clock-date" id="liveDate" style="font-size:16px;margin-bottom:10px">--</div>
+    <div class="ph-today" id="phToday" style="margin:0 auto 10px"></div>
+    <div class="clock-actions" style="justify-content:center">
       <button class="btn btn-primary" onclick="openClockModal('in')">✅ เข้างาน</button>
       <button class="btn btn-outline" onclick="openClockModal('out')">🚪 ออกงาน</button>
     </div>
@@ -357,8 +357,20 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 <div class="modal-overlay" id="clockModal">
   <div class="modal">
     <div class="modal-title" id="clockModalTitle">บันทึกเวลา</div>
-    <div class="form-row full"><div class="form-group"><label>พนักงาน *</label><select id="modalEmp" onchange="onModalEmpChange()"></select></div></div>
-    <div class="form-row full"><div class="form-group"><label>สาขา *</label><select id="modalBranch"><option value="">— เลือกสาขา —</option><option value="lotus">โลตัสระยอง</option><option value="passion">แพชชั่นระยอง</option></select></div></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>พนักงาน *</label>
+        <select id="modalEmp" onchange="onModalEmpChange()"></select>
+      </div>
+      <div class="form-group">
+        <label>สาขา *</label>
+        <select id="modalBranch">
+          <option value="">— เลือกสาขา —</option>
+          <option value="lotus">โลตัสระยอง</option>
+          <option value="passion">แพชชั่นระยอง</option>
+        </select>
+      </div>
+    </div>
     <div class="ph-warning" id="phWarning">⚠️ วันนี้เป็นวันหยุดนักขัตฤกษ์: <strong id="phWarningName"></strong></div>
     <div class="info-box" id="clockInfoBox"></div>
     <div class="form-row full"><div class="form-group"><label>หมายเหตุ</label><input type="text" id="modalNote" placeholder="ไม่บังคับ..."></div></div>
@@ -594,7 +606,7 @@ function logoutHR(){hrUnlocked=false;showPage('clock',document.getElementById('n
 
 // BRANCH
 function onBranchChange(){currentBranch=document.getElementById('branchSelect').value;localStorage.setItem('ct_branch',currentBranch);updateBranchUI();renderEmpCards();}
-function updateBranchUI(){var b=document.getElementById('heroBranchBadge'),n=document.getElementById('heroBranchName');if(currentBranch&&BRANCHES[currentBranch]){b.style.display='inline-flex';n.textContent=BRANCHES[currentBranch];}else b.style.display='none';}
+function updateBranchUI(){}
 function brL(b){return BRANCHES[b]||b||'—';}
 
 // PAY PERIODS
@@ -771,8 +783,8 @@ async function submitClock(){
       // ตรวจสอบว่าเป็นวันนี้เท่านั้น (ไม่อนุญาตย้อนหลัง)
       if(logs.find(l=>l.empId===empId&&toDateStr(l.date)===ds&&!l.clockOut)){showToast('เข้างานแล้ววันนี้','error');return;}
       var emp=employees.find(e=>e.id===empId);
-      var branch=document.getElementById('modalBranch').value||(emp?emp.branch:'')||'lotus';
-      if(!branch||branch===''){showToast('กรุณาเลือกสาขา','error');btn.innerHTML='บันทึกเข้างาน';btn.disabled=false;return;}
+      var branch=document.getElementById('modalBranch').value||(emp?emp.branch:'')||'';
+      if(!branch){showToast('กรุณาเลือกสาขา','error');btn.innerHTML=clockAction==='in'?'บันทึกเข้างาน':'บันทึกออกงาน';btn.disabled=false;return;}
       currentBranch=branch;
       document.getElementById('branchSelect').value=branch;
       var sched=getSched(branch);

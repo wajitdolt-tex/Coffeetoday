@@ -997,11 +997,27 @@ async function saveCommission(){
   var branch=emp?emp.branch:currentBranch;
   var r=calcCommission(branch,sales);
   var note=document.getElementById('commNote').value||(r.tier?'ยอด ฿'+sales.toLocaleString()+' ส่วนต่าง ฿'+r.diff.toLocaleString()+'×'+r.tier.label:'ยอดขาย ฿'+sales.toLocaleString());
-  var log={id:genId(),empId:selectedEmpId,date:date,branch:currentBranch,clockIn:'00:00',clockOut:'00:00',hours:0,hoursOT:0,type:'commission',sales:sales,commDiff:r.diff,commission:r.commission,commRate:r.tier?r.tier.rate:0,note:note};
   try{
-    await api('addLog',log);logs.push(log);
-    if(r.tier)showToast('💰 คอม ฿'+Number(r.commission).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+' ('+r.tier.label+')','success');
-    else showToast('📋 บันทึกยอด ฿'+sales.toLocaleString()+' (ไม่ถึงขั้นต่ำ)','');
+    // หาแถวเข้างานของวันนั้น ถ้ามีให้อัปเดตแทนสร้างใหม่
+    var existing=logs.find(function(l){
+      return String(l.empId)===String(selectedEmpId)&&
+        toDateStr(l.date)===date&&
+        l.clockIn&&toTimeStr(l.clockIn)!=='00:00';
+    });
+    if(existing){
+      // อัปเดตยอดขายและค่าคอมในแถวเดิม
+      await api('updateLog',{id:existing.id,sales:sales,commission:r.commission,commRate:r.tier?r.tier.rate:0,note:note||existing.note});
+      existing.sales=sales;existing.commission=r.commission;existing.commRate=r.tier?r.tier.rate:0;
+      if(note)existing.note=note;
+      if(r.tier)showToast('💰 อัปเดตยอดขายในแถวเดิม คอม ฿'+Number(r.commission).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}),'success');
+      else showToast('📋 อัปเดตยอด ฿'+sales.toLocaleString()+' (ไม่ถึงขั้นต่ำ)','');
+    } else {
+      // ไม่มีแถวเข้างาน สร้างแถว commission ใหม่
+      var log={id:genId(),empId:selectedEmpId,date:date,branch:branch,clockIn:'00:00',clockOut:'00:00',hours:0,hoursOT:0,type:'commission',sales:sales,commDiff:r.diff,commission:r.commission,commRate:r.tier?r.tier.rate:0,note:note};
+      await api('addLog',log);logs.push(log);
+      if(r.tier)showToast('💰 คอม ฿'+Number(r.commission).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+' ('+r.tier.label+')','success');
+      else showToast('📋 บันทึกยอด ฿'+sales.toLocaleString()+' (ไม่ถึงขั้นต่ำ)','');
+    }
     document.getElementById('commSales').value='';document.getElementById('commNote').value='';
     document.getElementById('commCalcResult').style.display='none';document.getElementById('commNoTier').style.display='none';
     renderMyLog();

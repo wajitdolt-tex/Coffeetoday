@@ -768,17 +768,16 @@ function renderEmpCards(){
   }).join('');
 }
 function selectEmp(id,el){
-  selectedEmpId=id;
-  document.querySelectorAll('.emp-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');
-  document.getElementById('commCard').style.display='block';
-  document.getElementById('sendHRCard').style.display='block';
-  // ค่าคอมย้อนหลังได้ ไม่ lock วันที่
-  var emp=employees.find(e=>e.id===id);
-  document.getElementById('commTierInfo').innerHTML=getTierInfoHTML(emp?emp.branch:currentBranch);
-  document.getElementById('commSales').value='';
-  document.getElementById('commCalcResult').style.display='none';
-  document.getElementById('commNoTier').style.display='none';
-  populatePPSelects();renderMyLog();
+  var pin=EMP_PIN[id];
+  if(!pin){ _doSelectEmp(id,el); return; }
+  _pendingEmpId=id;
+  _pendingEmpEl=el;
+  var emp=employees.find(function(e){return e.id===id;});
+  document.getElementById('empPinName').textContent=emp?emp.name:'';
+  document.getElementById('empPinInput').value='';
+  document.getElementById('empPinError').textContent='';
+  openModal('empPinModal');
+  setTimeout(function(){document.getElementById('empPinInput').focus();},300);
 }
 
 // CLOCK MODAL

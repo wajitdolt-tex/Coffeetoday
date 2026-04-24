@@ -1435,14 +1435,12 @@ function renderYearlySummary(){
   var yearPastPay = pastPayData.filter(function(d){
     if(!d.ppKey) return false;
     var parts = d.ppKey.split('-').map(Number);
-    // ppKey = YYYY-MM ของรอบเงินเดือน (เดือนที่ 16 ถึง 15)
-    // ตรวจว่ารอบนี้อยู่ในปีที่เลือกหรือเปล่า
     var ppYear = parts[0];
     var ppMonth = parts[1];
-    // รอบ 16 ธ.ค. ปีก่อน - 15 ม.ค. ปีนี้ ก็นับเป็นปีนี้
-    if(ppYear === year) return true;
-    if(ppYear === year-1 && ppMonth === 12) return true;
-    return false;
+    // รอบที่นับเป็นปี year:
+    // - ppYear === year (รอบในปีเดียวกัน)
+    // - ppYear === year-1 && ppMonth === 12 (รอบ ธ.ค. ปีก่อน จ่ายใน ม.ค. ปีนี้)
+    return (ppYear === year) || (ppYear === year-1 && ppMonth === 12);
   });
 
   var targets = employees.filter(function(e){return e.active;});
@@ -1665,7 +1663,8 @@ function renderEmpYearlySummary(){
   var yearPastPay2=pastPayData.filter(function(d){
     if(!d.ppKey)return false;
     var parts=d.ppKey.split('-').map(Number);
-    return(parts[0]===year)||(parts[0]===year-1&&parts[1]===12);
+    var ppYear=parts[0],ppMonth=parts[1];
+    return(ppYear===year)||(ppYear===year-1&&ppMonth===12);
   });
   var el=yearLogs.filter(function(l){return l.empId===empId;});
   var thaiMonths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
@@ -1685,7 +1684,8 @@ function renderEmpYearlySummary(){
   });
   yearPastPay2.filter(function(d){return d.empId===empId;}).forEach(function(d){
     var parts=d.ppKey.split('-').map(Number);
-    var mo=parts[1]+1>12?1:parts[1]+1;
+    var mo=parts[1];
+    if(parts[0]===year-1&&parts[1]===12) mo=1;
     if(mo<1||mo>12)return;
     monthlyData2[mo].isPastPay=true;
     monthlyData2[mo].days+=d.days||0;
@@ -1887,23 +1887,30 @@ function deletePastPay(id){
 function editPastPay(id){
   var d=pastPayData.find(function(x){return x.id===id;});
   if(!d)return;
-  // populate dropdowns ก่อน แล้วค่อย set value
-  populatePastPayForm();
+  // เปลี่ยนไป tab pastpay ก่อน
+  var tabBtn=document.querySelector('.tab-btn[onclick*="pastpay"]');
+  showTab('pastpay', tabBtn);
+  // รอ tab render แล้วค่อย fill
   setTimeout(function(){
-    document.getElementById('ppEmp').value=d.empId;
-    document.getElementById('ppPeriod').value=d.ppKey;
-    document.getElementById('ppDays').value=d.days||0;
-    document.getElementById('ppOT').value=d.ot||0;
-    document.getElementById('ppHotOT').value=d.hotOT||0;
-    document.getElementById('ppHwDays').value=d.hwDays||0;
-    document.getElementById('ppComm').value=d.comm||0;
-    document.getElementById('ppLate').value=d.late||0;
-    // ลบรายการเก่าก่อน
-    pastPayData=pastPayData.filter(function(x){return x.id!==id;});
-    localStorage.setItem('ct_pastpay',JSON.stringify(pastPayData));
-    renderPPHistory();
-    document.getElementById('ppEmp').scrollIntoView({behavior:'smooth'});
-    showToast('โหลดข้อมูลแล้ว แก้ไขแล้วกดบันทึกใหม่','success');
+    populatePastPayForm();
+    setTimeout(function(){
+      document.getElementById('ppEmp').value=d.empId;
+      document.getElementById('ppPeriod').value=d.ppKey;
+      document.getElementById('ppDays').value=d.days||0;
+      document.getElementById('ppOT').value=d.ot||0;
+      document.getElementById('ppHotOT').value=d.hotOT||0;
+      document.getElementById('ppHwDays').value=d.hwDays||0;
+      document.getElementById('ppComm').value=d.comm||0;
+      document.getElementById('ppLate').value=d.late||0;
+      // ลบรายการเก่าออกก่อน (จะบันทึกใหม่)
+      pastPayData=pastPayData.filter(function(x){return x.id!==id;});
+      localStorage.setItem('ct_pastpay',JSON.stringify(pastPayData));
+      renderPPHistory();
+      // scroll ไปที่ form
+      var el=document.getElementById('ppEmp');
+      if(el)el.scrollIntoView({behavior:'smooth'});
+      showToast('✏️ โหลดข้อมูลแล้ว แก้ไขแล้วกดบันทึกใหม่','success');
+    }, 150);
   }, 100);
 }
 

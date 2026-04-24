@@ -235,6 +235,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     <button class="tab-btn" onclick="showTab('pastpay',this)">📝 บันทึกสรุปรอบเก่า</button>
   </div>
   <div class="tab-content active" id="tab-dashboard">
+    <div id="notClockOutAlert" style="display:none;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border-radius:12px;padding:14px 16px;margin-bottom:16px"></div>
     <div id="statsRow" class="stats-row"></div>
 
 ```
@@ -1109,6 +1110,43 @@ async function refreshHR(){
 }
 function populateFilterSelects(){
   ['filterEmp','summaryEmp'].forEach(function(id){var sel=document.getElementById(id);if(!sel)return;sel.innerHTML='<option value="">ทั้งหมด</option>'+employees.map(e=>'<option value="'+e.id+'">'+e.name+'</option>').join('');});
+}
+function checkNotClockOut(){
+  var now=nowTH();
+  var ds=todayStrTH();
+  var alerts=[];
+  employees.filter(function(e){return e.active;}).forEach(function(emp){
+    var sched=getSched(emp.branch);
+    var closingH=parseInt(sched.end.split(':')[0]);
+    var closingM=parseInt(sched.end.split(':')[1]);
+    var closingMins=closingH*60+closingM;
+    var nowMins=now.getHours()*60+now.getMinutes();
+    // แจ้งเตือนถ้าเลยเวลาปิดร้านแล้ว
+    if(nowMins<closingMins) return;
+    var entry=logs.find(function(l){
+      return String(l.empId)===String(emp.id)&&
+        toDateStr(l.date)===ds&&
+        l.clockIn&&toTimeStr(l.clockIn)!=='00:00'&&
+        (!l.clockOut||l.clockOut===''||toTimeStr(l.clockOut)==='00:00');
+    });
+    if(entry){
+      alerts.push({name:emp.name,branch:brL(emp.branch),clockIn:toTimeStr(entry.clockIn),sched:sched.end});
+    }
+  });
+  var box=document.getElementById('notClockOutAlert');
+  if(!box) return;
+  if(alerts.length===0){box.style.display='none';return;}
+  box.style.display='block';
+  box.innerHTML='<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'+
+    '<span style="font-size:20px">⚠️</span>'+
+    '<strong style="font-size:15px">พนักงานยังไม่ได้ออกงาน!</strong>'+
+  '</div>'+
+  alerts.map(function(a){
+    return '<div style="background:rgba(255,255,255,0.15);border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:13px">'+
+      '👤 <strong>'+a.name+'</strong> · '+a.branch+
+      '<br>เข้างาน <strong>'+a.clockIn+'</strong> · เวลาปิดร้าน <strong>'+a.sched+'</strong>'+
+    '</div>';
+  }).join('');
 }
 function renderDashboard(){
   var ppKey=getCurPPKey(),pl=logsInPP(ppKey);

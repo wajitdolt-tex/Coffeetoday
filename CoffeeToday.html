@@ -1420,6 +1420,8 @@ function populateYearlySelects(){
 }
 
 function renderYearlySummary(){
+  // โหลด pastPayData ใหม่ทุกครั้ง
+  pastPayData = JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
   populateYearlySelects();
   var yearEl = document.getElementById('yearlyYear');
   var empF   = document.getElementById('yearlyEmp').value;
@@ -1651,6 +1653,8 @@ function openEmpYearlySummary(){
   openModal('empYearlyModal');
 }
 function renderEmpYearlySummary(){
+  // โหลด pastPayData ใหม่ทุกครั้ง
+  pastPayData = JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
   if(!selectedEmpId)return;
   var empId=selectedEmpId;
   var year=parseInt(document.getElementById('empYearSelect').value)||new Date().getFullYear();

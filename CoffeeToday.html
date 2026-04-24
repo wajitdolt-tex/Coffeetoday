@@ -797,11 +797,14 @@ async function submitClock(){
       var sched=getSched(branch);
       var late=calcLate(branch,ts);
       var lateMsg=late>0?' ⚠️ สาย '+late+' นาที (มาตรฐาน '+sched.start+')':'';
+      var isDayOff=isEmpDayOff(empId,ds);
+      var logType=(isDayOff||ph)?'holiday_work':'normal';
+      var typeMsg=isDayOff&&ph?' (วันหยุดประจำ+นักขัตฤกษ์)':isDayOff?' (วันหยุดประจำสัปดาห์)':ph?' ('+ph.name+')':'';
       var log={id:genId(),empId:empId,date:ds,branch:branch,clockIn:ts,clockOut:'',
-        type:ph?'public_holiday':'normal',sales:'',commission:0,commRate:0,
+        type:logType,sales:'',commission:0,commRate:0,
         note:document.getElementById('modalNote').value,hours:'',hoursOT:0,lateMinutes:late};
       await api('addLog',log);logs.push(log);
-      showToast('✅ บันทึกเข้างาน'+lateMsg+(ph?' ('+ph.name+')':''),'success');
+      showToast('✅ บันทึกเข้างาน'+lateMsg+typeMsg,'success');
     } else {
       var entry=logs.find(l=>l.empId===empId&&toDateStr(l.date)===ds&&!l.clockOut);
       if(!entry){showToast('ไม่พบบันทึกเข้างานวันนี้','error');return;}

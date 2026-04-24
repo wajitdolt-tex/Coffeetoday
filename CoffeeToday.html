@@ -767,6 +767,7 @@ function renderEmpCards(){
     return '<div class="emp-card '+(selectedEmpId===e.id?'selected':'')+'" onclick="selectEmp(\''+e.id+'\',this)"><div class="emp-avatar">'+e.name.charAt(0)+'</div><div class="emp-name">'+e.name+'</div><div style="font-size:10px;color:var(--muted);margin-top:2px">'+brL(e.branch)+'</div>'+doff+'</div>';
   }).join('');
 }
+var _pendingEmpId=null,_pendingEmpEl=null;
 function selectEmp(id,el){
   var pin=EMP_PIN[id];
   if(!pin){ _doSelectEmp(id,el); return; }
@@ -778,6 +779,38 @@ function selectEmp(id,el){
   document.getElementById('empPinError').textContent='';
   openModal('empPinModal');
   setTimeout(function(){document.getElementById('empPinInput').focus();},300);
+}
+function confirmEmpPin(){
+  var input=document.getElementById('empPinInput').value.trim();
+  var pin=EMP_PIN[_pendingEmpId];
+  if(input!==String(pin)){
+    document.getElementById('empPinError').textContent='รหัสไม่ถูกต้อง ลองใหม่อีกครั้ง';
+    document.getElementById('empPinInput').value='';
+    document.getElementById('empPinInput').focus();
+    return;
+  }
+  closeModal('empPinModal');
+  _doSelectEmp(_pendingEmpId,_pendingEmpEl);
+}
+function _doSelectEmp(id,el){
+  selectedEmpId=id;
+  document.querySelectorAll('.emp-card').forEach(function(e){e.classList.remove('selected');});
+  if(el)el.classList.add('selected');
+  var card=document.getElementById('sendHRCard');
+  if(card)card.style.display='block';
+  var commCard=document.getElementById('commCard');
+  if(commCard)commCard.style.display='block';
+  var emp=employees.find(function(e){return e.id===id;});
+  var commTier=document.getElementById('commTierInfo');
+  if(commTier)commTier.innerHTML=getTierInfoHTML(emp?emp.branch:currentBranch);
+  var commSales=document.getElementById('commSales');
+  if(commSales)commSales.value='';
+  var commResult=document.getElementById('commCalcResult');
+  if(commResult)commResult.style.display='none';
+  var commNo=document.getElementById('commNoTier');
+  if(commNo)commNo.style.display='none';
+  renderMyLog();
+  populatePPSelects();
 }
 
 // CLOCK MODAL

@@ -892,19 +892,24 @@ function checkPHWarn(){
 function updateCOPreview(){
   var empId=document.getElementById('modalEmp').value,box=document.getElementById('clockInfoBox');
   if(!empId){box.style.display='none';return;}
-  var ds=new Date().toISOString().split('T')[0],ts=new Date().toTimeString().slice(0,5);
-  var entry=logs.find(l=>l.empId===empId&&toDateStr(l.date)===ds&&(!l.clockOut||l.clockOut===''||l.clockOut==='00:00')&&l.clockIn&&l.clockIn!=='00:00');
+  var ds=todayStrTH(),ts=timeStrTH();
+  var entry=logs.find(function(l){
+    return String(l.empId)===String(empId)&&toDateStr(l.date)===ds&&
+      l.clockIn&&toTimeStr(l.clockIn)!=='00:00'&&
+      (!l.clockOut||l.clockOut===''||toTimeStr(l.clockOut)==='00:00');
+  });
   if(!entry){box.style.display='none';return;}
-  var emp=employees.find(e=>e.id===empId);
+  var emp=employees.find(function(e){return e.id===empId;});
   var branch=entry.branch||(emp?emp.branch:'')||currentBranch;
   var sched=getSched(branch);
-  var r=calcOT(branch,entry.clockIn,ts);
+  var ciStr=toTimeStr(entry.clockIn);
+  var r=calcOT(branch,ciStr,ts);
   var lateText=r.lateMinutes>0
     ?'<span style="color:#ef4444;font-weight:600"> ⚠️ สาย '+r.lateMinutes+' นาที (ไม่มี OT)</span>'
     :'<span style="color:#10b981;font-weight:600"> ✅ ตรงเวลา</span>';
   var otText=r.hoursOT>0?' | OT: <strong style="color:#b45309">'+r.hoursOT+' ชม.</strong>':'';
   box.style.display='block';
-  box.innerHTML='เข้างาน <strong>'+entry.clockIn+'</strong> ('+sched.start+' – '+sched.end+')'+lateText+'<br>ปกติ: <strong>'+r.hours+' ชม.</strong>'+otText;
+  box.innerHTML='เข้างาน <strong>'+ciStr+'</strong> ('+sched.start+' – '+sched.end+')'+lateText+'<br>ปกติ: <strong>'+r.hours+' ชม.</strong>'+otText;
 }
 
 async function submitClock(){

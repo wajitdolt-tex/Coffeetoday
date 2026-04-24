@@ -1489,7 +1489,7 @@ function renderYearlySummary(){
 
     // รายได้แต่ละเดือน
     var monthlyData = {};
-    for(var m=1;m<=12;m++) monthlyData[m] = {salary:0,ot:0,hotOT:0,hw:0,comm:0,days:0,lateMin:0};
+    for(var m=1;m<=12;m++) monthlyData[m] = {salary:0,ot:0,hotOT:0,hw:0,comm:0,days:0,lateMin:0,isPastPay:false};
 
     el.forEach(function(l){
       var ds = toDateStr(l.date);
@@ -1501,10 +1501,27 @@ function renderYearlySummary(){
       } else {
         monthlyData[mo].ot    += Number(l.hoursOT||0)*(emp.otRate||50);
         if(['holiday_ot','public_holiday'].includes(l.type)) monthlyData[mo].hotOT += Number(l.hours||0)*(emp.holidayRate||100);
-        if(l.type==='holiday_work') monthlyData[mo].hw += (emp.dailyWage||0)*2;
+        if(l.type==='holiday_work') monthlyData[mo].hw += (emp.dailyWage||0);
         monthlyData[mo].days  += new Set([ds]).size;
         monthlyData[mo].lateMin += Number(l.lateMinutes||0);
       }
+    });
+
+    // รวม pastPayData ของพนักงานคนนี้
+    yearPastPay.filter(function(d){return d.empId===emp.id;}).forEach(function(d){
+      var parts=d.ppKey.split('-').map(Number);
+      var ppYear=parts[0],ppMonth=parts[1];
+      var mo=ppMonth+1;
+      var moYear=ppYear;
+      if(mo>12){mo=1;moYear=ppYear+1;}
+      if(moYear!==year||mo<1||mo>12) return;
+      monthlyData[mo].isPastPay=true;
+      monthlyData[mo].days+=d.days||0;
+      monthlyData[mo].ot+=(d.ot||0)*(d.otRate||50);
+      monthlyData[mo].hotOT+=(d.hotOT||0)*(d.holidayRate||100);
+      monthlyData[mo].hw+=(d.hwDays||0)*(d.dailyWage||0);
+      monthlyData[mo].comm+=d.comm||0;
+      monthlyData[mo].lateMin+=d.late||0;
     });
 
     // คำนวณ 12 เดือน
@@ -1517,7 +1534,7 @@ function renderYearlySummary(){
       var sal = (d.days>0||d.isPastPay)?(emp.salary||0):0; // นับเงินเดือนเฉพาะเดือนที่มีวันทำงาน
       var total = sal+d.ot+d.hotOT+d.hw+d.comm;
       totalSalary+=sal; totalOT+=d.ot; totalHotOT+=d.hotOT; totalHW+=d.hw; totalComm+=d.comm; totalLate+=d.lateMin;
-      if(d.days>0||d.comm>0){
+      if(d.days>0||d.comm>0||d.isPastPay){
         monthRows += '<tr style="border-bottom:1px solid var(--border)">'+
           '<td style="padding:7px 8px">'+thaiMonths[m-1]+' '+be+'</td>'+
           '<td style="padding:7px 8px;text-align:right">'+sal.toLocaleString()+'</td>'+

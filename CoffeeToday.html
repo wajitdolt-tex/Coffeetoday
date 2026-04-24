@@ -820,6 +820,7 @@ function openClockModal(action){
   document.getElementById('clockModalTitle').textContent=action==='in'?'✅ บันทึกเข้างาน':'🚪 บันทึกออกงาน';
   document.getElementById('clockModalBtn').textContent=action==='in'?'บันทึกเข้างาน':'บันทึกออกงาน';
   populateEmpSel('modalEmp');
+  // ถ้ามี selectedEmpId ให้ set ค่าก่อน ถ้าไม่มีก็เปิด popup ให้เลือกได้
   if(selectedEmpId)document.getElementById('modalEmp').value=selectedEmpId;
   // set สาขาใน modal
   var mb=document.getElementById('modalBranch');
@@ -1489,7 +1490,13 @@ function fmtTime(t){
   return s;
 }
 function fmtDate(d){if(!d)return"--";try{var s=String(d).trim();if(/^\d{4}-\d{2}-\d{2}$/.test(s))return new Date(s+"T00:00:00").toLocaleDateString("th-TH",{year:"numeric",month:"short",day:"numeric"});var dt=new Date(s);if(!isNaN(dt.getTime()))return dt.toLocaleDateString("th-TH",{year:"numeric",month:"short",day:"numeric",timeZone:"Asia/Bangkok"});return s;}catch(e){return String(d);}}
-function openModal(id){document.getElementById(id).classList.add('open');}
+function openModal(id){
+  // ปิด modal อื่นทั้งหมดก่อน
+  document.querySelectorAll('.modal-overlay.open').forEach(function(m){
+    if(m.id!==id) m.classList.remove('open');
+  });
+  document.getElementById(id).classList.add('open');
+}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 var toastTimer;
 function showToast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='show '+(type||'');clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.className='';},4000);}

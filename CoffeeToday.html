@@ -616,10 +616,22 @@ async function api(action,data={}){
 }
 async function loadAll(){
   try{
-    var[eRes,lRes,sRes]=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
-    employees=eRes.employees||[];logs=lRes.logs||[];submissions=sRes.submissions||[];
-    renderEmpCards();renderMyLog();
-  }catch(e){showToast('โหลดข้อมูลล้มเหลว: '+e.message,'error');}
+    // โหลด employees ก่อน แสดงรายชื่อพนักงานได้เลย
+    var eRes=await api('getEmployees');
+    employees=eRes.employees||[];
+    renderEmpCards();
+
+    // โหลด logs และ submissions ต่อ
+    var[lRes,sRes]=await Promise.all([api('getLogs'),api('getSubmissions')]);
+    logs=lRes.logs||[];
+    submissions=sRes.submissions||[];
+    renderMyLog();
+  }catch(e){
+    showToast('โหลดข้อมูลล้มเหลว: '+e.message,'error');
+    // ถ้าโหลดไม่ได้ ยังใช้งานได้บางส่วน
+    renderEmpCards();
+    renderMyLog();
+  }
 }
 
 // PIN
@@ -1723,9 +1735,13 @@ function deletePastPay(id){
   renderPPHistory();showToast('ลบเรียบร้อย');
 }
 
-// INIT
+// INIT — เริ่ม UI ก่อนเสมอ ไม่รอ API
+updateClock(); // เริ่มนาฬิกาทันที
 if(currentBranch)document.getElementById('branchSelect').value=currentBranch;
-updateBranchUI();populatePPSelects();loadAll();
+updateBranchUI();
+populatePPSelects();
+// โหลดข้อมูลทีหลัง ไม่บล็อก UI
+setTimeout(function(){ loadAll(); }, 100);
 </script>
 
 </body>

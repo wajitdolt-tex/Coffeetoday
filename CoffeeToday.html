@@ -774,7 +774,8 @@ function updateCOPreview(){
 async function submitClock(){
   var empId=document.getElementById('modalEmp').value;
   if(!empId){showToast('กรุณาเลือกพนักงาน','error');return;}
-  if(!branch){showToast('กรุณาเลือกสาขา','error');return;}
+  var _branchCheck=document.getElementById('modalBranch').value;
+  if(!_branchCheck){showToast('กรุณาเลือกสาขา','error');return;}
   var now=new Date(),ds=now.toISOString().split('T')[0],ts=now.toTimeString().slice(0,5),ph=getPH(ds);
   var btn=document.getElementById('clockModalBtn');
   btn.innerHTML='<span class="loading-spinner"></span>กำลังบันทึก...';btn.disabled=true;

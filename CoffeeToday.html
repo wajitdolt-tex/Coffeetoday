@@ -686,6 +686,20 @@ function updateBranchUI(){}
 function brL(b){return BRANCHES[b]||b||'--';}
 
 // PAY PERIODS
+// helper: วันที่และเวลาปัจจุบันในเวลาไทย
+function nowTH(){
+  var n=new Date();
+  var th=new Date(n.toLocaleString('en-US',{timeZone:'Asia/Bangkok'}));
+  return th;
+}
+function todayStrTH(){
+  var d=nowTH();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function timeStrTH(){
+  var d=nowTH();
+  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
 function getPayPeriods(){
   var seen=new Set(),periods=[];
   var fixed={key:'2026-03',label:'16 มี.ค. 2569 – 15 เม.ย. 2569',start:new Date(2026,2,16),end:new Date(2026,3,15)};
@@ -700,7 +714,7 @@ function getPayPeriods(){
   }
   return periods.sort((a,b)=>a.start-b.start);
 }
-function getCurPPKey(){var now=new Date(),y=now.getFullYear(),m=now.getMonth(),s=now.getDate()>=16?new Date(y,m,16):new Date(y,m-1,16);return s.getFullYear()+'-'+String(s.getMonth()+1).padStart(2,'0');}
+function getCurPPKey(){var now=nowTH(),y=now.getFullYear(),m=now.getMonth(),s=now.getDate()>=16?new Date(y,m,16):new Date(y,m-1,16);return s.getFullYear()+'-'+String(s.getMonth()+1).padStart(2,'0');}
 function logsInPP(key){
   // normalize ppKey
   if(key && !/^\d{4}-\d{2}$/.test(key)){
@@ -733,7 +747,7 @@ function updateClock(){
   var now=new Date();
   document.getElementById('liveClock').textContent=now.toLocaleTimeString('th-TH');
   document.getElementById('liveDate').textContent=now.toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  var ph=getPH(now.toISOString().split('T')[0]),el=document.getElementById('phToday');
+  var ph=getPH(todayStrTH()),el=document.getElementById('phToday');
   if(ph){el.style.display='inline-block';el.textContent='🎌 วันหยุดนักขัตฤกษ์: '+ph.name;}else el.style.display='none';
 }
 setInterval(updateClock,1000);updateClock();
@@ -815,6 +829,8 @@ function _doSelectEmp(id,el){
 
 // CLOCK MODAL
 function openClockModal(action){
+  // ปิด modal ทั้งหมดก่อนเสมอ
+  document.querySelectorAll('.modal-overlay').forEach(function(m){m.classList.remove('open');});
   currentBranch=document.getElementById('branchSelect').value||currentBranch;
   clockAction=action;
   document.getElementById('clockModalTitle').textContent=action==='in'?'✅ บันทึกเข้างาน':'🚪 บันทึกออกงาน';
@@ -842,7 +858,7 @@ function openClockModal(action){
 }
 function onModalEmpChange(){checkPHWarn();if(clockAction==='out')updateCOPreview();}
 function checkPHWarn(){
-  var ds=new Date().toISOString().split('T')[0];
+  var ds=todayStrTH();
   var ph=getPH(ds);
   var empId=document.getElementById('modalEmp').value;
   var isDayOff=empId?isEmpDayOff(empId,ds):false;
@@ -896,7 +912,7 @@ async function submitClock(){
   if(!empId){showToast('กรุณาเลือกพนักงาน','error');return;}
   var _branchCheck=document.getElementById('modalBranch').value;
   if(!_branchCheck){showToast('กรุณาเลือกสาขา','error');return;}
-  var now=new Date(),ds=now.toISOString().split('T')[0],ts=now.toTimeString().slice(0,5),ph=getPH(ds);
+  var ds=todayStrTH(),ts=timeStrTH(),ph=getPH(ds);
   var btn=document.getElementById('clockModalBtn');
   btn.innerHTML='<span class="loading-spinner"></span>กำลังบันทึก...';btn.disabled=true;
   try{
@@ -1342,7 +1358,7 @@ var manRowCount=0;
 function addManRow(){
   manRowCount++;
   var n=manRowCount;
-  var today=new Date().toISOString().split('T')[0];
+  var today=todayStrTH();
   var div=document.createElement('div');
   div.className='man-row';div.id='manRow_'+n;
   div.innerHTML='<div class="man-row-header">รายการที่ '+n+'</div>'+

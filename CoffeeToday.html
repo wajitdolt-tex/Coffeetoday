@@ -574,10 +574,27 @@ function getCommFromLog(log, branch){
   return Number(log.commission)||0;
 }
 function calcCommission(branch,sales){
-  var tier=getCommTier(branch,sales);
-  if(!tier)return{commission:0,tier:null,diff:0};
-  var diff=sales-tier.min;
-  return{commission:+(diff*tier.rate).toFixed(2),tier:tier,diff:diff};
+  var tiers=COMM_TIERS[branch]||[];
+  // หา tier ที่ยอดถึง โดยเรียงจากสูงลงต่ำ
+  for(var i=0;i<tiers.length;i++){
+    if(sales>=tiers[i].min){
+      var diff=sales-tiers[i].min;
+      if(diff>0){
+        // มีส่วนต่าง คิดได้เลย
+        return{commission:+(diff*tiers[i].rate).toFixed(2),tier:tiers[i],diff:diff};
+      }
+      // ส่วนต่าง=0 → ลองดู tier ถัดลงมา
+      for(var j=i+1;j<tiers.length;j++){
+        var diff2=sales-tiers[j].min;
+        if(diff2>0){
+          return{commission:+(diff2*tiers[j].rate).toFixed(2),tier:tiers[j],diff:diff2};
+        }
+      }
+      // ทุก tier ส่วนต่าง=0 หรือติดลบ
+      return{commission:0,tier:tiers[i],diff:0};
+    }
+  }
+  return{commission:0,tier:null,diff:0};
 }
 function getTierInfoHTML(branch){
   var t=COMM_TIERS[branch];

@@ -1085,6 +1085,37 @@ async function deleteLogHR(id){
   catch(e){showToast('ลบล้มเหลว: '+e.message,'error');}
 }
 function buildSummaryHTML(emp,el,ppKey,showSent){
+  // โหลด pastPayData ใหม่
+  var ppd=JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
+  // หา pastPay ของ emp คนนี้ รอบนี้
+  var ppEntry=ppd.find(function(d){return d.empId===emp.id&&d.ppKey===ppKey;});
+  // ถ้ามี pastPay ให้ใช้แทนข้อมูลจาก logs
+  if(ppEntry&&el.length===0){
+    var otPay2=(ppEntry.ot||0)*(ppEntry.otRate||50);
+    var hotPay2=(ppEntry.hotOT||0)*(ppEntry.holidayRate||100);
+    var hwPay2=(ppEntry.hwDays||0)*(ppEntry.dailyWage||0);
+    var comm2=ppEntry.comm||0;
+    var total2=(ppEntry.salary||emp.salary||0)+otPay2+hotPay2+hwPay2+comm2;
+    var sched2=getSched(emp.branch);
+    return '<div class="summary-report">'+
+      '<div class="summary-report-header">'+
+      '<div style="font-family:Prompt,sans-serif;font-size:20px;font-weight:700">☕ Coffee Today</div>'+
+      '<div style="font-size:14px;color:var(--muted);margin-top:4px">สรุปการทำงาน: <strong>'+emp.name+'</strong> · '+brL(emp.branch)+'</div>'+
+      '<div style="font-size:12px;color:var(--muted)">รอบ: '+getPPLabel(ppKey)+' | เวลาทำงาน: '+sched2.start+' – '+sched2.end+'</div>'+
+      '<div style="font-size:11px;color:#f59e0b;margin-top:4px">📝 ข้อมูลจากการบันทึกย้อนหลัง</div>'+
+      (showSent?'<div style="margin-top:8px"><span class="badge badge-sent">✅ ส่งให้ HR แล้ว</span></div>':'')+
+      '</div>'+
+      '<table style="width:100%;font-size:13px;border-collapse:collapse">'+
+      '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">วันทำงาน</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+(ppEntry.days||0)+' วัน</td></tr>'+
+      '<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">OT ปกติ (฿'+(ppEntry.otRate||50)+'/ชม.)</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+(ppEntry.ot||0)+' ชม. = ฿'+otPay2.toLocaleString()+'</td></tr>'+
+      ((ppEntry.hotOT||0)>0?'<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">OT วันหยุด (฿'+(ppEntry.holidayRate||100)+'/ชม.)</td><td style="padding:8px 4px;font-weight:600;text-align:right">'+(ppEntry.hotOT||0)+' ชม. = ฿'+hotPay2.toLocaleString()+'</td></tr>':'')+
+      ((ppEntry.hwDays||0)>0?'<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">ทำงานวันหยุด (฿'+(ppEntry.dailyWage||0)+'/วัน)</td><td style="padding:8px 4px;font-weight:600;text-align:right;color:var(--accent)">'+(ppEntry.hwDays||0)+' วัน = ฿'+hwPay2.toLocaleString()+'</td></tr>':'')+
+      ((ppEntry.late||0)>0?'<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px;color:var(--muted)">มาสายรวม</td><td style="padding:8px 4px;font-weight:600;text-align:right;color:#ef4444">'+(ppEntry.late||0)+' นาที</td></tr>':'')+
+      '<tr><td style="padding:8px 4px;color:var(--muted)">ค่าคอมมิชชั่น</td><td style="padding:8px 4px;font-weight:600;text-align:right;color:var(--success)">฿'+comm2.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td></tr>'+
+      '</table>'+
+      '<div class="sum-total-box"><div style="font-size:13px;opacity:.7;margin-bottom:4px">เงินเดือนฐาน ฿'+(ppEntry.salary||emp.salary||0).toLocaleString()+' + รายการต่างๆ</div>'+
+      '<div class="amount">฿'+total2.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div><div style="font-size:12px;opacity:.6;margin-top:4px">ยอดรวมทั้งสิ้น</div></div></div>';
+  }
   var norm=el.filter(l=>!['holiday_work','public_holiday'].includes(l.type)).reduce((s,l)=>s+(Number(l.hours)||0),0);
   // OT วันหยุด = hoursOT ของ holiday_work + hours ของ holiday_ot (บันทึกแบบเก่า)
   var hot=el.filter(l=>l.type==='holiday_ot').reduce((s,l)=>s+(Number(l.hours)||0),0);

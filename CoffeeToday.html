@@ -1803,8 +1803,7 @@ function printYearly(){
   var area = document.getElementById('printArea');
   area.innerHTML = document.getElementById('yearlyCards').innerHTML;
   area.style.display = 'block';
-  window.print();
-  setTimeout(function(){area.style.display='none';}, 1000);
+  setTimeout(function(){window.print();setTimeout(function(){area.style.display='none';},500);}, 100);
 }
 function sendPayslipEmail(){
   var ppKey=document.getElementById('summaryPayPeriod').value;
@@ -1856,8 +1855,7 @@ function printSummary(){
   var area = document.getElementById('printArea');
   area.innerHTML = document.getElementById('summaryCards').innerHTML;
   area.style.display = 'block';
-  window.print();
-  setTimeout(function(){area.style.display='none';}, 1000);
+  setTimeout(function(){window.print();setTimeout(function(){area.style.display='none';},500);}, 100);
 }
 function printEmpSummary(contentId){
   var src = document.getElementById(contentId||'viewSubmissionContent');
@@ -1865,8 +1863,9 @@ function printEmpSummary(contentId){
   var area = document.getElementById('printArea');
   area.innerHTML = src.innerHTML;
   area.style.display = 'block';
-  window.print();
-  setTimeout(function(){area.style.display='none';}, 1000);
+  // ปิด modal ก่อนพิมพ์
+  document.querySelectorAll('.modal-overlay.open').forEach(function(m){m.classList.remove('open');});
+  setTimeout(function(){window.print();setTimeout(function(){area.style.display='none';},500);}, 200);
 }
 
 // ============================================================

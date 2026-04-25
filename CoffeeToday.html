@@ -1188,7 +1188,7 @@ function renderAllLogs(){
   var eMap={};employees.forEach(e=>eMap[e.id]={name:e.name,branch:e.branch});
   var filtered=logs.slice().reverse();
   if(empF)filtered=filtered.filter(l=>l.empId===empF);
-  if(branchF)filtered=filtered.filter(l=>(eMap[l.empId]?.branch||l.branch)===branchF);
+  if(branchF)filtered=filtered.filter(l=>((eMap[l.empId]&&eMap[l.empId].branch)||l.branch)===branchF);
   if(ppKey){var pids=new Set(logsInPP(ppKey).map(l=>l.id));filtered=filtered.filter(l=>pids.has(l.id));}
   var tbody=document.getElementById('allLogsTable');
   if(!filtered.length){tbody.innerHTML='<tr><td colspan="12"><div class="empty-state"><div class="ei">📭</div>ไม่พบรายการ</div></td></tr>';return;}

@@ -176,7 +176,7 @@ window.addEventListener('unhandledrejection', function(e) {
     <div class="topbar-brand" style="font-size:14px;opacity:.7;font-family:Sarabun,sans-serif;font-weight:400">ระบบบันทึกการเข้างาน</div>
   </div>
   <select id="branchSelect" onchange="onBranchChange()" style="display:none">
-    <option value="">— เลือกสาขา —</option>
+    <option value="">- เลือกสาขา -</option>
     <option value="lotus">สาขาโลตัสระยอง</option>
     <option value="passion">สาขาแพชชั่นระยอง</option>
   </select>
@@ -245,7 +245,7 @@ window.addEventListener('unhandledrejection', function(e) {
     <div class="section-title">🗂 ระบบฝ่ายบุคคล</div>
     <button class="btn btn-ghost btn-sm" onclick="logoutHR()">🔒 ออกจากระบบ HR</button>
   </div>
-  <div class="section-sub">Coffee Today — จัดการพนักงาน บันทึกเวลา และสรุปเงินเดือน</div>
+  <div class="section-sub">Coffee Today - จัดการพนักงาน บันทึกเวลา และสรุปเงินเดือน</div>
   <div class="tab-row">
     <button class="tab-btn active" onclick="showTab('dashboard',this)">📊 Dashboard</button>
     <button class="tab-btn" onclick="showTab('allLogs',this)">📋 บันทึกทั้งหมด</button>
@@ -332,7 +332,7 @@ window.addEventListener('unhandledrejection', function(e) {
   </div>
   <div class="tab-content" id="tab-manual">
     <div class="card">
-      <div class="card-title">✏️ บันทึกเวลาด้วยตนเอง (HR) — เพิ่มได้หลายรายการ</div>
+      <div class="card-title">✏️ บันทึกเวลาด้วยตนเอง (HR) - เพิ่มได้หลายรายการ</div>
       <div class="form-row">
         <div class="form-group"><label>พนักงาน *</label><select id="manEmp"></select></div>
         <div class="form-group"><label>สาขา *</label><select id="manBranch"><option value="lotus">โลตัสระยอง</option><option value="passion">แพชชั่นระยอง</option></select></div>
@@ -419,7 +419,7 @@ window.addEventListener('unhandledrejection', function(e) {
       <div class="form-group">
         <label>สาขา *</label>
         <select id="modalBranch">
-          <option value="">— เลือกสาขา —</option>
+          <option value="">- เลือกสาขา -</option>
           <option value="lotus">โลตัสระยอง</option>
           <option value="passion">แพชชั่นระยอง</option>
         </select>
@@ -657,7 +657,7 @@ function getTierInfoHTML(branch){
   if(!t)return'กรุณาเลือกสาขาก่อน';
   var sched=getSched(branch);
   var rows=[...t].reverse().map(function(x){return'<span style="margin-right:10px">≥฿'+x.min.toLocaleString()+' → ส่วนต่าง×<strong>'+x.label+'</strong></span>';}).join('');
-  return'📊 '+rows+'<br><span style="font-size:11px;color:#b45309">เวลาทำงาน: '+sched.start+' – '+sched.end+' | ปกติ '+sched.hours+' ชม. หลังจากนั้นเป็น OT</span>';
+  return'📊 '+rows+'<br><span style="font-size:11px;color:#b45309">เวลาทำงาน: '+sched.start+' - '+sched.end+' | ปกติ '+sched.hours+' ชม. หลังจากนั้นเป็น OT</span>';
 }
 
 // STATE
@@ -733,7 +733,7 @@ function timeStrTH(){
 }
 function getPayPeriods(){
   var seen=new Set(),periods=[];
-  var fixed={key:'2026-03',label:'16 มี.ค. 2569 – 15 เม.ย. 2569',start:new Date(2026,2,16),end:new Date(2026,3,15)};
+  var fixed={key:'2026-03',label:'16 มี.ค. 2569 - 15 เม.ย. 2569',start:new Date(2026,2,16),end:new Date(2026,3,15)};
   periods.push(fixed);seen.add('2026-03');
   var now=new Date();
   for(var i=-1;i<=13;i++){
@@ -741,7 +741,7 @@ function getPayPeriods(){
     var y=d.getFullYear(),m=d.getMonth(),key=y+'-'+String(m+1).padStart(2,'0');
     if(seen.has(key))continue;seen.add(key);
     var s=new Date(y,m,16),e=new Date(y,m+1,15);
-    periods.push({key:key,label:s.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'})+' – '+e.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'}),start:s,end:e});
+    periods.push({key:key,label:s.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'})+' - '+e.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'}),start:s,end:e});
   }
   return periods.sort((a,b)=>a.start-b.start);
 }
@@ -940,7 +940,7 @@ function updateCOPreview(){
     :'<span style="color:#10b981;font-weight:600"> ✅ ตรงเวลา</span>';
   var otText=r.hoursOT>0?' | OT: <strong style="color:#b45309">'+r.hoursOT+' ชม.</strong>':'';
   box.style.display='block';
-  box.innerHTML='เข้างาน <strong>'+ciStr+'</strong> ('+sched.start+' – '+sched.end+')'+lateText+'<br>ปกติ: <strong>'+r.hours+' ชม.</strong>'+otText;
+  box.innerHTML='เข้างาน <strong>'+ciStr+'</strong> ('+sched.start+' - '+sched.end+')'+lateText+'<br>ปกติ: <strong>'+r.hours+' ชม.</strong>'+otText;
 }
 
 async function submitClock(){
@@ -1269,7 +1269,7 @@ function buildSummaryHTML(emp,el,ppKey,showSent){
       '<div class="summary-report-header">'+
       '<div style="font-family:Prompt,sans-serif;font-size:20px;font-weight:700">☕ Coffee Today</div>'+
       '<div style="font-size:14px;color:var(--muted);margin-top:4px">สรุปการทำงาน: <strong>'+emp.name+'</strong> · '+brL(emp.branch)+'</div>'+
-      '<div style="font-size:12px;color:var(--muted)">รอบ: '+getPPLabel(ppKey)+' | เวลาทำงาน: '+sched2.start+' – '+sched2.end+'</div>'+
+      '<div style="font-size:12px;color:var(--muted)">รอบ: '+getPPLabel(ppKey)+' | เวลาทำงาน: '+sched2.start+' - '+sched2.end+'</div>'+
       '<div style="font-size:11px;color:#f59e0b;margin-top:4px">📝 ข้อมูลจากการบันทึกย้อนหลัง</div>'+
       (showSent?'<div style="margin-top:8px"><span class="badge badge-sent">✅ ส่งให้ HR แล้ว</span></div>':'')+
       '</div>'+
@@ -1310,7 +1310,7 @@ function buildSummaryHTML(emp,el,ppKey,showSent){
     '<div class="summary-report-header">'+
     '<div style="font-family:Prompt,sans-serif;font-size:20px;font-weight:700">☕ Coffee Today</div>'+
     '<div style="font-size:14px;color:var(--muted);margin-top:4px">สรุปการทำงาน: <strong>'+emp.name+'</strong> · '+brL(emp.branch)+'</div>'+
-    '<div style="font-size:12px;color:var(--muted)">รอบ: '+getPPLabel(ppKey)+' | เวลาทำงาน: '+sched.start+' – '+sched.end+' | OT หลัง '+sched.hours+' ชม.</div>'+
+    '<div style="font-size:12px;color:var(--muted)">รอบ: '+getPPLabel(ppKey)+' | เวลาทำงาน: '+sched.start+' - '+sched.end+' | OT หลัง '+sched.hours+' ชม.</div>'+
     (showSent?'<div style="margin-top:8px"><span class="badge badge-sent">✅ ส่งให้ HR แล้ว</span></div>':'')+
     '</div>'+
     '<table style="width:100%;font-size:13px;border-collapse:collapse">'+

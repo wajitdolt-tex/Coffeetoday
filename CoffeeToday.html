@@ -206,7 +206,6 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn btn-teal" onclick="openViewSummaryModal()">📋 ดูสรุปรายรอบ</button>
       <button class="btn btn-dark" onclick="openEmpYearlySummary()">📊 ดูสรุปรายได้ประจำปี</button>
-      <button class="btn btn-dark btn-sm" onclick="printEmpSummary()" id="empPrintBtn" style="display:none">🖨️ พิมพ์ / บันทึก PDF</button>
     </div>
   </div>
   <div class="card">
@@ -454,7 +453,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     <div class="modal-title">📋 รายละเอียดสรุปที่ส่งมา</div>
     <div id="viewSubmissionContent"></div>
     <div class="modal-actions">
-      <button class="btn btn-dark btn-sm" onclick="printEmpSummary()">🖨️ พิมพ์ / บันทึก PDF</button>
+      <button class="btn btn-dark btn-sm" onclick="printEmpSummary('viewSubmissionContent')">🖨️ พิมพ์ / บันทึก PDF</button>
       <button class="btn btn-ghost" onclick="closeModal('viewSubmissionModal')">ปิด</button>
     </div>
   </div>
@@ -1860,9 +1859,11 @@ function printSummary(){
   window.print();
   setTimeout(function(){area.style.display='none';}, 1000);
 }
-function printEmpSummary(){
+function printEmpSummary(contentId){
+  var src = document.getElementById(contentId||'viewSubmissionContent');
+  if(!src)return;
   var area = document.getElementById('printArea');
-  area.innerHTML = document.getElementById('empSummaryPrintContent').innerHTML;
+  area.innerHTML = src.innerHTML;
   area.style.display = 'block';
   window.print();
   setTimeout(function(){area.style.display='none';}, 1000);

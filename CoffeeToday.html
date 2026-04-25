@@ -481,7 +481,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     </div>
     <div id="empYearlyContent"></div>
     <div class="modal-actions">
-      <button class="btn btn-dark btn-sm" onclick="printSummary()">🖨️ พิมพ์ / บันทึก PDF</button>
+      <button class="btn btn-dark btn-sm" onclick="printEmpSummary('empYearlyContent')">🖨️ พิมพ์ / บันทึก PDF</button>
       <button class="btn btn-ghost" onclick="closeModal('empYearlyModal')">ปิด</button>
     </div>
   </div>
@@ -2110,7 +2110,6 @@ function renderEmpYearlySummary(){
     '</div>'+
     '</div>';
 }
-function sendPayslipEmail(){}
 function exportSummaryPDF(){}
 function exportPayslipPDF(){}
 async function recalcOldData(){

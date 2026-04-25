@@ -149,7 +149,6 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 </style>
 </head>
 <body>
-<div id="_er" style="display:none;position:fixed;top:0;left:0;right:0;background:#dc2626;color:#fff;padding:12px;z-index:9999;font-size:12px;word-break:break-all"></div>
 <div class="pin-screen hidden" id="pinScreen">
   <div class="pin-logo">☕ Coffee<span>Today</span></div>
   <div class="pin-sub">🔐 ระบบฝ่ายบุคคล</div>
@@ -287,8 +286,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
   <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap" id="summaryBtns" style="display:none">
     <button class="btn btn-dark btn-sm" onclick="window.print()">🖨️ พิมพ์</button>
     <button class="btn btn-success btn-sm" onclick="exportSummaryPDF()">📄 Export PDF</button>
-    
-  </div>
+          </div>
   <div id="summaryCards"></div>
 </div>
 
@@ -492,12 +490,6 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 <div id="toast"></div>
 
 <script>
-// ERROR HANDLER
-window.onerror=function(m,s,l){
-  var b=document.getElementById("_er");
-  if(b){b.style.display="block";b.textContent="ERR: "+m+" Line:"+l;}
-  return true;
-};
 // API URL - ฝังไว้แล้ว ไม่ต้องแก้
 const API_URL='https://script.google.com/macros/s/AKfycbw-EKlTw0EVyGRGvyhZPhSuCdNAG12edFTNTK-P6uUUL88t9YD1brZS-nK5B4BNamja5A/exec';
 

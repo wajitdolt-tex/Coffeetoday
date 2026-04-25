@@ -664,8 +664,21 @@ async function api(action,data={}){
 }
 async function loadAll(){
   try{
-    var[eRes,lRes,sRes]=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
-    employees=eRes.employees||[];logs=lRes.logs||[];submissions=sRes.submissions||[];
+    var results=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
+    employees=results[0].employees||[];
+    logs=results[1].logs||[];
+    submissions=results[2].submissions||[];
+    // โหลด pastPay จาก Sheets ถ้าได้ ถ้าไม่ได้ใช้ localStorage
+    api('getPastPay',{}).then(function(res){
+      if(res.pastPay&&res.pastPay.length>0){
+        pastPayData=res.pastPay;
+        localStorage.setItem('ct_pastpay',JSON.stringify(pastPayData));
+      } else {
+        pastPayData=JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
+      }
+    }).catch(function(){
+      pastPayData=JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
+    });
     renderEmpCards();renderMyLog();
   }catch(e){showToast('โหลดข้อมูลล้มเหลว: '+e.message,'error');}
 }
@@ -2167,6 +2180,7 @@ function savePastPay(){
   };
   pastPayData.push(rec);
   localStorage.setItem('ct_pastpay',JSON.stringify(pastPayData));
+  api('savePastPay',rec).catch(function(){});
   showToast('✅ บันทึกสรุปรอบเก่าสำเร็จ','success');
   document.getElementById('ppPreview').style.display='none';
   ['ppDays','ppOT','ppHotOT','ppHwDays','ppComm','ppLate'].forEach(function(id){document.getElementById(id).value='';});
@@ -2212,6 +2226,7 @@ function deletePastPay(id){
   if(!confirm('ลบรายการนี้?'))return;
   pastPayData=pastPayData.filter(function(d){return d.id!==id;});
   localStorage.setItem('ct_pastpay',JSON.stringify(pastPayData));
+  api('deletePastPay',{id:id}).catch(function(){});
   renderPPHistory();showToast('ลบเรียบร้อย');
 }
 function editPastPay(id){

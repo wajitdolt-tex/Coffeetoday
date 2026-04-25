@@ -884,11 +884,11 @@ function checkPHWarn(){
   var lines=[];
   if(isDayOff){
     lines.push('<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:8px;color:#c2410c;font-size:13px;font-weight:600">'+
-      '📅 วันหยุดประจำสัปดาห์: <strong>'+getEmpDayOffName(empId)+'</strong> — จะบันทึกเป็นทำงานวันหยุด×2</div>');
+      '📅 วันหยุดประจำสัปดาห์: <strong>'+getEmpDayOffName(empId)+'</strong> -- จะบันทึกเป็นทำงานวันหยุด×2</div>');
   }
   if(ph){
     lines.push('<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fffbeb;border:1.5px solid #fcd34d;border-radius:8px;color:#92400e;font-size:13px;font-weight:600">'+
-      '🎌 วันหยุดนักขัตฤกษ์: <strong>'+ph.name+'</strong> — จะบันทึกเป็นทำงานวันหยุด×2</div>');
+      '🎌 วันหยุดนักขัตฤกษ์: <strong>'+ph.name+'</strong> -- จะบันทึกเป็นทำงานวันหยุด×2</div>');
   }
 
   if(lines.length>0){
@@ -1188,7 +1188,7 @@ function renderDashboard(){
       '<td>'+new Set(el.filter(l=>l.type==='holiday_work').map(l=>toDateStr(l.date))).size+' วัน</td>'+
       '<td>฿'+Number(comm).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
       '<td>'+new Set(el.map(l=>toDateStr(l.date))).size+'</td>'+
-      '<td>'+(function(){var t=el.reduce(function(s,l){return s+(Number(l.lateMinutes)||0);},0);return t>0?'<span style="color:#ef4444;font-weight:600">'+t+' นาที</span>':'<span style="color:#10b981">—</span>';})()+'</td></tr>';
+      '<td>'+(function(){var t=el.reduce(function(s,l){return s+(Number(l.lateMinutes)||0);},0);return t>0?'<span style="color:#ef4444;font-weight:600">'+t+' นาที</span>':'<span style="color:#10b981">--</span>';})()+'</td></tr>';
   }).join('');
 }
 function renderAllLogs(){
@@ -1422,10 +1422,10 @@ async function saveEmployee(){
 }
 function populateManualForm(){
   document.getElementById('manEmp').innerHTML=
-    '<option value="">— เลือกพนักงาน —</option>'+
+    '<option value="">-- เลือกพนักงาน --</option>'+
     employees.filter(e=>e.active).map(e=>'<option value="'+e.id+'">'+e.name+'</option>').join('');
   document.getElementById('manBranch').innerHTML=
-    '<option value="">— เลือกสาขา —</option>'+
+    '<option value="">-- เลือกสาขา --</option>'+
     '<option value="lotus">โลตัสระยอง</option>'+
     '<option value="passion">แพชชั่นระยอง</option>';
   // ไม่ pre-select ป้องกันกรอกผิด
@@ -1457,7 +1457,7 @@ function addManRow(){
     '</div>'+
     '<div class="form-row">'+
       '<div class="form-group"><label>ยอดขาย (฿)</label><input type="number" id="mrSales_'+n+'" placeholder="0" min="0" oninput="calcManComm('+n+')"></div>'+
-      '<div class="form-group"><label>ค่าคอมมิชชั่น (คำนวณอัตโนมัติ)</label><div id="mrCommDisplay_'+n+'" style="padding:10px 0;font-size:14px;color:var(--success);font-weight:700">—</div></div>'+
+      '<div class="form-group"><label>ค่าคอมมิชชั่น (คำนวณอัตโนมัติ)</label><div id="mrCommDisplay_'+n+'" style="padding:10px 0;font-size:14px;color:var(--success);font-weight:700">--</div></div>'+
     '</div>'+
     '<div class="form-row full"><div class="form-group"><label>หมายเหตุ</label><input type="text" id="mrNote_'+n+'" placeholder="หมายเหตุ..."></div></div>';
   document.getElementById('manRows').appendChild(div);
@@ -1467,7 +1467,7 @@ function calcManComm(n){
   var sales=parseFloat(document.getElementById('mrSales_'+n).value)||0;
   var branch=document.getElementById('manBranch').value;
   var el=document.getElementById('mrCommDisplay_'+n);
-  if(!sales){el.textContent='—';return;}
+  if(!sales){el.textContent='--';return;}
   var r=calcCommission(branch,sales);
   if(r.tier)el.innerHTML='฿'+Number(r.commission).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+' <span style="font-size:11px;color:var(--muted)">('+Math.round(r.tier.rate*100)+'%)</span>';
   else el.innerHTML='<span style="color:var(--warning)">ไม่ถึงขั้นต่ำ</span>';
@@ -1505,7 +1505,7 @@ async function saveManualAll(){
     document.getElementById('dupPinInput').value='';
     document.getElementById('dupPinError').textContent='';
     document.getElementById('dupPinMsg').textContent=
-      'พบข้อมูลซ้ำในวันที่: '+dupDates+' — ใส่รหัส HR เพื่อยืนยันการบันทึกทับ';
+      'พบข้อมูลซ้ำในวันที่: '+dupDates+' -- ใส่รหัส HR เพื่อยืนยันการบันทึกทับ';
     openModal('dupPinModal');
     setTimeout(function(){document.getElementById('dupPinInput').focus();},150);
     return;
@@ -1562,7 +1562,7 @@ async function doSaveManual(empId,branch){
 function renderHolidayTable(){
   document.getElementById('phTable').innerHTML=PH.map((h,i)=>'<tr><td>'+(i+1)+'</td><td><strong>'+fmtDate(h.date)+'</strong></td><td>'+h.name+'</td></tr>').join('');
 }
-function populateEmpSel(selId){document.getElementById(selId).innerHTML='<option value="">— เลือกพนักงาน —</option>'+employees.filter(e=>e.active).map(e=>'<option value="'+e.id+'">'+e.name+'</option>').join('');}
+function populateEmpSel(selId){document.getElementById(selId).innerHTML='<option value="">-- เลือกพนักงาน --</option>'+employees.filter(e=>e.active).map(e=>'<option value="'+e.id+'">'+e.name+'</option>').join('');}
 function toTimeStr(t){
   if(!t)return'00:00';
   var s=String(t).trim();
@@ -1868,7 +1868,7 @@ function checkManRowDate(n){
         lbl = document.createElement('div');
         lbl.className='dup-confirmed-label';
         lbl.style.cssText='font-size:11px;color:var(--gold);font-weight:600;margin-bottom:6px';
-        lbl.textContent='🔐 ยืนยันแล้ว — จะบันทึกทับข้อมูลเดิมวันที่ '+fmtDate(ds);
+        lbl.textContent='🔐 ยืนยันแล้ว -- จะบันทึกทับข้อมูลเดิมวันที่ '+fmtDate(ds);
         row.insertBefore(lbl, row.querySelector('.man-row-header').nextSibling);
       }
     }
@@ -2028,7 +2028,7 @@ async function sendPayslipEmail(){
     try{
       var res=await api('sendEmail',{
         to:EMP_EMAIL[emp.id],
-        subject:'☕ Coffee Today — สลิปเงินเดือน '+getPPLabel(ppKey),
+        subject:'☕ Coffee Today -- สลิปเงินเดือน '+getPPLabel(ppKey),
         html:html,
         empName:emp.name
       });
@@ -2096,8 +2096,8 @@ var html=’<div class="pdf-header">’+
 (normOT>0?’<tr><td>OT ปกติ (฿’+(emp.otRate||50)+’/ชม.)</td><td style="text-align:right">’+normOT+’ ชม.</td><td style="text-align:right">’+otPay.toLocaleString()+’</td></tr>’:’’)+
 (hwOT>0?’<tr><td>OT วันหยุด (฿’+(emp.holidayRate||100)+’/ชม.)</td><td style="text-align:right">’+hwOT+’ ชม.</td><td style="text-align:right">’+hotPay.toLocaleString()+’</td></tr>’:’’)+
 (hwDays>0?’<tr><td>ทำงานวันหยุด (฿’+(emp.dailyWage||0)+’/วัน)</td><td style="text-align:right">’+hwDays+’ วัน</td><td style="text-align:right">’+hwPay.toLocaleString()+’</td></tr>’:’’)+
-(comm>0?’<tr><td>ค่าคอมมิชชั่น</td><td style="text-align:right">—</td><td style="text-align:right">’+comm.toLocaleString(‘th-TH’,{minimumFractionDigits:2})+’</td></tr>’:’’)+
-(lateMin>0?’<tr><td style="color:#dc2626">มาสายรวม</td><td style="text-align:right;color:#dc2626">’+lateMin+’ นาที</td><td style="text-align:right">—</td></tr>’:’’)+
+(comm>0?’<tr><td>ค่าคอมมิชชั่น</td><td style="text-align:right">–</td><td style="text-align:right">’+comm.toLocaleString(‘th-TH’,{minimumFractionDigits:2})+’</td></tr>’:’’)+
+(lateMin>0?’<tr><td style="color:#dc2626">มาสายรวม</td><td style="text-align:right;color:#dc2626">’+lateMin+’ นาที</td><td style="text-align:right">–</td></tr>’:’’)+
 ‘<tr class="pdf-total"><td>รวมทั้งสิ้น</td><td></td><td style="text-align:right;font-size:15px">฿’+total.toLocaleString(‘th-TH’,{minimumFractionDigits:2})+’</td></tr>’+
 ‘</table>’+
 ‘<div class="pdf-amount">’+
@@ -2143,10 +2143,10 @@ var pastPayData = JSON.parse(localStorage.getItem(‘ct_pastpay’)||’[]’);
 
 function populatePastPayForm(){
 var sel=document.getElementById(‘ppEmp’);
-sel.innerHTML=’<option value="">— เลือกพนักงาน —</option>’+
+sel.innerHTML=’<option value="">– เลือกพนักงาน –</option>’+
 employees.filter(e=>e.active).map(e=>’<option value="'+e.id+'">’+e.name+’</option>’).join(’’);
 var psel=document.getElementById(‘ppPeriod’);
-psel.innerHTML=’<option value="">— เลือกรอบ —</option>’+
+psel.innerHTML=’<option value="">– เลือกรอบ –</option>’+
 getPayPeriods().map(p=>’<option value="'+p.key+'">’+p.label+’</option>’).join(’’);
 renderPPHistory();
 }
@@ -2169,7 +2169,7 @@ var total=(emp.salary||0)+otPay+hotPay+hwPay+comm;
 var prev=document.getElementById(‘ppPreview’);
 prev.style.display=‘block’;
 prev.innerHTML=’<div class="summary-report">’+
-‘<div style="text-align:center;margin-bottom:12px"><strong>☕ Coffee Today — สรุปรายรอบ (บันทึกย้อนหลัง)</strong><br>’+
+‘<div style="text-align:center;margin-bottom:12px"><strong>☕ Coffee Today – สรุปรายรอบ (บันทึกย้อนหลัง)</strong><br>’+
 ‘<span style="font-size:13px;color:var(--muted)">’+emp.name+’ · ‘+brL(emp.branch)+’ · ‘+getPPLabel(ppKey)+’</span></div>’+
 ‘<table style="width:100%;font-size:13px;border-collapse:collapse">’+
 ‘<tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 4px;color:var(--muted)">วันทำงาน</td><td style="text-align:right;font-weight:600">’+days+’ วัน</td></tr>’+

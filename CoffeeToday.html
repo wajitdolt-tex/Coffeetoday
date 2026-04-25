@@ -634,7 +634,7 @@ function getTierInfoHTML(branch){
   var t=COMM_TIERS[branch];
   if(!t)return'กรุณาเลือกสาขาก่อน';
   var sched=getSched(branch);
-  var rows=t.slice().reverse().map(function(x){return'<span style="margin-right:10px">>=฿'+x.min.toLocaleString()+' → ส่วนต่าง×<strong>'+x.label+'</strong></span>';}).join('');
+  var rows=[...t].reverse().map(function(x){return'<span style="margin-right:10px">>=฿'+x.min.toLocaleString()+' → ส่วนต่าง×<strong>'+x.label+'</strong></span>';}).join('');
   return'📊 '+rows+'<br><span style="font-size:11px;color:#b45309">เวลาทำงาน: '+sched.start+' - '+sched.end+' | ปกติ '+sched.hours+' ชม. หลังจากนั้นเป็น OT</span>';
 }
 
@@ -651,51 +651,26 @@ function setSyncStatus(state,msg){
   dot.className='sync-dot'+(state==='syncing'?' syncing':state==='error'?' error':'');
   txt.textContent=msg;
 }
-function api(action,data){
-  data=data||{};
+async function api(action,data={}){
   setSyncStatus('syncing','กำลังซิงค์...');
-  return new Promise(function(resolve,reject){
+  try{
     var url=API_URL+'?action='+action;
-    var isWrite=['addLog','updateLog','deleteLog','saveEmployee','deleteEmployee','addSubmission','updateSubmission'].indexOf(action)>-1;
-    var xhr=new XMLHttpRequest();
-    if(isWrite){
-      xhr.open('POST',url,true);
-      xhr.setRequestHeader('Content-Type','text/plain');
-      xhr.onload=function(){
-        try{
-          var json=JSON.parse(xhr.responseText);
-          if(json.error){setSyncStatus('error',json.error);reject(new Error(json.error));return;}
-          setSyncStatus('ok','เชื่อมต่อแล้ว');
-          resolve(json);
-        }catch(e){setSyncStatus('error',e.message);reject(e);}
-      };
-      xhr.onerror=function(){setSyncStatus('error','เชื่อมต่อล้มเหลว');reject(new Error('Network error'));};
-      var postData=Object.assign({action:action},data);
-      xhr.send(JSON.stringify(postData));
-    }else{
-      var qs=Object.keys(data).map(function(k){return k+'='+encodeURIComponent(data[k]);}).join('&');
-      xhr.open('GET',url+(qs?'&'+qs:''),true);
-      xhr.onload=function(){
-        try{
-          var json=JSON.parse(xhr.responseText);
-          if(json.error){setSyncStatus('error',json.error);reject(new Error(json.error));return;}
-          setSyncStatus('ok','เชื่อมต่อแล้ว');
-          resolve(json);
-        }catch(e){setSyncStatus('error',e.message);reject(e);}
-      };
-      xhr.onerror=function(){setSyncStatus('error','เชื่อมต่อล้มเหลว');reject(new Error('Network error'));};
-      xhr.send();
-    }
-  });
+    var isWrite=['addLog','updateLog','deleteLog','saveEmployee','deleteEmployee','addSubmission','updateSubmission'].includes(action);
+    var resp;
+    if(isWrite){resp=await fetch(url,{method:'POST',body:JSON.stringify({action,...data})});}
+    else{var qs=Object.entries(data).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');resp=await fetch(url+(qs?'&'+qs:''));}
+    var json=await resp.json();
+    if(json.error)throw new Error(json.error);
+    setSyncStatus('ok','เชื่อมต่อแล้ว · '+new Date().toLocaleTimeString('th-TH'));
+    return json;
+  }catch(e){setSyncStatus('error','เชื่อมต่อล้มเหลว: '+e.message);throw e;}
 }
-function loadAll(){
-  Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]).then(function(results){
-    employees=results[0].employees||[];
-    logs=results[1].logs||[];
-    submissions=results[2].submissions||[];
-    pastPayData=JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
+async function loadAll(){
+  try{
+    var[eRes,lRes,sRes]=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
+    employees=eRes.employees||[];logs=lRes.logs||[];submissions=sRes.submissions||[];
     renderEmpCards();renderMyLog();
-  }).catch(function(e){showToast('โหลดข้อมูลล้มเหลว: '+e.message,'error');});
+  }catch(e){showToast('โหลดข้อมูลล้มเหลว: '+e.message,'error');}
 }
 
 // PIN
@@ -1103,7 +1078,7 @@ async function confirmSendSummary(){
 function renderMyLog(){
   var tbody=document.getElementById('myLogTable');
   if(!selectedEmpId){tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="ei">👆</div>กรุณาเลือกพนักงานด้านบน</div></td></tr>';return;}
-  var myLogs=logs.slice().filter(l=>String(l.empId)===String(selectedEmpId)).reverse().slice(0,50);
+  var myLogs=[...logs].filter(l=>String(l.empId)===String(selectedEmpId)).reverse().slice(0,50);
   if(!myLogs.length){tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="ei">📭</div>ยังไม่มีบันทึก</div></td></tr>';return;}
   var eMap={};employees.forEach(e=>eMap[e.id]={name:e.name,branch:e.branch});
   tbody.innerHTML=myLogs.map(function(l){
@@ -1211,9 +1186,9 @@ function renderDashboard(){
 function renderAllLogs(){
   var empF=document.getElementById('filterEmp').value,branchF=document.getElementById('filterBranch').value,ppKey=document.getElementById('filterPayPeriod').value;
   var eMap={};employees.forEach(e=>eMap[e.id]={name:e.name,branch:e.branch});
-  var filtered=logs.slice().reverse();
+  var filtered=[...logs].reverse();
   if(empF)filtered=filtered.filter(l=>l.empId===empF);
-  if(branchF)filtered=filtered.filter(l=>((eMap[l.empId]&&eMap[l.empId].branch)||l.branch)===branchF);
+  if(branchF)filtered=filtered.filter(l=>(eMap[l.empId]?.branch||l.branch)===branchF);
   if(ppKey){var pids=new Set(logsInPP(ppKey).map(l=>l.id));filtered=filtered.filter(l=>pids.has(l.id));}
   var tbody=document.getElementById('allLogsTable');
   if(!filtered.length){tbody.innerHTML='<tr><td colspan="12"><div class="empty-state"><div class="ei">📭</div>ไม่พบรายการ</div></td></tr>';return;}
@@ -1344,7 +1319,7 @@ function renderSummary(){
 async function renderSubmissions(){
   var tbody=document.getElementById('submissionsTable');
   if(!submissions.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="ei">📬</div>ยังไม่มีการส่งสรุป</div></td></tr>';return;}
-  tbody.innerHTML=submissions.slice().reverse().map(function(s){
+  tbody.innerHTML=[...submissions].reverse().map(function(s){
     return '<tr>'+
       '<td>'+s.sentAt+'</td>'+
       '<td><strong>'+s.empName+'</strong></td>'+
@@ -1804,6 +1779,7 @@ function renderYearlySummary(){
   }).join('');
 }
 
+
 // ============================================================
 //  DUPLICATE DATE PIN CHECK
 // ============================================================
@@ -2207,7 +2183,7 @@ if(editBtn){ editPastPay(editBtn.dataset.ppid); }
 if(delBtn){ deletePastPay(delBtn.dataset.ppid); }
 };
 tbody.addEventListener(‘click’, tbody._ppHandler);
-tbody.innerHTML=pastPayData.slice().reverse().map(function(d){
+tbody.innerHTML=[…pastPayData].reverse().map(function(d){
 var otPay=d.ot*(d.otRate||50);
 var hotPay=d.hotOT*(d.holidayRate||100);
 var hwPay=d.hwDays*(d.dailyWage||0);

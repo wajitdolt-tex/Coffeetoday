@@ -298,9 +298,6 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     <div class="form-group"><label>พนักงาน</label>
       <select id="yearlyEmp" onchange="renderYearlySummary()"><option value="">ทั้งหมด</option></select></div>
   </div>
-  <div style="margin-bottom:14px">
-    <button class="btn btn-dark btn-sm" onclick="printYearly()">🖨️ พิมพ์ / บันทึก PDF</button>
-  </div>
   <div id="yearlyCards"></div>
 </div>
 ```
@@ -1780,10 +1777,6 @@ function renderYearlySummary(){
       '</div>'+
     '</div>';
   }).join('');
-}
-
-function printYearly(){
-  window.print();
 }
 
 // ============================================================

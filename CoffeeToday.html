@@ -1341,7 +1341,7 @@ function renderSummary(){
 async function renderSubmissions(){
   var tbody=document.getElementById('submissionsTable');
   if(!submissions.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="ei">📬</div>ยังไม่มีการส่งสรุป</div></td></tr>';return;}
-  tbody.innerHTML=[...submissions].reverse().map(function(s){
+  tbody.innerHTML=[…submissions].reverse().map(function(s){
     return '<tr>'+
       '<td>'+s.sentAt+'</td>'+
       '<td><strong>'+s.empName+'</strong></td>'+

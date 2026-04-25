@@ -531,8 +531,12 @@ const EMP_DAY_OFF={
   'emp2': 5   // ฐิตารีย์ หยุดวันศุกร์
 };
 const EMP_PIN={
-  'emp1': '3024',  // ณพัชชนันท์ ประเสริฐศิริ
-  'emp2': '0643'   // ฐิตารีย์ วาจิตดล
+  'emp1': '3024',
+  'emp2': '0643'
+};
+const EMP_EMAIL={
+  'emp1': 'Poom.2day@gmail.com',
+  'emp2': 'Wajitdol.t@gmail.com'
 };
 
 const DAY_NAMES=['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์'];
@@ -1802,6 +1806,52 @@ function printYearly(){
   area.style.display = 'block';
   window.print();
   setTimeout(function(){area.style.display='none';}, 1000);
+}
+function sendPayslipEmail(){
+  var ppKey=document.getElementById('summaryPayPeriod').value;
+  var empF=document.getElementById('summaryEmp').value;
+  if(!ppKey){showToast('กรุณาเลือกรอบก่อน','error');return;}
+  var targets=employees.filter(function(e){return e.active;});
+  if(empF)targets=targets.filter(function(e){return e.id===empF;});
+  var noEmail=targets.filter(function(e){return !EMP_EMAIL[e.id];});
+  if(noEmail.length){showToast('ไม่พบอีเมลของ: '+noEmail.map(function(e){return e.name;}).join(', '),'error');return;}
+  var names=targets.map(function(e){return e.name;}).join(' และ ');
+  if(!confirm('ส่งสลิปเงินเดือนรอบ '+getPPLabel(ppKey)+' ให้ '+names+' ทางเมลใช่ไหม?'))return;
+  var pl=logsInPP(ppKey);
+  var sent=0,failed=[];
+  var total=targets.length;
+  var done=0;
+  targets.forEach(function(emp){
+    var el=pl.filter(function(l){return String(l.empId)===String(emp.id);});
+    var html=buildSummaryHTML(emp,el,ppKey,false);
+    var subject='Coffee Today - สลิปเงินเดือน '+getPPLabel(ppKey);
+    fetch(API_URL+'?action=sendEmail',{
+      method:'POST',
+      body:JSON.stringify({
+        action:'sendEmail',
+        to:EMP_EMAIL[emp.id],
+        subject:subject,
+        html:html,
+        empName:emp.name
+      })
+    })
+    .then(function(r){return r.json();})
+    .then(function(res){
+      done++;
+      if(res.ok)sent++;
+      else failed.push(emp.name);
+      if(done===total){
+        if(sent>0)showToast('ส่งเมลสำเร็จ '+sent+' คน','success');
+        if(failed.length)showToast('ส่งไม่สำเร็จ: '+failed.join(', '),'error');
+      }
+    })
+    .catch(function(){
+      done++;
+      failed.push(emp.name);
+      if(done===total&&failed.length)showToast('ส่งไม่สำเร็จ: '+failed.join(', '),'error');
+    });
+  });
+  showToast('กำลังส่งเมล...','');
 }
 function printSummary(){
   var area = document.getElementById('printArea');

@@ -2010,34 +2010,7 @@ function renderEmpYearlySummary(){
     '</div>';
 }
 async function sendPayslipEmail(){
-  var ppKey=document.getElementById('summaryPayPeriod').value;
-  var empF=document.getElementById('summaryEmp').value;
-  if(!ppKey){showToast('กรุณาเลือกรอบก่อน','error');return;}
-  var targets=employees.filter(function(e){return e.active;});
-  if(empF)targets=targets.filter(function(e){return e.id===empF;});
-  // เช็คว่ามีอีเมลครบ
-  var noEmail=targets.filter(function(e){return !EMP_EMAIL[e.id];});
-  if(noEmail.length){showToast('ไม่พบอีเมลของ: '+noEmail.map(function(e){return e.name;}).join(', '),'error');return;}
-  if(!confirm('ส่งสลิปเงินเดือนรอบ '+getPPLabel(ppKey)+' ให้ '+targets.map(function(e){return e.name;}).join(' และ ')+' ทางเมลใช่ไหม?'))return;
-  var pl=logsInPP(ppKey);
-  var sent=0,failed=[];
-  for(var i=0;i<targets.length;i++){
-    var emp=targets[i];
-    var el=pl.filter(function(l){return String(l.empId)===String(emp.id);});
-    var html=buildSummaryHTML(emp,el,ppKey,false);
-    try{
-      var res=await api('sendEmail',{
-        to:EMP_EMAIL[emp.id],
-        subject:'☕ Coffee Today -- สลิปเงินเดือน '+getPPLabel(ppKey),
-        html:html,
-        empName:emp.name
-      });
-      if(res.ok)sent++;
-      else failed.push(emp.name);
-    }catch(e){failed.push(emp.name);}
-  }
-  if(sent>0)showToast('✅ ส่งเมลสำเร็จ '+sent+' คน','success');
-  if(failed.length)showToast('❌ ส่งไม่สำเร็จ: '+failed.join(', '),'error');
+  showToast('ฟีเจอร์ส่งเมลกำลังพัฒนา','');
 }
 function exportSummaryPDF(){
   var ppKey=document.getElementById('summaryPayPeriod').value;

@@ -132,14 +132,11 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 .empty-state{text-align:center;padding:36px 20px;color:var(--muted)}
 .empty-state .ei{font-size:38px;margin-bottom:8px}
 @media print{
-  body *{visibility:hidden}
-  #pdfPrintArea,#pdfPrintArea *{visibility:visible}
-  #pdfPrintArea{
-    position:fixed;top:0;left:0;width:100%;
-    background:#fff;padding:20px;
-    font-family:'Sarabun',sans-serif;
-    color:#1a1a2e;
-  }
+  .topbar,.sync-bar,.tab-row,.filter-row,.btn,.nav-btn,#toast,.modal-overlay{display:none!important}
+  .page{display:block!important;padding:0}
+  .card{box-shadow:none;border:1px solid #ccc;margin-bottom:16px;page-break-inside:avoid}
+  body{background:#fff}
+  #pdfPrintArea{display:block!important}
   .pdf-header{text-align:center;padding-bottom:16px;border-bottom:2px solid #1a1a2e;margin-bottom:20px}
   .pdf-table{width:100%;border-collapse:collapse;font-size:12px}
   .pdf-table th{background:#1a1a2e;color:#fff;padding:8px;text-align:left}

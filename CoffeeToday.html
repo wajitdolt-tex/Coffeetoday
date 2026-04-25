@@ -1802,8 +1802,7 @@ function renderYearlySummary(){
 function printYearly(){
   var area = document.getElementById('printArea');
   area.innerHTML = document.getElementById('yearlyCards').innerHTML;
-  area.style.display = 'block';
-  setTimeout(function(){window.print();setTimeout(function(){area.style.display='none';},500);}, 100);
+  doPrint(area);
 }
 function sendPayslipEmail(){
   var ppKey=document.getElementById('summaryPayPeriod').value;
@@ -1851,21 +1850,46 @@ function sendPayslipEmail(){
   });
   showToast('กำลังส่งเมล...','');
 }
+function doPrint(area){
+  // ซ่อนทุก element ใน body ยกเว้น printArea
+  var bodyChildren = document.body.children;
+  var hidden = [];
+  for(var i=0; i<bodyChildren.length; i++){
+    var el = bodyChildren[i];
+    if(el.id !== 'printArea'){
+      hidden.push({el:el, display:el.style.display});
+      el.style.display = 'none';
+    }
+  }
+  area.style.display = 'block';
+  area.style.position = 'static';
+  area.style.padding = '20px';
+  area.style.background = '#fff';
+  area.style.fontFamily = 'Sarabun,sans-serif';
+  setTimeout(function(){
+    window.print();
+    setTimeout(function(){
+      // คืนค่า
+      for(var i=0; i<hidden.length; i++){
+        hidden[i].el.style.display = hidden[i].display;
+      }
+      area.style.display = 'none';
+      area.innerHTML = '';
+    }, 500);
+  }, 150);
+}
 function printSummary(){
   var area = document.getElementById('printArea');
   area.innerHTML = document.getElementById('summaryCards').innerHTML;
-  area.style.display = 'block';
-  setTimeout(function(){window.print();setTimeout(function(){area.style.display='none';},500);}, 100);
+  doPrint(area);
 }
 function printEmpSummary(contentId){
   var src = document.getElementById(contentId||'viewSubmissionContent');
   if(!src)return;
   var area = document.getElementById('printArea');
   area.innerHTML = src.innerHTML;
-  area.style.display = 'block';
-  // ปิด modal ก่อนพิมพ์
   document.querySelectorAll('.modal-overlay.open').forEach(function(m){m.classList.remove('open');});
-  setTimeout(function(){window.print();setTimeout(function(){area.style.display='none';},500);}, 200);
+  doPrint(area);
 }
 
 // ============================================================

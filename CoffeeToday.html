@@ -132,11 +132,21 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 .empty-state{text-align:center;padding:36px 20px;color:var(--muted)}
 .empty-state .ei{font-size:38px;margin-bottom:8px}
 @media print{
-  .topbar,.sync-bar,.tab-row,.filter-row,.btn,.nav-btn,#toast{display:none!important}
-  .page{display:block!important;padding:0}
-  .card{box-shadow:none;border:1px solid #ccc;margin-bottom:16px;page-break-inside:avoid}
-  .yearly-card{page-break-after:always}
-  body{background:#fff}
+  body *{visibility:hidden}
+  #pdfPrintArea,#pdfPrintArea *{visibility:visible}
+  #pdfPrintArea{
+    position:fixed;top:0;left:0;width:100%;
+    background:#fff;padding:20px;
+    font-family:'Sarabun',sans-serif;
+    color:#1a1a2e;
+  }
+  .pdf-header{text-align:center;padding-bottom:16px;border-bottom:2px solid #1a1a2e;margin-bottom:20px}
+  .pdf-table{width:100%;border-collapse:collapse;font-size:12px}
+  .pdf-table th{background:#1a1a2e;color:#fff;padding:8px;text-align:left}
+  .pdf-table td{padding:7px 8px;border-bottom:1px solid #e2e8f0}
+  .pdf-total{background:#f8faff;font-weight:700;border-top:2px solid #1a1a2e}
+  .pdf-amount{text-align:center;margin-top:20px;padding:16px;background:#1a1a2e;color:#fff;border-radius:8px}
+  .pdf-amount .big{font-size:28px;font-weight:700}
 }
 @media(max-width:640px){.page{padding:14px}.clock-time{font-size:36px}.form-row,.form-row.three{grid-template-columns:1fr}.stats-row{grid-template-columns:repeat(2,1fr)}.topbar{padding:0 12px;gap:8px}.topbar-brand{font-size:15px}}
 </style>
@@ -1990,6 +2000,61 @@ function renderEmpYearlySummary(){
     '</div>'+
     '</div>';
 }
+function exportPayslipPDF(empId, ppKey){
+  var emp=employees.find(function(e){return e.id===empId;});
+  if(!emp) return;
+  var pl=logsInPP(ppKey);
+  var el=pl.filter(function(l){return String(l.empId)===String(empId);});
+  var ppd=JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
+  var ppEntry=ppd.find(function(d){return d.empId===empId&&d.ppKey===ppKey;});
+
+  // คำนวณ
+  var days=new Set(el.filter(function(l){return l.clockIn&&toTimeStr(l.clockIn)!=='00:00';}).map(function(l){return toDateStr(l.date);})).size;
+  var ot=+(el.reduce(function(s,l){return s+(Number(l.hoursOT)||0);},0)).toFixed(1);
+  var hwDays=new Set(el.filter(function(l){return ['holiday_work','public_holiday'].includes(l.type);}).map(function(l){return toDateStr(l.date);})).size;
+  var hwOT=el.filter(function(l){return ['holiday_work','public_holiday'].includes(l.type);}).reduce(function(s,l){return s+(Number(l.hoursOT)||0);},0);
+  var normOT=Math.max(0,ot-hwOT);
+  var lateMin=el.reduce(function(s,l){return s+(Number(l.lateMinutes)||0);},0);
+  var comm=+el.filter(function(l){return l.type==='commission'||Number(l.sales)>0;}).reduce(function(s,l){return s+getCommFromLog(l,emp.branch);},0).toFixed(2);
+
+  if(ppEntry&&el.length===0){
+    days=ppEntry.days||0;normOT=(ppEntry.ot||0);hwOT=(ppEntry.hotOT||0);hwDays=(ppEntry.hwDays||0);comm=ppEntry.comm||0;lateMin=ppEntry.late||0;
+  }
+
+  var otPay=normOT*(emp.otRate||50);
+  var hotPay=hwOT*(emp.holidayRate||100);
+  var hwPay=hwDays*(emp.dailyWage||0);
+  var total=(emp.salary||0)+otPay+hotPay+hwPay+comm;
+  var label=getPPLabel(ppKey);
+  var be=new Date().getFullYear()+543;
+
+  var html='<div class="pdf-header">'+
+    '<div style="font-size:22px;font-weight:700">☕ Coffee Today</div>'+
+    '<div style="font-size:15px;margin-top:4px">สลิปเงินเดือน · '+label+'</div>'+
+    '<div style="font-size:13px;color:#666;margin-top:4px">'+emp.name+' · '+brL(emp.branch)+'</div>'+
+  '</div>'+
+  '<table class="pdf-table">'+
+    '<tr><th>รายการ</th><th style="text-align:right">จำนวน</th><th style="text-align:right">ยอด (฿)</th></tr>'+
+    '<tr><td>เงินเดือนพื้นฐาน</td><td style="text-align:right">'+days+' วัน</td><td style="text-align:right">'+Number(emp.salary||0).toLocaleString()+'</td></tr>'+
+    (normOT>0?'<tr><td>OT ปกติ (฿'+(emp.otRate||50)+'/ชม.)</td><td style="text-align:right">'+normOT+' ชม.</td><td style="text-align:right">'+otPay.toLocaleString()+'</td></tr>':'')+
+    (hwOT>0?'<tr><td>OT วันหยุด (฿'+(emp.holidayRate||100)+'/ชม.)</td><td style="text-align:right">'+hwOT+' ชม.</td><td style="text-align:right">'+hotPay.toLocaleString()+'</td></tr>':'')+
+    (hwDays>0?'<tr><td>ทำงานวันหยุด (฿'+(emp.dailyWage||0)+'/วัน)</td><td style="text-align:right">'+hwDays+' วัน</td><td style="text-align:right">'+hwPay.toLocaleString()+'</td></tr>':'')+
+    (comm>0?'<tr><td>ค่าคอมมิชชั่น</td><td style="text-align:right">—</td><td style="text-align:right">'+comm.toLocaleString('th-TH',{minimumFractionDigits:2})+'</td></tr>':'')+
+    (lateMin>0?'<tr><td style="color:#dc2626">มาสายรวม</td><td style="text-align:right;color:#dc2626">'+lateMin+' นาที</td><td style="text-align:right">—</td></tr>':'')+
+    '<tr class="pdf-total"><td>รวมทั้งสิ้น</td><td></td><td style="text-align:right;font-size:15px">฿'+total.toLocaleString('th-TH',{minimumFractionDigits:2})+'</td></tr>'+
+  '</table>'+
+  '<div class="pdf-amount">'+
+    '<div style="font-size:12px;opacity:.7;margin-bottom:4px">ยอดรับทั้งสิ้น</div>'+
+    '<div class="big">฿'+total.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div>'+
+  '</div>'+
+  '<div style="margin-top:16px;font-size:11px;color:#999;text-align:center">พิมพ์เมื่อ '+nowTH().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})+'</div>';
+
+  var area=document.getElementById('pdfPrintArea');
+  area.innerHTML=html;
+  area.style.display='block';
+  window.print();
+  setTimeout(function(){area.style.display='none';},1000);
+}
 async function recalcOldData(){
   var el=document.getElementById('recalcStatus');
   el.textContent='กำลังคำนวณใหม่...';
@@ -2168,5 +2233,6 @@ populatePPSelects();
 loadAll();
 </script>
 
+<div id="pdfPrintArea" style="display:none"></div>
 </body>
 </html>

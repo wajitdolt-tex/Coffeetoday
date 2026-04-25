@@ -206,6 +206,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn btn-teal" onclick="openViewSummaryModal()">📋 ดูสรุปรายรอบ</button>
       <button class="btn btn-dark" onclick="openEmpYearlySummary()">📊 ดูสรุปรายได้ประจำปี</button>
+      <button class="btn btn-dark btn-sm" onclick="printEmpSummary()" id="empPrintBtn" style="display:none">🖨️ พิมพ์ / บันทึก PDF</button>
     </div>
   </div>
   <div class="card">
@@ -279,7 +280,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     <div class="form-group"><label>พนักงาน</label><select id="summaryEmp" onchange="renderSummary()"><option value="">ทั้งหมด</option></select></div>
   </div>
   <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap" id="summaryBtns" style="display:none">
-    <button class="btn btn-dark btn-sm" onclick="window.print()">🖨️ พิมพ์</button>
+    <button class="btn btn-dark btn-sm" onclick="printSummary()">🖨️ พิมพ์ / บันทึก PDF</button>
     
     
   </div>
@@ -452,7 +453,10 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
   <div class="modal wide">
     <div class="modal-title">📋 รายละเอียดสรุปที่ส่งมา</div>
     <div id="viewSubmissionContent"></div>
-    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('viewSubmissionModal')">ปิด</button></div>
+    <div class="modal-actions">
+      <button class="btn btn-dark btn-sm" onclick="printEmpSummary()">🖨️ พิมพ์ / บันทึก PDF</button>
+      <button class="btn btn-ghost" onclick="closeModal('viewSubmissionModal')">ปิด</button>
+    </div>
   </div>
 </div>
 <div class="modal-overlay" id="empPinModal">
@@ -478,7 +482,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     </div>
     <div id="empYearlyContent"></div>
     <div class="modal-actions">
-      <button class="btn btn-dark btn-sm" onclick="window.print()">🖨️ พิมพ์</button>
+      <button class="btn btn-dark btn-sm" onclick="printSummary()">🖨️ พิมพ์ / บันทึก PDF</button>
       <button class="btn btn-ghost" onclick="closeModal('empYearlyModal')">ปิด</button>
     </div>
   </div>
@@ -1041,7 +1045,20 @@ async function openViewSummaryModal(){
   if(!emp)return;
   var pl=logsInPP(ppKey);
   var el=pl.filter(function(l){return l.empId===selectedEmpId;});
-  document.getElementById('viewSubmissionContent').innerHTML=buildSummaryHTML(emp,el,ppKey,false);
+  var html=buildSummaryHTML(emp,el,ppKey,false);
+  document.getElementById('viewSubmissionContent').innerHTML=html;
+  // เก็บไว้สำหรับ print
+  var printDiv=document.getElementById('empSummaryPrintContent');
+  if(!printDiv){
+    printDiv=document.createElement('div');
+    printDiv.id='empSummaryPrintContent';
+    printDiv.style.display='none';
+    document.body.appendChild(printDiv);
+  }
+  printDiv.innerHTML=html;
+  // แสดงปุ่มพิมพ์
+  var btn=document.getElementById('empPrintBtn');
+  if(btn)btn.style.display='inline-flex';
   openModal('viewSubmissionModal');
 }
 function openSendSummaryModal(){
@@ -1780,7 +1797,25 @@ function renderYearlySummary(){
 }
 
 function printYearly(){
+  var area = document.getElementById('printArea');
+  area.innerHTML = document.getElementById('yearlyCards').innerHTML;
+  area.style.display = 'block';
   window.print();
+  setTimeout(function(){area.style.display='none';}, 1000);
+}
+function printSummary(){
+  var area = document.getElementById('printArea');
+  area.innerHTML = document.getElementById('summaryCards').innerHTML;
+  area.style.display = 'block';
+  window.print();
+  setTimeout(function(){area.style.display='none';}, 1000);
+}
+function printEmpSummary(){
+  var area = document.getElementById('printArea');
+  area.innerHTML = document.getElementById('empSummaryPrintContent').innerHTML;
+  area.style.display = 'block';
+  window.print();
+  setTimeout(function(){area.style.display='none';}, 1000);
 }
 
 // ============================================================
@@ -2182,5 +2217,6 @@ populatePPSelects();
 loadAll();
 </script>
 
+<div id="printArea" style="display:none"></div>
 </body>
 </html>

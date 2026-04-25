@@ -651,26 +651,51 @@ function setSyncStatus(state,msg){
   dot.className='sync-dot'+(state==='syncing'?' syncing':state==='error'?' error':'');
   txt.textContent=msg;
 }
-async function api(action,data={}){
+function api(action,data){
+  data=data||{};
   setSyncStatus('syncing','กำลังซิงค์...');
-  try{
+  return new Promise(function(resolve,reject){
     var url=API_URL+'?action='+action;
-    var isWrite=['addLog','updateLog','deleteLog','saveEmployee','deleteEmployee','addSubmission','updateSubmission'].includes(action);
-    var resp;
-    if(isWrite){var postData=Object.assign({action:action},data);resp=await fetch(url,{method:'POST',body:JSON.stringify(postData)});}
-    else{var qs=Object.entries(data).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');resp=await fetch(url+(qs?'&'+qs:''));}
-    var json=await resp.json();
-    if(json.error)throw new Error(json.error);
-    setSyncStatus('ok','เชื่อมต่อแล้ว · '+new Date().toLocaleTimeString('th-TH'));
-    return json;
-  }catch(e){setSyncStatus('error','เชื่อมต่อล้มเหลว: '+e.message);throw e;}
+    var isWrite=['addLog','updateLog','deleteLog','saveEmployee','deleteEmployee','addSubmission','updateSubmission'].indexOf(action)>-1;
+    var xhr=new XMLHttpRequest();
+    if(isWrite){
+      xhr.open('POST',url,true);
+      xhr.setRequestHeader('Content-Type','text/plain');
+      xhr.onload=function(){
+        try{
+          var json=JSON.parse(xhr.responseText);
+          if(json.error){setSyncStatus('error',json.error);reject(new Error(json.error));return;}
+          setSyncStatus('ok','เชื่อมต่อแล้ว');
+          resolve(json);
+        }catch(e){setSyncStatus('error',e.message);reject(e);}
+      };
+      xhr.onerror=function(){setSyncStatus('error','เชื่อมต่อล้มเหลว');reject(new Error('Network error'));};
+      var postData=Object.assign({action:action},data);
+      xhr.send(JSON.stringify(postData));
+    }else{
+      var qs=Object.keys(data).map(function(k){return k+'='+encodeURIComponent(data[k]);}).join('&');
+      xhr.open('GET',url+(qs?'&'+qs:''),true);
+      xhr.onload=function(){
+        try{
+          var json=JSON.parse(xhr.responseText);
+          if(json.error){setSyncStatus('error',json.error);reject(new Error(json.error));return;}
+          setSyncStatus('ok','เชื่อมต่อแล้ว');
+          resolve(json);
+        }catch(e){setSyncStatus('error',e.message);reject(e);}
+      };
+      xhr.onerror=function(){setSyncStatus('error','เชื่อมต่อล้มเหลว');reject(new Error('Network error'));};
+      xhr.send();
+    }
+  });
 }
-async function loadAll(){
-  try{
-    var[eRes,lRes,sRes]=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
-    employees=eRes.employees||[];logs=lRes.logs||[];submissions=sRes.submissions||[];
+function loadAll(){
+  Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]).then(function(results){
+    employees=results[0].employees||[];
+    logs=results[1].logs||[];
+    submissions=results[2].submissions||[];
+    pastPayData=JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
     renderEmpCards();renderMyLog();
-  }catch(e){showToast('โหลดข้อมูลล้มเหลว: '+e.message,'error');}
+  }).catch(function(e){showToast('โหลดข้อมูลล้มเหลว: '+e.message,'error');});
 }
 
 // PIN

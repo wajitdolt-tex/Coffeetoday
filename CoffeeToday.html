@@ -674,9 +674,22 @@ async function api(action,data={}){
 }
 async function loadAll(){
   try{
-    var[eRes,lRes,sRes]=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
-    employees=eRes.employees||[];logs=lRes.logs||[];submissions=sRes.submissions||[];
-    pastPayData=JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
+    var[eRes,lRes,sRes]=await Promise.all([
+      api('getEmployees'),
+      api('getLogs'),
+      api('getSubmissions')
+    ]);
+    employees=eRes.employees||[];
+    logs=lRes.logs||[];
+    submissions=sRes.submissions||[];
+    // โหลด PastPay จาก Sheets ถ้าได้ ถ้าไม่ได้ใช้ localStorage
+    try{
+      var ppRes=await api('getPastPay');
+      pastPayData=ppRes.pastPay||[];
+      localStorage.setItem('ct_pastpay',JSON.stringify(pastPayData));
+    }catch(e2){
+      pastPayData=JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
+    }
     renderEmpCards();renderMyLog();
   }catch(e){showToast('โหลดข้อมูลล้มเหลว: '+e.message,'error');}
 }

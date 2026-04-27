@@ -491,6 +491,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 <div id="toast"></div>
 
 <script>
+
 // API URL - ฝังไว้แล้ว ไม่ต้องแก้
 const API_URL='https://script.google.com/macros/s/AKfycbw-EKlTw0EVyGRGvyhZPhSuCdNAG12edFTNTK-P6uUUL88t9YD1brZS-nK5B4BNamja5A/exec';
 
@@ -642,7 +643,7 @@ function getTierInfoHTML(branch){
   var t=COMM_TIERS[branch];
   if(!t)return'กรุณาเลือกสาขาก่อน';
   var sched=getSched(branch);
-  var rows=[...t].reverse().map(function(x){return'<span style="margin-right:10px">>=฿'+x.min.toLocaleString()+' → ส่วนต่าง×<strong>'+x.label+'</strong></span>';}).join('');
+  var rows=t.slice().reverse().map(function(x){return'<span style="margin-right:10px">>=฿'+x.min.toLocaleString()+' → ส่วนต่าง×<strong>'+x.label+'</strong></span>';}).join('');
   return'📊 '+rows+'<br><span style="font-size:11px;color:#b45309">เวลาทำงาน: '+sched.start+' - '+sched.end+' | ปกติ '+sched.hours+' ชม. หลังจากนั้นเป็น OT</span>';
 }
 
@@ -665,8 +666,8 @@ async function api(action,data={}){
     var url=API_URL+'?action='+action;
     var isWrite=['addLog','updateLog','deleteLog','saveEmployee','deleteEmployee','addSubmission','updateSubmission'].includes(action);
     var resp;
-    if(isWrite){resp=await fetch(url,{method:'POST',body:JSON.stringify({action,...data})});}
-    else{var qs=Object.entries(data).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');resp=await fetch(url+(qs?'&'+qs:''));}
+    if(isWrite){resp=await fetch(url,{method:'POST',body:JSON.stringify(Object.assign({action:action},data))});}
+    else{var qs=Object.entries(data).map(function(kv){var k=kv[0],v=kv[1];return k+'='+encodeURIComponent(v);}).join('&');resp=await fetch(url+(qs?'&'+qs:''));}
     var json=await resp.json();
     if(json.error)throw new Error(json.error);
     setSyncStatus('ok','เชื่อมต่อแล้ว · '+new Date().toLocaleTimeString('th-TH'));
@@ -675,8 +676,8 @@ async function api(action,data={}){
 }
 async function loadAll(){
   try{
-    var[eRes,lRes,sRes]=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
-    employees=eRes.employees||[];logs=lRes.logs||[];submissions=sRes.submissions||[];
+    var _r=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
+    employees=_r[0].employees||[];logs=_r[1].logs||[];submissions=_r[2].submissions||[];
     renderEmpCards();renderMyLog();
   }catch(e){showToast('โหลดข้อมูลล้มเหลว: '+e.message,'error');}
 }
@@ -1119,8 +1120,8 @@ function renderMyLog(){
 async function refreshHR(){
   populateFilterSelects();populatePPSelects();
   try{
-    var[eRes,lRes,sRes]=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
-    employees=eRes.employees||[];logs=lRes.logs||[];submissions=sRes.submissions||[];
+    var _r=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
+    employees=_r[0].employees||[];logs=_r[1].logs||[];submissions=_r[2].submissions||[];
     populateFilterSelects();renderDashboard();
   }catch(e){showToast('โหลดข้อมูล HR ล้มเหลว','error');renderDashboard();}
 }

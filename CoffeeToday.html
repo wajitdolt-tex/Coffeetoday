@@ -666,7 +666,7 @@ async function api(action,data={}){
     var isWrite=['addLog','updateLog','deleteLog','saveEmployee','deleteEmployee','addSubmission','updateSubmission'].includes(action);
     var resp;
     if(isWrite){resp=await fetch(url,{method:'POST',body:JSON.stringify(Object.assign({action:action},data))});}
-    else{var qs=Object.entries(data).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');resp=await fetch(url+(qs?'&'+qs:''));}
+    else{var qs=Object.entries(data).map(function(kv){var k=kv[0],v=kv[1];return k+'='+encodeURIComponent(v);}).join('&');resp=await fetch(url+(qs?'&'+qs:''));}
     var json=await resp.json();
     if(json.error)throw new Error(json.error);
     setSyncStatus('ok','เชื่อมต่อแล้ว · '+new Date().toLocaleTimeString('th-TH'));
@@ -675,8 +675,8 @@ async function api(action,data={}){
 }
 async function loadAll(){
   try{
-    var[eRes,lRes,sRes]=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
-    employees=eRes.employees||[];logs=lRes.logs||[];submissions=sRes.submissions||[];
+    var _res=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
+    employees=_res[0].employees||[];logs=_res[1].logs||[];submissions=_res[2].submissions||[];
     renderEmpCards();renderMyLog();
   }catch(e){showToast('โหลดข้อมูลล้มเหลว: '+e.message,'error');}
 }
@@ -1086,7 +1086,7 @@ async function confirmSendSummary(){
 function renderMyLog(){
   var tbody=document.getElementById('myLogTable');
   if(!selectedEmpId){tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="ei">👆</div>กรุณาเลือกพนักงานด้านบน</div></td></tr>';return;}
-  var myLogs=[...logs].filter(l=>String(l.empId)===String(selectedEmpId)).reverse().slice(0,50);
+  var myLogs=logs.slice().filter(l=>String(l.empId)===String(selectedEmpId)).reverse().slice(0,50);
   if(!myLogs.length){tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="ei">📭</div>ยังไม่มีบันทึก</div></td></tr>';return;}
   var eMap={};employees.forEach(e=>eMap[e.id]={name:e.name,branch:e.branch});
   tbody.innerHTML=myLogs.map(function(l){
@@ -1119,8 +1119,8 @@ function renderMyLog(){
 async function refreshHR(){
   populateFilterSelects();populatePPSelects();
   try{
-    var[eRes,lRes,sRes]=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
-    employees=eRes.employees||[];logs=lRes.logs||[];submissions=sRes.submissions||[];
+    var _res=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
+    employees=_res[0].employees||[];logs=_res[1].logs||[];submissions=_res[2].submissions||[];
     populateFilterSelects();renderDashboard();
   }catch(e){showToast('โหลดข้อมูล HR ล้มเหลว','error');renderDashboard();}
 }
@@ -1194,7 +1194,7 @@ function renderDashboard(){
 function renderAllLogs(){
   var empF=document.getElementById('filterEmp').value,branchF=document.getElementById('filterBranch').value,ppKey=document.getElementById('filterPayPeriod').value;
   var eMap={};employees.forEach(e=>eMap[e.id]={name:e.name,branch:e.branch});
-  var filtered=[...logs].reverse();
+  var filtered=logs.slice().reverse();
   if(empF)filtered=filtered.filter(l=>l.empId===empF);
   if(branchF)filtered=filtered.filter(l=>(eMap[l.empId]?.branch||l.branch)===branchF);
   if(ppKey){var pids=new Set(logsInPP(ppKey).map(l=>l.id));filtered=filtered.filter(l=>pids.has(l.id));}
@@ -1327,7 +1327,7 @@ function renderSummary(){
 async function renderSubmissions(){
   var tbody=document.getElementById('submissionsTable');
   if(!submissions.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="ei">📬</div>ยังไม่มีการส่งสรุป</div></td></tr>';return;}
-  tbody.innerHTML=[...submissions].reverse().map(function(s){
+  tbody.innerHTML=submissions.slice().reverse().map(function(s){
     return '<tr>'+
       '<td>'+s.sentAt+'</td>'+
       '<td><strong>'+s.empName+'</strong></td>'+
@@ -2207,7 +2207,7 @@ if(editBtn){ editPastPay(editBtn.dataset.ppid); }
 if(delBtn){ deletePastPay(delBtn.dataset.ppid); }
 };
 tbody.addEventListener(‘click’, tbody._ppHandler);
-tbody.innerHTML=[…pastPayData].reverse().map(function(d){
+tbody.innerHTML=pastPayData.slice().reverse().map(function(d){
 var otPay=d.ot*(d.otRate||50);
 var hotPay=d.hotOT*(d.holidayRate||100);
 var hwPay=d.hwDays*(d.dailyWage||0);

@@ -491,12 +491,11 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 <div id="toast"></div>
 
 <script>
-
 // API URL - ฝังไว้แล้ว ไม่ต้องแก้
-var API_URL='https://script.google.com/macros/s/AKfycbw-EKlTw0EVyGRGvyhZPhSuCdNAG12edFTNTK-P6uUUL88t9YD1brZS-nK5B4BNamja5A/exec';
+const API_URL='https://script.google.com/macros/s/AKfycbw-EKlTw0EVyGRGvyhZPhSuCdNAG12edFTNTK-P6uUUL88t9YD1brZS-nK5B4BNamja5A/exec';
 
 // วันหยุดนักขัตฤกษ์ 2569
-var PH=[
+const PH=[
   {date:'2026-01-01',name:'วันขึ้นปีใหม่'},{date:'2026-03-03',name:'วันมาฆบูชา'},
   {date:'2026-04-13',name:'วันสงกรานต์'},{date:'2026-04-14',name:'วันสงกรานต์'},{date:'2026-04-15',name:'วันสงกรานต์'},
   {date:'2026-05-01',name:'วันแรงงานแห่งชาติ'},{date:'2026-06-01',name:'ชดเชยวันวิสาขบูชา'},
@@ -528,19 +527,19 @@ function getPH(d){var ds=toDateStr(d);return PH.find(h=>h.date===ds)||null;}
 
 // ตารางเวลาสาขา: start=เวลาเข้างานมาตรฐาน, hours=ชั่วโมงปกติก่อน OT
 // วันหยุดประจำของพนักงานแต่ละคน (0=อาทิตย์,1=จันทร์,...,5=ศุกร์,6=เสาร์)
-var EMP_DAY_OFF={
+const EMP_DAY_OFF={
   'emp1': 2,  // ณพัชชนันท์ หยุดวันอังคาร
   'emp2': 5   // ฐิตารีย์ หยุดวันศุกร์
 };
-var EMP_PIN={
+const EMP_PIN={
   'emp1': '3024',  // ณพัชชนันท์ ประเสริฐศิริ
   'emp2': '0643'   // ฐิตารีย์ วาจิตดล
 };
-var EMP_EMAIL={
+const EMP_EMAIL={
   'emp1': 'Poom.2day@gmail.com',
   'emp2': 'Wajitdol.t@gmail.com'
 };
-var DAY_NAMES=['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์'];
+const DAY_NAMES=['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์'];
 
 function isEmpDayOff(empId, dateStr){
   var dow = EMP_DAY_OFF[empId];
@@ -558,7 +557,7 @@ function getEmpDayOffName(empId){
   return dow!==undefined ? DAY_NAMES[dow] : '';
 }
 
-var BRANCH_SCHEDULE={
+const BRANCH_SCHEDULE={
   lotus:  {start:'09:00',end:'20:00',hours:9},
   passion:{start:'10:00',end:'20:00',hours:9}
 };
@@ -602,7 +601,7 @@ function calcOT(branch,clockIn,clockOut){
 }
 
 // อัตราค่าคอม: คิดจาก (ยอดขาย - ขั้นต่ำของ tier) × อัตรา
-var COMM_TIERS={
+const COMM_TIERS={
   lotus:  [{min:6000,rate:.08,label:'8%'},{min:3500,rate:.04,label:'4%'},{min:2500,rate:.02,label:'2%'}],
   passion:[{min:5000,rate:.08,label:'8%'},{min:2500,rate:.04,label:'4%'},{min:1500,rate:.02,label:'2%'}]
 };
@@ -643,15 +642,15 @@ function getTierInfoHTML(branch){
   var t=COMM_TIERS[branch];
   if(!t)return'กรุณาเลือกสาขาก่อน';
   var sched=getSched(branch);
-  var rows=t.slice().reverse().map(function(x){return'<span style="margin-right:10px">>=฿'+x.min.toLocaleString()+' → ส่วนต่าง×<strong>'+x.label+'</strong></span>';}).join('');
+  var rows=[...t].reverse().map(function(x){return'<span style="margin-right:10px">>=฿'+x.min.toLocaleString()+' → ส่วนต่าง×<strong>'+x.label+'</strong></span>';}).join('');
   return'📊 '+rows+'<br><span style="font-size:11px;color:#b45309">เวลาทำงาน: '+sched.start+' - '+sched.end+' | ปกติ '+sched.hours+' ชม. หลังจากนั้นเป็น OT</span>';
 }
 
 // STATE
-var employees=[],logs=[],submissions=[];
-var selectedEmpId=null,clockAction='in',currentBranch=localStorage.getItem('ct_branch')||'',hrUnlocked=false;
-var BRANCHES={lotus:'โลตัสระยอง',passion:'แพชชั่นระยอง'};
-var HR_PIN='9999';
+let employees=[],logs=[],submissions=[];
+let selectedEmpId=null,clockAction='in',currentBranch=localStorage.getItem('ct_branch')||'',hrUnlocked=false;
+const BRANCHES={lotus:'โลตัสระยอง',passion:'แพชชั่นระยอง'};
+const HR_PIN='9999';
 function genId(){return'id'+Date.now()+Math.random().toString(36).slice(2,6);}
 
 // API
@@ -666,8 +665,8 @@ async function api(action,data={}){
     var url=API_URL+'?action='+action;
     var isWrite=['addLog','updateLog','deleteLog','saveEmployee','deleteEmployee','addSubmission','updateSubmission'].includes(action);
     var resp;
-    if(isWrite){resp=await fetch(url,{method:'POST',body:JSON.stringify(Object.assign({action:action},data))});}
-    else{var qs=Object.entries(data).map(function(kv){var k=kv[0],v=kv[1];return k+'='+encodeURIComponent(v);}).join('&');resp=await fetch(url+(qs?'&'+qs:''));}
+    if(isWrite){resp=await fetch(url,{method:'POST',body:JSON.stringify({action,...data})});}
+    else{var qs=Object.entries(data).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');resp=await fetch(url+(qs?'&'+qs:''));}
     var json=await resp.json();
     if(json.error)throw new Error(json.error);
     setSyncStatus('ok','เชื่อมต่อแล้ว · '+new Date().toLocaleTimeString('th-TH'));
@@ -676,8 +675,8 @@ async function api(action,data={}){
 }
 async function loadAll(){
   try{
-    var _r=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
-    employees=_r[0].employees||[];logs=_r[1].logs||[];submissions=_r[2].submissions||[];
+    var[eRes,lRes,sRes]=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
+    employees=eRes.employees||[];logs=lRes.logs||[];submissions=sRes.submissions||[];
     renderEmpCards();renderMyLog();
   }catch(e){showToast('โหลดข้อมูลล้มเหลว: '+e.message,'error');}
 }
@@ -1120,8 +1119,8 @@ function renderMyLog(){
 async function refreshHR(){
   populateFilterSelects();populatePPSelects();
   try{
-    var _r=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
-    employees=_r[0].employees||[];logs=_r[1].logs||[];submissions=_r[2].submissions||[];
+    var[eRes,lRes,sRes]=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
+    employees=eRes.employees||[];logs=lRes.logs||[];submissions=sRes.submissions||[];
     populateFilterSelects();renderDashboard();
   }catch(e){showToast('โหลดข้อมูล HR ล้มเหลว','error');renderDashboard();}
 }
@@ -1197,7 +1196,7 @@ function renderAllLogs(){
   var eMap={};employees.forEach(e=>eMap[e.id]={name:e.name,branch:e.branch});
   var filtered=[...logs].reverse();
   if(empF)filtered=filtered.filter(l=>l.empId===empF);
-  if(branchF)filtered=filtered.filter(l=>((eMap[l.empId]&&eMap[l.empId].branch)||l.branch)===branchF);
+  if(branchF)filtered=filtered.filter(l=>(eMap[l.empId]?.branch||l.branch)===branchF);
   if(ppKey){var pids=new Set(logsInPP(ppKey).map(l=>l.id));filtered=filtered.filter(l=>pids.has(l.id));}
   var tbody=document.getElementById('allLogsTable');
   if(!filtered.length){tbody.innerHTML='<tr><td colspan="12"><div class="empty-state"><div class="ei">📭</div>ไม่พบรายการ</div></td></tr>';return;}

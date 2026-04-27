@@ -675,20 +675,8 @@ async function api(action,data={}){
 }
 async function loadAll(){
   try{
-    var results=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
-    employees=results[0].employees||[];
-    logs=results[1].logs||[];
-    submissions=results[2].submissions||[];
-    api('getPastPay',{}).then(function(res){
-      if(res.pastPay&&res.pastPay.length>0){
-        pastPayData=res.pastPay;
-        localStorage.setItem('ct_pastpay',JSON.stringify(pastPayData));
-      } else {
-        pastPayData=JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
-      }
-    }).catch(function(){
-      pastPayData=JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
-    });
+    var[eRes,lRes,sRes]=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
+    employees=eRes.employees||[];logs=lRes.logs||[];submissions=sRes.submissions||[];
     renderEmpCards();renderMyLog();
   }catch(e){showToast('โหลดข้อมูลล้มเหลว: '+e.message,'error');}
 }
@@ -1663,13 +1651,7 @@ function populateYearlySelects(){
 function renderYearlySummary(){
   // โหลด pastPayData ใหม่ทุกครั้ง
   pastPayData = JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
-  // เก็บค่าที่เลือกไว้ก่อน populate จะ reset
-  var savedEmpF = document.getElementById('yearlyEmp').value;
-  var savedYear = document.getElementById('yearlyYear').value;
   populateYearlySelects();
-  // restore ค่าที่เลือกไว้
-  if(savedEmpF) document.getElementById('yearlyEmp').value = savedEmpF;
-  if(savedYear) document.getElementById('yearlyYear').value = savedYear;
   var yearEl = document.getElementById('yearlyYear');
   var empF   = document.getElementById('yearlyEmp').value;
   var year   = parseInt(yearEl.value) || new Date().getFullYear();
@@ -1707,7 +1689,23 @@ function renderYearlySummary(){
     var monthlyData = {};
     for(var m=1;m<=12;m++) monthlyData[m] = {salary:0,ot:0,hotOT:0,hw:0,comm:0,days:0,lateMin:0,isPastPay:false};
 
-    // ใส่ pastPay ก่อน เพื่อ mark เดือนที่มีข้อมูลย้อนหลัง
+    el.forEach(function(l){
+      var ds = toDateStr(l.date);
+      if(!ds) return;
+      var mo = parseInt(ds.substring(5,7));
+      if(!mo||mo<1||mo>12) return;
+      if(l.type==='commission'){
+        var _empY=employees.find(function(e){return e.id===l.empId;})||{};monthlyData[mo].comm += getCommFromLog(l,_empY.branch||l.branch||"");
+      } else {
+        monthlyData[mo].ot    += Number(l.hoursOT||0)*(emp.otRate||50);
+        if(['holiday_ot','public_holiday'].includes(l.type)) monthlyData[mo].hotOT += Number(l.hours||0)*(emp.holidayRate||100);
+        if(l.type==='holiday_work') monthlyData[mo].hw += (emp.dailyWage||0);
+        monthlyData[mo].days  += new Set([ds]).size;
+        monthlyData[mo].lateMin += Number(l.lateMinutes||0);
+      }
+    });
+
+    // รวม pastPayData ของพนักงานคนนี้
     yearPastPay.filter(function(d){return d.empId===emp.id;}).forEach(function(d){
       var parts=d.ppKey.split('-').map(Number);
       var ppYear=parts[0],ppMonth=parts[1];
@@ -1722,29 +1720,6 @@ function renderYearlySummary(){
       monthlyData[mo].hw+=(d.hwDays||0)*(d.dailyWage||0);
       monthlyData[mo].comm+=d.comm||0;
       monthlyData[mo].lateMin+=d.late||0;
-    });
-    // นับ log รายวัน ตามรอบ 16-15 และข้ามเดือนที่มี pastPay แล้ว
-    el.forEach(function(l){
-      var ds = toDateStr(l.date);
-      if(!ds) return;
-      var calMo = parseInt(ds.substring(5,7));
-      var calDay = parseInt(ds.substring(8,10));
-      var logYear = parseInt(ds.substring(0,4));
-      if(!calMo||calMo<1||calMo>12) return;
-      var mo, moYear;
-      if(calDay>=16){mo=calMo+1;moYear=logYear;if(mo>12){mo=1;moYear=logYear+1;}}
-      else{mo=calMo;moYear=logYear;}
-      if(moYear!==year||mo<1||mo>12) return;
-      if(monthlyData[mo].isPastPay) return;
-      if(l.type==='commission'){
-        var _empY=employees.find(function(e){return e.id===l.empId;})||{};monthlyData[mo].comm += getCommFromLog(l,_empY.branch||l.branch||"");
-      } else {
-        monthlyData[mo].ot    += Number(l.hoursOT||0)*(emp.otRate||50);
-        if(['holiday_ot','public_holiday'].includes(l.type)) monthlyData[mo].hotOT += Number(l.hours||0)*(emp.holidayRate||100);
-        if(l.type==='holiday_work') monthlyData[mo].hw += (emp.dailyWage||0);
-        monthlyData[mo].days  += 1;
-        monthlyData[mo].lateMin += Number(l.lateMinutes||0);
-      }
     });
 
     // คำนวณ 12 เดือน
@@ -1949,7 +1924,18 @@ function renderEmpYearlySummary(){
   var thaiMonths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
   var monthlyData2={};
   for(var m=1;m<=12;m++) monthlyData2[m]={salary:0,ot:0,hotOT:0,hw:0,comm:0,days:0,lateMin:0,isPastPay:false};
-  // ใส่ pastPay ก่อน
+  el.forEach(function(l){
+    var ds=toDateStr(l.date);if(!ds)return;
+    var mo=parseInt(ds.substring(5,7));if(!mo||mo<1||mo>12)return;
+    if(l.type==='commission'){monthlyData2[mo].comm+=getCommFromLog(l,emp.branch);}
+    else{
+      monthlyData2[mo].ot+=Number(l.hoursOT||0)*(emp.otRate||50);
+      if(['holiday_ot','public_holiday'].includes(l.type))monthlyData2[mo].hotOT+=Number(l.hours||0)*(emp.holidayRate||100);
+      if(l.type==='holiday_work')monthlyData2[mo].hw+=(emp.dailyWage||0);
+      monthlyData2[mo].days+=1;
+      monthlyData2[mo].lateMin+=Number(l.lateMinutes||0);
+    }
+  });
   yearPastPay2.filter(function(d){return d.empId===empId;}).forEach(function(d){
     var parts=d.ppKey.split('-').map(Number);
     var ppYear2=parts[0],ppMonth2=parts[1];
@@ -1965,27 +1951,6 @@ function renderEmpYearlySummary(){
     monthlyData2[mo].hw+=(d.hwDays||0)*(d.dailyWage||0);
     monthlyData2[mo].comm+=d.comm||0;
     monthlyData2[mo].lateMin+=d.late||0;
-  });
-  // นับ log รายวัน ตามรอบ 16-15 และข้ามเดือนที่มี pastPay แล้ว
-  el.forEach(function(l){
-    var ds=toDateStr(l.date);if(!ds)return;
-    var calMo2=parseInt(ds.substring(5,7));
-    var calDay2=parseInt(ds.substring(8,10));
-    var logYear2=parseInt(ds.substring(0,4));
-    if(!calMo2||calMo2<1||calMo2>12)return;
-    var mo2,moYear3;
-    if(calDay2>=16){mo2=calMo2+1;moYear3=logYear2;if(mo2>12){mo2=1;moYear3=logYear2+1;}}
-    else{mo2=calMo2;moYear3=logYear2;}
-    if(moYear3!==year||mo2<1||mo2>12)return;
-    if(monthlyData2[mo2].isPastPay)return;
-    if(l.type==='commission'){monthlyData2[mo2].comm+=getCommFromLog(l,emp.branch);}
-    else{
-      monthlyData2[mo2].ot+=Number(l.hoursOT||0)*(emp.otRate||50);
-      if(['holiday_ot','public_holiday'].includes(l.type))monthlyData2[mo2].hotOT+=Number(l.hours||0)*(emp.holidayRate||100);
-      if(l.type==='holiday_work')monthlyData2[mo2].hw+=(emp.dailyWage||0);
-      monthlyData2[mo2].days+=1;
-      monthlyData2[mo2].lateMin+=Number(l.lateMinutes||0);
-    }
   });
   var totalSalary=0,totalOT=0,totalHotOT=0,totalHW=0,totalComm=0,totalLate=0;
   var monthRows='';

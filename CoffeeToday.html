@@ -581,6 +581,9 @@ function calcOT(branch,clockIn,clockOut){
   var ci=toTimeStr(clockIn),co=toTimeStr(clockOut);
   var im=+ci.split(':')[0]*60+ +ci.split(':')[1];
   var om=+co.split(':')[0]*60+ +co.split(':')[1];
+  // cap เวลาออกงานไว้ที่ 20:00 ไม่นับ OT หลังจากนั้น
+  var MAX_MINS=20*60;
+  if(om>MAX_MINS)om=MAX_MINS;
   if(om<=im)return{hours:0,hoursOT:0,lateMinutes:0};
   var late=Math.max(0,im-sm);
   var totalMins=om-im;

@@ -665,7 +665,7 @@ async function api(action,data={}){
     var url=API_URL+'?action='+action;
     var isWrite=['addLog','updateLog','deleteLog','saveEmployee','deleteEmployee','addSubmission','updateSubmission'].includes(action);
     var resp;
-    if(isWrite){resp=await fetch(url,{method:'POST',body:JSON.stringify({action,...data})});}
+    if(isWrite){resp=await fetch(url,{method:'POST',body:JSON.stringify(Object.assign({action:action},data))});}
     else{var qs=Object.entries(data).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');resp=await fetch(url+(qs?'&'+qs:''));}
     var json=await resp.json();
     if(json.error)throw new Error(json.error);

@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -173,6 +174,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 <div class="sync-bar" id="syncBar"><span class="sync-dot" id="syncDot"></span><span id="syncText">กำลังเชื่อมต่อ...</span></div>
 
 <!-- PAGE CLOCK -->
+
 <div class="page active" id="page-clock">
   <div class="clock-hero" style="text-align:center;padding:20px 16px">
     <div class="clock-time" id="liveClock" style="font-size:clamp(40px,10vw,72px);letter-spacing:2px;line-height:1.1">--:--:--</div>
@@ -223,6 +225,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 </div>
 
 <!-- PAGE HR -->
+
 <div class="page" id="page-hr">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
     <div class="section-title">🗂 ระบบฝ่ายบุคคล</div>
@@ -242,12 +245,15 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     <div id="notClockOutAlert" style="display:none;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border-radius:12px;padding:14px 16px;margin-bottom:16px"></div>
     <div id="statsRow" class="stats-row"></div>
 
-    <div class="card"><div class="card-title">📈 สรุปพนักงานแต่ละคน (รอบปัจจุบัน)</div>
-      <div class="table-wrap"><table>
-        <thead><tr><th>พนักงาน</th><th>สาขา</th><th>ชม.ปกติ</th><th>OT</th><th>OT วันหยุด</th><th>วันหยุด×2</th><th>คอมมิชชั่น</th><th>วันทำงาน</th><th>สาย (นาที)</th></tr></thead>
-        <tbody id="empSummaryTable"></tbody>
-      </table></div>
-    </div>
+```
+<div class="card"><div class="card-title">📈 สรุปพนักงานแต่ละคน (รอบปัจจุบัน)</div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>พนักงาน</th><th>สาขา</th><th>ชม.ปกติ</th><th>OT</th><th>OT วันหยุด</th><th>วันหยุด×2</th><th>คอมมิชชั่น</th><th>วันทำงาน</th><th>สาย (นาที)</th></tr></thead>
+    <tbody id="empSummaryTable"></tbody>
+  </table></div>
+</div>
+```
+
   </div>
   <div class="tab-content" id="tab-allLogs">
     <div class="filter-row">
@@ -269,34 +275,37 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
       <button class="btn btn-ghost btn-sm" id="yearlyModeBtn" onclick="setSummaryMode('yearly')">📊 สรุปรายได้ประจำปี</button>
     </div>
 
-    <!-- มุมมองรายรอบ -->
-    <div id="summaryPeriodView">
-      <div class="filter-row">
-        <div class="form-group"><label>รอบเงินเดือน</label><select id="summaryPayPeriod" onchange="renderSummary()"><option value="">เลือกรอบ...</option></select></div>
-        <div class="form-group"><label>สาขา</label><select id="summaryBranch" onchange="renderSummary()"><option value="">ทั้งหมด</option><option value="lotus">โลตัสระยอง</option><option value="passion">แพชชั่นระยอง</option></select></div>
-        <div class="form-group"><label>พนักงาน</label><select id="summaryEmp" onchange="renderSummary()"><option value="">ทั้งหมด</option></select></div>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap" id="summaryBtns" style="display:none">
-        <button class="btn btn-dark btn-sm" onclick="window.print()">🖨️ พิมพ์</button>
-        <button class="btn btn-success btn-sm" onclick="exportSummaryPDF()">📄 Export PDF</button>
-        <button class="btn btn-teal btn-sm" onclick="sendPayslipEmail()">📧 ส่งสลิปทางเมล</button>
-      </div>
-      <div id="summaryCards"></div>
-    </div>
+```
+<!-- มุมมองรายรอบ -->
+<div id="summaryPeriodView">
+  <div class="filter-row">
+    <div class="form-group"><label>รอบเงินเดือน</label><select id="summaryPayPeriod" onchange="renderSummary()"><option value="">เลือกรอบ...</option></select></div>
+    <div class="form-group"><label>สาขา</label><select id="summaryBranch" onchange="renderSummary()"><option value="">ทั้งหมด</option><option value="lotus">โลตัสระยอง</option><option value="passion">แพชชั่นระยอง</option></select></div>
+    <div class="form-group"><label>พนักงาน</label><select id="summaryEmp" onchange="renderSummary()"><option value="">ทั้งหมด</option></select></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap" id="summaryBtns" style="display:none">
+    <button class="btn btn-dark btn-sm" onclick="window.print()">🖨️ พิมพ์</button>
+    <button class="btn btn-success btn-sm" onclick="exportSummaryPDF()">📄 Export PDF</button>
+    <button class="btn btn-teal btn-sm" onclick="sendPayslipEmail()">📧 ส่งสลิปทางเมล</button>
+  </div>
+  <div id="summaryCards"></div>
+</div>
 
-    <!-- มุมมองสรุปรายได้ประจำปี -->
-    <div id="summaryYearlyView" style="display:none">
-      <div class="filter-row">
-        <div class="form-group"><label>ปี (พ.ศ.)</label>
-          <select id="yearlyYear" onchange="renderYearlySummary()"></select></div>
-        <div class="form-group"><label>พนักงาน</label>
-          <select id="yearlyEmp" onchange="renderYearlySummary()"><option value="">ทั้งหมด</option></select></div>
-      </div>
-      <div style="margin-bottom:14px">
-        <button class="btn btn-dark btn-sm" onclick="printYearly()">🖨️ พิมพ์ / บันทึก PDF</button>
-      </div>
-      <div id="yearlyCards"></div>
-    </div>
+<!-- มุมมองสรุปรายได้ประจำปี -->
+<div id="summaryYearlyView" style="display:none">
+  <div class="filter-row">
+    <div class="form-group"><label>ปี (พ.ศ.)</label>
+      <select id="yearlyYear" onchange="renderYearlySummary()"></select></div>
+    <div class="form-group"><label>พนักงาน</label>
+      <select id="yearlyEmp" onchange="renderYearlySummary()"><option value="">ทั้งหมด</option></select></div>
+  </div>
+  <div style="margin-bottom:14px">
+    <button class="btn btn-dark btn-sm" onclick="printYearly()">🖨️ พิมพ์ / บันทึก PDF</button>
+  </div>
+  <div id="yearlyCards"></div>
+</div>
+```
+
   </div>
   <div class="tab-content" id="tab-employees">
     <div style="margin-bottom:14px"><button class="btn btn-primary" onclick="openAddEmpModal()">➕ เพิ่มพนักงาน</button></div>
@@ -364,6 +373,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 </div>
 
 <!-- MODAL: ยืนยัน PIN บันทึกซ้ำ -->
+
 <div class="modal-overlay" id="dupPinModal">
   <div class="modal">
     <div class="modal-title">🔐 ยืนยันการแก้ไข</div>
@@ -383,6 +393,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 </div>
 
 <!-- MODALS -->
+
 <div class="modal-overlay" id="clockModal">
   <div class="modal">
     <div class="modal-title" id="clockModalTitle">บันทึกเวลา</div>
@@ -481,7 +492,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 
 <script>
 // API URL - ฝังไว้แล้ว ไม่ต้องแก้
-const API_URL='https://script.google.com/macros/s/AKfycbw4fXghaBjjU_9PvBCFmI14kGROL_rWOp-AyqJ09HAtzZZz6EgXtWf5SY-5rukLJnoyfA/exec';
+const API_URL='https://script.google.com/macros/s/AKfycbw-EKlTw0EVyGRGvyhZPhSuCdNAG12edFTNTK-P6uUUL88t9YD1brZS-nK5B4BNamja5A/exec';
 
 // วันหยุดนักขัตฤกษ์ 2569
 const PH=[
@@ -631,7 +642,7 @@ function getTierInfoHTML(branch){
   var t=COMM_TIERS[branch];
   if(!t)return'กรุณาเลือกสาขาก่อน';
   var sched=getSched(branch);
-  var rows=t.slice().reverse().map(function(x){return'<span style="margin-right:10px">>=฿'+x.min.toLocaleString()+' → ส่วนต่าง×<strong>'+x.label+'</strong></span>';}).join('');
+  var rows=[...t].reverse().map(function(x){return'<span style="margin-right:10px">>=฿'+x.min.toLocaleString()+' → ส่วนต่าง×<strong>'+x.label+'</strong></span>';}).join('');
   return'📊 '+rows+'<br><span style="font-size:11px;color:#b45309">เวลาทำงาน: '+sched.start+' - '+sched.end+' | ปกติ '+sched.hours+' ชม. หลังจากนั้นเป็น OT</span>';
 }
 
@@ -654,7 +665,7 @@ async function api(action,data={}){
     var url=API_URL+'?action='+action;
     var isWrite=['addLog','updateLog','deleteLog','saveEmployee','deleteEmployee','addSubmission','updateSubmission'].includes(action);
     var resp;
-    if(isWrite){resp=await fetch(url,{method:'POST',body:JSON.stringify(Object.assign({action:action},data))});}
+    if(isWrite){resp=await fetch(url,{method:'POST',body:JSON.stringify({action,...data})});}
     else{var qs=Object.entries(data).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');resp=await fetch(url+(qs?'&'+qs:''));}
     var json=await resp.json();
     if(json.error)throw new Error(json.error);
@@ -1075,7 +1086,7 @@ async function confirmSendSummary(){
 function renderMyLog(){
   var tbody=document.getElementById('myLogTable');
   if(!selectedEmpId){tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="ei">👆</div>กรุณาเลือกพนักงานด้านบน</div></td></tr>';return;}
-  var myLogs=logs.slice().filter(l=>String(l.empId)===String(selectedEmpId)).reverse().slice(0,50);
+  var myLogs=[...logs].filter(l=>String(l.empId)===String(selectedEmpId)).reverse().slice(0,50);
   if(!myLogs.length){tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="ei">📭</div>ยังไม่มีบันทึก</div></td></tr>';return;}
   var eMap={};employees.forEach(e=>eMap[e.id]={name:e.name,branch:e.branch});
   tbody.innerHTML=myLogs.map(function(l){
@@ -1183,9 +1194,9 @@ function renderDashboard(){
 function renderAllLogs(){
   var empF=document.getElementById('filterEmp').value,branchF=document.getElementById('filterBranch').value,ppKey=document.getElementById('filterPayPeriod').value;
   var eMap={};employees.forEach(e=>eMap[e.id]={name:e.name,branch:e.branch});
-  var filtered=logs.slice().reverse();
+  var filtered=[...logs].reverse();
   if(empF)filtered=filtered.filter(l=>l.empId===empF);
-  if(branchF)filtered=filtered.filter(l=>((eMap[l.empId]&&eMap[l.empId].branch)||l.branch)===branchF);
+  if(branchF)filtered=filtered.filter(l=>(eMap[l.empId]?.branch||l.branch)===branchF);
   if(ppKey){var pids=new Set(logsInPP(ppKey).map(l=>l.id));filtered=filtered.filter(l=>pids.has(l.id));}
   var tbody=document.getElementById('allLogsTable');
   if(!filtered.length){tbody.innerHTML='<tr><td colspan="12"><div class="empty-state"><div class="ei">📭</div>ไม่พบรายการ</div></td></tr>';return;}
@@ -1316,7 +1327,7 @@ function renderSummary(){
 async function renderSubmissions(){
   var tbody=document.getElementById('submissionsTable');
   if(!submissions.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="ei">📬</div>ยังไม่มีการส่งสรุป</div></td></tr>';return;}
-  tbody.innerHTML=submissions.slice().reverse().map(function(s){
+  tbody.innerHTML=[...submissions].reverse().map(function(s){
     return '<tr>'+
       '<td>'+s.sentAt+'</td>'+
       '<td><strong>'+s.empName+'</strong></td>'+
@@ -2014,242 +2025,244 @@ function exportSummaryPDF(){
   }).join('<div style="page-break-after:always"></div>');
   var area=document.getElementById('pdfPrintArea');
   area.innerHTML='<style>body{font-family:Sarabun,sans-serif}</style>'+html;
-  area.style.display='block';
-  window.print();
-  setTimeout(function(){area.style.display='none';},1000);
+
+area.style.display=‘block’;
+window.print();
+setTimeout(function(){area.style.display=‘none’;},1000);
 }
 function exportPayslipPDF(empId, ppKey){
-  var emp=employees.find(function(e){return e.id===empId;});
-  if(!emp) return;
-  var pl=logsInPP(ppKey);
-  var el=pl.filter(function(l){return String(l.empId)===String(empId);});
-  var ppd=JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
-  var ppEntry=ppd.find(function(d){return d.empId===empId&&d.ppKey===ppKey;});
+var emp=employees.find(function(e){return e.id===empId;});
+if(!emp) return;
+var pl=logsInPP(ppKey);
+var el=pl.filter(function(l){return String(l.empId)===String(empId);});
+var ppd=JSON.parse(localStorage.getItem(‘ct_pastpay’)||’[]’);
+var ppEntry=ppd.find(function(d){return d.empId===empId&&d.ppKey===ppKey;});
 
-  // คำนวณ
-  var days=new Set(el.filter(function(l){return l.clockIn&&toTimeStr(l.clockIn)!=='00:00';}).map(function(l){return toDateStr(l.date);})).size;
-  var ot=+(el.reduce(function(s,l){return s+(Number(l.hoursOT)||0);},0)).toFixed(1);
-  var hwDays=new Set(el.filter(function(l){return ['holiday_work','public_holiday'].includes(l.type);}).map(function(l){return toDateStr(l.date);})).size;
-  var hwOT=el.filter(function(l){return ['holiday_work','public_holiday'].includes(l.type);}).reduce(function(s,l){return s+(Number(l.hoursOT)||0);},0);
-  var normOT=Math.max(0,ot-hwOT);
-  var lateMin=el.reduce(function(s,l){return s+(Number(l.lateMinutes)||0);},0);
-  var comm=+el.filter(function(l){return l.type==='commission'||Number(l.sales)>0;}).reduce(function(s,l){return s+getCommFromLog(l,emp.branch);},0).toFixed(2);
+// คำนวณ
+var days=new Set(el.filter(function(l){return l.clockIn&&toTimeStr(l.clockIn)!==‘00:00’;}).map(function(l){return toDateStr(l.date);})).size;
+var ot=+(el.reduce(function(s,l){return s+(Number(l.hoursOT)||0);},0)).toFixed(1);
+var hwDays=new Set(el.filter(function(l){return [‘holiday_work’,‘public_holiday’].includes(l.type);}).map(function(l){return toDateStr(l.date);})).size;
+var hwOT=el.filter(function(l){return [‘holiday_work’,‘public_holiday’].includes(l.type);}).reduce(function(s,l){return s+(Number(l.hoursOT)||0);},0);
+var normOT=Math.max(0,ot-hwOT);
+var lateMin=el.reduce(function(s,l){return s+(Number(l.lateMinutes)||0);},0);
+var comm=+el.filter(function(l){return l.type===‘commission’||Number(l.sales)>0;}).reduce(function(s,l){return s+getCommFromLog(l,emp.branch);},0).toFixed(2);
 
-  if(ppEntry&&el.length===0){
-    days=ppEntry.days||0;normOT=(ppEntry.ot||0);hwOT=(ppEntry.hotOT||0);hwDays=(ppEntry.hwDays||0);comm=ppEntry.comm||0;lateMin=ppEntry.late||0;
-  }
+if(ppEntry&&el.length===0){
+days=ppEntry.days||0;normOT=(ppEntry.ot||0);hwOT=(ppEntry.hotOT||0);hwDays=(ppEntry.hwDays||0);comm=ppEntry.comm||0;lateMin=ppEntry.late||0;
+}
 
-  var otPay=normOT*(emp.otRate||50);
-  var hotPay=hwOT*(emp.holidayRate||100);
-  var hwPay=hwDays*(emp.dailyWage||0);
-  var total=(emp.salary||0)+otPay+hotPay+hwPay+comm;
-  var label=getPPLabel(ppKey);
-  var be=new Date().getFullYear()+543;
+var otPay=normOT*(emp.otRate||50);
+var hotPay=hwOT*(emp.holidayRate||100);
+var hwPay=hwDays*(emp.dailyWage||0);
+var total=(emp.salary||0)+otPay+hotPay+hwPay+comm;
+var label=getPPLabel(ppKey);
+var be=new Date().getFullYear()+543;
 
-  var html='<div class="pdf-header">'+
-    '<div style="font-size:22px;font-weight:700">☕ Coffee Today</div>'+
-    '<div style="font-size:15px;margin-top:4px">สลิปเงินเดือน · '+label+'</div>'+
-    '<div style="font-size:13px;color:#666;margin-top:4px">'+emp.name+' · '+brL(emp.branch)+'</div>'+
-  '</div>'+
-  '<table class="pdf-table">'+
-    '<tr><th>รายการ</th><th style="text-align:right">จำนวน</th><th style="text-align:right">ยอด (฿)</th></tr>'+
-    '<tr><td>เงินเดือนพื้นฐาน</td><td style="text-align:right">'+days+' วัน</td><td style="text-align:right">'+Number(emp.salary||0).toLocaleString()+'</td></tr>'+
-    (normOT>0?'<tr><td>OT ปกติ (฿'+(emp.otRate||50)+'/ชม.)</td><td style="text-align:right">'+normOT+' ชม.</td><td style="text-align:right">'+otPay.toLocaleString()+'</td></tr>':'')+
-    (hwOT>0?'<tr><td>OT วันหยุด (฿'+(emp.holidayRate||100)+'/ชม.)</td><td style="text-align:right">'+hwOT+' ชม.</td><td style="text-align:right">'+hotPay.toLocaleString()+'</td></tr>':'')+
-    (hwDays>0?'<tr><td>ทำงานวันหยุด (฿'+(emp.dailyWage||0)+'/วัน)</td><td style="text-align:right">'+hwDays+' วัน</td><td style="text-align:right">'+hwPay.toLocaleString()+'</td></tr>':'')+
-    (comm>0?'<tr><td>ค่าคอมมิชชั่น</td><td style="text-align:right">--</td><td style="text-align:right">'+comm.toLocaleString('th-TH',{minimumFractionDigits:2})+'</td></tr>':'')+
-    (lateMin>0?'<tr><td style="color:#dc2626">มาสายรวม</td><td style="text-align:right;color:#dc2626">'+lateMin+' นาที</td><td style="text-align:right">--</td></tr>':'')+
-    '<tr class="pdf-total"><td>รวมทั้งสิ้น</td><td></td><td style="text-align:right;font-size:15px">฿'+total.toLocaleString('th-TH',{minimumFractionDigits:2})+'</td></tr>'+
-  '</table>'+
-  '<div class="pdf-amount">'+
-    '<div style="font-size:12px;opacity:.7;margin-bottom:4px">ยอดรับทั้งสิ้น</div>'+
-    '<div class="big">฿'+total.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div>'+
-  '</div>'+
-  '<div style="margin-top:16px;font-size:11px;color:#999;text-align:center">พิมพ์เมื่อ '+nowTH().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})+'</div>';
+var html=’<div class="pdf-header">’+
+‘<div style="font-size:22px;font-weight:700">☕ Coffee Today</div>’+
+‘<div style="font-size:15px;margin-top:4px">สลิปเงินเดือน · ‘+label+’</div>’+
+‘<div style="font-size:13px;color:#666;margin-top:4px">’+emp.name+’ · ‘+brL(emp.branch)+’</div>’+
+‘</div>’+
+‘<table class="pdf-table">’+
+‘<tr><th>รายการ</th><th style="text-align:right">จำนวน</th><th style="text-align:right">ยอด (฿)</th></tr>’+
+‘<tr><td>เงินเดือนพื้นฐาน</td><td style="text-align:right">’+days+’ วัน</td><td style="text-align:right">’+Number(emp.salary||0).toLocaleString()+’</td></tr>’+
+(normOT>0?’<tr><td>OT ปกติ (฿’+(emp.otRate||50)+’/ชม.)</td><td style="text-align:right">’+normOT+’ ชม.</td><td style="text-align:right">’+otPay.toLocaleString()+’</td></tr>’:’’)+
+(hwOT>0?’<tr><td>OT วันหยุด (฿’+(emp.holidayRate||100)+’/ชม.)</td><td style="text-align:right">’+hwOT+’ ชม.</td><td style="text-align:right">’+hotPay.toLocaleString()+’</td></tr>’:’’)+
+(hwDays>0?’<tr><td>ทำงานวันหยุด (฿’+(emp.dailyWage||0)+’/วัน)</td><td style="text-align:right">’+hwDays+’ วัน</td><td style="text-align:right">’+hwPay.toLocaleString()+’</td></tr>’:’’)+
+(comm>0?’<tr><td>ค่าคอมมิชชั่น</td><td style="text-align:right">–</td><td style="text-align:right">’+comm.toLocaleString(‘th-TH’,{minimumFractionDigits:2})+’</td></tr>’:’’)+
+(lateMin>0?’<tr><td style="color:#dc2626">มาสายรวม</td><td style="text-align:right;color:#dc2626">’+lateMin+’ นาที</td><td style="text-align:right">–</td></tr>’:’’)+
+‘<tr class="pdf-total"><td>รวมทั้งสิ้น</td><td></td><td style="text-align:right;font-size:15px">฿’+total.toLocaleString(‘th-TH’,{minimumFractionDigits:2})+’</td></tr>’+
+‘</table>’+
+‘<div class="pdf-amount">’+
+‘<div style="font-size:12px;opacity:.7;margin-bottom:4px">ยอดรับทั้งสิ้น</div>’+
+‘<div class="big">฿’+total.toLocaleString(‘th-TH’,{minimumFractionDigits:2,maximumFractionDigits:2})+’</div>’+
+‘</div>’+
+‘<div style="margin-top:16px;font-size:11px;color:#999;text-align:center">พิมพ์เมื่อ ‘+nowTH().toLocaleDateString(‘th-TH’,{year:‘numeric’,month:‘long’,day:‘numeric’})+’</div>’;
 
-  var area=document.getElementById('pdfPrintArea');
-  area.innerHTML=html;
-  area.style.display='block';
-  window.print();
-  setTimeout(function(){area.style.display='none';},1000);
+var area=document.getElementById(‘pdfPrintArea’);
+area.innerHTML=html;
+area.style.display=‘block’;
+window.print();
+setTimeout(function(){area.style.display=‘none’;},1000);
 }
 async function recalcOldData(){
-  var el=document.getElementById('recalcStatus');
-  el.textContent='กำลังคำนวณใหม่...';
-  try{
-    var res=await api('recalcOldData',{});
-    el.textContent='✅ อัปเดตแล้ว '+res.updated+' รายการ';
-    // reload logs
-    var lRes=await api('getLogs',{});
-    logs=lRes.logs||[];
-    renderDashboard();renderAllLogs();
-    showToast('✅ คำนวณใหม่สำเร็จ '+res.updated+' รายการ','success');
-  }catch(e){el.textContent='❌ '+e.message;showToast('ล้มเหลว: '+e.message,'error');}
+var el=document.getElementById(‘recalcStatus’);
+el.textContent=‘กำลังคำนวณใหม่…’;
+try{
+var res=await api(‘recalcOldData’,{});
+el.textContent=‘✅ อัปเดตแล้ว ‘+res.updated+’ รายการ’;
+// reload logs
+var lRes=await api(‘getLogs’,{});
+logs=lRes.logs||[];
+renderDashboard();renderAllLogs();
+showToast(‘✅ คำนวณใหม่สำเร็จ ‘+res.updated+’ รายการ’,‘success’);
+}catch(e){el.textContent=’❌ ’+e.message;showToast(’ล้มเหลว: ’+e.message,‘error’);}
 }
 
 // AUTO FORMAT TIME INPUT
 function autoFormatTime(el){
-  var v = el.value.replace(/[^0-9]/g,''); // เอาเฉพาะตัวเลข
-  if(v.length >= 3){
-    el.value = v.slice(0,2) + ':' + v.slice(2,4);
-  } else {
-    el.value = v;
-  }
+var v = el.value.replace(/[^0-9]/g,’’); // เอาเฉพาะตัวเลข
+if(v.length >= 3){
+el.value = v.slice(0,2) + ‘:’ + v.slice(2,4);
+} else {
+el.value = v;
+}
 }
 
 // ============================================================
 // PAST PAY SUMMARY
 // ============================================================
-var pastPayData = JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
+var pastPayData = JSON.parse(localStorage.getItem(‘ct_pastpay’)||’[]’);
 
 function populatePastPayForm(){
-  var sel=document.getElementById('ppEmp');
-  sel.innerHTML='<option value="">-- เลือกพนักงาน --</option>'+
-    employees.filter(e=>e.active).map(e=>'<option value="'+e.id+'">'+e.name+'</option>').join('');
-  var psel=document.getElementById('ppPeriod');
-  psel.innerHTML='<option value="">-- เลือกรอบ --</option>'+
-    getPayPeriods().map(p=>'<option value="'+p.key+'">'+p.label+'</option>').join('');
-  renderPPHistory();
+var sel=document.getElementById(‘ppEmp’);
+sel.innerHTML=’<option value="">– เลือกพนักงาน –</option>’+
+employees.filter(e=>e.active).map(e=>’<option value="'+e.id+'">’+e.name+’</option>’).join(’’);
+var psel=document.getElementById(‘ppPeriod’);
+psel.innerHTML=’<option value="">– เลือกรอบ –</option>’+
+getPayPeriods().map(p=>’<option value="'+p.key+'">’+p.label+’</option>’).join(’’);
+renderPPHistory();
 }
 
 function previewPastPay(){
-  var empId=document.getElementById('ppEmp').value;
-  var ppKey=document.getElementById('ppPeriod').value;
-  if(!empId||!ppKey){showToast('กรุณาเลือกพนักงานและรอบ','error');return;}
-  var emp=employees.find(e=>e.id===empId);if(!emp)return;
-  var days=parseFloat(document.getElementById('ppDays').value)||0;
-  var ot=parseFloat(document.getElementById('ppOT').value)||0;
-  var hotOT=parseFloat(document.getElementById('ppHotOT').value)||0;
-  var hwDays=parseFloat(document.getElementById('ppHwDays').value)||0;
-  var comm=parseFloat(document.getElementById('ppComm').value)||0;
-  var late=parseFloat(document.getElementById('ppLate').value)||0;
-  var otPay=ot*(emp.otRate||50);
-  var hotPay=hotOT*(emp.holidayRate||100);
-  var hwPay=hwDays*(emp.dailyWage||0);
-  var total=(emp.salary||0)+otPay+hotPay+hwPay+comm;
-  var prev=document.getElementById('ppPreview');
-  prev.style.display='block';
-  prev.innerHTML='<div class="summary-report">'+
-    '<div style="text-align:center;margin-bottom:12px"><strong>☕ Coffee Today -- สรุปรายรอบ (บันทึกย้อนหลัง)</strong><br>'+
-    '<span style="font-size:13px;color:var(--muted)">'+emp.name+' · '+brL(emp.branch)+' · '+getPPLabel(ppKey)+'</span></div>'+
-    '<table style="width:100%;font-size:13px;border-collapse:collapse">'+
-    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 4px;color:var(--muted)">วันทำงาน</td><td style="text-align:right;font-weight:600">'+days+' วัน</td></tr>'+
-    '<tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 4px;color:var(--muted)">OT ปกติ (฿'+(emp.otRate||50)+'/ชม.)</td><td style="text-align:right;font-weight:600">'+ot+' ชม. = ฿'+otPay.toLocaleString()+'</td></tr>'+
-    (hotOT>0?'<tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 4px;color:var(--muted)">OT วันหยุด (฿'+(emp.holidayRate||100)+'/ชม.)</td><td style="text-align:right;font-weight:600">'+hotOT+' ชม. = ฿'+hotPay.toLocaleString()+'</td></tr>':'')+
-    (hwDays>0?'<tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 4px;color:var(--muted)">ทำงานวันหยุด (฿'+(emp.dailyWage||0)+'/วัน)</td><td style="text-align:right;font-weight:600;color:var(--accent)">'+hwDays+' วัน = ฿'+hwPay.toLocaleString()+'</td></tr>':'')+
-    (late>0?'<tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 4px;color:var(--muted)">มาสาย</td><td style="text-align:right;font-weight:600;color:#ef4444">'+late+' นาที</td></tr>':'')+
-    '<tr><td style="padding:7px 4px;color:var(--muted)">ค่าคอมมิชชั่น</td><td style="text-align:right;font-weight:600;color:var(--success)">฿'+comm.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td></tr>'+
-    '</table>'+
-    '<div class="sum-total-box" style="margin-top:12px"><div style="font-size:12px;opacity:.7">เงินเดือนฐาน ฿'+(emp.salary||0).toLocaleString()+' + รายการต่างๆ</div>'+
-    '<div style="font-family:Prompt,sans-serif;font-size:26px;font-weight:700">฿'+total.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div></div>'+
-    '</div>';
+var empId=document.getElementById(‘ppEmp’).value;
+var ppKey=document.getElementById(‘ppPeriod’).value;
+if(!empId||!ppKey){showToast(‘กรุณาเลือกพนักงานและรอบ’,‘error’);return;}
+var emp=employees.find(e=>e.id===empId);if(!emp)return;
+var days=parseFloat(document.getElementById(‘ppDays’).value)||0;
+var ot=parseFloat(document.getElementById(‘ppOT’).value)||0;
+var hotOT=parseFloat(document.getElementById(‘ppHotOT’).value)||0;
+var hwDays=parseFloat(document.getElementById(‘ppHwDays’).value)||0;
+var comm=parseFloat(document.getElementById(‘ppComm’).value)||0;
+var late=parseFloat(document.getElementById(‘ppLate’).value)||0;
+var otPay=ot*(emp.otRate||50);
+var hotPay=hotOT*(emp.holidayRate||100);
+var hwPay=hwDays*(emp.dailyWage||0);
+var total=(emp.salary||0)+otPay+hotPay+hwPay+comm;
+var prev=document.getElementById(‘ppPreview’);
+prev.style.display=‘block’;
+prev.innerHTML=’<div class="summary-report">’+
+‘<div style="text-align:center;margin-bottom:12px"><strong>☕ Coffee Today – สรุปรายรอบ (บันทึกย้อนหลัง)</strong><br>’+
+‘<span style="font-size:13px;color:var(--muted)">’+emp.name+’ · ‘+brL(emp.branch)+’ · ‘+getPPLabel(ppKey)+’</span></div>’+
+‘<table style="width:100%;font-size:13px;border-collapse:collapse">’+
+‘<tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 4px;color:var(--muted)">วันทำงาน</td><td style="text-align:right;font-weight:600">’+days+’ วัน</td></tr>’+
+‘<tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 4px;color:var(--muted)">OT ปกติ (฿’+(emp.otRate||50)+’/ชม.)</td><td style="text-align:right;font-weight:600">’+ot+’ ชม. = ฿’+otPay.toLocaleString()+’</td></tr>’+
+(hotOT>0?’<tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 4px;color:var(--muted)">OT วันหยุด (฿’+(emp.holidayRate||100)+’/ชม.)</td><td style="text-align:right;font-weight:600">’+hotOT+’ ชม. = ฿’+hotPay.toLocaleString()+’</td></tr>’:’’)+
+(hwDays>0?’<tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 4px;color:var(--muted)">ทำงานวันหยุด (฿’+(emp.dailyWage||0)+’/วัน)</td><td style="text-align:right;font-weight:600;color:var(--accent)">’+hwDays+’ วัน = ฿’+hwPay.toLocaleString()+’</td></tr>’:’’)+
+(late>0?’<tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 4px;color:var(--muted)">มาสาย</td><td style="text-align:right;font-weight:600;color:#ef4444">’+late+’ นาที</td></tr>’:’’)+
+‘<tr><td style="padding:7px 4px;color:var(--muted)">ค่าคอมมิชชั่น</td><td style="text-align:right;font-weight:600;color:var(--success)">฿’+comm.toLocaleString(‘th-TH’,{minimumFractionDigits:2,maximumFractionDigits:2})+’</td></tr>’+
+‘</table>’+
+‘<div class="sum-total-box" style="margin-top:12px"><div style="font-size:12px;opacity:.7">เงินเดือนฐาน ฿’+(emp.salary||0).toLocaleString()+’ + รายการต่างๆ</div>’+
+‘<div style="font-family:Prompt,sans-serif;font-size:26px;font-weight:700">฿’+total.toLocaleString(‘th-TH’,{minimumFractionDigits:2,maximumFractionDigits:2})+’</div></div>’+
+‘</div>’;
 }
 
 function savePastPay(){
-  var empId=document.getElementById('ppEmp').value;
-  var ppKey=document.getElementById('ppPeriod').value;
-  if(!empId||!ppKey){showToast('กรุณาเลือกพนักงานและรอบ','error');return;}
-  var emp=employees.find(e=>e.id===empId);if(!emp)return;
-  // เช็คซ้ำ
-  var dup=pastPayData.find(function(d){return d.empId===empId&&d.ppKey===ppKey;});
-  if(dup){if(!confirm('มีข้อมูลรอบนี้แล้ว ต้องการบันทึกทับไหม?'))return;
-    pastPayData=pastPayData.filter(function(d){return!(d.empId===empId&&d.ppKey===ppKey);});}
-  var rec={
-    id:'pp'+Date.now(),empId:empId,empName:emp.name,branch:emp.branch,ppKey:ppKey,
-    days:parseFloat(document.getElementById('ppDays').value)||0,
-    ot:parseFloat(document.getElementById('ppOT').value)||0,
-    hotOT:parseFloat(document.getElementById('ppHotOT').value)||0,
-    hwDays:parseFloat(document.getElementById('ppHwDays').value)||0,
-    comm:parseFloat(document.getElementById('ppComm').value)||0,
-    late:parseFloat(document.getElementById('ppLate').value)||0,
-    salary:emp.salary||0,otRate:emp.otRate||50,holidayRate:emp.holidayRate||100,dailyWage:emp.dailyWage||0,
-    savedAt:new Date().toISOString()
-  };
-  pastPayData.push(rec);
-  localStorage.setItem('ct_pastpay',JSON.stringify(pastPayData));
-  showToast('✅ บันทึกสรุปรอบเก่าสำเร็จ','success');
-  document.getElementById('ppPreview').style.display='none';
-  ['ppDays','ppOT','ppHotOT','ppHwDays','ppComm','ppLate'].forEach(function(id){document.getElementById(id).value='';});
-  renderPPHistory();
+var empId=document.getElementById(‘ppEmp’).value;
+var ppKey=document.getElementById(‘ppPeriod’).value;
+if(!empId||!ppKey){showToast(‘กรุณาเลือกพนักงานและรอบ’,‘error’);return;}
+var emp=employees.find(e=>e.id===empId);if(!emp)return;
+// เช็คซ้ำ
+var dup=pastPayData.find(function(d){return d.empId===empId&&d.ppKey===ppKey;});
+if(dup){if(!confirm(‘มีข้อมูลรอบนี้แล้ว ต้องการบันทึกทับไหม?’))return;
+pastPayData=pastPayData.filter(function(d){return!(d.empId===empId&&d.ppKey===ppKey);});}
+var rec={
+id:‘pp’+Date.now(),empId:empId,empName:emp.name,branch:emp.branch,ppKey:ppKey,
+days:parseFloat(document.getElementById(‘ppDays’).value)||0,
+ot:parseFloat(document.getElementById(‘ppOT’).value)||0,
+hotOT:parseFloat(document.getElementById(‘ppHotOT’).value)||0,
+hwDays:parseFloat(document.getElementById(‘ppHwDays’).value)||0,
+comm:parseFloat(document.getElementById(‘ppComm’).value)||0,
+late:parseFloat(document.getElementById(‘ppLate’).value)||0,
+salary:emp.salary||0,otRate:emp.otRate||50,holidayRate:emp.holidayRate||100,dailyWage:emp.dailyWage||0,
+savedAt:new Date().toISOString()
+};
+pastPayData.push(rec);
+localStorage.setItem(‘ct_pastpay’,JSON.stringify(pastPayData));
+showToast(‘✅ บันทึกสรุปรอบเก่าสำเร็จ’,‘success’);
+document.getElementById(‘ppPreview’).style.display=‘none’;
+[‘ppDays’,‘ppOT’,‘ppHotOT’,‘ppHwDays’,‘ppComm’,‘ppLate’].forEach(function(id){document.getElementById(id).value=’’;});
+renderPPHistory();
 }
 
 function renderPPHistory(){
-  var tbody=document.getElementById('ppHistoryTable');
-  if(!pastPayData.length){tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="ei">📭</div>ยังไม่มีข้อมูล</div></td></tr>';return;}
-  // ลบ event listeners เก่าก่อน
-  tbody.removeEventListener('click', tbody._ppHandler);
-  tbody._ppHandler = function(e){
-    var editBtn=e.target.closest('.pp-edit-btn');
-    var delBtn=e.target.closest('.pp-del-btn');
-    if(editBtn){ editPastPay(editBtn.dataset.ppid); }
-    if(delBtn){ deletePastPay(delBtn.dataset.ppid); }
-  };
-  tbody.addEventListener('click', tbody._ppHandler);
-  tbody.innerHTML=pastPayData.slice().reverse().map(function(d){
-    var otPay=d.ot*(d.otRate||50);
-    var hotPay=d.hotOT*(d.holidayRate||100);
-    var hwPay=d.hwDays*(d.dailyWage||0);
-    var total=(d.salary||0)+otPay+hotPay+hwPay+(d.comm||0);
-    return '<tr>'+
-      '<td><strong>'+d.empName+'</strong></td>'+
-      '<td style="font-size:12px">'+getPPLabel(d.ppKey)+'</td>'+
-      '<td>'+d.days+' วัน</td>'+
-      '<td>'+(d.ot>0?d.ot+' ชม.':'--')+'</td>'+
-      '<td>'+(d.hotOT>0?d.hotOT+' ชม.':'--')+'</td>'+
-      '<td>'+(d.hwDays>0?d.hwDays+' วัน':'--')+'</td>'+
-      '<td style="color:var(--success)">฿'+Number(d.comm||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
-      '<td>'+(d.late>0?'<span style="color:#ef4444">'+d.late+' น.</span>':'--')+'</td>'+
-      '<td style="font-weight:700;color:var(--teal)">฿'+total.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'+
-      '<td style="display:flex;gap:4px">'+
-        '<button class="btn btn-dark btn-sm pp-edit-btn" data-ppid="'+d.id+'">✏️</button>'+
-        '<button class="btn btn-danger btn-sm pp-del-btn" data-ppid="'+d.id+'">🗑</button>'+
-      '</td>'+
-    '</tr>';
-  }).join('');
+var tbody=document.getElementById(‘ppHistoryTable’);
+if(!pastPayData.length){tbody.innerHTML=’<tr><td colspan="10"><div class="empty-state"><div class="ei">📭</div>ยังไม่มีข้อมูล</div></td></tr>’;return;}
+// ลบ event listeners เก่าก่อน
+tbody.removeEventListener(‘click’, tbody._ppHandler);
+tbody._ppHandler = function(e){
+var editBtn=e.target.closest(’.pp-edit-btn’);
+var delBtn=e.target.closest(’.pp-del-btn’);
+if(editBtn){ editPastPay(editBtn.dataset.ppid); }
+if(delBtn){ deletePastPay(delBtn.dataset.ppid); }
+};
+tbody.addEventListener(‘click’, tbody._ppHandler);
+tbody.innerHTML=[…pastPayData].reverse().map(function(d){
+var otPay=d.ot*(d.otRate||50);
+var hotPay=d.hotOT*(d.holidayRate||100);
+var hwPay=d.hwDays*(d.dailyWage||0);
+var total=(d.salary||0)+otPay+hotPay+hwPay+(d.comm||0);
+return ‘<tr>’+
+‘<td><strong>’+d.empName+’</strong></td>’+
+‘<td style="font-size:12px">’+getPPLabel(d.ppKey)+’</td>’+
+‘<td>’+d.days+’ วัน</td>’+
+‘<td>’+(d.ot>0?d.ot+’ ชม.’:’–’)+’</td>’+
+‘<td>’+(d.hotOT>0?d.hotOT+’ ชม.’:’–’)+’</td>’+
+‘<td>’+(d.hwDays>0?d.hwDays+’ วัน’:’–’)+’</td>’+
+‘<td style="color:var(--success)">฿’+Number(d.comm||0).toLocaleString(‘th-TH’,{minimumFractionDigits:2,maximumFractionDigits:2})+’</td>’+
+‘<td>’+(d.late>0?’<span style="color:#ef4444">’+d.late+’ น.</span>’:’–’)+’</td>’+
+‘<td style="font-weight:700;color:var(--teal)">฿’+total.toLocaleString(‘th-TH’,{minimumFractionDigits:2,maximumFractionDigits:2})+’</td>’+
+‘<td style="display:flex;gap:4px">’+
+‘<button class="btn btn-dark btn-sm pp-edit-btn" data-ppid="'+d.id+'">✏️</button>’+
+‘<button class="btn btn-danger btn-sm pp-del-btn" data-ppid="'+d.id+'">🗑</button>’+
+‘</td>’+
+‘</tr>’;
+}).join(’’);
 }
 
 function deletePastPay(id){
-  if(!confirm('ลบรายการนี้?'))return;
-  pastPayData=pastPayData.filter(function(d){return d.id!==id;});
-  localStorage.setItem('ct_pastpay',JSON.stringify(pastPayData));
-  renderPPHistory();showToast('ลบเรียบร้อย');
+if(!confirm(‘ลบรายการนี้?’))return;
+pastPayData=pastPayData.filter(function(d){return d.id!==id;});
+localStorage.setItem(‘ct_pastpay’,JSON.stringify(pastPayData));
+renderPPHistory();showToast(‘ลบเรียบร้อย’);
 }
 function editPastPay(id){
-  var d=pastPayData.find(function(x){return x.id===id;});
-  if(!d)return;
-  // เปลี่ยนไป tab pastpay ก่อน
-  var tabBtn=document.querySelector('.tab-btn[onclick*="pastpay"]');
-  showTab('pastpay', tabBtn);
-  // รอ tab render แล้วค่อย fill
-  setTimeout(function(){
-    populatePastPayForm();
-    setTimeout(function(){
-      document.getElementById('ppEmp').value=d.empId;
-      document.getElementById('ppPeriod').value=d.ppKey;
-      document.getElementById('ppDays').value=d.days||0;
-      document.getElementById('ppOT').value=d.ot||0;
-      document.getElementById('ppHotOT').value=d.hotOT||0;
-      document.getElementById('ppHwDays').value=d.hwDays||0;
-      document.getElementById('ppComm').value=d.comm||0;
-      document.getElementById('ppLate').value=d.late||0;
-      // ลบรายการเก่าออกก่อน (จะบันทึกใหม่)
-      pastPayData=pastPayData.filter(function(x){return x.id!==id;});
-      localStorage.setItem('ct_pastpay',JSON.stringify(pastPayData));
-      renderPPHistory();
-      // scroll ไปที่ form
-      var el=document.getElementById('ppEmp');
-      if(el)el.scrollIntoView({behavior:'smooth'});
-      showToast('✏️ โหลดข้อมูลแล้ว แก้ไขแล้วกดบันทึกใหม่','success');
-    }, 150);
-  }, 100);
+var d=pastPayData.find(function(x){return x.id===id;});
+if(!d)return;
+// เปลี่ยนไป tab pastpay ก่อน
+var tabBtn=document.querySelector(’.tab-btn[onclick*=“pastpay”]’);
+showTab(‘pastpay’, tabBtn);
+// รอ tab render แล้วค่อย fill
+setTimeout(function(){
+populatePastPayForm();
+setTimeout(function(){
+document.getElementById(‘ppEmp’).value=d.empId;
+document.getElementById(‘ppPeriod’).value=d.ppKey;
+document.getElementById(‘ppDays’).value=d.days||0;
+document.getElementById(‘ppOT’).value=d.ot||0;
+document.getElementById(‘ppHotOT’).value=d.hotOT||0;
+document.getElementById(‘ppHwDays’).value=d.hwDays||0;
+document.getElementById(‘ppComm’).value=d.comm||0;
+document.getElementById(‘ppLate’).value=d.late||0;
+// ลบรายการเก่าออกก่อน (จะบันทึกใหม่)
+pastPayData=pastPayData.filter(function(x){return x.id!==id;});
+localStorage.setItem(‘ct_pastpay’,JSON.stringify(pastPayData));
+renderPPHistory();
+// scroll ไปที่ form
+var el=document.getElementById(‘ppEmp’);
+if(el)el.scrollIntoView({behavior:‘smooth’});
+showToast(‘✏️ โหลดข้อมูลแล้ว แก้ไขแล้วกดบันทึกใหม่’,‘success’);
+}, 150);
+}, 100);
 }
 
 // INIT
-if(currentBranch)document.getElementById('branchSelect').value=currentBranch;
+if(currentBranch)document.getElementById(‘branchSelect’).value=currentBranch;
 updateBranchUI();
 populatePPSelects();
 loadAll();
 </script>
+
 <div id="pdfPrintArea" style="display:none"></div>
 </body>
 </html>

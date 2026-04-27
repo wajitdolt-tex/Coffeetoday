@@ -491,11 +491,12 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 <div id="toast"></div>
 
 <script>
+
 // API URL - ฝังไว้แล้ว ไม่ต้องแก้
-const API_URL='https://script.google.com/macros/s/AKfycbw-EKlTw0EVyGRGvyhZPhSuCdNAG12edFTNTK-P6uUUL88t9YD1brZS-nK5B4BNamja5A/exec';
+var API_URL='https://script.google.com/macros/s/AKfycbw-EKlTw0EVyGRGvyhZPhSuCdNAG12edFTNTK-P6uUUL88t9YD1brZS-nK5B4BNamja5A/exec';
 
 // วันหยุดนักขัตฤกษ์ 2569
-const PH=[
+var PH=[
   {date:'2026-01-01',name:'วันขึ้นปีใหม่'},{date:'2026-03-03',name:'วันมาฆบูชา'},
   {date:'2026-04-13',name:'วันสงกรานต์'},{date:'2026-04-14',name:'วันสงกรานต์'},{date:'2026-04-15',name:'วันสงกรานต์'},
   {date:'2026-05-01',name:'วันแรงงานแห่งชาติ'},{date:'2026-06-01',name:'ชดเชยวันวิสาขบูชา'},
@@ -527,19 +528,19 @@ function getPH(d){var ds=toDateStr(d);return PH.find(h=>h.date===ds)||null;}
 
 // ตารางเวลาสาขา: start=เวลาเข้างานมาตรฐาน, hours=ชั่วโมงปกติก่อน OT
 // วันหยุดประจำของพนักงานแต่ละคน (0=อาทิตย์,1=จันทร์,...,5=ศุกร์,6=เสาร์)
-const EMP_DAY_OFF={
+var EMP_DAY_OFF={
   'emp1': 2,  // ณพัชชนันท์ หยุดวันอังคาร
   'emp2': 5   // ฐิตารีย์ หยุดวันศุกร์
 };
-const EMP_PIN={
+var EMP_PIN={
   'emp1': '3024',  // ณพัชชนันท์ ประเสริฐศิริ
   'emp2': '0643'   // ฐิตารีย์ วาจิตดล
 };
-const EMP_EMAIL={
+var EMP_EMAIL={
   'emp1': 'Poom.2day@gmail.com',
   'emp2': 'Wajitdol.t@gmail.com'
 };
-const DAY_NAMES=['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์'];
+var DAY_NAMES=['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์'];
 
 function isEmpDayOff(empId, dateStr){
   var dow = EMP_DAY_OFF[empId];
@@ -557,7 +558,7 @@ function getEmpDayOffName(empId){
   return dow!==undefined ? DAY_NAMES[dow] : '';
 }
 
-const BRANCH_SCHEDULE={
+var BRANCH_SCHEDULE={
   lotus:  {start:'09:00',end:'20:00',hours:9},
   passion:{start:'10:00',end:'20:00',hours:9}
 };
@@ -601,7 +602,7 @@ function calcOT(branch,clockIn,clockOut){
 }
 
 // อัตราค่าคอม: คิดจาก (ยอดขาย - ขั้นต่ำของ tier) × อัตรา
-const COMM_TIERS={
+var COMM_TIERS={
   lotus:  [{min:6000,rate:.08,label:'8%'},{min:3500,rate:.04,label:'4%'},{min:2500,rate:.02,label:'2%'}],
   passion:[{min:5000,rate:.08,label:'8%'},{min:2500,rate:.04,label:'4%'},{min:1500,rate:.02,label:'2%'}]
 };
@@ -642,15 +643,15 @@ function getTierInfoHTML(branch){
   var t=COMM_TIERS[branch];
   if(!t)return'กรุณาเลือกสาขาก่อน';
   var sched=getSched(branch);
-  var rows=[...t].reverse().map(function(x){return'<span style="margin-right:10px">>=฿'+x.min.toLocaleString()+' → ส่วนต่าง×<strong>'+x.label+'</strong></span>';}).join('');
+  var rows=t.slice().reverse().map(function(x){return'<span style="margin-right:10px">>=฿'+x.min.toLocaleString()+' → ส่วนต่าง×<strong>'+x.label+'</strong></span>';}).join('');
   return'📊 '+rows+'<br><span style="font-size:11px;color:#b45309">เวลาทำงาน: '+sched.start+' - '+sched.end+' | ปกติ '+sched.hours+' ชม. หลังจากนั้นเป็น OT</span>';
 }
 
 // STATE
-let employees=[],logs=[],submissions=[];
-let selectedEmpId=null,clockAction='in',currentBranch=localStorage.getItem('ct_branch')||'',hrUnlocked=false;
-const BRANCHES={lotus:'โลตัสระยอง',passion:'แพชชั่นระยอง'};
-const HR_PIN='9999';
+var employees=[],logs=[],submissions=[];
+var selectedEmpId=null,clockAction='in',currentBranch=localStorage.getItem('ct_branch')||'',hrUnlocked=false;
+var BRANCHES={lotus:'โลตัสระยอง',passion:'แพชชั่นระยอง'};
+var HR_PIN='9999';
 function genId(){return'id'+Date.now()+Math.random().toString(36).slice(2,6);}
 
 // API
@@ -665,8 +666,8 @@ async function api(action,data={}){
     var url=API_URL+'?action='+action;
     var isWrite=['addLog','updateLog','deleteLog','saveEmployee','deleteEmployee','addSubmission','updateSubmission'].includes(action);
     var resp;
-    if(isWrite){resp=await fetch(url,{method:'POST',body:JSON.stringify({action,...data})});}
-    else{var qs=Object.entries(data).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');resp=await fetch(url+(qs?'&'+qs:''));}
+    if(isWrite){resp=await fetch(url,{method:'POST',body:JSON.stringify(Object.assign({action:action},data))});}
+    else{var qs=Object.entries(data).map(function(kv){var k=kv[0],v=kv[1];return k+'='+encodeURIComponent(v);}).join('&');resp=await fetch(url+(qs?'&'+qs:''));}
     var json=await resp.json();
     if(json.error)throw new Error(json.error);
     setSyncStatus('ok','เชื่อมต่อแล้ว · '+new Date().toLocaleTimeString('th-TH'));
@@ -679,7 +680,6 @@ async function loadAll(){
     employees=_r[0].employees||[];logs=_r[1].logs||[];submissions=_r[2].submissions||[];
     renderEmpCards();renderMyLog();
   }catch(e){showToast('โหลดข้อมูลล้มเหลว: '+e.message,'error');}
-}
   try{
     var _ppr=await api('getPastPay',{});
     pastPayData=_ppr.pastPay||[];
@@ -687,6 +687,7 @@ async function loadAll(){
   }catch(e2){
     pastPayData=JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
   }
+}
 
 // PIN
 function requireHRPin(btn){
@@ -1093,7 +1094,7 @@ async function confirmSendSummary(){
 function renderMyLog(){
   var tbody=document.getElementById('myLogTable');
   if(!selectedEmpId){tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="ei">👆</div>กรุณาเลือกพนักงานด้านบน</div></td></tr>';return;}
-  var myLogs=[...logs].filter(l=>String(l.empId)===String(selectedEmpId)).reverse().slice(0,50);
+  var myLogs=logs.slice().filter(l=>String(l.empId)===String(selectedEmpId)).reverse().slice(0,50);
   if(!myLogs.length){tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="ei">📭</div>ยังไม่มีบันทึก</div></td></tr>';return;}
   var eMap={};employees.forEach(e=>eMap[e.id]={name:e.name,branch:e.branch});
   tbody.innerHTML=myLogs.map(function(l){
@@ -1126,8 +1127,8 @@ function renderMyLog(){
 async function refreshHR(){
   populateFilterSelects();populatePPSelects();
   try{
-    var[eRes,lRes,sRes]=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
-    employees=eRes.employees||[];logs=lRes.logs||[];submissions=sRes.submissions||[];
+    var _r=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
+    employees=_r[0].employees||[];logs=_r[1].logs||[];submissions=_r[2].submissions||[];
     populateFilterSelects();renderDashboard();
   }catch(e){showToast('โหลดข้อมูล HR ล้มเหลว','error');renderDashboard();}
 }
@@ -1201,9 +1202,9 @@ function renderDashboard(){
 function renderAllLogs(){
   var empF=document.getElementById('filterEmp').value,branchF=document.getElementById('filterBranch').value,ppKey=document.getElementById('filterPayPeriod').value;
   var eMap={};employees.forEach(e=>eMap[e.id]={name:e.name,branch:e.branch});
-  var filtered=[...logs].reverse();
+  var filtered=logs.slice().reverse();
   if(empF)filtered=filtered.filter(l=>l.empId===empF);
-  if(branchF)filtered=filtered.filter(l=>(eMap[l.empId]?.branch||l.branch)===branchF);
+  if(branchF)filtered=filtered.filter(l=>((eMap[l.empId]&&eMap[l.empId].branch)||l.branch)===branchF);
   if(ppKey){var pids=new Set(logsInPP(ppKey).map(l=>l.id));filtered=filtered.filter(l=>pids.has(l.id));}
   var tbody=document.getElementById('allLogsTable');
   if(!filtered.length){tbody.innerHTML='<tr><td colspan="12"><div class="empty-state"><div class="ei">📭</div>ไม่พบรายการ</div></td></tr>';return;}
@@ -1334,7 +1335,7 @@ function renderSummary(){
 async function renderSubmissions(){
   var tbody=document.getElementById('submissionsTable');
   if(!submissions.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="ei">📬</div>ยังไม่มีการส่งสรุป</div></td></tr>';return;}
-  tbody.innerHTML=[...submissions].reverse().map(function(s){
+  tbody.innerHTML=submissions.slice().reverse().map(function(s){
     return '<tr>'+
       '<td>'+s.sentAt+'</td>'+
       '<td><strong>'+s.empName+'</strong></td>'+
@@ -2186,7 +2187,6 @@ savedAt:new Date().toISOString()
 };
 pastPayData.push(rec);
 localStorage.setItem(‘ct_pastpay’,JSON.stringify(pastPayData));
-api(‘savePastPay’,rec).catch(function(){});
 showToast(‘✅ บันทึกสรุปรอบเก่าสำเร็จ’,‘success’);
 document.getElementById(‘ppPreview’).style.display=‘none’;
 [‘ppDays’,‘ppOT’,‘ppHotOT’,‘ppHwDays’,‘ppComm’,‘ppLate’].forEach(function(id){document.getElementById(id).value=’’;});
@@ -2205,7 +2205,7 @@ if(editBtn){ editPastPay(editBtn.dataset.ppid); }
 if(delBtn){ deletePastPay(delBtn.dataset.ppid); }
 };
 tbody.addEventListener(‘click’, tbody._ppHandler);
-tbody.innerHTML=[…pastPayData].reverse().map(function(d){
+tbody.innerHTML=pastPayData.slice().reverse().map(function(d){
 var otPay=d.ot*(d.otRate||50);
 var hotPay=d.hotOT*(d.holidayRate||100);
 var hwPay=d.hwDays*(d.dailyWage||0);
@@ -2232,7 +2232,6 @@ function deletePastPay(id){
 if(!confirm(‘ลบรายการนี้?’))return;
 pastPayData=pastPayData.filter(function(d){return d.id!==id;});
 localStorage.setItem(‘ct_pastpay’,JSON.stringify(pastPayData));
-api(‘deletePastPay’,{id:id}).catch(function(){});
 renderPPHistory();showToast(‘ลบเรียบร้อย’);
 }
 function editPastPay(id){

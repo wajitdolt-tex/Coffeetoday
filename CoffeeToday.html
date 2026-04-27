@@ -675,14 +675,21 @@ async function api(action,data={}){
 }
 async function loadAll(){
   try{
-    var _r=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions'),api('getPastPay',{})]);
+    var _r=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
     employees=_r[0].employees||[];
     logs=_r[1].logs||[];
     submissions=_r[2].submissions||[];
-    pastPayData=_r[3].pastPay||[];
-    localStorage.setItem('ct_pastpay',JSON.stringify(pastPayData));
     renderEmpCards();renderMyLog();
   }catch(e){showToast('โหลดข้อมูลล้มเหลว: '+e.message,'error');}
+  // โหลด pastPay แยก ไม่ให้กระทบ main load
+  try{
+    var ppRes=await api('getPastPay',{});
+    pastPayData=ppRes.pastPay||[];
+    localStorage.setItem('ct_pastpay',JSON.stringify(pastPayData));
+  }catch(e){
+    // ถ้า getPastPay ยังไม่มีใน script ให้ใช้ localStorage แทน
+    pastPayData=JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
+  }
 }
 
 // PIN

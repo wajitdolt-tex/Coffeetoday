@@ -1663,7 +1663,13 @@ function populateYearlySelects(){
 function renderYearlySummary(){
   // โหลด pastPayData ใหม่ทุกครั้ง
   pastPayData = JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
+  // เก็บค่าที่เลือกไว้ก่อน populate จะ reset
+  var savedEmpF = document.getElementById('yearlyEmp').value;
+  var savedYear = document.getElementById('yearlyYear').value;
   populateYearlySelects();
+  // restore ค่าที่เลือกไว้
+  if(savedEmpF) document.getElementById('yearlyEmp').value = savedEmpF;
+  if(savedYear) document.getElementById('yearlyYear').value = savedYear;
   var yearEl = document.getElementById('yearlyYear');
   var empF   = document.getElementById('yearlyEmp').value;
   var year   = parseInt(yearEl.value) || new Date().getFullYear();

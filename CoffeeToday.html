@@ -1301,7 +1301,7 @@ function buildSummaryHTML(emp,el,ppKey,showSent){
   var hwDays=new Set(el.filter(l=>['holiday_work','public_holiday'].includes(l.type)).map(l=>toDateStr(l.date))).size;
   var hwPay=hwDays*(emp.dailyWage||0)*1; // ได้เพิ่มจากปกติอีก 1 เท่า
   var commLogs=el.filter(function(l){return l.type==='commission'||Number(l.sales||0)>0;});
-  var totalSales=commLogs.reduce((s,l)=>s+(Number(l.sales)||0),0);
+  var totalSales=commLogs.reduce(function(s,l){return s+(Number(l.sales)||0);},0);
   var comm=+commLogs.reduce(function(s,l){return s+getCommFromLog(l,emp.branch);},0).toFixed(2);
   var hotTotal=hot+phOld+hwOT;
   var otPay=ot*(emp.otRate||50),hotPay=hotTotal*(emp.holidayRate||100);
@@ -1719,9 +1719,13 @@ function renderYearlySummary(){
       if(ld >= 16){ mo = lm+1; moYear = ly; if(mo>12){mo=1;moYear=ly+1;} }
       else { mo = lm; moYear = ly; }
       if(moYear !== year || mo<1 || mo>12) return;
-      if(l.type==='commission'||Number(l.sales||0)>0){
-        var _empY=employees.find(function(e){return e.id===l.empId;})||{};monthlyData[mo].comm += getCommFromLog(l,_empY.branch||l.branch||"");
-      } else {
+      // ค่าคอม: ดึงจากทุก log ที่มียอดขาย
+      if(Number(l.sales||0)>0||l.type==='commission'){
+        var _empY=employees.find(function(e){return e.id===l.empId;})||{};
+        monthlyData[mo].comm += getCommFromLog(l,_empY.branch||l.branch||"");
+      }
+      // OT และวันทำงาน: ดึงจาก log ที่ไม่ใช่ commission อย่างเดียว
+      if(l.type!=='commission'){
         monthlyData[mo].ot    += (['holiday_work'].includes(l.type)?0:Number(l.hoursOT||0))*(emp.otRate||50);
         if(['holiday_ot','public_holiday'].includes(l.type)) monthlyData[mo].hotOT += Number(l.hours||0)*(emp.holidayRate||100);
         if(l.type==='holiday_work'){ monthlyData[mo].hw += (emp.dailyWage||0); monthlyData[mo].hotOT += Number(l.hoursOT||0)*(emp.holidayRate||100); }
@@ -1957,8 +1961,10 @@ function renderEmpYearlySummary(){
     if(ld>=16){mo=lm+1;moYear=ly;if(mo>12){mo=1;moYear=ly+1;}}
     else{mo=lm;moYear=ly;}
     if(moYear!==year||mo<1||mo>12)return;
-    if(l.type==='commission'||Number(l.sales||0)>0){monthlyData2[mo].comm+=getCommFromLog(l,emp.branch);}
-    else{
+    if(Number(l.sales||0)>0||l.type==='commission'){
+      monthlyData2[mo].comm+=getCommFromLog(l,emp.branch);
+    }
+    if(l.type!=='commission'){
       monthlyData2[mo].ot+=(['holiday_work'].includes(l.type)?0:Number(l.hoursOT||0))*(emp.otRate||50);
       if(['holiday_ot','public_holiday'].includes(l.type))monthlyData2[mo].hotOT+=Number(l.hours||0)*(emp.holidayRate||100);
       if(l.type==='holiday_work'){monthlyData2[mo].hw+=(emp.dailyWage||0);monthlyData2[mo].hotOT+=Number(l.hoursOT||0)*(emp.holidayRate||100);}

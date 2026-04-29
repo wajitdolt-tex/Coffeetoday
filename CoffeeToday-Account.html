@@ -196,13 +196,10 @@ tr:hover td{background:var(--bg3);}
       <!-- render by JS based on branch -->
     </div>
     <hr class="divider">
-    <div class="sec-label">ค่าใช้จ่ายที่ใช้เงินบัญชีร้านจ่าย</div>
-    <div id="account-expenses"></div>
-    <button class="btn btn-outline btn-sm" onclick="addAccExpRow()">+ เพิ่มรายการ</button>
-    <hr class="divider">
     <div class="sec-label">รายการเพิ่มเติมอื่นๆ</div>
     <div id="extra-expenses"></div>
     <button class="btn btn-outline btn-sm" onclick="addExpRow()">+ เพิ่มรายการ</button>
+    <hr class="divider">
   </div>
 
   <div class="card">
@@ -773,7 +770,6 @@ document.addEventListener('DOMContentLoaded', function() {
   if (cfg.user) document.getElementById('cfg-user').value = cfg.user;
 
   renderStdExpenses();
-  addAccExpRow();
   addExpRow();
   var initBranch = document.getElementById('d-branch').value;
   var accEl = document.getElementById('d-account');
@@ -833,17 +829,24 @@ function calcSales() {
   var bt = n('d-subtotal') - n('d-discount') + n('d-rounding');
   document.getElementById('d-before-tax').value = bt.toFixed(2);
 
-  // ใช้ Total Sales ที่กรอกเอง ไม่คำนวณจาก QR+Lineman+Cash
   var totalSales = n('d-total-sales');
 
+  // รวมค่าใช้จ่ายหน้าร้าน = shopExp + รายการเพิ่มเติมอื่นๆ
   var shopExp = n('d-shop-exp');
-  var pi = n('d-cash') - shopExp;
+  var extraTotal = 0;
+  document.querySelectorAll('#extra-expenses .expense-row').forEach(function(row) {
+    var ins = row.querySelectorAll('input');
+    extraTotal += parseFloat(ins[1] ? ins[1].value : 0) || 0;
+  });
+  var totalExp = shopExp + extraTotal;
+
+  var pi = n('d-cash') - totalExp;
   document.getElementById('d-diff').value = '0.00';
   document.getElementById('d-payin').value = pi.toFixed(2);
 
   var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
   document.getElementById('sum-total').textContent  = fmt(totalSales);
-  document.getElementById('sum-exp').textContent    = fmt(shopExp);
+  document.getElementById('sum-exp').textContent    = fmt(totalExp);
   document.getElementById('sum-payin').textContent  = fmt(pi);
   calcDrinks();
 }
@@ -926,8 +929,7 @@ async function submitDaily() {
     account: document.getElementById('d-account').value,
     note: document.getElementById('d-note').value,
     stdExpenses: stdExp, stdExpTotal: stdTotal,
-    accountExpenses: getRowItems('account-expenses'),
-    extraExpenses:   getRowItems('extra-expenses'),
+    extraExpenses: getRowItems('extra-expenses'),
     billVoid:   parseInt(document.getElementById('b-void').value) || 0,
     billFree:   parseInt(document.getElementById('b-free').value) || 0,
     billCoupon: parseInt(document.getElementById('b-coupon').value) || 0,
@@ -957,9 +959,9 @@ function clearDaily() {
   document.getElementById('d-payin').value = '';
   document.getElementById('d-drinks').value = '';
   renderStdExpenses();
-  document.getElementById('account-expenses').innerHTML = '';
   document.getElementById('extra-expenses').innerHTML = '';
-  addAccExpRow(); addExpRow(); calcSales();
+  addExpRow();
+  calcSales();
   document.getElementById('d-date').value = new Date().toISOString().split('T')[0];
   var br = document.getElementById('d-branch').value;
   document.getElementById('d-account').value = BRANCH_ACCOUNTS[br] || '';

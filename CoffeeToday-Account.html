@@ -105,6 +105,7 @@ tr:hover td{background:var(--bg3);}
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="switchPage('daily',this)">รายวัน</button>
     <button class="nav-tab" onclick="switchPage('payable',this)">วางบิล</button>
+    <button class="nav-tab" onclick="switchPage('acctexp',this)">บัญชีร้าน</button>
     <button class="nav-tab" onclick="switchPage('summary',this)">สรุปเดือน</button>
     <button class="nav-tab" onclick="switchPage('admin',this)">🔒 Admin</button>
     <button class="nav-tab" onclick="switchPage('settings',this)">ตั้งค่า</button>
@@ -403,6 +404,10 @@ tr:hover td{background:var(--bg3);}
           <div class="stat-label">ค่าใช้จ่ายอื่นๆ (เช่า/ไฟ/ภาษี)</div>
           <div class="stat-value" id="ss-payable-other">฿0</div>
         </div>
+        <div class="stat-box" style="background:var(--bg2);">
+          <div class="stat-label">บัญชีร้าน</div>
+          <div class="stat-value" id="ss-acctexp-total">฿0</div>
+        </div>
       </div>
     </div>
     <div class="grid-3">
@@ -464,6 +469,13 @@ tr:hover td{background:var(--bg3);}
   <div class="card" style="margin-bottom:13px;">
     <div class="card-title">ค่าใช้จ่ายอื่นๆ ประจำเดือน</div>
     <div class="grid-3" id="ss-other-expenses">
+      <div class="stat-box" style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:13px;">
+    <div class="card-title">ค่าใช้จ่ายบัญชีร้าน</div>
+    <div class="grid-3" id="ss-acctexp-expenses">
       <div class="stat-box" style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>
     </div>
   </div>
@@ -533,6 +545,67 @@ tr:hover td{background:var(--bg3);}
 <div id="sy-empty" class="empty-state"><div class="icon">📅</div><p>เลือกสาขาและปี แล้วกดดึงข้อมูล</p></div>
 ```
 
+  </div>
+</div>
+
+<!-- ════ ACCTEXP ════ -->
+
+<div id="page-acctexp" class="page">
+  <div class="page-header"><h1>บัญชีร้าน</h1><p>บันทึกค่าใช้จ่ายที่หักผ่านบัญชีร้าน — กรอกได้อิสระ ไม่ต้องกรอกยอดขาย</p></div>
+
+  <div class="card">
+    <div class="card-title">เพิ่มรายการค่าใช้จ่ายบัญชีร้าน</div>
+    <div class="grid-3">
+      <div class="form-row"><label>สาขา</label>
+        <select id="ae-branch">
+          <option value="passione">แพชชั่นระยอง</option>
+          <option value="lotus">โลตัสระยอง</option>
+        </select>
+      </div>
+      <div class="form-row"><label>วันที่</label><input type="date" id="ae-date"></div>
+      <div class="form-row"><label>หมวดหมู่</label>
+        <select id="ae-cat">
+          <option>วัตถุดิบ/สินค้า</option>
+          <option>ค่าเช่า</option>
+          <option>ค่าไฟ/น้ำ</option>
+          <option>ค่าแรง</option>
+          <option>ค่าบริการ</option>
+          <option>อุปกรณ์/ซ่อมบำรุง</option>
+          <option>อื่นๆ</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="form-row"><label>รายการ / คำอธิบาย</label><input type="text" id="ae-desc" placeholder="เช่น ค่าซ่อมเครื่อง, ค่าบรรจุภัณฑ์..."></div>
+      <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="ae-amount" placeholder="0.00" step="0.01"></div>
+    </div>
+    <div class="form-row"><label>หมายเหตุ</label><input type="text" id="ae-note" placeholder="..."></div>
+    <button class="btn btn-primary" onclick="addAcctExp()">+ เพิ่มรายการ</button>
+  </div>
+
+  <div style="display:flex;gap:6px;align-items:center;margin-bottom:13px;flex-wrap:wrap;">
+    <span style="font-size:12px;color:var(--text3);">กรอง:</span>
+    <button class="btn btn-sm btn-outline" id="aef-all" onclick="filterAE('all')" style="border-color:var(--accent);color:var(--accent);">ทั้งหมด</button>
+    <button class="btn btn-sm btn-outline" id="aef-passione" onclick="filterAE('passione')">แพชชั่น</button>
+    <button class="btn btn-sm btn-outline" id="aef-lotus" onclick="filterAE('lotus')">โลตัส</button>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>วันที่</th><th>สาขา</th><th>รายการ</th><th>หมวด</th><th>จำนวน</th><th>หมายเหตุ</th><th></th></tr></thead>
+        <tbody id="ae-tbody"></tbody>
+      </table>
+      <div id="ae-empty" class="empty-state" style="display:none;"><div class="icon">🏦</div><p>ยังไม่มีรายการ</p></div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top:13px;">
+    <div class="stat-box"><div class="stat-label">รายการทั้งหมด</div><div class="stat-value" id="ae-tot-count">0</div></div>
+    <div class="stat-box"><div class="stat-label">ยอดรวม</div><div class="stat-value neg" id="ae-tot-amount">฿0.00</div></div>
+  </div>
+  <div style="text-align:right;margin-top:13px;padding-bottom:12px;">
+    <button class="btn btn-primary btn-sm" onclick="syncAcctExp()">☁ บันทึกขึ้น Sheets</button>
   </div>
 </div>
 
@@ -705,6 +778,14 @@ document.addEventListener('DOMContentLoaded', function() {
   var initBranch = document.getElementById('d-branch').value;
   var accEl = document.getElementById('d-account');
   if (accEl) accEl.value = BRANCH_ACCOUNTS[initBranch] || '';
+  // init acctexp
+  var aeDateEl = document.getElementById('ae-date');
+  if (aeDateEl) aeDateEl.value = today;
+  if (cfg.branch) {
+    var aeBranch = document.getElementById('ae-branch');
+    if (aeBranch) aeBranch.value = cfg.branch;
+  }
+  renderAcctExp();
   renderPayables();
 });
 
@@ -1027,7 +1108,7 @@ async function loadSummary() {
     var month  = document.getElementById('s-month').value;
     var res  = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branch) + '&month=' + month);
     var data = await res.json();
-    renderSummary(data.rows || []);
+    renderSummary(data.rows || [], data.acctExpRows || []);
     loadLinemanSun();
   } catch(err) { toast('ดึงข้อมูลไม่สำเร็จ: ' + err.message, 'error'); }
   finally { txt.textContent = 'ดึงข้อมูล'; }
@@ -1122,7 +1203,8 @@ function switchSTab(tab) {
   document.getElementById('stab-year').style.color       = tab === 'year'  ? '#fff' : 'var(--text2)';
 }
 
-function renderSummary(rows) {
+function renderSummary(rows, acctExpRows) {
+  acctExpRows = acctExpRows || [];
   var empty = document.getElementById('s-empty');
   var stats = document.getElementById('s-stats');
   var tbody = document.getElementById('s-tbody');
@@ -1153,6 +1235,19 @@ function renderSummary(rows) {
     tbody.appendChild(tr);
   });
 
+  // ── คำนวณยอดบัญชีร้าน (acctExpRows จาก Sheets)
+  var tAcctExp = 0;
+  var acctExpMap = {};
+  acctExpRows.forEach(function(r) {
+    var amount = parseFloat(r[4]) || 0;
+    var cat    = String(r[3] || 'อื่นๆ');
+    var desc   = String(r[2] || '');
+    tAcctExp += amount;
+    var key = desc || cat;
+    if (!acctExpMap[key]) acctExpMap[key] = 0;
+    acctExpMap[key] += amount;
+  });
+
   var month  = document.getElementById('s-month').value;
   var branch = document.getElementById('s-branch').value;
   var lsKey  = 'ct_lineman_sun_' + branch + '_' + month;
@@ -1170,7 +1265,7 @@ function renderSummary(rows) {
     px.paid ? (tPayablePaid+=px.amount) : (tPayableUnpaid+=px.amount);
   });
   var tPayableAll = tPayablePaid + tPayableUnpaid;
-  var tExpAll     = tExp + tPayableAll;
+  var tExpAll     = tExp + tPayableAll + tAcctExp;
   var profit      = tIncome - tExpAll;
 
   var unpaidItems = monthPayables.filter(function(px) { return !px.paid; });
@@ -1235,6 +1330,22 @@ function renderSummary(rows) {
   } else {
     otherEl.innerHTML = '<div style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>';
   }
+
+  // ── แสดงรายการบัญชีร้าน
+  var acctEl = document.getElementById('ss-acctexp-expenses');
+  if (acctEl) {
+    var acctKeys = Object.keys(acctExpMap);
+    if (acctKeys.length) {
+      acctEl.innerHTML = acctKeys.map(function(k) {
+        return '<div class="stat-box"><div class="stat-label">'+k+'</div>'
+          +'<div class="stat-value">'+fmtS(acctExpMap[k])+'</div></div>';
+      }).join('');
+    } else {
+      acctEl.innerHTML = '<div style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>';
+    }
+  }
+  var acctTotEl = document.getElementById('ss-acctexp-total');
+  if (acctTotEl) acctTotEl.textContent = fmtS(tAcctExp);
 
   document.getElementById('ss-ice').textContent             = fmtS(tIce);
   document.getElementById('ss-meji').textContent            = fmtS(tMeji);
@@ -1494,6 +1605,96 @@ function adminClearAll() {
   payables = [];
   savePay(); renderAdminPanel(); renderPayables();
   toast('ล้างข้อมูลทั้งหมดแล้ว', 'success');
+}
+
+// ════ ACCTEXP ════
+var acctExps = JSON.parse(localStorage.getItem('ct_acctexps') || '[]');
+var aeFilter = 'all';
+
+function addAcctExp() {
+  var desc   = document.getElementById('ae-desc').value.trim();
+  var amount = parseFloat(document.getElementById('ae-amount').value);
+  if (!desc)              { toast('กรุณาระบุรายการ', 'error'); return; }
+  if (!amount || amount <= 0) { toast('กรุณาระบุจำนวนเงิน', 'error'); return; }
+  acctExps.unshift({
+    id: Date.now(),
+    branch: document.getElementById('ae-branch').value,
+    date: document.getElementById('ae-date').value,
+    desc: desc,
+    cat: document.getElementById('ae-cat').value,
+    amount: amount,
+    note: document.getElementById('ae-note').value.trim()
+  });
+  saveAcctExp();
+  renderAcctExp();
+  document.getElementById('ae-desc').value = '';
+  document.getElementById('ae-amount').value = '';
+  document.getElementById('ae-note').value = '';
+  toast('เพิ่มรายการแล้ว ✓', 'success');
+}
+
+function delAcctExp(id) {
+  if (!confirm('ลบรายการนี้?')) return;
+  acctExps = acctExps.filter(function(x) { return x.id !== id; });
+  saveAcctExp();
+  renderAcctExp();
+}
+
+function saveAcctExp() {
+  localStorage.setItem('ct_acctexps', JSON.stringify(acctExps));
+}
+
+function filterAE(f) {
+  aeFilter = f;
+  ['all','passione','lotus'].forEach(function(k) {
+    var el = document.getElementById('aef-' + k);
+    if (!el) return;
+    el.style.borderColor = k === f ? 'var(--accent)' : '';
+    el.style.color       = k === f ? 'var(--accent)' : '';
+  });
+  renderAcctExp();
+}
+
+function renderAcctExp() {
+  var tbody = document.getElementById('ae-tbody');
+  var empty = document.getElementById('ae-empty');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  var list = aeFilter === 'all' ? acctExps : acctExps.filter(function(x) { return x.branch === aeFilter; });
+
+  var tCount = list.length;
+  var tAmount = list.reduce(function(s, x) { return s + x.amount; }, 0);
+  var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
+  document.getElementById('ae-tot-count').textContent  = tCount + ' รายการ';
+  document.getElementById('ae-tot-amount').textContent = fmt(tAmount);
+
+  if (!list.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  list.forEach(function(item) {
+    var branchName = BRANCH_NAMES[item.branch] || item.branch;
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="mono">' + item.date + '</td>'
+      + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
+      + '<td style="font-size:13px;">' + item.desc + '</td>'
+      + '<td><span class="badge badge-gray">' + item.cat + '</span></td>'
+      + '<td class="mono" style="font-weight:500;">' + fmt(item.amount) + '</td>'
+      + '<td style="font-size:12px;color:var(--text3);">' + (item.note || '-') + '</td>'
+      + '<td><button class="btn btn-danger btn-sm" onclick="delAcctExp(' + item.id + ')">ลบ</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+async function syncAcctExp() {
+  if (!cfg.gsUrl) { toast('กรุณาตั้งค่า URL ก่อน', 'error'); return; }
+  try {
+    await fetch(cfg.gsUrl, { method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ type:'acctexp', items: acctExps, timestamp: new Date().toISOString() }) });
+    toast('ซิงค์ขึ้น Sheets แล้ว ✓', 'success');
+  } catch(err) { toast('เกิดข้อผิดพลาด: ' + err.message, 'error'); }
 }
 
 function toast(msg, type) {

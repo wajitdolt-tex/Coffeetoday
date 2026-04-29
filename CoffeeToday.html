@@ -492,7 +492,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 
 <script>
 // API URL - ฝังไว้แล้ว ไม่ต้องแก้
-const API_URL='https://script.google.com/macros/s/AKfycbw4fXghaBjjU_9PvBCFmI14kGROL_rWOp-AyqJ09HAtzZZz6EgXtWf5SY-5rukLJnoyfA/exec';
+const API_URL='https://script.google.com/macros/s/AKfycbw-EKlTw0EVyGRGvyhZPhSuCdNAG12edFTNTK-P6uUUL88t9YD1brZS-nK5B4BNamja5A/exec';
 
 // วันหยุดนักขัตฤกษ์ 2569
 const PH=[
@@ -566,14 +566,9 @@ function getSched(branch){return BRANCH_SCHEDULE[branch]||{start:'09:00',hours:9
 // คำนวณนาทีที่สาย (0 ถ้าตรงเวลาหรือมาก่อน)
 function calcLate(branch,clockIn){
   var s=getSched(branch);
+  var sm=+s.start.split(':')[0]*60+ +s.start.split(':')[1];
   var ci=toTimeStr(clockIn);
   var im=+ci.split(':')[0]*60+ +ci.split(':')[1];
-  var sm;
-  if(branch==='lotus'){
-    sm=570; // shift 09:30
-  } else {
-    sm=+s.start.split(':')[0]*60+ +s.start.split(':')[1];
-  }
   return Math.max(0,im-sm);
 }
 
@@ -582,40 +577,25 @@ function calcLate(branch,clockIn){
 // ถ้าตรงเวลา → OT เริ่มหลัง start+hours ชั่วโมง
 function calcOT(branch,clockIn,clockOut){
   var s=getSched(branch);
+  var sm=+s.start.split(':')[0]*60+ +s.start.split(':')[1];
   var ci=toTimeStr(clockIn),co=toTimeStr(clockOut);
   var im=+ci.split(':')[0]*60+ +ci.split(':')[1];
   var om=+co.split(':')[0]*60+ +co.split(':')[1];
-  if(om>1200)om=1200;
   if(om<=im)return{hours:0,hoursOT:0,lateMinutes:0};
-  // โลตัส: shift 09:30 เดียว สายก็ได้ OT (OT คำนวณจากเวลาเข้าจริง+9ชม.)
-  // แพชชั่น: shift 10:00 สายไม่ได้ OT
-  var sm;
-  if(branch==='lotus'){
-    sm=570; // 09:30
-  } else {
-    sm=+s.start.split(':')[0]*60+ +s.start.split(':')[1];
-  }
   var late=Math.max(0,im-sm);
   var totalMins=om-im;
   var hoursOT=0,hours=0;
-  // โลตัส: OT คำนวณจากเวลาเข้าจริง+9ชม. เสมอ (สายก็ได้ OT)
-  if(branch==='lotus'){
-    var otStartMins=im+(s.hours*60);
+  if(late>0){
+    // มาสาย: ไม่มี OT
+    hours=+(totalMins/60).toFixed(2);
+    hoursOT=0;
+  } else {
+    // ตรงเวลา: OT เริ่มหลัง start + hours
+    var otStartMins=sm+(s.hours*60);
     var otMins=Math.max(0,om-otStartMins);
     var normMins=totalMins-otMins;
     hours=+(normMins/60).toFixed(2);
-    hoursOT=Math.round(otMins/60*2)/2;
-  } else {
-    if(late>0){
-      hours=+(totalMins/60).toFixed(2);
-      hoursOT=0;
-    } else {
-      var otStartMins2=sm+(s.hours*60);
-      var otMins2=Math.max(0,om-otStartMins2);
-      var normMins2=totalMins-otMins2;
-      hours=+(normMins2/60).toFixed(2);
-      hoursOT=Math.round(otMins2/60*2)/2;
-    }
+    hoursOT=Math.floor(otMins/60);
   }
   return{hours:Math.max(0,hours),hoursOT:Math.max(0,hoursOT),lateMinutes:late};
 }
@@ -630,8 +610,8 @@ function getCommTier(branch,sales){var t=COMM_TIERS[branch]||[];for(var i=0;i<t.
 function getCommFromLog(log, branch){
   var sales = Number(log.sales)||0;
   if(sales > 0){
-    var tier = getCommTier(branch, sales);
-    if(tier) return +((sales - tier.min) * tier.rate).toFixed(2);
+    var r = calcCommission(branch, sales);
+    return r.commission;
   }
   return Number(log.commission)||0;
 }
@@ -986,7 +966,7 @@ async function submitClock(){
       var hours2,hoursOT2,type2,late2=0;
       // holiday_ot, public_holiday = นับชั่วโมงรวมทั้งหมด ไม่มี OT แยก
       // holiday_work = คำนวณ OT ได้ แต่ OT นั้นคิดอัตราวันหยุด (100/ชม.)
-      var sp=['holiday_ot','public_holiday'].includes(entry.type);
+      var sp=['holiday_ot'].includes(entry.type);
       if(sp){
         hours2=+hRaw(entry.clockIn,ts).toFixed(2);hoursOT2=0;type2=entry.type;
       } else {
@@ -1200,7 +1180,7 @@ function renderDashboard(){
     var el=pl.filter(l=>l.empId===e.id);
     var e2=e;
     var totalSales=el.filter(l=>l.type==='commission').reduce((s,l)=>s+(Number(l.sales)||0),0);
-    var comm=+el.filter(function(l){return l.type==='commission'||Number(l.sales||0)>0;}).reduce(function(s,l){return s+getCommFromLog(l,e2.branch);},0).toFixed(2);
+    var comm=+el.filter(function(l){return l.type==='commission';}).reduce(function(s,l){return s+getCommFromLog(l,e2.branch);},0).toFixed(2);
     return '<tr><td><strong>'+e.name+'</strong></td><td style="font-size:11px;color:var(--mid);font-weight:600">'+brL(e.branch)+'</td>'+
       '<td>'+el.reduce((s,l)=>s+(Number(l.hours)||0),0).toFixed(1)+'</td>'+
       '<td>'+el.reduce((s,l)=>s+(Number(l.hoursOT)||0),0).toFixed(1)+'</td>'+
@@ -1300,8 +1280,9 @@ function buildSummaryHTML(emp,el,ppKey,showSent){
   var ot=Math.max(0, totalOT - hwOT);
   var hwDays=new Set(el.filter(l=>['holiday_work','public_holiday'].includes(l.type)).map(l=>toDateStr(l.date))).size;
   var hwPay=hwDays*(emp.dailyWage||0)*1; // ได้เพิ่มจากปกติอีก 1 เท่า
-  var commLogs=el.filter(function(l){return l.type==='commission'||Number(l.sales||0)>0;});
-  var totalSales=commLogs.reduce(function(s,l){return s+(Number(l.sales)||0);},0);
+  var commLogs=el.filter(l=>l.type==='commission');
+  var totalSales=commLogs.reduce((s,l)=>s+(Number(l.sales)||0),0);
+  // คำนวณค่าคอมจาก sales เสมอ ไม่ว่าข้อมูลเก่าจะเป็น 0 หรือไม่
   var comm=+commLogs.reduce(function(s,l){return s+getCommFromLog(l,emp.branch);},0).toFixed(2);
   var hotTotal=hot+phOld+hwOT;
   var otPay=ot*(emp.otRate||50),hotPay=hotTotal*(emp.holidayRate||100);
@@ -1551,11 +1532,9 @@ async function doSaveManual(empId,branch){
     var ds=date;
     var hours=null,hoursOT=0,lateMinutes=0,ft=type;
     if(outT){
-      var sp=['holiday_ot','public_holiday'].includes(type);
+      var sp=['holiday_ot'].includes(type);
       if(sp){hours=+hRaw(inT,outT).toFixed(2);hoursOT=0;}
-      else{var r2=calcOT(branch,inT,outT);hours=r2.hours;hoursOT=r2.hoursOT;lateMinutes=r2.lateMinutes;
-        // holiday_work: hoursOT เป็น OT วันหยุด ไม่ใช่ OT ปกติ (จะถูกแยกในสรุป)
-      }
+      else{var r2=calcOT(branch,inT,outT);hours=r2.hours;hoursOT=Math.floor(r2.hoursOT);lateMinutes=r2.lateMinutes;}
     }
     var isManDayOff=isEmpDayOff(empId,ds);
     var isManPH=getPH(ds)!==null;
@@ -1713,23 +1692,15 @@ function renderYearlySummary(){
     el.forEach(function(l){
       var ds = toDateStr(l.date);
       if(!ds) return;
-      var parts = ds.split('-').map(Number);
-      var ly = parts[0], lm = parts[1], ld = parts[2];
-      var mo, moYear;
-      if(ld >= 16){ mo = lm+1; moYear = ly; if(mo>12){mo=1;moYear=ly+1;} }
-      else { mo = lm; moYear = ly; }
-      if(moYear !== year || mo<1 || mo>12) return;
-      // ค่าคอม: ดึงจากทุก log ที่มียอดขาย
-      if(Number(l.sales||0)>0||l.type==='commission'){
-        var _empY=employees.find(function(e){return e.id===l.empId;})||{};
-        monthlyData[mo].comm += getCommFromLog(l,_empY.branch||l.branch||"");
-      }
-      // OT และวันทำงาน: ดึงจาก log ที่ไม่ใช่ commission อย่างเดียว
-      if(l.type!=='commission'){
-        monthlyData[mo].ot    += (['holiday_work'].includes(l.type)?0:Number(l.hoursOT||0))*(emp.otRate||50);
+      var mo = parseInt(ds.substring(5,7));
+      if(!mo||mo<1||mo>12) return;
+      if(l.type==='commission'){
+        var _empY=employees.find(function(e){return e.id===l.empId;})||{};monthlyData[mo].comm += getCommFromLog(l,_empY.branch||l.branch||"");
+      } else {
+        monthlyData[mo].ot    += Number(l.hoursOT||0)*(emp.otRate||50);
         if(['holiday_ot','public_holiday'].includes(l.type)) monthlyData[mo].hotOT += Number(l.hours||0)*(emp.holidayRate||100);
-        if(l.type==='holiday_work'){ monthlyData[mo].hw += (emp.dailyWage||0); monthlyData[mo].hotOT += Number(l.hoursOT||0)*(emp.holidayRate||100); }
-        monthlyData[mo].days  += 1;
+        if(l.type==='holiday_work') monthlyData[mo].hw += (emp.dailyWage||0);
+        monthlyData[mo].days  += new Set([ds]).size;
         monthlyData[mo].lateMin += Number(l.lateMinutes||0);
       }
     });
@@ -1955,19 +1926,12 @@ function renderEmpYearlySummary(){
   for(var m=1;m<=12;m++) monthlyData2[m]={salary:0,ot:0,hotOT:0,hw:0,comm:0,days:0,lateMin:0,isPastPay:false};
   el.forEach(function(l){
     var ds=toDateStr(l.date);if(!ds)return;
-    var parts=ds.split('-').map(Number);
-    var ly=parts[0],lm=parts[1],ld=parts[2];
-    var mo,moYear;
-    if(ld>=16){mo=lm+1;moYear=ly;if(mo>12){mo=1;moYear=ly+1;}}
-    else{mo=lm;moYear=ly;}
-    if(moYear!==year||mo<1||mo>12)return;
-    if(Number(l.sales||0)>0||l.type==='commission'){
-      monthlyData2[mo].comm+=getCommFromLog(l,emp.branch);
-    }
-    if(l.type!=='commission'){
-      monthlyData2[mo].ot+=(['holiday_work'].includes(l.type)?0:Number(l.hoursOT||0))*(emp.otRate||50);
+    var mo=parseInt(ds.substring(5,7));if(!mo||mo<1||mo>12)return;
+    if(l.type==='commission'){monthlyData2[mo].comm+=getCommFromLog(l,emp.branch);}
+    else{
+      monthlyData2[mo].ot+=Number(l.hoursOT||0)*(emp.otRate||50);
       if(['holiday_ot','public_holiday'].includes(l.type))monthlyData2[mo].hotOT+=Number(l.hours||0)*(emp.holidayRate||100);
-      if(l.type==='holiday_work'){monthlyData2[mo].hw+=(emp.dailyWage||0);monthlyData2[mo].hotOT+=Number(l.hoursOT||0)*(emp.holidayRate||100);}
+      if(l.type==='holiday_work')monthlyData2[mo].hw+=(emp.dailyWage||0);
       monthlyData2[mo].days+=1;
       monthlyData2[mo].lateMin+=Number(l.lateMinutes||0);
     }

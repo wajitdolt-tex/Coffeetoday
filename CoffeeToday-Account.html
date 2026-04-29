@@ -147,7 +147,8 @@ tr:hover td{background:var(--bg3);}
       <div class="form-row"><label>(−) Discount — ส่วนลด (฿)</label><input type="number" id="d-discount" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
       <div class="form-row"><label>(+) Rounding — ปัดเศษ (฿)</label><input type="number" id="d-rounding" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
       <div class="form-row"><label>Sales before TAX (฿)</label><input type="number" id="d-before-tax" readonly placeholder="คำนวณอัตโนมัติ"></div>
-      <div class="form-row"><label>Total Sales — ยอดขายทั้งหมด (฿)</label><input type="number" id="d-total-sales" readonly placeholder="คำนวณอัตโนมัติ"></div>
+      <!-- ✅ แก้: เอา readonly ออก ให้กรอกยอดขายทั้งหมดเองได้ -->
+      <div class="form-row"><label>Total Sales — ยอดขายทั้งหมด (฿)</label><input type="number" id="d-total-sales" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
     </div>
     <hr class="divider">
     <div class="sec-label">ช่องทางการชำระ</div>
@@ -232,8 +233,6 @@ tr:hover td{background:var(--bg3);}
 <div id="page-payable" class="page">
   <div class="page-header"><h1>ค่าใช้จ่ายที่วางบิล</h1><p>บันทึกรายการวางบิล ติดตามสถานะ ป้องกันการลืมจ่าย</p></div>
 
-  <!-- Fixed payable items (CFTD, นมจินดา, น้ำแข็ง) -->
-
   <div class="card">
     <div class="card-title">วัตถุดิบวางบิลประจำ</div>
     <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">รายการที่วางบิลเป็นประจำ — กรอกแล้วกด "เพิ่มเข้ารายการวางบิล"</p>
@@ -284,8 +283,6 @@ tr:hover td{background:var(--bg3);}
 
   </div>
 
-  <!-- ค่าใช้จ่ายประจำเดือน -->
-
   <div class="card">
     <div class="card-title">ค่าใช้จ่ายประจำเดือน</div>
     <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">กรอกค่าใช้จ่ายประจำเดือน แล้วกด "เพิ่มเข้ารายการ" เพื่อติดตามสถานะการชำระ</p>
@@ -314,8 +311,6 @@ tr:hover td{background:var(--bg3);}
 ```
 
   </div>
-
-  <!-- Manual payable -->
 
   <div class="card">
     <div class="card-title">เพิ่มรายการวางบิลอื่นๆ</div>
@@ -363,14 +358,10 @@ tr:hover td{background:var(--bg3);}
 <div id="page-summary" class="page">
   <div class="page-header"><h1>สรุป</h1><p>สรุปรายเดือนและรายปี</p></div>
 
-  <!-- Sub tabs -->
-
   <div style="display:flex;gap:4px;margin-bottom:20px;">
     <button class="btn btn-sm" id="stab-month" onclick="switchSTab('month')" style="background:var(--accent);color:#fff;">รายเดือน</button>
     <button class="btn btn-sm btn-outline" id="stab-year" onclick="switchSTab('year')">รายปี</button>
   </div>
-
-  <!-- ════ MONTHLY ════ -->
 
   <div id="stab-month-content">
     <div class="month-row">
@@ -381,12 +372,8 @@ tr:hover td{background:var(--bg3);}
 
 ```
 <div id="s-stats" style="display:none;">
-
-  <!-- รายรับ รายจ่าย กำไร -->
   <div class="card" style="margin-bottom:13px;">
     <div class="card-title">รายรับ — รายจ่าย — กำไร/ขาดทุน</div>
-
-    <!-- แถว 1: ภาพรวม -->
     <div class="grid-3" style="margin-bottom:10px;">
       <div class="stat-box" style="border-left:3px solid var(--green);">
         <div class="stat-label">รายรับรวม</div>
@@ -401,8 +388,6 @@ tr:hover td{background:var(--bg3);}
         <div class="stat-value" id="ss-profit">฿0</div>
       </div>
     </div>
-
-    <!-- แถว 2: แยกค่าใช้จ่าย -->
     <div style="background:var(--bg3);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:10px;">
       <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">รายละเอียดรายจ่าย</div>
       <div class="grid-3">
@@ -420,8 +405,6 @@ tr:hover td{background:var(--bg3);}
         </div>
       </div>
     </div>
-
-    <!-- แถว 3: Pay In -->
     <div class="grid-3">
       <div class="stat-box"><div class="stat-label">ยอด Pay In รวม</div><div class="stat-value" id="ss-payin">฿0</div></div>
       <div class="stat-box"><div class="stat-label">ค่าวางบิลรวมเดือนนี้</div><div class="stat-value" id="ss-payable-paid">฿0</div></div>
@@ -429,7 +412,6 @@ tr:hover td{background:var(--bg3);}
     </div>
   </div>
 
-  <!-- ช่องทางรับเงิน -->
   <div class="card" style="margin-bottom:13px;">
     <div class="card-title">ช่องทางรับเงิน</div>
     <div class="grid-3" style="margin-bottom:13px;">
@@ -456,7 +438,6 @@ tr:hover td{background:var(--bg3);}
     </div>
   </div>
 
-  <!-- ค่าใช้จ่ายแยกประเภท — หน้าร้าน -->
   <div class="card" style="margin-bottom:13px;">
     <div class="card-title">ค่าใช้จ่ายหน้าร้าน</div>
     <div class="grid-3">
@@ -471,7 +452,6 @@ tr:hover td{background:var(--bg3);}
     </div>
   </div>
 
-  <!-- ค่าใช้จ่ายวางบิล -->
   <div class="card" style="margin-bottom:13px;">
     <div class="card-title">ค่าใช้จ่ายวางบิล (วัตถุดิบ)</div>
     <div class="grid-3">
@@ -481,48 +461,41 @@ tr:hover td{background:var(--bg3);}
     </div>
   </div>
 
-  <!-- ค่าใช้จ่ายอื่นๆ ประจำเดือน -->
   <div class="card" style="margin-bottom:13px;">
     <div class="card-title">ค่าใช้จ่ายอื่นๆ ประจำเดือน</div>
     <div class="grid-3" id="ss-other-expenses">
       <div class="stat-box" style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>
     </div>
   </div>
-  </div>
+</div>
 
-  <!-- รายการวางบิลค้างชำระของเดือนนี้ -->
-  <div class="card" style="margin-bottom:13px;">
-    <div class="card-title">รายการวางบิลค้างชำระ (เดือนนี้)</div>
-    <div id="ss-unpaid-list">
-      <div class="empty-state" style="padding:20px;"><p>ไม่มีรายการค้างชำระในเดือนนี้ ✓</p></div>
-    </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
-      <span style="font-size:12px;color:var(--text2);">ยอดค้างชำระทั้งหมด</span>
-      <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--red);font-size:16px;" id="ss-unpaid-total">฿0</span>
-    </div>
+<div class="card" style="margin-bottom:13px;">
+  <div class="card-title">รายการวางบิลค้างชำระ (เดือนนี้)</div>
+  <div id="ss-unpaid-list">
+    <div class="empty-state" style="padding:20px;"><p>ไม่มีรายการค้างชำระในเดือนนี้ ✓</p></div>
   </div>
-
-  <!-- ข้อมูลเพิ่มเติม -->
-  <div class="grid-3" style="margin-bottom:13px;">
-    <div class="stat-box"><div class="stat-label">QR สูงสุดวันที่</div><div class="stat-value" id="ss-qr" style="font-size:13px;">-</div></div>
-    <div class="stat-box"><div class="stat-label">ยอดขายสูงสุดวันที่</div><div class="stat-value" id="ss-maxsale" style="font-size:13px;">-</div></div>
-    <div class="stat-box"><div class="stat-label">จำนวนวันที่บันทึก</div><div class="stat-value" id="ss-days">0</div></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+    <span style="font-size:12px;color:var(--text2);">ยอดค้างชำระทั้งหมด</span>
+    <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--red);font-size:16px;" id="ss-unpaid-total">฿0</span>
   </div>
+</div>
 
-  <!-- ตารางรายวัน -->
-  <div class="card" style="padding:0;overflow:hidden;">
-    <div class="tbl-wrap">
-      <table><thead><tr><th>วันที่</th><th>Sub Total</th><th>Discount</th><th>ยอดสุทธิ</th><th>QR</th><th>Cash</th><th>ค่าใช้จ่าย</th><th>Pay In</th></tr></thead>
-      <tbody id="s-tbody"></tbody></table>
-    </div>
+<div class="grid-3" style="margin-bottom:13px;">
+  <div class="stat-box"><div class="stat-label">QR สูงสุดวันที่</div><div class="stat-value" id="ss-qr" style="font-size:13px;">-</div></div>
+  <div class="stat-box"><div class="stat-label">ยอดขายสูงสุดวันที่</div><div class="stat-value" id="ss-maxsale" style="font-size:13px;">-</div></div>
+  <div class="stat-box"><div class="stat-label">จำนวนวันที่บันทึก</div><div class="stat-value" id="ss-days">0</div></div>
+</div>
+
+<div class="card" style="padding:0;overflow:hidden;">
+  <div class="tbl-wrap">
+    <table><thead><tr><th>วันที่</th><th>Sub Total</th><th>Discount</th><th>ยอดสุทธิ</th><th>QR</th><th>Cash</th><th>ค่าใช้จ่าย</th><th>Pay In</th></tr></thead>
+    <tbody id="s-tbody"></tbody></table>
   </div>
 </div>
 <div id="s-empty" class="empty-state"><div class="icon">📊</div><p>เลือกสาขาและเดือน แล้วกดดึงข้อมูล</p></div>
 ```
 
   </div>
-
-  <!-- ════ YEARLY ════ -->
 
   <div id="stab-year-content" style="display:none;">
     <div class="month-row">
@@ -547,7 +520,6 @@ tr:hover td{background:var(--bg3);}
       <div class="stat-value" id="sy-profit">฿0</div>
     </div>
   </div>
-
   <div class="card" style="padding:0;overflow:hidden;">
     <div class="tbl-wrap">
       <table>
@@ -612,7 +584,6 @@ tr:hover td{background:var(--bg3);}
     </div>
 
 ```
-<!-- สรุปภาพรวม -->
 <div class="card">
   <div class="card-title">ข้อมูลระบบ</div>
   <div class="grid-3">
@@ -622,7 +593,6 @@ tr:hover td{background:var(--bg3);}
   </div>
 </div>
 
-<!-- ตรวจสอบรายการวางบิลทั้งหมด -->
 <div class="card">
   <div class="card-title">รายการวางบิลทั้งหมด</div>
   <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
@@ -660,7 +630,6 @@ tr:hover td{background:var(--bg3);}
   </div>
 </div>
 
-<!-- ข้อมูล Line Man คุณซัน -->
 <div class="card">
   <div class="card-title">ยอด Line Man บัญชีคุณซัน (ทุกเดือน)</div>
   <div class="tbl-wrap">
@@ -672,7 +641,6 @@ tr:hover td{background:var(--bg3);}
   </div>
 </div>
 
-<!-- ล้างข้อมูล -->
 <div class="card" style="border-color:rgba(184,64,64,.3);">
   <div class="card-title" style="color:var(--red);">⚠ Danger Zone</div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -734,7 +702,6 @@ document.addEventListener('DOMContentLoaded', function() {
   renderStdExpenses();
   addAccExpRow();
   addExpRow();
-  // set default account number
   var initBranch = document.getElementById('d-branch').value;
   var accEl = document.getElementById('d-account');
   if (accEl) accEl.value = BRANCH_ACCOUNTS[initBranch] || '';
@@ -779,19 +746,20 @@ function n(id) {
   return el ? (parseFloat(el.value) || 0) : 0;
 }
 
+// ✅ แก้: calcSales ไม่คำนวณ Total Sales จาก QR+Lineman+Cash แล้ว
+// Total Sales กรอกเองได้ — QR/Lineman/Cash เป็นแค่การแยกช่องทาง
 function calcSales() {
   var bt = n('d-subtotal') - n('d-discount') + n('d-rounding');
   document.getElementById('d-before-tax').value = bt.toFixed(2);
-  var totalSales = n('d-qr') + n('d-lineman') + n('d-cash');
-  document.getElementById('d-total-sales').value = totalSales.toFixed(2);
+
+  // ใช้ Total Sales ที่กรอกเอง ไม่คำนวณจาก QR+Lineman+Cash
+  var totalSales = n('d-total-sales');
+
   var shopExp = n('d-shop-exp');
   var pi = n('d-cash') - shopExp;
-  // diff = PayIn - (Cash - ShopExp) → แสดงว่าขาดหรือเกิน
-  // จริงๆ diff = ยอดส่งจริง - ยอดที่ควรส่ง = cash - shopExp (ถ้าเท่ากัน diff=0)
-  // เงินขาด/เกิน = ยอดปิดกะ - shopExp - payin_expected
-  // ใช้สูตร: diff = 0 (ตั้งต้น), payin = cash - shopExp
   document.getElementById('d-diff').value = '0.00';
   document.getElementById('d-payin').value = pi.toFixed(2);
+
   var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
   document.getElementById('sum-total').textContent  = fmt(totalSales);
   document.getElementById('sum-exp').textContent    = fmt(shopExp);
@@ -800,7 +768,7 @@ function calcSales() {
 }
 
 function calcDrinks() {
-  var total = n('d-qr') + n('d-lineman') + n('d-cash');
+  var total = n('d-total-sales');
   var drinks = total - n('d-snacks') - n('d-promo');
   var el = document.getElementById('d-drinks');
   if (el) el.value = drinks > 0 ? drinks.toFixed(2) : '0.00';
@@ -868,13 +836,13 @@ async function submitDaily() {
     cashier: document.getElementById('d-cashier').value,
     subtotal: n('d-subtotal'), discount: n('d-discount'), rounding: n('d-rounding'),
     beforeTax: parseFloat(document.getElementById('d-before-tax').value) || 0,
+    totalSales: n('d-total-sales'),
     qr: n('d-qr'), lineman: n('d-lineman'), cash: n('d-cash'),
     drinks: parseFloat(document.getElementById('d-drinks').value) || 0,
     snacks: n('d-snacks'), promo: n('d-promo'),
     shopExp: n('d-shop-exp'), diff: n('d-diff'),
     payIn: parseFloat(document.getElementById('d-payin').value) || 0,
     account: document.getElementById('d-account').value,
-    ref: document.getElementById('d-ref').value,
     note: document.getElementById('d-note').value,
     stdExpenses: stdExp, stdExpTotal: stdTotal,
     accountExpenses: getRowItems('account-expenses'),
@@ -899,26 +867,23 @@ async function submitDaily() {
 }
 
 function clearDaily() {
-  ['d-subtotal','d-discount','d-rounding','d-qr','d-lineman','d-cash',
+  ['d-subtotal','d-discount','d-rounding','d-total-sales','d-qr','d-lineman','d-cash',
    'd-snacks','d-promo','d-shop-exp','d-account','d-note',
    'b-void','b-free','b-coupon','d-cashier'].forEach(function(id) {
     var el = document.getElementById(id); if (el) el.value = '';
   });
   document.getElementById('d-before-tax').value = '';
   document.getElementById('d-payin').value = '';
-  document.getElementById('d-total-sales').value = '';
   document.getElementById('d-drinks').value = '';
   renderStdExpenses();
   document.getElementById('account-expenses').innerHTML = '';
   document.getElementById('extra-expenses').innerHTML = '';
   addAccExpRow(); addExpRow(); calcSales();
   document.getElementById('d-date').value = new Date().toISOString().split('T')[0];
-  // reset account to branch default
   var br = document.getElementById('d-branch').value;
   document.getElementById('d-account').value = BRANCH_ACCOUNTS[br] || '';
 }
 
-// ── FIXED PAYABLE ──
 function addFixedPayable(type) {
   var names = { cftd:'วัตถุดิบ CFTD', jinda:'นมจินดา', ice:'น้ำแข็ง' };
   var amount  = parseFloat(document.getElementById('pf-' + type + '-amount').value);
@@ -948,7 +913,6 @@ function addFixedPayable(type) {
   toast(names[type] + ' เพิ่มแล้ว ✓', 'success');
 }
 
-// ── MANUAL PAYABLE ──
 function addPayable() {
   var desc   = document.getElementById('p-desc').value.trim();
   var amount = parseFloat(document.getElementById('p-amount').value);
@@ -1189,7 +1153,6 @@ function renderSummary(rows) {
     tbody.appendChild(tr);
   });
 
-  // ── ยอด Line Man บัญชีคุณซัน (ถ้ามี)
   var month  = document.getElementById('s-month').value;
   var branch = document.getElementById('s-branch').value;
   var lsKey  = 'ct_lineman_sun_' + branch + '_' + month;
@@ -1197,7 +1160,6 @@ function renderSummary(rows) {
   var tLinemanSun = lsData ? (parseFloat(JSON.parse(lsData).amount)||0) : 0;
   var tIncome = tSales + tLinemanSun;
 
-  // ── วางบิลของเดือนนี้
   var monthPayables = payables.filter(function(px) {
     var matchBranch = !branch || px.branch === branch || px.branch === BRANCH_NAMES[branch];
     var inMonth = (px.date && px.date.startsWith(month)) || (px.due && px.due.startsWith(month));
@@ -1211,7 +1173,6 @@ function renderSummary(rows) {
   var tExpAll     = tExp + tPayableAll;
   var profit      = tIncome - tExpAll;
 
-  // ── รายการค้างชำระ
   var unpaidItems = monthPayables.filter(function(px) { return !px.paid; });
   var listEl = document.getElementById('ss-unpaid-list');
   if (unpaidItems.length) {
@@ -1241,7 +1202,7 @@ function renderSummary(rows) {
   document.getElementById('ss-qr-total').textContent     = fmtS(tQr);
   document.getElementById('ss-lineman-total').textContent= fmtS(tLineman);
   document.getElementById('ss-cash-total').textContent   = fmtS(tCash);
-  // ── แยกประเภทวางบิล
+
   var tCftdPayable=0, tJindaPayable=0, tIcePayable=0;
   var tRawPayable=0, tOtherPayable=0;
   monthPayables.forEach(function(px) {
@@ -1256,7 +1217,6 @@ function renderSummary(rows) {
     }
   });
 
-  // ── ค่าใช้จ่ายอื่นๆ section
   var otherCats = ['ค่าเช่า','ค่าไฟ/น้ำ','ค่าบริการ','ภาษี','อุปกรณ์/ซ่อมบำรุง','ค่าแรง','อื่นๆ'];
   var otherMap = {};
   monthPayables.forEach(function(px) {
@@ -1276,7 +1236,6 @@ function renderSummary(rows) {
     otherEl.innerHTML = '<div style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>';
   }
 
-  // ── แสดงทุก element
   document.getElementById('ss-ice').textContent             = fmtS(tIce);
   document.getElementById('ss-meji').textContent            = fmtS(tMeji);
   document.getElementById('ss-sugar').textContent           = fmtS(tSugar);
@@ -1295,8 +1254,6 @@ function renderSummary(rows) {
   document.getElementById('ss-maxsale').textContent         = maxSaleDate+' ('+fmtS(maxSale)+')';
   document.getElementById('ss-days').textContent            = rows.length+' วัน';
 }
-
-var yearlyCache = {};
 
 async function loadYearly() {
   if (!cfg.gsUrl) { toast('กรุณาตั้งค่า URL ก่อน','error'); return; }

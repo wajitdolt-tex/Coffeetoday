@@ -1827,7 +1827,12 @@ function renderEmpYearlySummary(){
   for(var m=1;m<=12;m++) monthlyData2[m]={salary:0,ot:0,hotOT:0,hw:0,comm:0,days:0,lateMin:0,isPastPay:false};
   el.forEach(function(l){
     var ds=toDateStr(l.date);if(!ds)return;
-    var mo=parseInt(ds.substring(5,7));if(!mo||mo<1||mo>12)return;
+    var parts=ds.split('-').map(Number);
+    var ly=parts[0],lm=parts[1],ld=parts[2];
+    var mo,moYear;
+    if(ld>=16){mo=lm+1;moYear=ly;if(mo>12){mo=1;moYear=ly+1;}}
+    else{mo=lm;moYear=ly;}
+    if(moYear!==year||mo<1||mo>12)return;
     if(l.type==='commission'){monthlyData2[mo].comm+=getCommFromLog(l,emp.branch);}
     else{
       monthlyData2[mo].ot+=Number(l.hoursOT||0)*(emp.otRate||50);

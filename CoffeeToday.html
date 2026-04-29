@@ -443,6 +443,23 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
     </div>
   </div>
 </div>
+<div class="modal-overlay" id="sendSummaryModal">
+  <div class="modal wide">
+    <div class="modal-title">📤 ดูสรุปและส่งให้ฝ่ายบุคคล</div>
+    <div id="sendSummaryContent"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('sendSummaryModal')">ยกเลิก</button>
+      <button class="btn btn-teal" onclick="confirmSendSummary()">✅ ยืนยันส่ง</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="viewSubmissionModal">
+  <div class="modal wide">
+    <div class="modal-title">📋 รายละเอียดสรุปที่ส่งมา</div>
+    <div id="viewSubmissionContent"></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('viewSubmissionModal')">ปิด</button></div>
+  </div>
+</div>
 <div class="modal-overlay" id="empPinModal">
   <div class="modal" style="max-width:320px;text-align:center">
     <div class="modal-title">🔐 กรอกรหัสพนักงาน</div>
@@ -475,7 +492,7 @@ input.big-num{font-size:22px;font-family:'Prompt',sans-serif;font-weight:700;tex
 
 <script>
 // API URL - ฝังไว้แล้ว ไม่ต้องแก้
-const API_URL='https://script.google.com/macros/s/AKfycbw-EKlTw0EVyGRGvyhZPhSuCdNAG12edFTNTK-P6uUUL88t9YD1brZS-nK5B4BNamja5A/exec';
+const API_URL='https://script.google.com/macros/s/AKfycbw4fXghaBjjU_9PvBCFmI14kGROL_rWOp-AyqJ09HAtzZZz6EgXtWf5SY-5rukLJnoyfA/exec';
 
 // วันหยุดนักขัตฤกษ์ 2569
 const PH=[
@@ -631,7 +648,7 @@ function getTierInfoHTML(branch){
 }
 
 // STATE
-var employees=[],logs=[];
+let employees=[],logs=[],submissions=[];
 let selectedEmpId=null,clockAction='in',currentBranch=localStorage.getItem('ct_branch')||'',hrUnlocked=false;
 const BRANCHES={lotus:'โลตัสระยอง',passion:'แพชชั่นระยอง'};
 const HR_PIN='9999';
@@ -659,8 +676,8 @@ async function api(action,data={}){
 }
 async function loadAll(){
   try{
-    var[eRes,lRes,sRes]=await Promise.all([api('getEmployees'),api('getLogs')]);
-    employees=eRes.employees||[];logs=lRes.logs||[];
+    var[eRes,lRes,sRes]=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
+    employees=eRes.employees||[];logs=lRes.logs||[];submissions=sRes.submissions||[];
     renderEmpCards();renderMyLog();
   }catch(e){showToast('โหลดข้อมูลล้มเหลว: '+e.message,'error');}
 }
@@ -767,7 +784,7 @@ function showTab(t,btn){
   document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
   document.getElementById('tab-'+t).classList.add('active');if(btn)btn.classList.add('active');
   if(t==='dashboard')renderDashboard();if(t==='allLogs')renderAllLogs();
-  if(t==='summary')renderSummary();
+  if(t==='summary')renderSummary();if(t==='submissions')renderSubmissions();
   if(t==='employees')renderEmpTable();if(t==='manual')populateManualForm();
   if(t==='holidays')renderHolidayTable();
   if(t==='pastpay'){populatePastPayForm();}
@@ -1026,6 +1043,45 @@ async function saveCommission(){
 }
 
 // SEND SUMMARY
+async function openViewSummaryModal(){
+  var ppKey=document.getElementById('empSendPeriod').value;
+  if(!ppKey){showToast('กรุณาเลือกรอบ','error');return;}
+  var emp=employees.find(function(e){return e.id===selectedEmpId;});
+  if(!emp)return;
+  var pl=logsInPP(ppKey);
+  var el=pl.filter(function(l){return l.empId===selectedEmpId;});
+  document.getElementById('viewSubmissionContent').innerHTML=buildSummaryHTML(emp,el,ppKey,false);
+  openModal('viewSubmissionModal');
+}
+function openSendSummaryModal(){
+  if(!selectedEmpId){showToast('กรุณาเลือกพนักงาน','error');return;}
+  var ppKey=document.getElementById('empSendPeriod').value;
+  if(!ppKey){showToast('กรุณาเลือกรอบ','error');return;}
+  var emp=employees.find(e=>e.id===selectedEmpId);if(!emp)return;
+  var pl=logsInPP(ppKey).filter(l=>String(l.empId)===String(selectedEmpId));
+  document.getElementById('sendSummaryContent').innerHTML=buildSummaryHTML(emp,pl,ppKey,false);
+  window._pendingSend={empId:selectedEmpId,ppKey:ppKey};
+  openModal('sendSummaryModal');
+}
+async function confirmSendSummary(){
+  var ps=window._pendingSend||{};if(!ps.empId||!ps.ppKey)return;
+  var emp=employees.find(e=>e.id===ps.empId);
+  var pl=logsInPP(ps.ppKey).filter(l=>String(l.empId)===String(ps.empId));
+  var norm=pl.filter(l=>l.type!=='holiday_work').reduce((s,l)=>s+(Number(l.hours)||0),0);
+  var ot=pl.reduce((s,l)=>s+(Number(l.hoursOT)||0),0);
+  // คำนวณค่าคอมจาก employees ในรอบปัจจุบัน
+  var comm=0;
+  employees.filter(function(e){return e.active;}).forEach(function(emp){
+    pl.filter(function(l){return l.empId===emp.id&&l.type==='commission';}).forEach(function(l){
+      comm+=getCommFromLog(l,emp.branch);
+    });
+  });
+  comm=+comm.toFixed(2);
+  var hwDays=new Set(pl.filter(l=>l.type==='holiday_work').map(l=>l.date)).size;
+  var sub={id:genId(),empId:ps.empId,empName:emp.name,branch:emp.branch,ppKey:ps.ppKey,sentAt:(function(){var n=new Date();var th=new Date(n.toLocaleString('en-US',{timeZone:'Asia/Bangkok'}));var d=th.getDate(),mo=th.getMonth()+1,y=th.getFullYear()+543,h=th.getHours(),mi=th.getMinutes();return (d<10?'0'+d:d)+'/'+(mo<10?'0'+mo:mo)+'/'+y+' '+(h<10?'0'+h:h)+':'+(mi<10?'0'+mi:mi);}()),status:'pending',norm:norm,ot:ot,comm:comm,hwDays:hwDays};
+  try{await api('addSubmission',sub);submissions.push(sub);closeModal('sendSummaryModal');showToast('📤 ส่งสรุปให้ HR สำเร็จ','success');}
+  catch(e){showToast('ส่งล้มเหลว: '+e.message,'error');}
+}
 
 // MY LOG
 function renderMyLog(){
@@ -1064,8 +1120,8 @@ function renderMyLog(){
 async function refreshHR(){
   populateFilterSelects();populatePPSelects();
   try{
-    var[eRes,lRes,sRes]=await Promise.all([api('getEmployees'),api('getLogs')]);
-    employees=eRes.employees||[];logs=lRes.logs||[];
+    var[eRes,lRes,sRes]=await Promise.all([api('getEmployees'),api('getLogs'),api('getSubmissions')]);
+    employees=eRes.employees||[];logs=lRes.logs||[];submissions=sRes.submissions||[];
     populateFilterSelects();renderDashboard();
   }catch(e){showToast('โหลดข้อมูล HR ล้มเหลว','error');renderDashboard();}
 }
@@ -1268,6 +1324,54 @@ function renderSummary(){
   // แสดงปุ่มถ้ามีข้อมูล
   var btns=document.getElementById('summaryBtns');
   if(btns)btns.style.display=targets.length?'flex':'none';
+}
+async function renderSubmissions(){
+  var tbody=document.getElementById('submissionsTable');
+  if(!submissions.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="ei">📬</div>ยังไม่มีการส่งสรุป</div></td></tr>';return;}
+  tbody.innerHTML=[...submissions].reverse().map(function(s){
+    return '<tr>'+
+      '<td>'+s.sentAt+'</td>'+
+      '<td><strong>'+s.empName+'</strong></td>'+
+      '<td style="font-size:11px;color:var(--mid);font-weight:600">'+brL(s.branch)+'</td>'+
+      '<td style="font-size:12px">'+getPPLabel(s.ppKey)+'</td>'+
+      '<td>'+Number(s.norm||0).toFixed(1)+' ชม.</td>'+
+      '<td>'+Number(s.ot||0).toFixed(1)+' ชม.</td>'+
+      '<td>฿'+Number(s.comm||0).toLocaleString()+'</td>'+
+      '<td><span class="badge '+(s.status==='pending'?'badge-pending':'badge-sent')+'">'+(s.status==='pending'?'รอตรวจสอบ':'รับทราบแล้ว')+'</span></td>'+
+      '<td style="display:flex;gap:5px">'+
+        '<button class="btn btn-dark btn-sm sub-view-btn" data-sid="'+s.id+'">📋</button>'+
+        (s.status==='pending'?'<button class="btn btn-success btn-sm sub-approve-btn" data-sid="'+s.id+'">✓</button>':'')+
+        '<button class="btn btn-danger btn-sm sub-del-btn" data-sid="'+s.id+'">🗑</button>'+
+      '</td></tr>';
+  }).join('');
+  // event delegation บน submissionsTable
+  tbody.removeEventListener('click',tbody._subHandler);
+  tbody._subHandler=function(e){
+    var vBtn=e.target.closest('.sub-view-btn');
+    var aBtn=e.target.closest('.sub-approve-btn');
+    var dBtn=e.target.closest('.sub-del-btn');
+    if(vBtn) viewSubmission(vBtn.dataset.sid);
+    if(aBtn) approveSubmission(aBtn.dataset.sid);
+    if(dBtn) deleteSubmission(dBtn.dataset.sid);
+  };
+  tbody.addEventListener('click',tbody._subHandler);
+}
+function deleteSubmission(id){
+  if(!confirm('ลบรายการที่ส่งมานี้?'))return;
+  submissions=submissions.filter(function(s){return s.id!==id;});
+  renderSubmissions();
+  showToast('ลบเรียบร้อย','success');
+}
+function viewSubmission(id){
+  var s=submissions.find(x=>x.id===id);if(!s)return;
+  var emp=employees.find(e=>e.id===s.empId);if(!emp)return;
+  var pl=logsInPP(s.ppKey).filter(l=>l.empId===s.empId);
+  document.getElementById('viewSubmissionContent').innerHTML=buildSummaryHTML(emp,pl,s.ppKey,s.status!=='pending');
+  openModal('viewSubmissionModal');
+}
+async function approveSubmission(id){
+  try{await api('updateSubmission',{id:id,status:'approved'});var s=submissions.find(x=>x.id===id);if(s)s.status='approved';renderSubmissions();showToast('✅ รับทราบแล้ว','success');}
+  catch(e){showToast('ล้มเหลว: '+e.message,'error');}
 }
 function renderEmpTable(){
   document.getElementById('empTable').innerHTML=employees.map(function(e){
@@ -1914,6 +2018,9 @@ function renderEmpYearlySummary(){
       '<div style="font-family:Prompt,sans-serif;font-size:28px;font-weight:700">฿'+grand.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div>'+
     '</div>'+
     '</div>';
+}
+function sendPayslipEmail(){
+  showToast('ฟีเจอร์ส่งเมลกำลังพัฒนา','');
 }
 function exportSummaryPDF(){
   var ppKey=document.getElementById('summaryPayPeriod').value;

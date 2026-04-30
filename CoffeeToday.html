@@ -1719,10 +1719,12 @@ function renderYearlySummary(){
         }
       }
       if(l.type!=='commission'){
-        monthlyData[mo].ot    += Number(l.hoursOT||0)*(emp.otRate||50);
-        if(['holiday_ot','public_holiday'].includes(l.type)) monthlyData[mo].hotOT += Number(l.hoursOT||0)*(emp.holidayRate||100);
-        if(l.type==='holiday_work'){ monthlyData[mo].hw += (emp.dailyWage||0); monthlyData[mo].hotOT += Number(l.hoursOT||0)*(emp.holidayRate||100); }
-        monthlyData[mo].days  += new Set([ds]).size;
+        if(!['holiday_work','public_holiday','holiday_ot'].includes(l.type)){
+          monthlyData[mo].ot += Number(l.hoursOT||0)*(emp.otRate||50);
+        }
+        if(l.type==='holiday_ot') monthlyData[mo].hotOT += Number(l.hoursOT||0)*(emp.holidayRate||100);
+        if(['holiday_work','public_holiday'].includes(l.type)){ monthlyData[mo].hw += (emp.dailyWage||0); monthlyData[mo].hotOT += Number(l.hoursOT||0)*(emp.holidayRate||100); }
+        monthlyData[mo].days  += 1;
         monthlyData[mo].lateMin += Number(l.lateMinutes||0);
       }
     });
@@ -1962,9 +1964,12 @@ function renderEmpYearlySummary(){
       }
     }
     if(l.type!=='commission'){
-      monthlyData2[mo].ot+=Number(l.hoursOT||0)*(emp.otRate||50);
-      if(['holiday_ot','public_holiday'].includes(l.type))monthlyData2[mo].hotOT+=Number(l.hoursOT||0)*(emp.holidayRate||100);
-      if(l.type==='holiday_work'){monthlyData2[mo].hw+=(emp.dailyWage||0);monthlyData2[mo].hotOT+=Number(l.hoursOT||0)*(emp.holidayRate||100);}
+      // OT ปกติ = hoursOT เฉพาะ type ที่ไม่ใช่วันหยุด
+      if(!['holiday_work','public_holiday','holiday_ot'].includes(l.type)){
+        monthlyData2[mo].ot+=Number(l.hoursOT||0)*(emp.otRate||50);
+      }
+      if(l.type==='holiday_ot')monthlyData2[mo].hotOT+=Number(l.hoursOT||0)*(emp.holidayRate||100);
+      if(['holiday_work','public_holiday'].includes(l.type)){monthlyData2[mo].hw+=(emp.dailyWage||0);monthlyData2[mo].hotOT+=Number(l.hoursOT||0)*(emp.holidayRate||100);}
       monthlyData2[mo].days+=1;
       monthlyData2[mo].lateMin+=Number(l.lateMinutes||0);
     }

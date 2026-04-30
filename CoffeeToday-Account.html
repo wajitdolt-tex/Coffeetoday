@@ -202,6 +202,20 @@ tr:hover td{background:var(--bg3);}
     <hr class="divider">
   </div>
 
+  <div class="card" style="border-color:var(--accent-t2);background:var(--accent-t);">
+    <div class="card-title">โหลด / แก้ไขข้อมูลย้อนหลัง</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:12px;">เลือกสาขาและวันที่ แล้วกด "โหลดข้อมูล" เพื่อดึงข้อมูลมาแก้ไข</p>
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+      <div class="form-row" style="margin-bottom:0;">
+        <label>วันที่ที่ต้องการแก้ไข</label>
+        <input type="date" id="d-load-date" style="width:160px;">
+      </div>
+      <button class="btn btn-outline" onclick="loadDailyData()" style="margin-bottom:0;">📥 โหลดข้อมูล</button>
+      <button class="btn btn-outline" onclick="cancelEditMode()" id="cancel-edit-btn" style="display:none;color:var(--red);border-color:var(--red);">✕ ยกเลิกแก้ไข</button>
+    </div>
+    <div id="load-status" style="font-size:12px;margin-top:8px;color:var(--text2);"></div>
+  </div>
+
   <div class="card">
     <div class="card-title">ใบเสร็จ</div>
     <div class="grid-3">
@@ -412,7 +426,7 @@ tr:hover td{background:var(--bg3);}
         <div class="grid-3" style="margin-bottom:13px;">
           <div class="stat-box"><div class="stat-label">QR Payment</div><div class="stat-value" id="ss-qr-total">฿0</div></div>
           <div class="stat-box"><div class="stat-label">Line Man (รวม)</div><div class="stat-value" id="ss-lineman-total">฿0</div></div>
-          <div class="stat-box"><div class="stat-label">Cash</div><div class="stat-value" id="ss-cash-total">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">Cash (ยอดปิดกะ)</div><div class="stat-value" id="ss-cash-total">฿0</div></div>
         </div>
         <div style="background:var(--blue-t);border:1px solid rgba(37,99,168,.2);border-radius:var(--r-sm);padding:14px 16px;">
           <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;">💳 Line Man — ยอดเข้าบัญชีคุณซัน</div>
@@ -856,15 +870,15 @@ function addAccExpRow() {
   c.appendChild(d);
 }
 
-function addExpRow() {
+function addExpRow(name, amount) {
   var id = Date.now();
   var c  = document.getElementById('extra-expenses');
   var d  = document.createElement('div');
   d.className = 'expense-row';
   d.id = 'er-' + id;
-  d.innerHTML = '<div><label>รายการ</label><input type="text" placeholder="ระบุรายการ..."></div>'
-    + '<div><label>จำนวน (฿)</label><input type="number" placeholder="0.00" step="0.01"></div>'
-    + '<button class="rm-btn" onclick="document.getElementById(\'er-' + id + '\').remove()">×</button>';
+  d.innerHTML = '<div><label>รายการ</label><input type="text" placeholder="ระบุรายการ..." value="'+(name||'')+'"></div>'
+    + '<div><label>จำนวน (฿)</label><input type="number" placeholder="0.00" step="0.01" value="'+(amount||'')+'" oninput="calcSales()"></div>'
+    + '<button class="rm-btn" onclick="document.getElementById(\'er-' + id + '\').remove();calcSales()">×</button>';
   c.appendChild(d);
 }
 
@@ -900,7 +914,8 @@ async function submitDaily() {
   var stdTotal = Object.values(stdExp).reduce(function(a,b){return a+b;}, 0);
 
   var payload = {
-    type: 'daily',
+    type: isEditMode ? 'daily_update' : 'daily',
+    editRowIndex: isEditMode ? editRowIndex : -1,
     branch: BRANCH_NAMES[branch],
     date: document.getElementById('d-date').value,
     cashier: document.getElementById('d-cashier').value,
@@ -925,7 +940,12 @@ async function submitDaily() {
   try {
     await fetch(cfg.gsUrl, { method:'POST', mode:'no-cors',
       headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-    toast('บันทึกสำเร็จ ✓', 'success');
+    toast(isEditMode ? 'อัปเดตข้อมูลสำเร็จ ✓' : 'บันทึกสำเร็จ ✓', 'success');
+    isEditMode = false;
+    editRowIndex = -1;
+    document.getElementById('submit-text').textContent = 'บันทึกขึ้น Google Sheets';
+    document.getElementById('cancel-edit-btn').style.display = 'none';
+    document.getElementById('load-status').textContent = '';
     clearDaily();
   } catch(err) {
     toast('เกิดข้อผิดพลาด: ' + err.message, 'error');
@@ -1210,9 +1230,10 @@ function renderSummary(rows, acctExpRows) {
   rows.forEach(function(r) {
     var sales=p(r,3), qr=p(r,7), lineman=p(r,9), cash=p(r,10), exp=p(r,14), pi=p(r,16);
     var extraExp=p(r,30); // ExtraExpTotal column
-    tSales+=sales; tExp+=exp; tPayIn+=pi;
+    tSales+=sales; tPayIn+=pi;
     tQr+=qr; tLineman+=lineman; tCash+=cash;
     tExtraExp+=extraExp;
+    tExp += exp + extraExp; // รวมทั้ง shopExp + extraExpTotal
     tCftd  +=p(r,19); tIce   +=p(r,20);
     tMeji  +=p(r,21); tJinda +=p(r,22);
     tSugar +=p(r,23); tSoda  +=p(r,24);
@@ -1224,7 +1245,7 @@ function renderSummary(rows, acctExpRows) {
     tr.innerHTML='<td class="mono">'+r[0]+'</td><td class="mono">'+fmt(p(r,3))+'</td><td class="mono">'+fmt(p(r,4))+'</td><td class="mono">'+fmt(p(r,6))+'</td><td class="mono">'+fmt(p(r,7))+'</td><td class="mono">'+fmt(p(r,10))+'</td><td class="mono">'+fmt(p(r,14))+'</td><td class="mono">'+fmt(p(r,16))+'</td>';
     tbody.appendChild(tr);
   });
-  // คำนวณ stdExp = tExp - tExtraExp (ค่าใช้จ่ายวัตถุดิบหลักเท่านั้น)
+  // stdExp = วัตถุดิบหลักเท่านั้น (ไม่รวม extra)
   tStdExp = tExp - tExtraExp;
 
   // ── คำนวณยอดบัญชีร้าน (acctExpRows จาก Sheets)
@@ -1280,7 +1301,7 @@ function renderSummary(rows, acctExpRows) {
 
   var salesLabel = fmtS(tIncome) + (tLinemanSun > 0 ? ' <span style="font-size:11px;color:var(--green);font-family:Sarabun,sans-serif;">(รวม LM ฿'+tLinemanSun.toLocaleString('th-TH',{minimumFractionDigits:2})+')</span>' : '');
   document.getElementById('ss-sales').innerHTML          = salesLabel;
-  document.getElementById('ss-exp').textContent          = fmtS(tExp);
+  document.getElementById('ss-exp').textContent          = fmtS(tStdExp);
   document.getElementById('ss-payable-paid').textContent = fmtS(tPayableAll);
   document.getElementById('ss-exp-total').textContent    = fmtS(tExpAll);
   document.getElementById('ss-profit').textContent       = fmtS(profit);
@@ -1598,6 +1619,114 @@ function adminClearAll() {
   payables = [];
   savePay(); renderAdminPanel(); renderPayables();
   toast('ล้างข้อมูลทั้งหมดแล้ว', 'success');
+}
+
+// ════ EDIT MODE ════
+var isEditMode = false;
+var editRowIndex = -1;
+
+async function loadDailyData() {
+  if (!cfg.gsUrl) { toast('กรุณาตั้งค่า URL ก่อน', 'error'); return; }
+  var date   = document.getElementById('d-load-date').value;
+  var branch = document.getElementById('d-branch').value;
+  if (!date) { toast('กรุณาเลือกวันที่', 'error'); return; }
+
+  var statusEl = document.getElementById('load-status');
+  statusEl.textContent = 'กำลังโหลด...';
+
+  try {
+    var branchName = BRANCH_NAMES[branch];
+    var month = date.slice(0, 7);
+    var res  = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branchName) + '&month=' + month);
+    var data = await res.json();
+    var rows = data.rows || [];
+
+    // หาแถวที่ date ตรงกัน
+    var row = null;
+    var rowIdx = -1;
+    for (var i = 0; i < rows.length; i++) {
+      if (String(rows[i][0]) === date) {
+        row = rows[i]; rowIdx = i; break;
+      }
+    }
+
+    if (!row) {
+      statusEl.textContent = '⚠ ไม่พบข้อมูลวันที่ ' + date + ' ในสาขานี้';
+      statusEl.style.color = 'var(--red)';
+      return;
+    }
+
+    // โหลดข้อมูลเข้าฟอร์ม
+    fillDailyForm(row);
+    isEditMode = true;
+    editRowIndex = rowIdx;
+
+    document.getElementById('d-date').value = date;
+    document.getElementById('submit-text').textContent = '💾 อัปเดตข้อมูล';
+    document.getElementById('cancel-edit-btn').style.display = 'inline-flex';
+    statusEl.textContent = '✓ โหลดข้อมูลวันที่ ' + date + ' แล้ว — แก้ไขได้เลย';
+    statusEl.style.color = 'var(--green)';
+    toast('โหลดข้อมูลวันที่ ' + date + ' แล้ว', 'success');
+  } catch(err) {
+    statusEl.textContent = 'โหลดไม่สำเร็จ: ' + err.message;
+    statusEl.style.color = 'var(--red)';
+  }
+}
+
+function fillDailyForm(row) {
+  var p = function(i) { return parseFloat(row[i]) || 0; };
+  var s = function(i) { return String(row[i] || ''); };
+
+  document.getElementById('d-cashier').value   = s(2);
+  document.getElementById('d-subtotal').value  = p(3) || '';
+  document.getElementById('d-discount').value  = p(4) || '';
+  document.getElementById('d-rounding').value  = p(5) || '';
+  document.getElementById('d-total-sales').value = p(6) || '';
+  document.getElementById('d-qr').value        = p(7) || '';
+  document.getElementById('d-lineman').value   = p(9) || '';
+  document.getElementById('d-cash').value      = p(10) || '';
+  document.getElementById('d-snacks').value    = p(12) || '';
+  document.getElementById('d-promo').value     = p(13) || '';
+  document.getElementById('d-shop-exp').value  = p(14) || '';
+  document.getElementById('d-note').value      = s(35);
+  document.getElementById('b-void').value      = p(32) || '';
+  document.getElementById('b-free').value      = p(33) || '';
+  document.getElementById('b-coupon').value    = p(34) || '';
+
+  // โหลด std expenses
+  var branch = document.getElementById('d-branch').value;
+  var ids = branch === 'lotus' ? STD_EXP_LOTUS : STD_EXP_PASSIONE;
+  var stdCols = { 'e-ice':20,'e-meji':21,'e-sugar':23,'e-soda':24,'e-yogurt':25,'e-bakery':26,'e-lime':27,'e-coconut':28 };
+  ids.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && stdCols[id] !== undefined) el.value = p(stdCols[id]) || '';
+  });
+
+  // โหลด extra expenses (col 31 = ExtraDetail)
+  var extraDetail = s(31);
+  document.getElementById('extra-expenses').innerHTML = '';
+  if (extraDetail) {
+    extraDetail.split(' | ').forEach(function(item) {
+      if (!item.trim()) return;
+      var parts = item.split(':');
+      var name   = parts[0] || '';
+      var amount = parseFloat(parts[1]) || 0;
+      addExpRow(name, amount);
+    });
+  } else {
+    addExpRow();
+  }
+  calcSales();
+}
+
+function cancelEditMode() {
+  isEditMode = false;
+  editRowIndex = -1;
+  document.getElementById('submit-text').textContent = 'บันทึกขึ้น Google Sheets';
+  document.getElementById('cancel-edit-btn').style.display = 'none';
+  document.getElementById('load-status').textContent = '';
+  clearDaily();
+  toast('ยกเลิกการแก้ไขแล้ว', 'success');
 }
 
 // ════ ACCTEXP ════

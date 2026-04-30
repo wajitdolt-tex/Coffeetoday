@@ -1281,8 +1281,8 @@ function renderSummary(rows, acctExpRows) {
   var lsKey  = 'ct_lineman_sun_' + branch + '_' + month;
   var lsData = localStorage.getItem(lsKey);
   var tLinemanSun = lsData ? (parseFloat(JSON.parse(lsData).amount)||0) : 0;
-  // รายรับจริง = QR + Cash (ยอดปิดกะ) + Line Man ที่โอนเข้าบัญชีคุณซัน
-  var tIncome = tQr + tCash + tLinemanSun;
+  // รายรับจริง = QR + Pay In + Line Man ที่โอนเข้าบัญชีคุณซัน
+  var tIncome = tQr + tPayIn + tLinemanSun;
 
   var monthPayables = payables.filter(function(px) {
     var matchBranch = !branch || px.branch === branch || px.branch === BRANCH_NAMES[branch];
@@ -1317,7 +1317,7 @@ function renderSummary(rows, acctExpRows) {
 
   var salesLabel = fmtS(tIncome)
     + ' <span style="font-size:11px;color:var(--text2);font-family:Sarabun,sans-serif;">'
-    + '(QR ' + fmtS(tQr) + ' + Cash ' + fmtS(tCash)
+    + '(QR ' + fmtS(tQr) + ' + Pay In ' + fmtS(tPayIn)
     + (tLinemanSun > 0 ? ' + LM ' + fmtS(tLinemanSun) : '')
     + ')</span>';
   document.getElementById('ss-sales').innerHTML          = salesLabel;

@@ -419,6 +419,10 @@ tr:hover td{background:var(--bg3);}
           <div class="stat-label">บัญชีร้าน</div>
           <div class="stat-value" id="ss-acctexp-total">฿0</div>
         </div>
+        <div class="stat-box" style="background:var(--bg2);border-left:3px solid var(--blue);">
+          <div class="stat-label">เงินเดือนพนักงาน</div>
+          <div class="stat-value" id="ss-salary-total">฿0</div>
+        </div>
       </div>
     </div>
     <div class="grid-3">
@@ -565,8 +569,47 @@ tr:hover td{background:var(--bg3);}
 <div id="page-acctexp" class="page">
   <div class="page-header"><h1>บัญชีร้าน</h1><p>บันทึกค่าใช้จ่ายที่หักผ่านบัญชีร้าน — กรอกได้อิสระ ไม่ต้องกรอกยอดขาย</p></div>
 
+  <!-- เงินเดือนพนักงาน -->
+
+  <div class="card" style="border-color:rgba(37,99,168,.25);background:var(--blue-t);">
+    <div class="card-title" style="color:var(--blue);">เงินเดือนพนักงาน</div>
+    <div class="grid-3">
+      <div class="form-row"><label>สาขา</label>
+        <select id="sal-branch">
+          <option value="passione">แพชชั่นระยอง</option>
+          <option value="lotus">โลตัสระยอง</option>
+        </select>
+      </div>
+      <div class="form-row"><label>เดือน/ปี</label><input type="month" id="sal-month"></div>
+      <div class="form-row"><label>วันที่จ่าย</label><input type="date" id="sal-date"></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-row"><label>ชื่อพนักงาน</label><input type="text" id="sal-name" placeholder="ชื่อพนักงาน..."></div>
+      <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="sal-amount" placeholder="0.00" step="0.01"></div>
+    </div>
+    <div class="form-row"><label>หมายเหตุ</label><input type="text" id="sal-note" placeholder="เช่น เงินเดือน เม.ย. 2026..."></div>
+    <button class="btn btn-sm" style="background:var(--blue);color:#fff;" onclick="addSalary()">+ เพิ่มรายการเงินเดือน</button>
+  </div>
+
+  <!-- ตารางเงินเดือน -->
+
+  <div class="card" style="padding:0;overflow:hidden;margin-bottom:20px;">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);">รายการเงินเดือนพนักงาน</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>วันที่จ่าย</th><th>สาขา</th><th>พนักงาน</th><th>เดือน</th><th>จำนวน</th><th>หมายเหตุ</th><th></th></tr></thead>
+        <tbody id="sal-tbody"></tbody>
+      </table>
+      <div id="sal-empty" class="empty-state" style="display:none;"><div class="icon">👤</div><p>ยังไม่มีรายการ</p></div>
+    </div>
+    <div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:12px;color:var(--text2);">ยอดรวมเงินเดือน</span>
+      <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--blue);font-size:15px;" id="sal-total">฿0.00</span>
+    </div>
+  </div>
+
   <div class="card">
-    <div class="card-title">เพิ่มรายการค่าใช้จ่ายบัญชีร้าน</div>
+    <div class="card-title">เพิ่มรายการค่าใช้จ่ายบัญชีร้านอื่นๆ</div>
     <div class="grid-3">
       <div class="form-row"><label>สาขา</label>
         <select id="ae-branch">
@@ -768,6 +811,10 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('s-month').value = today.slice(0,7);
   document.getElementById('pm-month').value = today.slice(0,7);
   document.getElementById('sy-year').value = new Date().getFullYear();
+  var salDateEl = document.getElementById('sal-date');
+  if (salDateEl) salDateEl.value = today;
+  var salMonthEl = document.getElementById('sal-month');
+  if (salMonthEl) salMonthEl.value = today.slice(0,7);
 
   if (cfg.gsUrl) {
     document.getElementById('gs-url').value = cfg.gsUrl;
@@ -797,6 +844,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (aeBranch) aeBranch.value = cfg.branch;
   }
   renderAcctExp();
+  renderSalaries();
   renderPayables();
 });
 
@@ -1294,8 +1342,11 @@ function renderSummary(rows, acctExpRows) {
     px.paid ? (tPayablePaid+=px.amount) : (tPayableUnpaid+=px.amount);
   });
   var tPayableAll = tPayablePaid + tPayableUnpaid;
-  var tExpAll     = tExp + tPayableAll + tAcctExp;
-  var profit      = tIncome - tExpAll;
+  // รายจ่ายรวมทั้งหมด (รวมทุกอย่าง)
+  var tSalary = getSalaryTotal(branch, month);
+  var tExpAll  = tExp + tPayableAll + tAcctExp + tSalary;
+  // กำไร/ขาดทุน = รายรับจริง − (วางบิล + บัญชีร้าน + เงินเดือน) ไม่รวมค่าใช้จ่ายหน้าร้าน
+  var profit   = tIncome - (tPayableAll + tAcctExp + tSalary);
 
   var unpaidItems = monthPayables.filter(function(px) { return !px.paid; });
   var listEl = document.getElementById('ss-unpaid-list');
@@ -1379,6 +1430,8 @@ function renderSummary(rows, acctExpRows) {
   }
   var acctTotEl = document.getElementById('ss-acctexp-total');
   if (acctTotEl) acctTotEl.textContent = fmtS(tAcctExp);
+  var salTotEl = document.getElementById('ss-salary-total');
+  if (salTotEl) salTotEl.textContent = fmtS(tSalary);
 
   document.getElementById('ss-ice').textContent             = fmtS(tIce);
   document.getElementById('ss-meji').textContent            = fmtS(tMeji);
@@ -1639,6 +1692,76 @@ function adminClearAll() {
   payables = [];
   savePay(); renderAdminPanel(); renderPayables();
   toast('ล้างข้อมูลทั้งหมดแล้ว', 'success');
+}
+
+// ════ SALARY ════
+var salaries = JSON.parse(localStorage.getItem('ct_salaries') || '[]');
+
+function addSalary() {
+  var name   = document.getElementById('sal-name').value.trim();
+  var amount = parseFloat(document.getElementById('sal-amount').value);
+  if (!name)              { toast('กรุณาระบุชื่อพนักงาน', 'error'); return; }
+  if (!amount || amount <= 0) { toast('กรุณาระบุจำนวนเงิน', 'error'); return; }
+  salaries.unshift({
+    id: Date.now(),
+    branch: document.getElementById('sal-branch').value,
+    date: document.getElementById('sal-date').value,
+    month: document.getElementById('sal-month').value,
+    name: name,
+    amount: amount,
+    note: document.getElementById('sal-note').value.trim()
+  });
+  saveSalaries();
+  renderSalaries();
+  document.getElementById('sal-name').value = '';
+  document.getElementById('sal-amount').value = '';
+  document.getElementById('sal-note').value = '';
+  toast('เพิ่มรายการเงินเดือนแล้ว ✓', 'success');
+}
+
+function delSalary(id) {
+  if (!confirm('ลบรายการนี้?')) return;
+  salaries = salaries.filter(function(s) { return s.id !== id; });
+  saveSalaries();
+  renderSalaries();
+}
+
+function saveSalaries() {
+  localStorage.setItem('ct_salaries', JSON.stringify(salaries));
+}
+
+function getSalaryTotal(branch, month) {
+  return salaries.filter(function(s) {
+    var matchBranch = !branch || s.branch === branch;
+    var inMonth = s.month === month || (s.date && s.date.startsWith(month));
+    return matchBranch && inMonth;
+  }).reduce(function(sum, s) { return sum + s.amount; }, 0);
+}
+
+function renderSalaries() {
+  var tbody = document.getElementById('sal-tbody');
+  var empty = document.getElementById('sal-empty');
+  var totalEl = document.getElementById('sal-total');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
+  var total = salaries.reduce(function(s, x) { return s + x.amount; }, 0);
+  if (totalEl) totalEl.textContent = fmt(total);
+  if (!salaries.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  salaries.forEach(function(item) {
+    var branchName = BRANCH_NAMES[item.branch] || item.branch;
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="mono">' + (item.date || '-') + '</td>'
+      + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
+      + '<td style="font-size:13px;font-weight:500;">' + item.name + '</td>'
+      + '<td class="mono">' + (item.month || '-') + '</td>'
+      + '<td class="mono" style="color:var(--blue);font-weight:500;">' + fmt(item.amount) + '</td>'
+      + '<td style="font-size:12px;color:var(--text3);">' + (item.note || '-') + '</td>'
+      + '<td><button class="btn btn-danger btn-sm" onclick="delSalary(' + item.id + ')">ลบ</button></td>';
+    tbody.appendChild(tr);
+  });
 }
 
 // ════ EDIT MODE ════

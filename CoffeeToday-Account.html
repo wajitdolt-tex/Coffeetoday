@@ -407,9 +407,13 @@ tr:hover td{background:var(--bg3);}
           <div class="stat-label">ค่าใช้จ่ายหน้าร้าน</div>
           <div class="stat-value" id="ss-exp">฿0</div>
         </div>
-        <div class="stat-box" style="background:var(--bg2);">
-          <div class="stat-label">วางบิลวัตถุดิบ <span style="color:var(--green);">(ชำระแล้ว)</span></div>
-          <div class="stat-value" id="ss-payable-raw">฿0</div>
+        <div class="stat-box" style="background:var(--bg2);border-left:3px solid var(--green);">
+          <div class="stat-label">วางบิล (ชำระแล้ว)</div>
+          <div class="stat-value pos" id="ss-payable-raw">฿0</div>
+        </div>
+        <div class="stat-box" style="background:var(--bg2);border-left:3px solid var(--red);">
+          <div class="stat-label">วางบิล (ยังค้างชำระ)</div>
+          <div class="stat-value neg" id="ss-payable-unpaid-detail">฿0</div>
         </div>
         <div class="stat-box" style="background:var(--bg2);">
           <div class="stat-label">ค่าใช้จ่ายอื่นๆ <span style="color:var(--green);">(ชำระแล้ว)</span></div>
@@ -1457,6 +1461,9 @@ function renderSummary(rows, acctExpRows) {
   document.getElementById('ss-sales').innerHTML          = salesLabel;
   document.getElementById('ss-exp').textContent          = fmtS(tStdExp);
   document.getElementById('ss-payable-paid').textContent = fmtS(tPayablePaid);
+  document.getElementById('ss-payable-raw').textContent  = fmtS(tPayablePaid);
+  var unpaidDetail = document.getElementById('ss-payable-unpaid-detail');
+  if (unpaidDetail) unpaidDetail.textContent = fmtS(tPayableUnpaid);
   document.getElementById('ss-exp-total').textContent    = fmtS(tExpAll);
   document.getElementById('ss-profit').textContent       = fmtS(profit);
   document.getElementById('ss-profit').className         = 'stat-value '+(profit>=0?'pos':'neg');

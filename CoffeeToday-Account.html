@@ -416,7 +416,7 @@ tr:hover td{background:var(--bg3);}
           <div class="stat-value neg" id="ss-payable-unpaid-detail">฿0</div>
         </div>
         <div class="stat-box" style="background:var(--bg2);">
-          <div class="stat-label">ค่าใช้จ่ายอื่นๆ <span style="color:var(--green);">(ชำระแล้ว)</span></div>
+          <div class="stat-label">ค่าใช้จ่ายอื่นๆ (เช่า/ไฟ/ภาษี)</div>
           <div class="stat-value" id="ss-payable-other">฿0</div>
         </div>
         <div class="stat-box" style="background:var(--bg2);">
@@ -1439,11 +1439,11 @@ function renderSummary(rows, acctExpRows) {
   });
   var tPayableAll = tPayablePaid + tPayableUnpaid;
 
-  // รายจ่ายรวมทั้งหมด — นับเฉพาะวางบิลที่ชำระแล้ว ไม่รวมค่าใช้จ่ายหน้าร้าน
+  // รายจ่ายรวมทั้งหมด — ไม่รวมค่าใช้จ่ายหน้าร้าน
   var tSalary = getSalaryTotal(branch, month);
-  var tExpAll  = tExp + tPayablePaid + tOtherPayable + tAcctExp + tSalary;
-  // กำไร/ขาดทุน = รายรับ − (วางบิลชำระแล้ว + ค่าใช้จ่ายอื่นๆชำระแล้ว + บัญชีร้าน + เงินเดือน)
-  var profit   = tIncome - (tPayablePaid + tOtherPayable + tAcctExp + tSalary);
+  var tExpAll  = tPayablePaid + tOtherPayable + tAcctExp + tSalary;
+  // กำไร/ขาดทุน = รายรับ − รายจ่ายรวม
+  var profit   = tIncome - tExpAll;
 
   var unpaidItems = monthPayables.filter(function(px) { return !px.paid; });
   var listEl = document.getElementById('ss-unpaid-list');
@@ -1487,8 +1487,6 @@ function renderSummary(rows, acctExpRows) {
   var tCftdPayable=0, tJindaPayable=0, tIcePayable=0;
   var tRawPayable=0, tOtherPayable=0;
   monthPayables.forEach(function(px) {
-    // นับเฉพาะที่ชำระแล้วในเดือนนี้
-    if (!px.paid || !(px.paidDate && px.paidDate.startsWith(month))) return;
     if (px.desc.indexOf('CFTD') >= 0) {
       tCftdPayable += px.amount; tRawPayable += px.amount;
     } else if (px.desc.indexOf('นมจินดา') >= 0) {
@@ -1500,11 +1498,10 @@ function renderSummary(rows, acctExpRows) {
     }
   });
 
+  // ค่าใช้จ่ายอื่นๆ (ค่าเช่า ค่าน้ำไฟ ภาษี) — แสดงทุกรายการ ไม่กรองตาม paidDate
   var otherCats = ['ค่าเช่า','ค่าไฟ/น้ำ','ค่าบริการ','ภาษี','อุปกรณ์/ซ่อมบำรุง','ค่าแรง','อื่นๆ'];
   var otherMap = {};
   monthPayables.forEach(function(px) {
-    // แสดงเฉพาะที่ชำระแล้วในเดือนนี้
-    if (!px.paid || !(px.paidDate && px.paidDate.startsWith(month))) return;
     if (otherCats.indexOf(px.cat) >= 0) {
       if (!otherMap[px.desc]) otherMap[px.desc] = 0;
       otherMap[px.desc] += px.amount;

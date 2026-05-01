@@ -1425,7 +1425,14 @@ function renderSummary(rows, acctExpRows) {
   });
   var tPayablePaid=0, tPayableUnpaid=0;
   monthPayables.forEach(function(px) {
-    px.paid ? (tPayablePaid+=px.amount) : (tPayableUnpaid+=px.amount);
+    if (px.paid) {
+      // นับ paid ตาม paidDate (เดือนที่จ่ายจริง)
+      if (px.paidDate && px.paidDate.startsWith(month)) {
+        tPayablePaid += px.amount;
+      }
+    } else {
+      tPayableUnpaid += px.amount;
+    }
   });
   var tPayableAll = tPayablePaid + tPayableUnpaid;
 

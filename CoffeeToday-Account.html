@@ -2174,19 +2174,16 @@ async function syncAcctExp() {
   if (!itemsToSync.length) { toast('ไม่มีรายการของ' + branchName + 'ที่จะบันทึก', 'error'); return; }
 
   try {
-    var payload = JSON.stringify({
+    var payload = {
       type: 'acctexp',
       branch: branch,
       branchName: branchName,
       items: itemsToSync,
       timestamp: new Date().toISOString()
-    });
-    await fetch(cfg.gsUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: payload
-    });
+    };
+    // ส่งผ่าน URL parameter เพื่อหลีกเลี่ยง CORS preflight
+    var url = cfg.gsUrl + '?payload=' + encodeURIComponent(JSON.stringify(payload));
+    await fetch(url, { method: 'GET', mode: 'no-cors' });
     toast('ซิงค์ ' + branchName + ' ขึ้น Sheets แล้ว ✓', 'success');
   } catch(err) { toast('เกิดข้อผิดพลาด: ' + err.message, 'error'); }
 }

@@ -1420,19 +1420,18 @@ function renderSummary(rows, acctExpRows) {
 
   var monthPayables = payables.filter(function(px) {
     var matchBranch = !branch || px.branch === branch || px.branch === BRANCH_NAMES[branch];
-    var inMonth = (px.date && px.date.startsWith(month)) || (px.due && px.due.startsWith(month));
-    return matchBranch && inMonth;
+    // ค้างชำระ: date หรือ due อยู่ในเดือนนี้
+    var inMonthUnpaid = !px.paid && (
+      (px.date && px.date.startsWith(month)) ||
+      (px.due && px.due.startsWith(month))
+    );
+    // ชำระแล้ว: paidDate อยู่ในเดือนนี้
+    var inMonthPaid = px.paid && px.paidDate && px.paidDate.startsWith(month);
+    return matchBranch && (inMonthUnpaid || inMonthPaid);
   });
   var tPayablePaid=0, tPayableUnpaid=0;
   monthPayables.forEach(function(px) {
-    if (px.paid) {
-      // นับ paid ตาม paidDate (เดือนที่จ่ายจริง)
-      if (px.paidDate && px.paidDate.startsWith(month)) {
-        tPayablePaid += px.amount;
-      }
-    } else {
-      tPayableUnpaid += px.amount;
-    }
+    px.paid ? (tPayablePaid+=px.amount) : (tPayableUnpaid+=px.amount);
   });
   var tPayableAll = tPayablePaid + tPayableUnpaid;
 

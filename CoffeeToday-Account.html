@@ -1185,7 +1185,10 @@ function delPayable(id) {
   savePay(); renderPayables();
 }
 
-function savePay() { localStorage.setItem('ct_payables', JSON.stringify(payables)); }
+function savePay() {
+  localStorage.setItem('ct_payables', JSON.stringify(payables));
+  syncPayable();
+}
 
 function filterP(f) {
   pFilter = f;
@@ -1246,12 +1249,56 @@ function renderPayables() {
 
 async function syncPayable() {
   if (!cfg.gsUrl) { toast('กรุณาตั้งค่า URL ก่อน', 'error'); return; }
+  var branch = cfg.branch || 'passione';
+  var branchName = BRANCH_NAMES[branch];
+  var items = payables.filter(function(px) { return px.branch === branch; });
   try {
-    await fetch(cfg.gsUrl, { method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ type:'payable', items: payables, timestamp: new Date().toISOString() }) });
-    toast('ซิงค์ขึ้น Sheets แล้ว ✓', 'success');
+    var payload = JSON.stringify({
+      type: 'payable',
+      branch: branch,
+      branchName: branchName,
+      items: items,
+      timestamp: new Date().toISOString()
+    });
+    var url = cfg.gsUrl + '?payload=' + encodeURIComponent(payload);
+    await fetch(url, { method: 'GET', mode: 'no-cors' });
+    toast('ซิงค์วางบิลขึ้น Sheets แล้ว ✓', 'success');
   } catch(err) { toast('เกิดข้อผิดพลาด: ' + err.message, 'error'); }
+}
+
+async function syncSalary() {
+  if (!cfg.gsUrl) return;
+  var branch = cfg.branch || 'passione';
+  var branchName = BRANCH_NAMES[branch];
+  var items = salaries.filter(function(s) { return s.branch === branch; });
+  try {
+    var payload = JSON.stringify({
+      type: 'salary',
+      branch: branch,
+      branchName: branchName,
+      items: items,
+      timestamp: new Date().toISOString()
+    });
+    var url = cfg.gsUrl + '?payload=' + encodeURIComponent(payload);
+    await fetch(url, { method: 'GET', mode: 'no-cors' });
+  } catch(err) { console.log('sync salary error', err); }
+}
+
+async function syncLoan() {
+  if (!cfg.gsUrl) return;
+  var branch = cfg.branch || 'passione';
+  var branchName = BRANCH_NAMES[branch];
+  try {
+    var payload = JSON.stringify({
+      type: 'loan',
+      branch: branch,
+      branchName: branchName,
+      items: loans,
+      timestamp: new Date().toISOString()
+    });
+    var url = cfg.gsUrl + '?payload=' + encodeURIComponent(payload);
+    await fetch(url, { method: 'GET', mode: 'no-cors' });
+  } catch(err) { console.log('sync loan error', err); }
 }
 
 async function loadSummary() {
@@ -1263,6 +1310,64 @@ async function loadSummary() {
     var month  = document.getElementById('s-month').value;
     var res  = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branchKey) + '&month=' + month);
     var data = await res.json();
+
+    // อัปเดต localStorage จาก Sheets
+    if (data.payableRows && data.payableRows.length) {
+      var sheetsPayables = data.payableRows.map(function(r) {
+        return {
+          id: r[9] || Date.now(),
+          date: String(r[0]||''),
+          branch: branchKey,
+          desc: String(r[2]||''),
+          cat: String(r[3]||''),
+          amount: parseFloat(r[4])||0,
+          due: String(r[5]||''),
+          paid: String(r[6]||'') === 'Paid',
+          paidDate: String(r[7]||''),
+          note: String(r[8]||'')
+        };
+      });
+      payables = sheetsPayables;
+      localStorage.setItem('ct_payables', JSON.stringify(payables));
+      renderPayables();
+    }
+
+    if (data.salaryRows && data.salaryRows.length) {
+      var sheetsSalaries = data.salaryRows.map(function(r) {
+        return {
+          id: r[6] || Date.now(),
+          date: String(r[0]||''),
+          branch: branchKey,
+          name: String(r[2]||''),
+          month: String(r[3]||''),
+          amount: parseFloat(r[4])||0,
+          note: String(r[5]||'')
+        };
+      });
+      salaries = sheetsSalaries;
+      localStorage.setItem('ct_salaries', JSON.stringify(salaries));
+      renderSalaries();
+    }
+
+    if (data.loanRows && data.loanRows.length) {
+      var sheetsLoans = data.loanRows.map(function(r) {
+        var repayments = [];
+        try { repayments = JSON.parse(String(r[5]||'[]')); } catch(e) {}
+        return {
+          id: r[0] || Date.now(),
+          branch: branchKey,
+          from: String(r[2]||''),
+          amount: parseFloat(r[3])||0,
+          purpose: String(r[4]||''),
+          repayments: repayments,
+          date: String(r[6]||'')
+        };
+      });
+      loans = sheetsLoans;
+      localStorage.setItem('ct_loans', JSON.stringify(loans));
+      renderLoans();
+    }
+
     renderSummary(data.rows || [], data.acctExpRows || []);
     loadLinemanSun();
   } catch(err) { toast('ดึงข้อมูลไม่สำเร็จ: ' + err.message, 'error'); }
@@ -1932,6 +2037,7 @@ function delLoan(id) {
 
 function saveLoans() {
   localStorage.setItem('ct_loans', JSON.stringify(loans));
+  syncLoan();
 }
 
 function renderLoans() {
@@ -2027,6 +2133,7 @@ function delSalary(id) {
 
 function saveSalaries() {
   localStorage.setItem('ct_salaries', JSON.stringify(salaries));
+  syncSalary();
 }
 
 function getSalaryTotal(branch, month) {

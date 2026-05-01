@@ -2181,13 +2181,11 @@ async function syncAcctExp() {
       items: itemsToSync,
       timestamp: new Date().toISOString()
     });
-    // ใช้ FormData เพื่อ bypass CORS preflight
-    var form = new FormData();
-    form.append('payload', payload);
     await fetch(cfg.gsUrl, {
       method: 'POST',
       mode: 'no-cors',
-      body: form
+      headers: { 'Content-Type': 'application/json' },
+      body: payload
     });
     toast('ซิงค์ ' + branchName + ' ขึ้น Sheets แล้ว ✓', 'success');
   } catch(err) { toast('เกิดข้อผิดพลาด: ' + err.message, 'error'); }

@@ -1600,7 +1600,6 @@ function renderSummary(rows, acctExpRows) {
     if (iceBox) iceBox.style.borderLeft = tIceUnpaid > 0 ? '3px solid var(--red)' : (tIcePayable > 0 ? '3px solid var(--green)' : '');
     iceEl.style.color = tIceUnpaid > 0 ? 'var(--red)' : '';
   }
-  document.getElementById('ss-payable-raw').textContent     = fmtS(tRawPayable);
   document.getElementById('ss-payable-other').textContent   = fmtS(tOtherPayable);
   document.getElementById('ss-payable-unpaid-top').textContent = fmtS(tPayableUnpaid);
   document.getElementById('ss-qr').textContent              = maxQrDate+' ('+fmtS(maxQr)+')';

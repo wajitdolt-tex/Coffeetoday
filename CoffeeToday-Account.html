@@ -636,11 +636,16 @@ tr:hover td{background:var(--bg3);}
     <button class="btn btn-primary" onclick="addAcctExp()">+ เพิ่มรายการ</button>
   </div>
 
-  <div style="display:flex;gap:6px;align-items:center;margin-bottom:13px;flex-wrap:wrap;">
-    <span style="font-size:12px;color:var(--text3);">กรอง:</span>
+  <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+    <span style="font-size:12px;color:var(--text3);">กรองสาขา:</span>
     <button class="btn btn-sm btn-outline" id="aef-all" onclick="filterAE('all')" style="border-color:var(--accent);color:var(--accent);">ทั้งหมด</button>
     <button class="btn btn-sm btn-outline" id="aef-passione" onclick="filterAE('passione')">แพชชั่น</button>
     <button class="btn btn-sm btn-outline" id="aef-lotus" onclick="filterAE('lotus')">โลตัส</button>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:13px;flex-wrap:wrap;">
+    <span style="font-size:12px;color:var(--text3);">กรองเดือน:</span>
+    <input type="month" id="ae-filter-month" oninput="renderAcctExp()" style="width:150px;font-size:13px;padding:4px 8px;">
+    <button class="btn btn-outline btn-sm" onclick="document.getElementById('ae-filter-month').value='';renderAcctExp()">ทั้งหมด</button>
   </div>
 
   <div class="card" style="padding:0;overflow:hidden;">
@@ -654,11 +659,11 @@ tr:hover td{background:var(--bg3);}
   </div>
 
   <div class="grid-2" style="margin-top:13px;">
-    <div class="stat-box"><div class="stat-label">รายการทั้งหมด</div><div class="stat-value" id="ae-tot-count">0</div></div>
+    <div class="stat-box"><div class="stat-label">รายการ <span id="ae-filter-label" style="color:var(--accent);"></span></div><div class="stat-value" id="ae-tot-count">0</div></div>
     <div class="stat-box"><div class="stat-label">ยอดรวม</div><div class="stat-value neg" id="ae-tot-amount">฿0.00</div></div>
   </div>
   <div style="text-align:right;margin-top:13px;padding-bottom:12px;">
-    <button class="btn btn-primary btn-sm" onclick="syncAcctExp()">☁ บันทึกขึ้น Sheets</button>
+    <button class="btn btn-primary btn-sm" onclick="syncAcctExp()">☁ บันทึกขึ้น Sheets (เฉพาะสาขาที่เลือก)</button>
   </div>
 
   <!-- เงินยืม -->
@@ -872,6 +877,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // init acctexp
   var aeDateEl = document.getElementById('ae-date');
   if (aeDateEl) aeDateEl.value = today;
+  var aeFilterEl = document.getElementById('ae-filter-month');
+  if (aeFilterEl) aeFilterEl.value = today.slice(0,7);
   if (cfg.branch) {
     var aeBranch = document.getElementById('ae-branch');
     if (aeBranch) aeBranch.value = cfg.branch;
@@ -2101,13 +2108,19 @@ function renderAcctExp() {
   if (!tbody) return;
   tbody.innerHTML = '';
 
-  var list = aeFilter === 'all' ? acctExps : acctExps.filter(function(x) { return x.branch === aeFilter; });
+  var filterMonth = document.getElementById('ae-filter-month') ? document.getElementById('ae-filter-month').value : '';
+  var labelEl = document.getElementById('ae-filter-label');
+
+  var list = acctExps;
+  if (aeFilter !== 'all') list = list.filter(function(x) { return x.branch === aeFilter; });
+  if (filterMonth) list = list.filter(function(x) { return x.date && x.date.startsWith(filterMonth); });
 
   var tCount = list.length;
   var tAmount = list.reduce(function(s, x) { return s + x.amount; }, 0);
   var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
   document.getElementById('ae-tot-count').textContent  = tCount + ' รายการ';
   document.getElementById('ae-tot-amount').textContent = fmt(tAmount);
+  if (labelEl) labelEl.textContent = filterMonth ? '(' + filterMonth + ')' : '';
 
   if (!list.length) { empty.style.display = 'block'; return; }
   empty.style.display = 'none';
@@ -2129,11 +2142,29 @@ function renderAcctExp() {
 
 async function syncAcctExp() {
   if (!cfg.gsUrl) { toast('กรุณาตั้งค่า URL ก่อน', 'error'); return; }
+
+  // sync เฉพาะสาขาที่เลือกอยู่
+  var branch = aeFilter !== 'all' ? aeFilter : (cfg.branch || 'passione');
+  var branchName = BRANCH_NAMES[branch];
+  var itemsToSync = acctExps.filter(function(x) { return x.branch === branch; });
+
+  if (!itemsToSync.length) { toast('ไม่มีรายการของ' + branchName + 'ที่จะบันทึก', 'error'); return; }
+
   try {
-    await fetch(cfg.gsUrl, { method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ type:'acctexp', items: acctExps, timestamp: new Date().toISOString() }) });
-    toast('ซิงค์ขึ้น Sheets แล้ว ✓', 'success');
+    var payload = {
+      type: 'acctexp',
+      branch: branch,
+      branchName: branchName,
+      items: itemsToSync,
+      timestamp: new Date().toISOString()
+    };
+    await fetch(cfg.gsUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    });
+    toast('ซิงค์ ' + branchName + ' ขึ้น Sheets แล้ว ✓', 'success');
   } catch(err) { toast('เกิดข้อผิดพลาด: ' + err.message, 'error'); }
 }
 

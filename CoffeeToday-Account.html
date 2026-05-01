@@ -1439,6 +1439,21 @@ function renderSummary(rows, acctExpRows) {
   });
   var tPayableAll = tPayablePaid + tPayableUnpaid;
 
+  // คำนวณ tOtherPayable ก่อนใช้ใน tExpAll
+  var tCftdPayable=0, tJindaPayable=0, tIcePayable=0;
+  var tRawPayable=0, tOtherPayable=0;
+  monthPayables.forEach(function(px) {
+    if (px.desc.indexOf('CFTD') >= 0) {
+      tCftdPayable += px.amount; tRawPayable += px.amount;
+    } else if (px.desc.indexOf('นมจินดา') >= 0) {
+      tJindaPayable += px.amount; tRawPayable += px.amount;
+    } else if (px.desc.indexOf('น้ำแข็ง') >= 0 && px.cat === 'วัตถุดิบ/สินค้า') {
+      tIcePayable += px.amount; tRawPayable += px.amount;
+    } else {
+      tOtherPayable += px.amount;
+    }
+  });
+
   // รายจ่ายรวมทั้งหมด — ไม่รวมค่าใช้จ่ายหน้าร้าน
   var tSalary = getSalaryTotal(branch, month);
   var tExpAll  = tPayablePaid + tOtherPayable + tAcctExp + tSalary;
@@ -1483,20 +1498,6 @@ function renderSummary(rows, acctExpRows) {
   document.getElementById('ss-cash-total').textContent   = fmtS(tCash);
   var noteUnpaid = document.getElementById('ss-note-unpaid');
   if (noteUnpaid) noteUnpaid.textContent = fmtS(tPayableUnpaid);
-
-  var tCftdPayable=0, tJindaPayable=0, tIcePayable=0;
-  var tRawPayable=0, tOtherPayable=0;
-  monthPayables.forEach(function(px) {
-    if (px.desc.indexOf('CFTD') >= 0) {
-      tCftdPayable += px.amount; tRawPayable += px.amount;
-    } else if (px.desc.indexOf('นมจินดา') >= 0) {
-      tJindaPayable += px.amount; tRawPayable += px.amount;
-    } else if (px.desc.indexOf('น้ำแข็ง') >= 0 && px.cat === 'วัตถุดิบ/สินค้า') {
-      tIcePayable += px.amount; tRawPayable += px.amount;
-    } else {
-      tOtherPayable += px.amount;
-    }
-  });
 
   // ค่าใช้จ่ายอื่นๆ (ค่าเช่า ค่าน้ำไฟ ภาษี) — แสดงทุกรายการ ไม่กรองตาม paidDate
   var otherCats = ['ค่าเช่า','ค่าไฟ/น้ำ','ค่าบริการ','ภาษี','อุปกรณ์/ซ่อมบำรุง','ค่าแรง','อื่นๆ'];
@@ -1550,8 +1551,7 @@ function renderSummary(rows, acctExpRows) {
         var date   = String(r[0] || '');
         var desc   = String(r[2] || '-');
         var cat    = String(r[3] || '-');
-        var amount = parseFloat(r[4]) || 0;
-        var tr = document.createElement('tr');
+        var amount = parseFloat(r[4]) || 0;        var tr = document.createElement('tr');
         tr.innerHTML =
           '<td class="mono">' + date + '</td>'
           + '<td style="font-size:13px;">' + desc + '</td>'

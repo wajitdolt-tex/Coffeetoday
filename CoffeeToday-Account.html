@@ -584,7 +584,14 @@ tr:hover td{background:var(--bg3);}
 
   <!-- ตารางเงินเดือน -->
   <div class="card" style="padding:0;overflow:hidden;margin-bottom:20px;">
-    <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);">รายการเงินเดือนพนักงาน</div>
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <span style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);">รายการเงินเดือนพนักงาน</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:12px;color:var(--text2);">กรองเดือน:</span>
+        <input type="month" id="sal-filter-month" oninput="renderSalaries()" style="width:150px;font-size:13px;padding:4px 8px;">
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('sal-filter-month').value='';renderSalaries()">ทั้งหมด</button>
+      </div>
+    </div>
     <div class="tbl-wrap">
       <table>
         <thead><tr><th>วันที่จ่าย</th><th>สาขา</th><th>พนักงาน</th><th>เดือน</th><th>จำนวน</th><th>หมายเหตุ</th><th></th></tr></thead>
@@ -593,7 +600,7 @@ tr:hover td{background:var(--bg3);}
       <div id="sal-empty" class="empty-state" style="display:none;"><div class="icon">👤</div><p>ยังไม่มีรายการ</p></div>
     </div>
     <div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:12px;color:var(--text2);">ยอดรวมเงินเดือน</span>
+      <span style="font-size:12px;color:var(--text2);">ยอดรวมเงินเดือน <span id="sal-filter-label" style="color:var(--accent);"></span></span>
       <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--blue);font-size:15px;" id="sal-total">฿0.00</span>
     </div>
   </div>
@@ -837,6 +844,8 @@ document.addEventListener('DOMContentLoaded', function() {
   if (salDateEl) salDateEl.value = today;
   var salMonthEl = document.getElementById('sal-month');
   if (salMonthEl) salMonthEl.value = today.slice(0,7);
+  var salFilterEl = document.getElementById('sal-filter-month');
+  if (salFilterEl) salFilterEl.value = today.slice(0,7);
   var loanDateEl = document.getElementById('loan-date');
   if (loanDateEl) loanDateEl.value = today;
 
@@ -1895,17 +1904,27 @@ function getSalaryTotal(branch, month) {
 }
 
 function renderSalaries() {
-  var tbody = document.getElementById('sal-tbody');
-  var empty = document.getElementById('sal-empty');
+  var tbody   = document.getElementById('sal-tbody');
+  var empty   = document.getElementById('sal-empty');
   var totalEl = document.getElementById('sal-total');
+  var labelEl = document.getElementById('sal-filter-label');
+  var filterMonthEl = document.getElementById('sal-filter-month');
+  var filterMonth = filterMonthEl ? filterMonthEl.value : '';
   if (!tbody) return;
   tbody.innerHTML = '';
+
+  var list = filterMonth
+    ? salaries.filter(function(s) { return s.month === filterMonth || (s.date && s.date.startsWith(filterMonth)); })
+    : salaries;
+
   var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
-  var total = salaries.reduce(function(s, x) { return s + x.amount; }, 0);
+  var total = list.reduce(function(s, x) { return s + x.amount; }, 0);
   if (totalEl) totalEl.textContent = fmt(total);
-  if (!salaries.length) { empty.style.display = 'block'; return; }
+  if (labelEl) labelEl.textContent = filterMonth ? '(' + filterMonth + ')' : '';
+
+  if (!list.length) { empty.style.display = 'block'; return; }
   empty.style.display = 'none';
-  salaries.forEach(function(item) {
+  list.forEach(function(item) {
     var branchName = BRANCH_NAMES[item.branch] || item.branch;
     var tr = document.createElement('tr');
     tr.innerHTML =

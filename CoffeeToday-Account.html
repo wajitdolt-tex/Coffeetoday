@@ -1438,8 +1438,8 @@ function renderSummary(rows, acctExpRows) {
   // รายจ่ายรวมทั้งหมด — นับเฉพาะวางบิลที่ชำระแล้ว
   var tSalary = getSalaryTotal(branch, month);
   var tExpAll  = tExp + tPayablePaid + tAcctExp + tSalary;
-  // กำไร/ขาดทุน = รายรับจริง − (วางบิลที่จ่ายแล้ว + บัญชีร้าน + เงินเดือน)
-  var profit   = tIncome - (tPayablePaid + tAcctExp + tSalary);
+  // กำไร/ขาดทุน = รายรับจริง − รายจ่ายทั้งหมดที่จ่ายจริง
+  var profit   = tIncome - tExpAll;
 
   var unpaidItems = monthPayables.filter(function(px) { return !px.paid; });
   var listEl = document.getElementById('ss-unpaid-list');

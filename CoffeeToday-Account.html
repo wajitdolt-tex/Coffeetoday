@@ -1856,7 +1856,25 @@ function addRepayment(id) {
   saveAcctExp();
   renderAcctExp();
 
-  toast('บันทึกการคืนเงิน ฿' + amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + ' แล้ว ✓', 'success');
+  // sync ขึ้น Sheets อัตโนมัติ
+  var branch = cfg.branch || 'passione';
+  var branchName = BRANCH_NAMES[branch];
+  var itemsToSync = acctExps.filter(function(x) { return x.branch === branch; });
+  if (cfg.gsUrl && itemsToSync.length) {
+    var payload = JSON.stringify({
+      type: 'acctexp',
+      branch: branch,
+      branchName: branchName,
+      items: itemsToSync,
+      timestamp: new Date().toISOString()
+    });
+    var url = cfg.gsUrl + '?payload=' + encodeURIComponent(payload);
+    fetch(url, { method: 'GET', mode: 'no-cors' })
+      .then(function() { toast('ซิงค์รายการคืนเงินแล้ว ✓', 'success'); })
+      .catch(function() { toast('บันทึกการคืนเงินแล้ว แต่ sync ไม่สำเร็จ', 'error'); });
+  } else {
+    toast('บันทึกการคืนเงิน ฿' + amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + ' แล้ว ✓', 'success');
+  }
 }
 
 function delLoan(id) {

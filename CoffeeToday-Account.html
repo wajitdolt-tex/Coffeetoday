@@ -249,79 +249,73 @@ tr:hover td{background:var(--bg3);}
     <div class="card-title">วัตถุดิบวางบิลประจำ</div>
     <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">รายการที่วางบิลเป็นประจำ — กรอกแล้วกด "เพิ่มเข้ารายการวางบิล"</p>
 
-```
-<div class="payable-fixed-card">
-  <div class="payable-fixed-title">📦 วัตถุดิบ CFTD <span style="font-size:11px;color:var(--text3);font-weight:400;">(ทั้ง 2 สาขา)</span></div>
-  <div class="grid-4">
-    <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="pf-cftd-amount" placeholder="0.00" step="0.01"></div>
-    <div class="form-row"><label>วันที่สินค้าเข้า</label><input type="date" id="pf-cftd-indate"></div>
-    <div class="form-row"><label>เลขที่บิล</label><input type="text" id="pf-cftd-billno" placeholder="เลขบิล..."></div>
-    <div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pf-cftd-due"></div>
-  </div>
-  <div class="grid-2">
-    <div class="form-row"><label>สาขา</label><select id="pf-cftd-branch"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
-    <div class="form-row"><label>หมายเหตุ</label><input type="text" id="pf-cftd-note" placeholder="..."></div>
-  </div>
-  <button class="btn btn-primary btn-sm" onclick="addFixedPayable('cftd')">+ เพิ่มเข้ารายการ</button>
-</div>
+    <div class="payable-fixed-card">
+      <div class="payable-fixed-title">📦 วัตถุดิบ CFTD <span style="font-size:11px;color:var(--text3);font-weight:400;">(ทั้ง 2 สาขา)</span></div>
+      <div class="grid-4">
+        <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="pf-cftd-amount" placeholder="0.00" step="0.01"></div>
+        <div class="form-row"><label>วันที่สินค้าเข้า</label><input type="date" id="pf-cftd-indate"></div>
+        <div class="form-row"><label>เลขที่บิล</label><input type="text" id="pf-cftd-billno" placeholder="เลขบิล..."></div>
+        <div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pf-cftd-due"></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-row"><label>สาขา</label><select id="pf-cftd-branch"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
+        <div class="form-row"><label>หมายเหตุ</label><input type="text" id="pf-cftd-note" placeholder="..."></div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="addFixedPayable('cftd')">+ เพิ่มเข้ารายการ</button>
+    </div>
 
-<div class="payable-fixed-card">
-  <div class="payable-fixed-title">🥛 นมจินดา <span style="font-size:11px;color:var(--text3);font-weight:400;">(ทั้ง 2 สาขา)</span></div>
-  <div class="grid-4">
-    <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="pf-jinda-amount" placeholder="0.00" step="0.01"></div>
-    <div class="form-row"><label>วันที่สินค้าเข้า</label><input type="date" id="pf-jinda-indate"></div>
-    <div class="form-row"><label>เลขที่บิล</label><input type="text" id="pf-jinda-billno" placeholder="เลขบิล..."></div>
-    <div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pf-jinda-due"></div>
-  </div>
-  <div class="grid-2">
-    <div class="form-row"><label>สาขา</label><select id="pf-jinda-branch"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
-    <div class="form-row"><label>หมายเหตุ</label><input type="text" id="pf-jinda-note" placeholder="..."></div>
-  </div>
-  <button class="btn btn-primary btn-sm" onclick="addFixedPayable('jinda')">+ เพิ่มเข้ารายการ</button>
-</div>
+    <div class="payable-fixed-card">
+      <div class="payable-fixed-title">🥛 นมจินดา <span style="font-size:11px;color:var(--text3);font-weight:400;">(ทั้ง 2 สาขา)</span></div>
+      <div class="grid-4">
+        <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="pf-jinda-amount" placeholder="0.00" step="0.01"></div>
+        <div class="form-row"><label>วันที่สินค้าเข้า</label><input type="date" id="pf-jinda-indate"></div>
+        <div class="form-row"><label>เลขที่บิล</label><input type="text" id="pf-jinda-billno" placeholder="เลขบิล..."></div>
+        <div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pf-jinda-due"></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-row"><label>สาขา</label><select id="pf-jinda-branch"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
+        <div class="form-row"><label>หมายเหตุ</label><input type="text" id="pf-jinda-note" placeholder="..."></div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="addFixedPayable('jinda')">+ เพิ่มเข้ารายการ</button>
+    </div>
 
-<div class="payable-fixed-card" id="pf-ice-card">
-  <div class="payable-fixed-title">🧊 น้ำแข็ง <span style="font-size:11px;color:var(--text3);font-weight:400;">(โลตัสระยองเท่านั้น)</span></div>
-  <div class="grid-4">
-    <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="pf-ice-amount" placeholder="0.00" step="0.01"></div>
-    <div class="form-row"><label>วันที่สินค้าเข้า</label><input type="date" id="pf-ice-indate"></div>
-    <div class="form-row"><label>เลขที่บิล</label><input type="text" id="pf-ice-billno" placeholder="เลขบิล..."></div>
-    <div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pf-ice-due"></div>
-  </div>
-  <div class="form-row"><label>หมายเหตุ</label><input type="text" id="pf-ice-note" placeholder="..."></div>
-  <button class="btn btn-primary btn-sm" onclick="addFixedPayable('ice')">+ เพิ่มเข้ารายการ</button>
-</div>
-```
-
+    <div class="payable-fixed-card" id="pf-ice-card">
+      <div class="payable-fixed-title">🧊 น้ำแข็ง <span style="font-size:11px;color:var(--text3);font-weight:400;">(โลตัสระยองเท่านั้น)</span></div>
+      <div class="grid-4">
+        <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="pf-ice-amount" placeholder="0.00" step="0.01"></div>
+        <div class="form-row"><label>วันที่สินค้าเข้า</label><input type="date" id="pf-ice-indate"></div>
+        <div class="form-row"><label>เลขที่บิล</label><input type="text" id="pf-ice-billno" placeholder="เลขบิล..."></div>
+        <div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pf-ice-due"></div>
+      </div>
+      <div class="form-row"><label>หมายเหตุ</label><input type="text" id="pf-ice-note" placeholder="..."></div>
+      <button class="btn btn-primary btn-sm" onclick="addFixedPayable('ice')">+ เพิ่มเข้ารายการ</button>
+    </div>
   </div>
 
   <div class="card">
     <div class="card-title">ค่าใช้จ่ายประจำเดือน</div>
     <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">กรอกค่าใช้จ่ายประจำเดือน แล้วกด "เพิ่มเข้ารายการ" เพื่อติดตามสถานะการชำระ</p>
 
-```
-<div class="grid-2" style="margin-bottom:10px;">
-  <div class="form-row"><label>สาขา</label>
-    <select id="pm-branch" onchange="onPmBranchChange()">
-      <option value="passione">แพชชั่นระยอง</option>
-      <option value="lotus">โลตัสระยอง</option>
-    </select>
-  </div>
-  <div class="form-row"><label>เดือน/ปี</label><input type="month" id="pm-month"></div>
-</div>
+    <div class="grid-2" style="margin-bottom:10px;">
+      <div class="form-row"><label>สาขา</label>
+        <select id="pm-branch" onchange="onPmBranchChange()">
+          <option value="passione">แพชชั่นระยอง</option>
+          <option value="lotus">โลตัสระยอง</option>
+        </select>
+      </div>
+      <div class="form-row"><label>เดือน/ปี</label><input type="month" id="pm-month"></div>
+    </div>
 
-<div class="grid-3" style="margin-bottom:10px;">
-  <div class="form-row"><label>ค่าเช่า (฿)</label><input type="number" id="pm-rent" placeholder="0.00" step="0.01"></div>
-  <div class="form-row"><label>ค่าน้ำ/ค่าไฟ (฿)</label><input type="number" id="pm-utility" placeholder="0.00" step="0.01"></div>
-  <div class="form-row" id="pm-aircond-row" style="display:none;"><label>ค่าแอร์ส่วนกลาง (฿)</label><input type="number" id="pm-aircond" placeholder="0.00" step="0.01"></div>
-  <div class="form-row"><label>ภาษีสิ่งปลูกสร้างและที่ดิน (฿)</label><input type="number" id="pm-tax-land" placeholder="0.00" step="0.01"></div>
-  <div class="form-row"><label>ภาษีป้าย (฿)</label><input type="number" id="pm-tax-sign" placeholder="0.00" step="0.01"></div>
-  <div class="form-row"><label>ค่าใบอนุญาตผู้ประกอบการอาหาร (฿)</label><input type="number" id="pm-license" placeholder="0.00" step="0.01"></div>
-</div>
-<div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pm-due"></div>
-<button class="btn btn-primary btn-sm" onclick="addMonthlyExpenses()">+ เพิ่มเข้ารายการทั้งหมด</button>
-```
-
+    <div class="grid-3" style="margin-bottom:10px;">
+      <div class="form-row"><label>ค่าเช่า (฿)</label><input type="number" id="pm-rent" placeholder="0.00" step="0.01"></div>
+      <div class="form-row"><label>ค่าน้ำ/ค่าไฟ (฿)</label><input type="number" id="pm-utility" placeholder="0.00" step="0.01"></div>
+      <div class="form-row" id="pm-aircond-row" style="display:none;"><label>ค่าแอร์ส่วนกลาง (฿)</label><input type="number" id="pm-aircond" placeholder="0.00" step="0.01"></div>
+      <div class="form-row"><label>ภาษีสิ่งปลูกสร้างและที่ดิน (฿)</label><input type="number" id="pm-tax-land" placeholder="0.00" step="0.01"></div>
+      <div class="form-row"><label>ภาษีป้าย (฿)</label><input type="number" id="pm-tax-sign" placeholder="0.00" step="0.01"></div>
+      <div class="form-row"><label>ค่าใบอนุญาตผู้ประกอบการอาหาร (฿)</label><input type="number" id="pm-license" placeholder="0.00" step="0.01"></div>
+    </div>
+    <div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pm-due"></div>
+    <button class="btn btn-primary btn-sm" onclick="addMonthlyExpenses()">+ เพิ่มเข้ารายการทั้งหมด</button>
   </div>
 
   <div class="card">
@@ -382,175 +376,172 @@ tr:hover td{background:var(--bg3);}
       <div><button class="btn btn-primary" onclick="loadSummary()"><span id="s-txt">ดึงข้อมูล</span></button></div>
     </div>
 
-```
-<div id="s-stats" style="display:none;">
-  <div class="card" style="margin-bottom:13px;">
-    <div class="card-title">รายรับ — รายจ่าย — กำไร/ขาดทุน</div>
-    <div class="grid-3" style="margin-bottom:10px;">
-      <div class="stat-box" style="border-left:3px solid var(--green);">
-        <div class="stat-label">รายรับรวม</div>
-        <div class="stat-value pos" id="ss-sales">฿0</div>
+    <div id="s-stats" style="display:none;">
+      <div class="card" style="margin-bottom:13px;">
+        <div class="card-title">รายรับ — รายจ่าย — กำไร/ขาดทุน</div>
+        <div class="grid-3" style="margin-bottom:10px;">
+          <div class="stat-box" style="border-left:3px solid var(--green);">
+            <div class="stat-label">รายรับรวม</div>
+            <div class="stat-value pos" id="ss-sales">฿0</div>
+          </div>
+          <div class="stat-box" style="border-left:3px solid var(--red);">
+            <div class="stat-label">รายจ่ายรวม <span style="font-weight:400;font-size:10px;">(ไม่รวมค่าใช้จ่ายหน้าร้าน)</span></div>
+            <div class="stat-value neg" id="ss-exp-total">฿0</div>
+          </div>
+          <div class="stat-box" style="border-left:3px solid var(--accent);">
+            <div class="stat-label">กำไร / ขาดทุน</div>
+            <div class="stat-value" id="ss-profit">฿0</div>
+            <div id="ss-profit-note" style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.6;"></div>
+          </div>
+        </div>
+        <div style="background:var(--bg3);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:10px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">รายละเอียดรายจ่าย</div>
+          <div class="grid-3">
+            <div class="stat-box" style="background:var(--bg2);opacity:0.7;">
+              <div class="stat-label" style="color:var(--text3);">ค่าใช้จ่ายหน้าร้าน <span style="font-weight:400;">(หักจาก Cash แล้ว)</span></div>
+              <div class="stat-value" id="ss-exp" style="color:var(--text2);">฿0</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px;">ถูกหักออกจากยอดขายก่อนส่ง Pay In แล้ว<br>ไม่นับซ้ำในรายจ่ายรวม</div>
+            </div>
+            <div class="stat-box" style="background:var(--bg2);border-left:3px solid var(--green);">
+              <div class="stat-label">วางบิล (ชำระแล้ว) ✓</div>
+              <div class="stat-value pos" id="ss-payable-raw">฿0</div>
+            </div>
+            <div class="stat-box" style="background:var(--bg2);border-left:3px solid var(--red);">
+              <div class="stat-label">วางบิล (ยังค้างชำระ) ⚠</div>
+              <div class="stat-value neg" id="ss-payable-unpaid-detail">฿0</div>
+            </div>
+            <div class="stat-box" style="background:var(--bg2);">
+              <div class="stat-label">ค่าใช้จ่ายอื่นๆ (เช่า/ไฟ/ภาษี)</div>
+              <div class="stat-value" id="ss-payable-other">฿0</div>
+            </div>
+            <div class="stat-box" style="background:var(--bg2);">
+              <div class="stat-label">บัญชีร้าน</div>
+              <div class="stat-value" id="ss-acctexp-total">฿0</div>
+            </div>
+            <div class="stat-box" style="background:var(--bg2);border-left:3px solid var(--blue);">
+              <div class="stat-label">เงินเดือนพนักงาน</div>
+              <div class="stat-value" id="ss-salary-total">฿0</div>
+            </div>
+          </div>
+          <div style="margin-top:10px;padding:8px 10px;background:rgba(160,120,32,.07);border-radius:var(--r-sm);font-size:11px;color:var(--yellow);">
+            ⚠ วางบิลที่ยังค้างชำระ <span style="font-family:'DM Mono',monospace;font-weight:600;" id="ss-note-unpaid">฿0</span> — ไม่นับรวมในรายจ่ายเดือนนี้ เพราะยังไม่ได้จ่ายจริง
+          </div>
+        </div>
+        <div class="grid-3">
+          <div class="stat-box"><div class="stat-label">ยอด Pay In รวม</div><div class="stat-value" id="ss-payin">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">ค่าวางบิลรวมเดือนนี้</div><div class="stat-value" id="ss-payable-paid">฿0</div></div>
+          <div class="stat-box"><div class="stat-label" style="color:var(--red);">ค้างชำระ</div><div class="stat-value neg" id="ss-payable-unpaid-top">฿0</div></div>
+        </div>
       </div>
-      <div class="stat-box" style="border-left:3px solid var(--red);">
-        <div class="stat-label">รายจ่ายรวม <span style="font-weight:400;font-size:10px;">(ไม่รวมค่าใช้จ่ายหน้าร้าน)</span></div>
-        <div class="stat-value neg" id="ss-exp-total">฿0</div>
-      </div>
-      <div class="stat-box" style="border-left:3px solid var(--accent);">
-        <div class="stat-label">กำไร / ขาดทุน</div>
-        <div class="stat-value" id="ss-profit">฿0</div>
-        <div id="ss-profit-note" style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.6;"></div>
-      </div>
-    </div>
-    <div style="background:var(--bg3);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:10px;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">รายละเอียดรายจ่าย</div>
-      <div class="grid-3">
-        <div class="stat-box" style="background:var(--bg2);opacity:0.7;">
-          <div class="stat-label" style="color:var(--text3);">ค่าใช้จ่ายหน้าร้าน <span style="font-weight:400;">(หักจาก Cash แล้ว)</span></div>
-          <div class="stat-value" id="ss-exp" style="color:var(--text2);">฿0</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:4px;">ถูกหักออกจากยอดขายก่อนส่ง Pay In แล้ว<br>ไม่นับซ้ำในรายจ่ายรวม</div>
-        </div>
-        <div class="stat-box" style="background:var(--bg2);border-left:3px solid var(--green);">
-          <div class="stat-label">วางบิล (ชำระแล้ว) ✓</div>
-          <div class="stat-value pos" id="ss-payable-raw">฿0</div>
-        </div>
-        <div class="stat-box" style="background:var(--bg2);border-left:3px solid var(--red);">
-          <div class="stat-label">วางบิล (ยังค้างชำระ) ⚠</div>
-          <div class="stat-value neg" id="ss-payable-unpaid-detail">฿0</div>
-        </div>
-        <div class="stat-box" style="background:var(--bg2);">
-          <div class="stat-label">ค่าใช้จ่ายอื่นๆ (เช่า/ไฟ/ภาษี)</div>
-          <div class="stat-value" id="ss-payable-other">฿0</div>
-        </div>
-        <div class="stat-box" style="background:var(--bg2);">
-          <div class="stat-label">บัญชีร้าน</div>
-          <div class="stat-value" id="ss-acctexp-total">฿0</div>
-        </div>
-        <div class="stat-box" style="background:var(--bg2);border-left:3px solid var(--blue);">
-          <div class="stat-label">เงินเดือนพนักงาน</div>
-          <div class="stat-value" id="ss-salary-total">฿0</div>
-        </div>
-      </div>
-      <div style="margin-top:10px;padding:8px 10px;background:rgba(160,120,32,.07);border-radius:var(--r-sm);font-size:11px;color:var(--yellow);">
-        ⚠ วางบิลที่ยังค้างชำระ <span style="font-family:'DM Mono',monospace;font-weight:600;" id="ss-note-unpaid">฿0</span> — ไม่นับรวมในรายจ่ายเดือนนี้ เพราะยังไม่ได้จ่ายจริง
-      </div>
-    </div>
-    <div class="grid-3">
-      <div class="stat-box"><div class="stat-label">ยอด Pay In รวม</div><div class="stat-value" id="ss-payin">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">ค่าวางบิลรวมเดือนนี้</div><div class="stat-value" id="ss-payable-paid">฿0</div></div>
-      <div class="stat-box"><div class="stat-label" style="color:var(--red);">ค้างชำระ</div><div class="stat-value neg" id="ss-payable-unpaid-top">฿0</div></div>
-    </div>
-  </div>
 
-  <div class="card" style="margin-bottom:13px;">
-    <div class="card-title">ช่องทางรับเงิน</div>
+      <div class="card" style="margin-bottom:13px;">
+        <div class="card-title">ช่องทางรับเงิน</div>
+        <div class="grid-3" style="margin-bottom:13px;">
+          <div class="stat-box"><div class="stat-label">QR Payment</div><div class="stat-value" id="ss-qr-total">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">Line Man (รวม)</div><div class="stat-value" id="ss-lineman-total">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">Cash (ยอดปิดกะ)</div><div class="stat-value" id="ss-cash-total">฿0</div></div>
+        </div>
+        <div style="background:var(--blue-t);border:1px solid rgba(37,99,168,.2);border-radius:var(--r-sm);padding:14px 16px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;">💳 Line Man — ยอดเข้าบัญชีคุณซัน</div>
+          <div class="grid-2">
+            <div class="form-row">
+              <label>ยอดที่ Line Man โอนเข้าบัญชีคุณซัน (฿)</label>
+              <input type="number" id="ss-lineman-sun" placeholder="กรอกหลังได้รับสรุปยอดจาก Line Man" step="0.01">
+            </div>
+            <div class="form-row">
+              <label>หมายเหตุ / รอบที่</label>
+              <input type="text" id="ss-lineman-sun-note" placeholder="เช่น รอบ 1-15 เม.ย.">
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+            <button class="btn btn-sm" style="background:var(--blue);color:#fff;" onclick="saveLinemanSun()">บันทึก</button>
+            <span style="font-size:12px;color:var(--text2);" id="ss-lineman-sun-saved"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:13px;">
+        <div class="card-title">ค่าใช้จ่ายหน้าร้าน</div>
+        <div class="grid-3">
+          <div class="stat-box"><div class="stat-label">น้ำแข็ง</div><div class="stat-value" id="ss-ice">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">นมเมจิ</div><div class="stat-value" id="ss-meji">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">น้ำตาลทราย</div><div class="stat-value" id="ss-sugar">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">โซดา</div><div class="stat-value" id="ss-soda">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">โยเกิร์ต</div><div class="stat-value" id="ss-yogurt">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">Bakery</div><div class="stat-value" id="ss-bakery">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">มะนาวสด</div><div class="stat-value" id="ss-lime">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">น้ำมะพร้าว</div><div class="stat-value" id="ss-coconut">฿0</div></div>
+          <div class="stat-box" style="border-left:3px solid var(--accent);"><div class="stat-label">อื่นๆ (รายการเพิ่มเติม)</div><div class="stat-value" id="ss-extra">฿0</div></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:13px;">
+        <div class="card-title">ค่าใช้จ่ายวางบิล (วัตถุดิบ)</div>
+        <div class="grid-3">
+          <div class="stat-box" id="ss-cftd-box"><div class="stat-label">วัตถุดิบ CFTD</div><div class="stat-value" id="ss-cftd">฿0</div></div>
+          <div class="stat-box" id="ss-jinda-box"><div class="stat-label">นมจินดา</div><div class="stat-value" id="ss-jinda">฿0</div></div>
+          <div class="stat-box" id="ss-ice-box"><div class="stat-label">น้ำแข็ง (วางบิล)</div><div class="stat-value" id="ss-ice-payable">฿0</div></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:13px;">
+        <div class="card-title">ค่าใช้จ่ายอื่นๆ ประจำเดือน</div>
+        <div class="grid-3" id="ss-other-expenses">
+          <div class="stat-box" style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:13px;">
+        <div class="card-title">ค่าใช้จ่ายบัญชีร้าน</div>
+        <div class="grid-3" id="ss-acctexp-expenses">
+          <div class="stat-box" style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>
+        </div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:12px;color:var(--text2);">รวมคืนเงินยืมเดือนนี้</span>
+          <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--yellow);font-size:14px;" id="ss-loan-repay">฿0</span>
+        </div>
+      </div>
+
+      <!-- ตารางรายการบัญชีร้านแยกรายการ -->
+      <div class="card" style="padding:0;overflow:hidden;margin-top:13px;">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);">รายการบัญชีร้านเดือนนี้</span>
+          <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--accent);font-size:13px;" id="ss-acctexp-list-total">฿0.00</span>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>วันที่</th><th>รายการ</th><th>หมวด</th><th>จำนวน</th></tr></thead>
+            <tbody id="ss-acctexp-tbody"></tbody>
+          </table>
+          <div id="ss-acctexp-list-empty" class="empty-state" style="padding:16px;display:none;"><p>ยังไม่มีข้อมูล</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:13px;">
+      <div class="card-title">รายการวางบิลค้างชำระ (เดือนนี้)</div>
+      <div id="ss-unpaid-list">
+        <div class="empty-state" style="padding:20px;"><p>ไม่มีรายการค้างชำระในเดือนนี้ ✓</p></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+        <span style="font-size:12px;color:var(--text2);">ยอดค้างชำระทั้งหมด</span>
+        <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--red);font-size:16px;" id="ss-unpaid-total">฿0</span>
+      </div>
+    </div>
+
     <div class="grid-3" style="margin-bottom:13px;">
-      <div class="stat-box"><div class="stat-label">QR Payment</div><div class="stat-value" id="ss-qr-total">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">Line Man (รวม)</div><div class="stat-value" id="ss-lineman-total">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">Cash (ยอดปิดกะ)</div><div class="stat-value" id="ss-cash-total">฿0</div></div>
+      <div class="stat-box"><div class="stat-label">QR สูงสุดวันที่</div><div class="stat-value" id="ss-qr" style="font-size:13px;">-</div></div>
+      <div class="stat-box"><div class="stat-label">ยอดขายสูงสุดวันที่</div><div class="stat-value" id="ss-maxsale" style="font-size:13px;">-</div></div>
+      <div class="stat-box"><div class="stat-label">จำนวนวันที่บันทึก</div><div class="stat-value" id="ss-days">0</div></div>
     </div>
-    <div style="background:var(--blue-t);border:1px solid rgba(37,99,168,.2);border-radius:var(--r-sm);padding:14px 16px;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;">💳 Line Man — ยอดเข้าบัญชีคุณซัน</div>
-      <div class="grid-2">
-        <div class="form-row">
-          <label>ยอดที่ Line Man โอนเข้าบัญชีคุณซัน (฿)</label>
-          <input type="number" id="ss-lineman-sun" placeholder="กรอกหลังได้รับสรุปยอดจาก Line Man" step="0.01">
-        </div>
-        <div class="form-row">
-          <label>หมายเหตุ / รอบที่</label>
-          <input type="text" id="ss-lineman-sun-note" placeholder="เช่น รอบ 1-15 เม.ย.">
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
-        <button class="btn btn-sm" style="background:var(--blue);color:#fff;" onclick="saveLinemanSun()">บันทึก</button>
-        <span style="font-size:12px;color:var(--text2);" id="ss-lineman-sun-saved"></span>
+
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div class="tbl-wrap">
+        <table><thead><tr><th>วันที่</th><th>Sub Total</th><th>Discount</th><th>ยอดสุทธิ</th><th>QR</th><th>Cash</th><th>ค่าใช้จ่าย</th><th>Pay In</th></tr></thead>
+        <tbody id="s-tbody"></tbody></table>
       </div>
     </div>
-  </div>
-
-  <div class="card" style="margin-bottom:13px;">
-    <div class="card-title">ค่าใช้จ่ายหน้าร้าน</div>
-    <div class="grid-3">
-      <div class="stat-box"><div class="stat-label">น้ำแข็ง</div><div class="stat-value" id="ss-ice">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">นมเมจิ</div><div class="stat-value" id="ss-meji">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">น้ำตาลทราย</div><div class="stat-value" id="ss-sugar">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">โซดา</div><div class="stat-value" id="ss-soda">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">โยเกิร์ต</div><div class="stat-value" id="ss-yogurt">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">Bakery</div><div class="stat-value" id="ss-bakery">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">มะนาวสด</div><div class="stat-value" id="ss-lime">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">น้ำมะพร้าว</div><div class="stat-value" id="ss-coconut">฿0</div></div>
-      <div class="stat-box" style="border-left:3px solid var(--accent);"><div class="stat-label">อื่นๆ (รายการเพิ่มเติม)</div><div class="stat-value" id="ss-extra">฿0</div></div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-bottom:13px;">
-    <div class="card-title">ค่าใช้จ่ายวางบิล (วัตถุดิบ)</div>
-    <div class="grid-3">
-      <div class="stat-box" id="ss-cftd-box"><div class="stat-label">วัตถุดิบ CFTD</div><div class="stat-value" id="ss-cftd">฿0</div></div>
-      <div class="stat-box" id="ss-jinda-box"><div class="stat-label">นมจินดา</div><div class="stat-value" id="ss-jinda">฿0</div></div>
-      <div class="stat-box" id="ss-ice-box"><div class="stat-label">น้ำแข็ง (วางบิล)</div><div class="stat-value" id="ss-ice-payable">฿0</div></div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-bottom:13px;">
-    <div class="card-title">ค่าใช้จ่ายอื่นๆ ประจำเดือน</div>
-    <div class="grid-3" id="ss-other-expenses">
-      <div class="stat-box" style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-bottom:13px;">
-    <div class="card-title">ค่าใช้จ่ายบัญชีร้าน</div>
-    <div class="grid-3" id="ss-acctexp-expenses">
-      <div class="stat-box" style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>
-    </div>
-    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:12px;color:var(--text2);">รวมคืนเงินยืมเดือนนี้</span>
-      <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--yellow);font-size:14px;" id="ss-loan-repay">฿0</span>
-    </div>
-  </div>
-
-  <!-- ตารางรายการบัญชีร้านแยกรายการ -->
-  <div class="card" style="padding:0;overflow:hidden;margin-top:13px;">
-    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);">รายการบัญชีร้านเดือนนี้</span>
-      <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--accent);font-size:13px;" id="ss-acctexp-list-total">฿0.00</span>
-    </div>
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr><th>วันที่</th><th>รายการ</th><th>หมวด</th><th>จำนวน</th></tr></thead>
-        <tbody id="ss-acctexp-tbody"></tbody>
-      </table>
-      <div id="ss-acctexp-list-empty" class="empty-state" style="padding:16px;display:none;"><p>ยังไม่มีข้อมูล</p></div>
-    </div>
-  </div>
-</div>
-
-<div class="card" style="margin-bottom:13px;">
-  <div class="card-title">รายการวางบิลค้างชำระ (เดือนนี้)</div>
-  <div id="ss-unpaid-list">
-    <div class="empty-state" style="padding:20px;"><p>ไม่มีรายการค้างชำระในเดือนนี้ ✓</p></div>
-  </div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
-    <span style="font-size:12px;color:var(--text2);">ยอดค้างชำระทั้งหมด</span>
-    <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--red);font-size:16px;" id="ss-unpaid-total">฿0</span>
-  </div>
-</div>
-
-<div class="grid-3" style="margin-bottom:13px;">
-  <div class="stat-box"><div class="stat-label">QR สูงสุดวันที่</div><div class="stat-value" id="ss-qr" style="font-size:13px;">-</div></div>
-  <div class="stat-box"><div class="stat-label">ยอดขายสูงสุดวันที่</div><div class="stat-value" id="ss-maxsale" style="font-size:13px;">-</div></div>
-  <div class="stat-box"><div class="stat-label">จำนวนวันที่บันทึก</div><div class="stat-value" id="ss-days">0</div></div>
-</div>
-
-<div class="card" style="padding:0;overflow:hidden;">
-  <div class="tbl-wrap">
-    <table><thead><tr><th>วันที่</th><th>Sub Total</th><th>Discount</th><th>ยอดสุทธิ</th><th>QR</th><th>Cash</th><th>ค่าใช้จ่าย</th><th>Pay In</th></tr></thead>
-    <tbody id="s-tbody"></tbody></table>
-  </div>
-</div>
-<div id="s-empty" class="empty-state"><div class="icon">📊</div><p>เลือกสาขาและเดือน แล้วกดดึงข้อมูล</p></div>
-```
-
+    <div id="s-empty" class="empty-state"><div class="icon">📊</div><p>เลือกสาขาและเดือน แล้วกดดึงข้อมูล</p></div>
   </div>
 
   <div id="stab-year-content" style="display:none;">
@@ -560,35 +551,32 @@ tr:hover td{background:var(--bg3);}
       <div><button class="btn btn-primary" onclick="loadYearly()"><span id="sy-txt">ดึงข้อมูล</span></button></div>
     </div>
 
-```
-<div id="sy-stats" style="display:none;">
-  <div class="grid-3" style="margin-bottom:13px;">
-    <div class="stat-box" style="border-left:3px solid var(--green);">
-      <div class="stat-label">รายรับรวมทั้งปี</div>
-      <div class="stat-value pos" id="sy-sales">฿0</div>
+    <div id="sy-stats" style="display:none;">
+      <div class="grid-3" style="margin-bottom:13px;">
+        <div class="stat-box" style="border-left:3px solid var(--green);">
+          <div class="stat-label">รายรับรวมทั้งปี</div>
+          <div class="stat-value pos" id="sy-sales">฿0</div>
+        </div>
+        <div class="stat-box" style="border-left:3px solid var(--red);">
+          <div class="stat-label">รายจ่ายรวมทั้งปี</div>
+          <div class="stat-value neg" id="sy-exp">฿0</div>
+        </div>
+        <div class="stat-box" style="border-left:3px solid var(--accent);">
+          <div class="stat-label">กำไร/ขาดทุนรวมทั้งปี</div>
+          <div class="stat-value" id="sy-profit">฿0</div>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>เดือน</th><th>รายรับ</th><th>ค่าใช้จ่าย</th><th>กำไร/ขาดทุน</th><th>Pay In</th><th>วันที่บันทึก</th></tr></thead>
+            <tbody id="sy-tbody"></tbody>
+            <tfoot id="sy-tfoot"></tfoot>
+          </table>
+        </div>
+      </div>
     </div>
-    <div class="stat-box" style="border-left:3px solid var(--red);">
-      <div class="stat-label">รายจ่ายรวมทั้งปี</div>
-      <div class="stat-value neg" id="sy-exp">฿0</div>
-    </div>
-    <div class="stat-box" style="border-left:3px solid var(--accent);">
-      <div class="stat-label">กำไร/ขาดทุนรวมทั้งปี</div>
-      <div class="stat-value" id="sy-profit">฿0</div>
-    </div>
-  </div>
-  <div class="card" style="padding:0;overflow:hidden;">
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr><th>เดือน</th><th>รายรับ</th><th>ค่าใช้จ่าย</th><th>กำไร/ขาดทุน</th><th>Pay In</th><th>วันที่บันทึก</th></tr></thead>
-        <tbody id="sy-tbody"></tbody>
-        <tfoot id="sy-tfoot"></tfoot>
-      </table>
-    </div>
-  </div>
-</div>
-<div id="sy-empty" class="empty-state"><div class="icon">📅</div><p>เลือกสาขาและปี แล้วกดดึงข้อมูล</p></div>
-```
-
+    <div id="sy-empty" class="empty-state"><div class="icon">📅</div><p>เลือกสาขาและปี แล้วกดดึงข้อมูล</p></div>
   </div>
 </div>
 
@@ -598,7 +586,6 @@ tr:hover td{background:var(--bg3);}
   <div class="page-header"><h1>บัญชีร้าน</h1><p>บันทึกค่าใช้จ่ายที่หักผ่านบัญชีร้าน — กรอกได้อิสระ ไม่ต้องกรอกยอดขาย</p></div>
 
   <!-- เงินเดือนพนักงาน -->
-
   <div class="card" style="border-color:rgba(37,99,168,.25);background:var(--blue-t);">
     <div class="card-title" style="color:var(--blue);">เงินเดือนพนักงาน</div>
     <div class="grid-3">
@@ -620,7 +607,6 @@ tr:hover td{background:var(--bg3);}
   </div>
 
   <!-- ตารางเงินเดือน -->
-
   <div class="card" style="padding:0;overflow:hidden;margin-bottom:20px;">
     <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
       <span style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);">รายการเงินเดือนพนักงาน</span>
@@ -705,41 +691,37 @@ tr:hover td{background:var(--bg3);}
   </div>
 
   <!-- เงินยืม -->
-
   <div class="card" style="border-color:rgba(160,120,32,.25);background:rgba(160,120,32,.05);margin-top:8px;">
     <div class="card-title" style="color:var(--yellow);">เงินยืม</div>
 
-```
-<!-- เพิ่มการยืม -->
-<div style="margin-bottom:16px;">
-  <div class="sec-label">บันทึกการยืม</div>
-  <div class="grid-3">
-    <div class="form-row"><label>วันที่ยืม</label><input type="date" id="loan-date"></div>
-    <div class="form-row"><label>ยืมจาก</label><input type="text" id="loan-from" placeholder="เช่น เจ้าของ, คุณซัน..."></div>
-    <div class="form-row"><label>จำนวน (฿)</label><input type="number" id="loan-amount" placeholder="0.00" step="0.01"></div>
-  </div>
-  <div class="form-row"><label>ใช้จ่ายเพื่ออะไร</label><input type="text" id="loan-purpose" placeholder="เช่น จ่ายค่าเช่าก่อน, ซื้อวัตถุดิบ..."></div>
-  <button class="btn btn-sm" style="background:var(--yellow);color:#fff;" onclick="addLoan()">+ บันทึกการยืม</button>
-</div>
+    <!-- เพิ่มการยืม -->
+    <div style="margin-bottom:16px;">
+      <div class="sec-label">บันทึกการยืม</div>
+      <div class="grid-3">
+        <div class="form-row"><label>วันที่ยืม</label><input type="date" id="loan-date"></div>
+        <div class="form-row"><label>ยืมจาก</label><input type="text" id="loan-from" placeholder="เช่น เจ้าของ, คุณซัน..."></div>
+        <div class="form-row"><label>จำนวน (฿)</label><input type="number" id="loan-amount" placeholder="0.00" step="0.01"></div>
+      </div>
+      <div class="form-row"><label>ใช้จ่ายเพื่ออะไร</label><input type="text" id="loan-purpose" placeholder="เช่น จ่ายค่าเช่าก่อน, ซื้อวัตถุดิบ..."></div>
+      <button class="btn btn-sm" style="background:var(--yellow);color:#fff;" onclick="addLoan()">+ บันทึกการยืม</button>
+    </div>
 
-<hr class="divider">
+    <hr class="divider">
 
-<!-- รายการยืมทั้งหมด -->
-<div class="tbl-wrap">
-  <table>
-    <thead><tr><th>วันที่ยืม</th><th>ยืมจาก</th><th>จำนวน</th><th>ใช้เพื่อ</th><th>ยังค้างอยู่</th><th>สถานะ</th><th></th></tr></thead>
-    <tbody id="loan-tbody"></tbody>
-  </table>
-  <div id="loan-empty" class="empty-state" style="display:none;"><div class="icon">💰</div><p>ยังไม่มีรายการ</p></div>
-</div>
+    <!-- รายการยืมทั้งหมด -->
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>วันที่ยืม</th><th>ยืมจาก</th><th>จำนวน</th><th>ใช้เพื่อ</th><th>ยังค้างอยู่</th><th>สถานะ</th><th></th></tr></thead>
+        <tbody id="loan-tbody"></tbody>
+      </table>
+      <div id="loan-empty" class="empty-state" style="display:none;"><div class="icon">💰</div><p>ยังไม่มีรายการ</p></div>
+    </div>
 
-<div class="grid-3" style="margin-top:13px;">
-  <div class="stat-box"><div class="stat-label">ยืมทั้งหมด</div><div class="stat-value" id="loan-tot-all">฿0.00</div></div>
-  <div class="stat-box"><div class="stat-label">คืนแล้ว</div><div class="stat-value pos" id="loan-tot-paid">฿0.00</div></div>
-  <div class="stat-box"><div class="stat-label" style="color:var(--red);">ยังค้างคืน</div><div class="stat-value neg" id="loan-tot-remain">฿0.00</div></div>
-</div>
-```
-
+    <div class="grid-3" style="margin-top:13px;">
+      <div class="stat-box"><div class="stat-label">ยืมทั้งหมด</div><div class="stat-value" id="loan-tot-all">฿0.00</div></div>
+      <div class="stat-box"><div class="stat-label">คืนแล้ว</div><div class="stat-value pos" id="loan-tot-paid">฿0.00</div></div>
+      <div class="stat-box"><div class="stat-label" style="color:var(--red);">ยังค้างคืน</div><div class="stat-value neg" id="loan-tot-remain">฿0.00</div></div>
+    </div>
   </div>
 </div>
 
@@ -790,73 +772,70 @@ tr:hover td{background:var(--bg3);}
       <p>ข้อมูลหลังบ้าน Coffee Today — <span style="color:var(--red);font-size:12px;cursor:pointer;" onclick="lockAdmin()">ออกจากระบบ</span></p>
     </div>
 
-```
-<div class="card">
-  <div class="card-title">ข้อมูลระบบ</div>
-  <div class="grid-3">
-    <div class="stat-box"><div class="stat-label">รายการวางบิลทั้งหมด</div><div class="stat-value" id="adm-payable-count">0</div></div>
-    <div class="stat-box"><div class="stat-label">ค้างชำระทั้งหมด</div><div class="stat-value neg" id="adm-unpaid-total">฿0</div></div>
-    <div class="stat-box"><div class="stat-label">ชำระแล้วทั้งหมด</div><div class="stat-value pos" id="adm-paid-total">฿0</div></div>
-  </div>
-</div>
+    <div class="card">
+      <div class="card-title">ข้อมูลระบบ</div>
+      <div class="grid-3">
+        <div class="stat-box"><div class="stat-label">รายการวางบิลทั้งหมด</div><div class="stat-value" id="adm-payable-count">0</div></div>
+        <div class="stat-box"><div class="stat-label">ค้างชำระทั้งหมด</div><div class="stat-value neg" id="adm-unpaid-total">฿0</div></div>
+        <div class="stat-box"><div class="stat-label">ชำระแล้วทั้งหมด</div><div class="stat-value pos" id="adm-paid-total">฿0</div></div>
+      </div>
+    </div>
 
-<div class="card">
-  <div class="card-title">รายการวางบิลทั้งหมด</div>
-  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-    <select id="adm-filter-branch" onchange="renderAdminPayables()" style="width:auto;">
-      <option value="">ทุกสาขา</option>
-      <option value="passione">แพชชั่นระยอง</option>
-      <option value="lotus">โลตัสระยอง</option>
-    </select>
-    <select id="adm-filter-status" onchange="renderAdminPayables()" style="width:auto;">
-      <option value="">ทุกสถานะ</option>
-      <option value="unpaid">ค้างชำระ</option>
-      <option value="paid">ชำระแล้ว</option>
-    </select>
-    <select id="adm-filter-cat" onchange="renderAdminPayables()" style="width:auto;">
-      <option value="">ทุกหมวด</option>
-      <option>วัตถุดิบ/สินค้า</option>
-      <option>ค่าเช่า</option>
-      <option>ค่าไฟ/น้ำ</option>
-      <option>ค่าแรง</option>
-      <option>ค่าบริการ</option>
-      <option>ภาษี</option>
-      <option>อุปกรณ์/ซ่อมบำรุง</option>
-      <option>อื่นๆ</option>
-    </select>
-  </div>
-  <div class="tbl-wrap">
-    <table>
-      <thead><tr><th>วันที่</th><th>สาขา</th><th>รายการ</th><th>หมวด</th><th>เลขบิล</th><th>จำนวน</th><th>กำหนดจ่าย</th><th>สถานะ</th><th>วันที่ชำระ</th></tr></thead>
-      <tbody id="adm-tbody"></tbody>
-    </table>
-    <div id="adm-empty" class="empty-state" style="display:none;"><div class="icon">📋</div><p>ไม่มีข้อมูล</p></div>
-  </div>
-  <div style="display:flex;justify-content:flex-end;margin-top:12px;gap:8px;">
-    <button class="btn btn-outline btn-sm" onclick="exportAdminCSV()">⬇ Export CSV</button>
-  </div>
-</div>
+    <div class="card">
+      <div class="card-title">รายการวางบิลทั้งหมด</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+        <select id="adm-filter-branch" onchange="renderAdminPayables()" style="width:auto;">
+          <option value="">ทุกสาขา</option>
+          <option value="passione">แพชชั่นระยอง</option>
+          <option value="lotus">โลตัสระยอง</option>
+        </select>
+        <select id="adm-filter-status" onchange="renderAdminPayables()" style="width:auto;">
+          <option value="">ทุกสถานะ</option>
+          <option value="unpaid">ค้างชำระ</option>
+          <option value="paid">ชำระแล้ว</option>
+        </select>
+        <select id="adm-filter-cat" onchange="renderAdminPayables()" style="width:auto;">
+          <option value="">ทุกหมวด</option>
+          <option>วัตถุดิบ/สินค้า</option>
+          <option>ค่าเช่า</option>
+          <option>ค่าไฟ/น้ำ</option>
+          <option>ค่าแรง</option>
+          <option>ค่าบริการ</option>
+          <option>ภาษี</option>
+          <option>อุปกรณ์/ซ่อมบำรุง</option>
+          <option>อื่นๆ</option>
+        </select>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>วันที่</th><th>สาขา</th><th>รายการ</th><th>หมวด</th><th>เลขบิล</th><th>จำนวน</th><th>กำหนดจ่าย</th><th>สถานะ</th><th>วันที่ชำระ</th></tr></thead>
+          <tbody id="adm-tbody"></tbody>
+        </table>
+        <div id="adm-empty" class="empty-state" style="display:none;"><div class="icon">📋</div><p>ไม่มีข้อมูล</p></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px;gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="exportAdminCSV()">⬇ Export CSV</button>
+      </div>
+    </div>
 
-<div class="card">
-  <div class="card-title">ยอด Line Man บัญชีคุณซัน (ทุกเดือน)</div>
-  <div class="tbl-wrap">
-    <table>
-      <thead><tr><th>เดือน</th><th>สาขา</th><th>ยอดรับ</th><th>หมายเหตุ</th></tr></thead>
-      <tbody id="adm-lineman-tbody"></tbody>
-    </table>
-    <div id="adm-lineman-empty" class="empty-state" style="display:none;padding:20px;"><p>ยังไม่มีข้อมูล</p></div>
-  </div>
-</div>
+    <div class="card">
+      <div class="card-title">ยอด Line Man บัญชีคุณซัน (ทุกเดือน)</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>เดือน</th><th>สาขา</th><th>ยอดรับ</th><th>หมายเหตุ</th></tr></thead>
+          <tbody id="adm-lineman-tbody"></tbody>
+        </table>
+        <div id="adm-lineman-empty" class="empty-state" style="display:none;padding:20px;"><p>ยังไม่มีข้อมูล</p></div>
+      </div>
+    </div>
 
-<div class="card" style="border-color:rgba(184,64,64,.3);">
-  <div class="card-title" style="color:var(--red);">⚠ Danger Zone</div>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;">
-    <button class="btn btn-danger btn-sm" onclick="adminClearPaid()">ลบรายการที่ชำระแล้วทั้งหมด</button>
-    <button class="btn btn-danger btn-sm" onclick="adminClearAll()">ล้างข้อมูลวางบิลทั้งหมด</button>
-  </div>
-</div>
-```
-
+    <div class="card" style="border-color:rgba(184,64,64,.3);">
+      <div class="card-title" style="color:var(--red);">⚠ Danger Zone</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-danger btn-sm" onclick="adminClearPaid()">ลบรายการที่ชำระแล้วทั้งหมด</button>
+        <button class="btn btn-danger btn-sm" onclick="adminClearAll()">ล้างข้อมูลวางบิลทั้งหมด</button>
+      </div>
+    </div>
   </div>
 </div>
 

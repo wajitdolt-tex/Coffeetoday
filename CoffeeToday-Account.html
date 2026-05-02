@@ -1153,8 +1153,19 @@ function addPayable() {
 function togglePaid(id) {
   var item = payables.find(function(p) { return p.id === id; });
   if (!item) return;
-  item.paid = !item.paid;
-  item.paidDate = item.paid ? new Date().toISOString().split('T')[0] : null;
+  if (!item.paid) {
+    // กำลังจะเปลี่ยนเป็นชำระแล้ว — ให้กรอกวันที่จ่ายจริง
+    var defaultDate = new Date().toISOString().split('T')[0];
+    var paidDate = prompt('กรอกวันที่ชำระจริง (YYYY-MM-DD):', defaultDate);
+    if (!paidDate) return; // กด cancel
+    item.paid = true;
+    item.paidDate = paidDate;
+  } else {
+    // ยกเลิกการชำระ
+    if (!confirm('ยกเลิกการชำระรายการนี้?')) return;
+    item.paid = false;
+    item.paidDate = null;
+  }
   savePay(); renderPayables();
 }
 

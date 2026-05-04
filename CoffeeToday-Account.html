@@ -1532,6 +1532,11 @@ function renderSummary(rows, acctExpRows) {
   var fmt  = function(v) { return '฿'+(parseFloat(v)||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
   var fmtS = fmt;
   var p    = function(r,i) { return parseFloat(r[i])||0; };
+  var toCleanDate = function(val) {
+    var s = String(val||'');
+    if (s.indexOf('T') >= 0) s = s.split('T')[0];
+    return s;
+  };
 
   rows.forEach(function(r) {
     var sales=p(r,3), qr=p(r,7), lineman=p(r,9), cash=p(r,10), exp=p(r,14), pi=p(r,16);
@@ -1545,8 +1550,8 @@ function renderSummary(rows, acctExpRows) {
     tSugar +=p(r,23); tSoda  +=p(r,24);
     tYogurt+=p(r,25); tBakery+=p(r,26);
     tLime  +=p(r,27); tCoconut+=p(r,28);
-    if (qr>maxQr)      { maxQr=qr;    maxQrDate=r[0]; }
-    if (sales>maxSale) { maxSale=sales; maxSaleDate=r[0]; }
+    if (qr>maxQr)      { maxQr=qr;    maxQrDate=toCleanDate(r[0]); }
+    if (sales>maxSale) { maxSale=sales; maxSaleDate=toCleanDate(r[0]); }
     var tr=document.createElement('tr');
     var rowDate = String(r[0]||'');
     if (rowDate.indexOf('T') >= 0) rowDate = rowDate.split('T')[0];

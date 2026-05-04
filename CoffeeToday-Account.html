@@ -1548,7 +1548,9 @@ function renderSummary(rows, acctExpRows) {
     if (qr>maxQr)      { maxQr=qr;    maxQrDate=r[0]; }
     if (sales>maxSale) { maxSale=sales; maxSaleDate=r[0]; }
     var tr=document.createElement('tr');
-    tr.innerHTML='<td class="mono">'+r[0]+'</td><td class="mono">'+fmt(p(r,3))+'</td><td class="mono">'+fmt(p(r,4))+'</td><td class="mono">'+fmt(p(r,6))+'</td><td class="mono">'+fmt(p(r,7))+'</td><td class="mono">'+fmt(p(r,10))+'</td><td class="mono">'+fmt(p(r,14))+'</td><td class="mono">'+fmt(p(r,16))+'</td>';
+    var rowDate = String(r[0]||'');
+    if (rowDate.indexOf('T') >= 0) rowDate = rowDate.split('T')[0];
+    tr.innerHTML='<td class="mono">'+rowDate+'</td><td class="mono">'+fmt(p(r,3))+'</td><td class="mono">'+fmt(p(r,4))+'</td><td class="mono">'+fmt(p(r,6))+'</td><td class="mono">'+fmt(p(r,7))+'</td><td class="mono">'+fmt(p(r,10))+'</td><td class="mono">'+fmt(p(r,14))+'</td><td class="mono">'+fmt(p(r,16))+'</td>';
     tbody.appendChild(tr);
   });
 

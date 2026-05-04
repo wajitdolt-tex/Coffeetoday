@@ -360,7 +360,7 @@ tr:hover td{background:var(--bg3);}
     <div class="stat-box"><div class="stat-label">ชำระแล้ว</div><div class="stat-value pos" id="p-tot-paid">฿0.00</div></div>
   </div>
   <div style="text-align:right;margin-top:13px;padding-bottom:12px;">
-    <button class="btn btn-primary btn-sm" onclick="syncPayable()">☁ บันทึกขึ้น Sheets</button>
+    <button class="btn btn-primary btn-sm" onclick="syncPayable(true)">☁ บันทึกขึ้น Sheets</button>
   </div>
 </div>
 
@@ -1184,9 +1184,9 @@ function delPayable(id) {
   savePay(); renderPayables();
 }
 
-function savePay() {
+async function savePay() {
   localStorage.setItem('ct_payables', JSON.stringify(payables));
-  syncPayable();
+  await syncPayable();
 }
 
 function filterP(f) {
@@ -1277,12 +1277,23 @@ async function syncToSheets(type, branch, branchName, items) {
   } catch(err) { console.log('sync error', type, err); }
 }
 
-async function syncPayable() {
-  if (!cfg.gsUrl) { toast('กรุณาตั้งค่า URL ก่อน', 'error'); return; }
-  var branch = cfg.branch || 'passione';
-  await syncToSheets('payable', branch, BRANCH_NAMES[branch],
-    payables.filter(function(px) { return px.branch === branch; }));
-  toast('ซิงค์วางบิลขึ้น Sheets แล้ว ✓', 'success');
+async function syncPayable(showToast) {
+  if (!cfg.gsUrl) {
+    if (showToast) toast('กรุณาตั้งค่า URL ก่อน', 'error');
+    return;
+  }
+  try {
+    var branches = ['passione', 'lotus'];
+    for (var b = 0; b < branches.length; b++) {
+      var branch = branches[b];
+      var items = payables.filter(function(px) { return px.branch === branch; });
+      if (!items.length) continue;
+      await syncToSheets('payable', branch, BRANCH_NAMES[branch], items);
+    }
+    if (showToast) toast('ซิงค์วางบิลขึ้น Sheets แล้ว ✓', 'success');
+  } catch(err) {
+    if (showToast) toast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+  }
 }
 
 async function syncSalary() {

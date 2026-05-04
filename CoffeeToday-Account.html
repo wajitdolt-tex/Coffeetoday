@@ -1301,7 +1301,9 @@ async function loadSummary() {
           due: String(r[5]||''),
           paid: String(r[6]||'') === 'Paid',
           paidDate: String(r[7]||''),
-          note: String(r[8]||'')
+          note: String(r[8]||''),
+          billno: String(r[10]||''),
+          indate: String(r[11]||'')
         };
       });
       payables = sheetsPayables;

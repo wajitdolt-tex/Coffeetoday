@@ -332,11 +332,16 @@ tr:hover td{background:var(--bg3);}
     <button class="btn btn-primary" onclick="addPayable()">+ เพิ่มรายการ</button>
   </div>
 
-  <div style="display:flex;gap:6px;align-items:center;margin-bottom:13px;flex-wrap:wrap;">
+  <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
     <span style="font-size:12px;color:var(--text3);">กรอง:</span>
     <button class="btn btn-sm btn-outline" id="pf-all" onclick="filterP('all')" style="border-color:var(--accent);color:var(--accent);">ทั้งหมด</button>
     <button class="btn btn-sm btn-outline" id="pf-unpaid" onclick="filterP('unpaid')">ค้างชำระ</button>
     <button class="btn btn-sm btn-outline" id="pf-paid" onclick="filterP('paid')">ชำระแล้ว</button>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:13px;flex-wrap:wrap;">
+    <span style="font-size:12px;color:var(--text3);">กรองเดือน:</span>
+    <input type="month" id="p-filter-month" oninput="renderPayables()" style="width:150px;font-size:13px;padding:4px 8px;">
+    <button class="btn btn-outline btn-sm" onclick="document.getElementById('p-filter-month').value='';renderPayables()">ทั้งหมด</button>
   </div>
 
   <div class="card" style="padding:0;overflow:hidden;">
@@ -875,6 +880,8 @@ document.addEventListener('DOMContentLoaded', function() {
   if (salMonthEl) salMonthEl.value = today.slice(0,7);
   var salFilterEl = document.getElementById('sal-filter-month');
   if (salFilterEl) salFilterEl.value = today.slice(0,7);
+  var pFilterMonthEl = document.getElementById('p-filter-month');
+  if (pFilterMonthEl) pFilterMonthEl.value = today.slice(0,7);
   var loanDateEl = document.getElementById('loan-date');
   if (loanDateEl) loanDateEl.value = today;
 
@@ -1197,12 +1204,24 @@ function renderPayables() {
   var empty = document.getElementById('p-empty');
   tbody.innerHTML = '';
 
+  var filterMonth = document.getElementById('p-filter-month') ? document.getElementById('p-filter-month').value : '';
+
   var list = payables;
-  if (pFilter === 'paid')   list = payables.filter(function(p) { return p.paid; });
-  if (pFilter === 'unpaid') list = payables.filter(function(p) { return !p.paid; });
+  if (pFilter === 'paid')   list = list.filter(function(p) { return p.paid; });
+  if (pFilter === 'unpaid') list = list.filter(function(p) { return !p.paid; });
+
+  // กรองเดือน — ใช้ indate หรือ date
+  if (filterMonth) {
+    list = list.filter(function(p) {
+      var d = p.indate || p.date || '';
+      var due = p.due || '';
+      var paid = p.paidDate || '';
+      return d.startsWith(filterMonth) || due.startsWith(filterMonth) || paid.startsWith(filterMonth);
+    });
+  }
 
   var tAll = 0, tPaid = 0, tUnpaid = 0;
-  payables.forEach(function(p) {
+  list.forEach(function(p) {
     tAll += p.amount;
     p.paid ? (tPaid += p.amount) : (tUnpaid += p.amount);
   });

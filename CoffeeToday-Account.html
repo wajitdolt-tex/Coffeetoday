@@ -483,9 +483,30 @@ tr:hover td{background:var(--bg3);}
       <div class="card" style="margin-bottom:13px;">
         <div class="card-title">ค่าใช้จ่ายวางบิล (วัตถุดิบ)</div>
         <div class="grid-3">
-          <div class="stat-box" id="ss-cftd-box"><div class="stat-label">วัตถุดิบ CFTD</div><div class="stat-value" id="ss-cftd">฿0</div></div>
-          <div class="stat-box" id="ss-jinda-box"><div class="stat-label">นมจินดา</div><div class="stat-value" id="ss-jinda">฿0</div></div>
-          <div class="stat-box" id="ss-ice-box"><div class="stat-label">น้ำแข็ง (วางบิล)</div><div class="stat-value" id="ss-ice-payable">฿0</div></div>
+          <div class="stat-box" id="ss-cftd-box">
+            <div class="stat-label">วัตถุดิบ CFTD</div>
+            <div class="stat-value" id="ss-cftd">฿0</div>
+            <div style="margin-top:6px;font-size:11px;display:flex;gap:8px;">
+              <span style="color:var(--green);">✓ <span id="ss-cftd-paid">฿0</span></span>
+              <span style="color:var(--red);">● <span id="ss-cftd-unpaid">฿0</span></span>
+            </div>
+          </div>
+          <div class="stat-box" id="ss-jinda-box">
+            <div class="stat-label">นมจินดา</div>
+            <div class="stat-value" id="ss-jinda">฿0</div>
+            <div style="margin-top:6px;font-size:11px;display:flex;gap:8px;">
+              <span style="color:var(--green);">✓ <span id="ss-jinda-paid">฿0</span></span>
+              <span style="color:var(--red);">● <span id="ss-jinda-unpaid">฿0</span></span>
+            </div>
+          </div>
+          <div class="stat-box" id="ss-ice-box">
+            <div class="stat-label">น้ำแข็ง (วางบิล)</div>
+            <div class="stat-value" id="ss-ice-payable">฿0</div>
+            <div style="margin-top:6px;font-size:11px;display:flex;gap:8px;">
+              <span style="color:var(--green);">✓ <span id="ss-ice-paid">฿0</span></span>
+              <span style="color:var(--red);">● <span id="ss-ice-unpaid">฿0</span></span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1614,19 +1635,20 @@ function renderSummary(rows, acctExpRows) {
 
   // คำนวณ tOtherPayable ก่อนใช้ใน tExpAll
   var tCftdPayable=0, tJindaPayable=0, tIcePayable=0;
+  var tCftdPaid=0, tJindaPaid=0, tIcePaid=0;
   var tCftdUnpaid=0, tJindaUnpaid=0, tIceUnpaid=0;
   var tRawPayable=0, tOtherPayable=0;
   monthPayables.forEach(function(px) {
     var isPaid = px.paid && px.paidDate && px.paidDate.startsWith(month);
     if (px.desc.indexOf('CFTD') >= 0) {
       tCftdPayable += px.amount; tRawPayable += px.amount;
-      if (!isPaid) tCftdUnpaid += px.amount;
+      isPaid ? (tCftdPaid += px.amount) : (tCftdUnpaid += px.amount);
     } else if (px.desc.indexOf('นมจินดา') >= 0) {
       tJindaPayable += px.amount; tRawPayable += px.amount;
-      if (!isPaid) tJindaUnpaid += px.amount;
+      isPaid ? (tJindaPaid += px.amount) : (tJindaUnpaid += px.amount);
     } else if (px.desc.indexOf('น้ำแข็ง') >= 0 && px.cat === 'วัตถุดิบ/สินค้า') {
       tIcePayable += px.amount; tRawPayable += px.amount;
-      if (!isPaid) tIceUnpaid += px.amount;
+      isPaid ? (tIcePaid += px.amount) : (tIceUnpaid += px.amount);
     } else {
       tOtherPayable += px.amount;
     }
@@ -1767,6 +1789,10 @@ function renderSummary(rows, acctExpRows) {
     cftdEl.textContent = fmtS(tCftdPayable > 0 ? tCftdPayable : tCftd);
     if (cftdBox) cftdBox.style.borderLeft = tCftdUnpaid > 0 ? '3px solid var(--red)' : '3px solid var(--green)';
     cftdEl.style.color = tCftdUnpaid > 0 ? 'var(--red)' : '';
+    var cftdPaidEl = document.getElementById('ss-cftd-paid');
+    var cftdUnpaidEl = document.getElementById('ss-cftd-unpaid');
+    if (cftdPaidEl) cftdPaidEl.textContent = fmtS(tCftdPaid);
+    if (cftdUnpaidEl) cftdUnpaidEl.textContent = fmtS(tCftdUnpaid);
   }
   var jindaEl = document.getElementById('ss-jinda');
   var jindaBox = document.getElementById('ss-jinda-box');
@@ -1774,6 +1800,10 @@ function renderSummary(rows, acctExpRows) {
     jindaEl.textContent = fmtS(tJindaPayable > 0 ? tJindaPayable : tJinda);
     if (jindaBox) jindaBox.style.borderLeft = tJindaUnpaid > 0 ? '3px solid var(--red)' : (tJindaPayable > 0 ? '3px solid var(--green)' : '');
     jindaEl.style.color = tJindaUnpaid > 0 ? 'var(--red)' : '';
+    var jindaPaidEl = document.getElementById('ss-jinda-paid');
+    var jindaUnpaidEl = document.getElementById('ss-jinda-unpaid');
+    if (jindaPaidEl) jindaPaidEl.textContent = fmtS(tJindaPaid);
+    if (jindaUnpaidEl) jindaUnpaidEl.textContent = fmtS(tJindaUnpaid);
   }
   var iceEl = document.getElementById('ss-ice-payable');
   var iceBox = document.getElementById('ss-ice-box');
@@ -1781,6 +1811,10 @@ function renderSummary(rows, acctExpRows) {
     iceEl.textContent = fmtS(tIcePayable);
     if (iceBox) iceBox.style.borderLeft = tIceUnpaid > 0 ? '3px solid var(--red)' : (tIcePayable > 0 ? '3px solid var(--green)' : '');
     iceEl.style.color = tIceUnpaid > 0 ? 'var(--red)' : '';
+    var icePaidEl = document.getElementById('ss-ice-paid');
+    var iceUnpaidEl = document.getElementById('ss-ice-unpaid');
+    if (icePaidEl) icePaidEl.textContent = fmtS(tIcePaid);
+    if (iceUnpaidEl) iceUnpaidEl.textContent = fmtS(tIceUnpaid);
   }
   document.getElementById('ss-payable-other').textContent   = fmtS(tOtherPayable);
   document.getElementById('ss-payable-unpaid-top').textContent = fmtS(tPayableUnpaid);

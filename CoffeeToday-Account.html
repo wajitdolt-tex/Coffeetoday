@@ -543,7 +543,17 @@ tr:hover td{background:var(--bg3);}
     <div class="card" style="padding:0;overflow:hidden;">
       <div class="tbl-wrap">
         <table><thead><tr><th>วันที่</th><th>Sub Total</th><th>Discount</th><th>ยอดสุทธิ</th><th>QR</th><th>Cash</th><th>ค่าใช้จ่าย</th><th>Pay In</th></tr></thead>
-        <tbody id="s-tbody"></tbody></table>
+        <tbody id="s-tbody"></tbody>
+        <tfoot><tr style="background:var(--bg3);font-weight:700;border-top:2px solid var(--border);">
+          <td style="font-size:12px;padding:8px 12px;">รวม</td>
+          <td class="mono" id="st-subtotal">฿0</td>
+          <td class="mono" id="st-discount">฿0</td>
+          <td class="mono" id="st-netsales">฿0</td>
+          <td class="mono" id="st-qr">฿0</td>
+          <td class="mono" id="st-cash">฿0</td>
+          <td class="mono" id="st-exp">฿0</td>
+          <td class="mono" id="st-payin">฿0</td>
+        </tr></tfoot></table>
       </div>
     </div>
     <div id="s-empty" class="empty-state"><div class="icon">📊</div><p>เลือกสาขาและเดือน แล้วกดดึงข้อมูล</p></div>
@@ -1520,6 +1530,28 @@ function renderSummary(rows, acctExpRows) {
     tr.innerHTML='<td class="mono">'+r[0]+'</td><td class="mono">'+fmt(p(r,3))+'</td><td class="mono">'+fmt(p(r,4))+'</td><td class="mono">'+fmt(p(r,6))+'</td><td class="mono">'+fmt(p(r,7))+'</td><td class="mono">'+fmt(p(r,10))+'</td><td class="mono">'+fmt(p(r,14))+'</td><td class="mono">'+fmt(p(r,16))+'</td>';
     tbody.appendChild(tr);
   });
+
+  // ── แถวรวมด้านล่างตาราง
+  var tSubTotal = 0, tDiscount = 0, tNetSales = 0;
+  rows.forEach(function(r) {
+    tSubTotal += p(r,3);
+    tDiscount += p(r,4);
+    tNetSales += p(r,6);
+  });
+  var stSubTotal = document.getElementById('st-subtotal');
+  var stDiscount = document.getElementById('st-discount');
+  var stNetsales = document.getElementById('st-netsales');
+  var stQr       = document.getElementById('st-qr');
+  var stCash     = document.getElementById('st-cash');
+  var stExp      = document.getElementById('st-exp');
+  var stPayin    = document.getElementById('st-payin');
+  if (stSubTotal) stSubTotal.textContent = fmt(tSubTotal);
+  if (stDiscount) stDiscount.textContent = fmt(tDiscount);
+  if (stNetsales) stNetsales.textContent = fmt(tNetSales);
+  if (stQr)       stQr.textContent       = fmt(tQr);
+  if (stCash)     stCash.textContent     = fmt(tCash);
+  if (stExp)      stExp.textContent      = fmt(tExp);
+  if (stPayin)    stPayin.textContent    = fmt(tPayIn);
   // stdExp = วัตถุดิบหลักเท่านั้น (ไม่รวม extra)
   tStdExp = tExp - tExtraExp;
 

@@ -1611,7 +1611,7 @@ function renderSummary(rows, acctExpRows) {
     var matchBranch = !branch || px.branch === branch || px.branch === BRANCH_NAMES[branch];
     var isFixedCat = fixedCats.indexOf(px.cat) >= 0;
     if (isFixedCat) {
-      // ค่าเช่า/ไฟ/ภาษี — นับตาม date (วันที่วางบิล) ของเดือนนั้น
+      // ค่าเช่า/ไฟ/ภาษี — นับตาม date (วันที่วางบิล) ของเดือนนั้นเท่านั้น
       return matchBranch && px.date && px.date.startsWith(month);
     } else {
       // วัตถุดิบอื่นๆ — ค้างชำระนับตาม date/due, ชำระแล้วนับตาม paidDate
@@ -1623,13 +1623,14 @@ function renderSummary(rows, acctExpRows) {
       return matchBranch && (inMonthUnpaid || inMonthPaid);
     }
   });
+
+  // tPayablePaid = วัตถุดิบที่ชำระแล้ว (ไม่รวม fixedCats เพราะนับใน tOtherPayable)
   var tPayablePaid=0, tPayableUnpaid=0;
   monthPayables.forEach(function(px) {
     var isFixedCat = fixedCats.indexOf(px.cat) >= 0;
     if (isFixedCat) {
-      // ค่าเช่า/ไฟ/ภาษี — นับเป็นค่าใช้จ่ายเสมอ ไม่ว่าจะจ่ายแล้วหรือยัง
+      // ไม่นับใน tPayablePaid — จะนับใน tOtherPayable แทน
       tPayableUnpaid += px.paid ? 0 : px.amount;
-      tPayablePaid   += px.paid ? px.amount : 0;
     } else {
       if (px.paid && px.paidDate && px.paidDate.startsWith(month)) {
         tPayablePaid += px.amount;
@@ -1640,14 +1641,18 @@ function renderSummary(rows, acctExpRows) {
   });
   var tPayableAll = tPayablePaid + tPayableUnpaid;
 
-  // คำนวณ tOtherPayable ก่อนใช้ใน tExpAll
+  // คำนวณ tOtherPayable = ค่าเช่า/ไฟ/ภาษี ทั้งหมดของเดือนนั้น (ทั้งจ่ายแล้วและยังไม่จ่าย)
   var tCftdPayable=0, tJindaPayable=0, tIcePayable=0;
   var tCftdPaid=0, tJindaPaid=0, tIcePaid=0;
   var tCftdUnpaid=0, tJindaUnpaid=0, tIceUnpaid=0;
   var tRawPayable=0, tOtherPayable=0;
   monthPayables.forEach(function(px) {
     var isPaid = px.paid && px.paidDate && px.paidDate.startsWith(month);
-    if (px.desc.indexOf('CFTD') >= 0) {
+    var isFixedCat = fixedCats.indexOf(px.cat) >= 0;
+    if (isFixedCat) {
+      // ค่าเช่า/ไฟ/ภาษี — นับทั้งหมดใน tOtherPayable
+      tOtherPayable += px.amount;
+    } else if (px.desc.indexOf('CFTD') >= 0) {
       tCftdPayable += px.amount; tRawPayable += px.amount;
       isPaid ? (tCftdPaid += px.amount) : (tCftdUnpaid += px.amount);
     } else if (px.desc.indexOf('นมจินดา') >= 0) {
@@ -1656,8 +1661,6 @@ function renderSummary(rows, acctExpRows) {
     } else if (px.desc.indexOf('น้ำแข็ง') >= 0 && px.cat === 'วัตถุดิบ/สินค้า') {
       tIcePayable += px.amount; tRawPayable += px.amount;
       isPaid ? (tIcePaid += px.amount) : (tIceUnpaid += px.amount);
-    } else {
-      tOtherPayable += px.amount;
     }
   });
 
@@ -1718,18 +1721,27 @@ function renderSummary(rows, acctExpRows) {
   // ค่าใช้จ่ายอื่นๆ (ค่าเช่า ค่าน้ำไฟ ภาษี) — แสดงทุกรายการ ไม่กรองตาม paidDate
   var otherCats = ['ค่าเช่า','ค่าไฟ/น้ำ','ค่าบริการ','ภาษี','อุปกรณ์/ซ่อมบำรุง','ค่าแรง','อื่นๆ'];
   var otherMap = {};
+  var otherPaidMap = {}; // เก็บสถานะ paid
   monthPayables.forEach(function(px) {
     if (otherCats.indexOf(px.cat) >= 0) {
-      if (!otherMap[px.desc]) otherMap[px.desc] = 0;
+      if (!otherMap[px.desc]) { otherMap[px.desc] = 0; otherPaidMap[px.desc] = true; }
       otherMap[px.desc] += px.amount;
+      if (!px.paid) otherPaidMap[px.desc] = false; // ถ้ามีรายการยังไม่จ่าย ถือว่ายังค้าง
     }
   });
   var otherEl = document.getElementById('ss-other-expenses');
   var otherKeys = Object.keys(otherMap);
   if (otherKeys.length) {
     otherEl.innerHTML = otherKeys.map(function(k) {
-      return '<div class="stat-box"><div class="stat-label">'+k+'</div>'
-        +'<div class="stat-value">'+fmtS(otherMap[k])+'</div></div>';
+      var isPaid = otherPaidMap[k];
+      var borderColor = isPaid ? 'var(--green)' : 'var(--red)';
+      var statusIcon = isPaid ? '✓ ชำระแล้ว' : '● ค้างชำระ';
+      var statusColor = isPaid ? 'var(--green)' : 'var(--red)';
+      return '<div class="stat-box" style="border-left:3px solid '+borderColor+';">'
+        +'<div class="stat-label">'+k+'</div>'
+        +'<div class="stat-value">'+fmtS(otherMap[k])+'</div>'
+        +'<div style="font-size:11px;color:'+statusColor+';margin-top:4px;">'+statusIcon+'</div>'
+        +'</div>';
     }).join('');
   } else {
     otherEl.innerHTML = '<div style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>';

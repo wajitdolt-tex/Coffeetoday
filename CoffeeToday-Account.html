@@ -1262,6 +1262,13 @@ function delPayable(id) {
 }
 
 async function savePay() {
+  // dedup ก่อน save — เก็บรายการล่าสุดของแต่ละ id
+  var seen = {};
+  payables = payables.filter(function(p) {
+    if (seen[p.id]) return false;
+    seen[p.id] = true;
+    return true;
+  });
   localStorage.setItem('ct_payables', JSON.stringify(payables));
   await syncPayable();
 }

@@ -148,7 +148,6 @@ tr:hover td{background:var(--bg3);}
       <div class="form-row"><label>(−) Discount — ส่วนลด (฿)</label><input type="number" id="d-discount" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
       <div class="form-row"><label>(+) Rounding — ปัดเศษ (฿)</label><input type="number" id="d-rounding" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
       <div class="form-row"><label>Sales before TAX (฿)</label><input type="number" id="d-before-tax" readonly placeholder="คำนวณอัตโนมัติ"></div>
-      <!-- ✅ แก้: เอา readonly ออก ให้กรอกยอดขายทั้งหมดเองได้ -->
       <div class="form-row"><label>Total Sales — ยอดขายทั้งหมด (฿)</label><input type="number" id="d-total-sales" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
     </div>
     <hr class="divider">
@@ -418,7 +417,7 @@ tr:hover td{background:var(--bg3);}
         <div style="background:var(--bg3);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:10px;">
           <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">รายละเอียดรายจ่าย</div>
           <div class="grid-3">
-            <div class="stat-box" style="background:var(--bg2);opacity:0.7;">
+            <div class="stat-box" id="ss-shopexp-box" style="background:var(--bg2);opacity:0.7;">
               <div class="stat-label" style="color:var(--text3);">ค่าใช้จ่ายหน้าร้าน <span style="font-weight:400;">(หักจาก Cash แล้ว)</span></div>
               <div class="stat-value" id="ss-exp" style="color:var(--text2);">฿0</div>
               <div style="font-size:10px;color:var(--text3);margin-top:4px;">ถูกหักออกจากยอดขายก่อนส่ง Pay In แล้ว<br>ไม่นับซ้ำในรายจ่ายรวม</div>
@@ -484,7 +483,7 @@ tr:hover td{background:var(--bg3);}
       <div class="card" style="margin-bottom:13px;">
         <div class="card-title">ค่าใช้จ่ายหน้าร้าน</div>
         <div class="grid-3">
-          <div class="stat-box"><div class="stat-label">น้ำแข็ง</div><div class="stat-value" id="ss-ice">฿0</div></div>
+          <div class="stat-box" id="ss-ice-shopexp-box"><div class="stat-label">น้ำแข็ง</div><div class="stat-value" id="ss-ice">฿0</div></div>
           <div class="stat-box"><div class="stat-label">นมเมจิ</div><div class="stat-value" id="ss-meji">฿0</div></div>
           <div class="stat-box"><div class="stat-label">น้ำตาลทราย</div><div class="stat-value" id="ss-sugar">฿0</div></div>
           <div class="stat-box"><div class="stat-label">โซดา</div><div class="stat-value" id="ss-soda">฿0</div></div>
@@ -746,7 +745,6 @@ tr:hover td{background:var(--bg3);}
   <div class="card" style="border-color:rgba(160,120,32,.25);background:rgba(160,120,32,.05);margin-top:8px;">
     <div class="card-title" style="color:var(--yellow);">เงินยืม</div>
 
-    <!-- เพิ่มการยืม -->
     <div style="margin-bottom:16px;">
       <div class="sec-label">บันทึกการยืม</div>
       <div class="grid-3">
@@ -760,7 +758,6 @@ tr:hover td{background:var(--bg3);}
 
     <hr class="divider">
 
-    <!-- รายการยืมทั้งหมด -->
     <div class="tbl-wrap">
       <table>
         <thead><tr><th>วันที่ยืม</th><th>ยืมจาก</th><th>จำนวน</th><th>ใช้เพื่อ</th><th>ยังค้างอยู่</th><th>สถานะ</th><th></th></tr></thead>
@@ -964,7 +961,6 @@ document.addEventListener('DOMContentLoaded', function() {
   var initBranch = document.getElementById('d-branch').value;
   var accEl = document.getElementById('d-account');
   if (accEl) accEl.value = BRANCH_ACCOUNTS[initBranch] || '';
-  // init acctexp
   var aeDateEl = document.getElementById('ae-date');
   if (aeDateEl) aeDateEl.value = today;
   var aeFilterEl = document.getElementById('ae-filter-month');
@@ -996,7 +992,6 @@ function onBranchChange() {
   var branch = document.getElementById('d-branch').value;
   var accEl  = document.getElementById('d-account');
   if (accEl) accEl.value = BRANCH_ACCOUNTS[branch] || '';
-  // แสดง/ซ่อน card น้ำแข็งวางบิลเฉพาะโลตัส
   var lotusIceCard = document.getElementById('lotus-ice-card');
   if (lotusIceCard) lotusIceCard.style.display = branch === 'lotus' ? 'block' : 'none';
   calcSales();
@@ -1020,15 +1015,12 @@ function n(id) {
   return el ? (parseFloat(el.value) || 0) : 0;
 }
 
-// ✅ แก้: calcSales ไม่คำนวณ Total Sales จาก QR+Lineman+Cash แล้ว
-// Total Sales กรอกเองได้ — QR/Lineman/Cash เป็นแค่การแยกช่องทาง
 function calcSales() {
   var bt = n('d-subtotal') - n('d-discount') + n('d-rounding');
   document.getElementById('d-before-tax').value = bt.toFixed(2);
 
   var totalSales = n('d-total-sales');
 
-  // รวมค่าใช้จ่ายหน้าร้าน = shopExp + รายการเพิ่มเติมอื่นๆ
   var shopExp = n('d-shop-exp');
   var extraTotal = 0;
   document.querySelectorAll('#extra-expenses .expense-row').forEach(function(row) {
@@ -1053,18 +1045,6 @@ function calcDrinks() {
   var drinks = total - n('d-snacks') - n('d-promo');
   var el = document.getElementById('d-drinks');
   if (el) el.value = drinks > 0 ? drinks.toFixed(2) : '0.00';
-}
-
-function addAccExpRow() {
-  var id = Date.now();
-  var c  = document.getElementById('account-expenses');
-  var d  = document.createElement('div');
-  d.className = 'expense-row';
-  d.id = 'ae-' + id;
-  d.innerHTML = '<div><label>รายการ</label><input type="text" placeholder="เช่น ค่าซ่อมเครื่อง..."></div>'
-    + '<div><label>จำนวน (฿)</label><input type="number" placeholder="0.00" step="0.01"></div>'
-    + '<button class="rm-btn" onclick="document.getElementById(\'ae-' + id + '\').remove()">×</button>';
-  c.appendChild(d);
 }
 
 function addExpRow(name, amount) {
@@ -1096,7 +1076,6 @@ function getStdExpenses() {
   var ids = branch === 'lotus' ? STD_EXP_LOTUS : STD_EXP_PASSIONE;
   var obj = {};
   ids.forEach(function(id) { obj[id] = n(id); });
-  // โลตัส: ดึงค่าน้ำแข็งวางบิลมาใส่ใน e-ice (ไม่นับเป็น shopExp)
   if (branch === 'lotus') {
     obj['e-ice'] = n('d-ice-bill');
   }
@@ -1172,7 +1151,6 @@ function clearDaily() {
   document.getElementById('d-date').value = new Date().toISOString().split('T')[0];
   var br = document.getElementById('d-branch').value;
   document.getElementById('d-account').value = BRANCH_ACCOUNTS[br] || '';
-  // แสดง/ซ่อน card น้ำแข็งวางบิล
   var lotusIceCard = document.getElementById('lotus-ice-card');
   if (lotusIceCard) lotusIceCard.style.display = br === 'lotus' ? 'block' : 'none';
 }
@@ -1232,14 +1210,12 @@ function togglePaid(id) {
   var item = payables.find(function(p) { return p.id === id; });
   if (!item) return;
   if (!item.paid) {
-    // กำลังจะเปลี่ยนเป็นชำระแล้ว — ให้กรอกวันที่จ่ายจริง
     var defaultDate = new Date().toISOString().split('T')[0];
     var paidDate = prompt('กรอกวันที่ชำระจริง (YYYY-MM-DD):', defaultDate);
-    if (!paidDate) return; // กด cancel
+    if (!paidDate) return;
     item.paid = true;
     item.paidDate = paidDate;
   } else {
-    // ยกเลิกการชำระ
     if (!confirm('ยกเลิกการชำระรายการนี้?')) return;
     item.paid = false;
     item.paidDate = null;
@@ -1280,7 +1256,6 @@ function renderPayables() {
   if (pFilter === 'unpaid') list = list.filter(function(p) { return !p.paid; });
   if (pBranchFilter !== 'all') list = list.filter(function(p) { return p.branch === pBranchFilter; });
 
-  // กรองเดือน — ใช้ indate หรือ date
   if (filterMonth) {
     list = list.filter(function(p) {
       var d = p.indate || p.date || '';
@@ -1389,7 +1364,6 @@ async function loadSummary() {
     var res  = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branchKey) + '&month=' + month);
     var data = await res.json();
 
-    // อัปเดต localStorage จาก Sheets
     if (data.payableRows && data.payableRows.length) {
       function cleanDate(val) {
         var s = String(val||'');
@@ -1412,13 +1386,11 @@ async function loadSummary() {
           indate: cleanDate(r[11])
         };
       });
-      // เก็บข้อมูลสาขาอื่นไว้ ไม่เขียนทับ
       var otherBranchPayables = payables.filter(function(px) { return px.branch !== branchKey; });
       payables = otherBranchPayables.concat(sheetsPayables);
       localStorage.setItem('ct_payables', JSON.stringify(payables));
       renderPayables();
     } else if (data.payableRows && data.payableRows.length === 0) {
-      // Sheets ว่าง — เคลียร์เฉพาะสาขานี้
       payables = payables.filter(function(px) { return px.branch !== branchKey; });
       localStorage.setItem('ct_payables', JSON.stringify(payables));
       renderPayables();
@@ -1437,12 +1409,10 @@ async function loadSummary() {
             note: String(r[5]||'')
           };
         });
-        // เก็บข้อมูลสาขาอื่นไว้
         var otherBranchSalaries = salaries.filter(function(s) { return s.branch !== branchKey; });
         salaries = otherBranchSalaries.concat(sheetsSalaries);
         localStorage.setItem('ct_salaries', JSON.stringify(salaries));
       } else {
-        // Sheets ว่าง — เคลียร์เฉพาะสาขานี้
         salaries = salaries.filter(function(s) { return s.branch !== branchKey; });
         localStorage.setItem('ct_salaries', JSON.stringify(salaries));
       }
@@ -1464,12 +1434,10 @@ async function loadSummary() {
             date: String(r[6]||'')
           };
         });
-        // เก็บข้อมูลสาขาอื่นไว้
         var otherBranchLoans = loans.filter(function(l) { return l.branch !== branchKey; });
         loans = otherBranchLoans.concat(sheetsLoans);
         localStorage.setItem('ct_loans', JSON.stringify(loans));
       } else {
-        // Sheets ว่าง — เคลียร์เฉพาะสาขานี้
         loans = loans.filter(function(l) { return l.branch !== branchKey; });
         localStorage.setItem('ct_loans', JSON.stringify(loans));
       }
@@ -1485,7 +1453,6 @@ async function loadSummary() {
 function onPmBranchChange() {
   var branch = document.getElementById('pm-branch').value;
   document.getElementById('pm-aircond-row').style.display = branch === 'lotus' ? 'block' : 'none';
-  // เปลี่ยนเฉพาะ label ภาษีที่ดิน ตามสาขา
   var taxLandLabel = document.getElementById('pm-tax-land-label');
   if (taxLandLabel) {
     taxLandLabel.textContent = branch === 'lotus' ? 'ค่าแอร์ส่วนกลาง (฿)' : 'ภาษีสิ่งปลูกสร้างและที่ดิน (฿)';
@@ -1601,12 +1568,11 @@ function renderSummary(rows, acctExpRows) {
   var isLotus = branchKey === 'lotus';
   rows.forEach(function(r) {
     var sales=p(r,3), qr=p(r,7), lineman=p(r,9), cash=p(r,10), exp=p(r,14), pi=p(r,16);
-    var extraExp=p(r,30); // ExtraExpTotal column
-    var iceAmt=p(r,20);   // Ice column
+    var extraExp=p(r,30);
+    var iceAmt=p(r,20);
     tSales+=sales; tPayIn+=pi;
     tQr+=qr; tLineman+=lineman; tCash+=cash;
     tExtraExp+=extraExp;
-    // โลตัส: หักน้ำแข็งออกจาก shopExp เพราะน้ำแข็งโลตัสนับเป็นวางบิล ไม่ใช่ค่าใช้จ่ายหน้าร้าน
     tExp += (exp + extraExp) - (isLotus ? iceAmt : 0);
     tCftd  +=p(r,19); tIce   +=iceAmt;
     tMeji  +=p(r,21); tJinda +=p(r,22);
@@ -1622,7 +1588,6 @@ function renderSummary(rows, acctExpRows) {
     tbody.appendChild(tr);
   });
 
-  // ── แถวรวมด้านล่างตาราง
   var tSubTotal = 0, tDiscount = 0, tNetSales = 0;
   rows.forEach(function(r) {
     tSubTotal += p(r,3);
@@ -1643,10 +1608,8 @@ function renderSummary(rows, acctExpRows) {
   if (stCash)     stCash.textContent     = fmt(tCash);
   if (stExp)      stExp.textContent      = fmt(tExp);
   if (stPayin)    stPayin.textContent    = fmt(tPayIn);
-  // stdExp = วัตถุดิบหลักเท่านั้น (ไม่รวม extra)
   tStdExp = tExp - tExtraExp;
 
-  // ── คำนวณยอดบัญชีร้าน (acctExpRows จาก Sheets)
   var tAcctExp = 0;
   var tLoanRepay = 0;
   var acctExpMap = {};
@@ -1666,18 +1629,15 @@ function renderSummary(rows, acctExpRows) {
   var lsKey  = 'ct_lineman_sun_' + branch + '_' + month;
   var lsData = localStorage.getItem(lsKey);
   var tLinemanSun = lsData ? (parseFloat(JSON.parse(lsData).amount)||0) : 0;
-  // รายรับจริง = QR + Pay In + Line Man ที่โอนเข้าบัญชีคุณซัน
   var tIncome = tQr + tPayIn + tLinemanSun;
 
-  var fixedCats = ['ค่าเช่า','ค่าไฟ/น้ำ','ภาษี']; // หมวดที่นับตามวันที่วางบิล
+  var fixedCats = ['ค่าเช่า','ค่าไฟ/น้ำ','ภาษี'];
   var monthPayables = payables.filter(function(px) {
     var matchBranch = !branch || px.branch === branch || px.branch === BRANCH_NAMES[branch];
     var isFixedCat = fixedCats.indexOf(px.cat) >= 0;
     if (isFixedCat) {
-      // ค่าเช่า/ไฟ/ภาษี — นับตาม date (วันที่วางบิล) ของเดือนนั้นเท่านั้น
       return matchBranch && px.date && px.date.startsWith(month);
     } else {
-      // วัตถุดิบอื่นๆ — ค้างชำระนับตาม date/due, ชำระแล้วนับตาม paidDate
       var inMonthUnpaid = !px.paid && (
         (px.date && px.date.startsWith(month)) ||
         (px.due && px.due.startsWith(month))
@@ -1687,12 +1647,10 @@ function renderSummary(rows, acctExpRows) {
     }
   });
 
-  // tPayablePaid = วัตถุดิบที่ชำระแล้ว (ไม่รวม fixedCats เพราะนับใน tOtherPayable)
   var tPayablePaid=0, tPayableUnpaid=0;
   monthPayables.forEach(function(px) {
     var isFixedCat = fixedCats.indexOf(px.cat) >= 0;
     if (isFixedCat) {
-      // ไม่นับใน tPayablePaid — จะนับใน tOtherPayable แทน
       tPayableUnpaid += px.paid ? 0 : px.amount;
     } else {
       if (px.paid && px.paidDate && px.paidDate.startsWith(month)) {
@@ -1704,7 +1662,6 @@ function renderSummary(rows, acctExpRows) {
   });
   var tPayableAll = tPayablePaid + tPayableUnpaid;
 
-  // คำนวณ tOtherPayable = ค่าเช่า/ไฟ/ภาษี ทั้งหมดของเดือนนั้น (ทั้งจ่ายแล้วและยังไม่จ่าย)
   var tCftdPayable=0, tJindaPayable=0, tIcePayable=0;
   var tCftdPaid=0, tJindaPaid=0, tIcePaid=0;
   var tCftdUnpaid=0, tJindaUnpaid=0, tIceUnpaid=0;
@@ -1713,7 +1670,6 @@ function renderSummary(rows, acctExpRows) {
     var isPaid = px.paid && px.paidDate && px.paidDate.startsWith(month);
     var isFixedCat = fixedCats.indexOf(px.cat) >= 0;
     if (isFixedCat) {
-      // ค่าเช่า/ไฟ/ภาษี — นับทั้งหมดใน tOtherPayable
       tOtherPayable += px.amount;
     } else if (px.desc.indexOf('CFTD') >= 0) {
       tCftdPayable += px.amount; tRawPayable += px.amount;
@@ -1727,10 +1683,8 @@ function renderSummary(rows, acctExpRows) {
     }
   });
 
-  // รายจ่ายรวมทั้งหมด — ไม่รวมค่าใช้จ่ายหน้าร้าน
   var tSalary = getSalaryTotal(branch, month);
   var tExpAll  = tPayablePaid + tOtherPayable + tAcctExp + tSalary;
-  // กำไร/ขาดทุน = รายรับ − รายจ่ายรวม
   var profit   = tIncome - tExpAll;
 
   var unpaidItems = monthPayables.filter(function(px) { return !px.paid; });
@@ -1781,15 +1735,14 @@ function renderSummary(rows, acctExpRows) {
   var noteUnpaid = document.getElementById('ss-note-unpaid');
   if (noteUnpaid) noteUnpaid.textContent = fmtS(tPayableUnpaid);
 
-  // ค่าใช้จ่ายอื่นๆ (ค่าเช่า ค่าน้ำไฟ ภาษี) — แสดงทุกรายการ ไม่กรองตาม paidDate
   var otherCats = ['ค่าเช่า','ค่าไฟ/น้ำ','ค่าบริการ','ภาษี','อุปกรณ์/ซ่อมบำรุง','ค่าแรง','อื่นๆ'];
   var otherMap = {};
-  var otherPaidMap = {}; // เก็บสถานะ paid
+  var otherPaidMap = {};
   monthPayables.forEach(function(px) {
     if (otherCats.indexOf(px.cat) >= 0) {
       if (!otherMap[px.desc]) { otherMap[px.desc] = 0; otherPaidMap[px.desc] = true; }
       otherMap[px.desc] += px.amount;
-      if (!px.paid) otherPaidMap[px.desc] = false; // ถ้ามีรายการยังไม่จ่าย ถือว่ายังค้าง
+      if (!px.paid) otherPaidMap[px.desc] = false;
     }
   });
   var otherEl = document.getElementById('ss-other-expenses');
@@ -1810,7 +1763,6 @@ function renderSummary(rows, acctExpRows) {
     otherEl.innerHTML = '<div style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>';
   }
 
-  // ── แสดงรายการบัญชีร้าน
   var acctEl = document.getElementById('ss-acctexp-expenses');
   if (acctEl) {
     var acctKeys = Object.keys(acctExpMap);
@@ -1830,7 +1782,6 @@ function renderSummary(rows, acctExpRows) {
   var loanRepayEl = document.getElementById('ss-loan-repay');
   if (loanRepayEl) loanRepayEl.textContent = fmtS(tLoanRepay);
 
-  // ── ตารางรายการบัญชีร้านแยกรายการ
   var acctTbody = document.getElementById('ss-acctexp-tbody');
   var acctListEmpty = document.getElementById('ss-acctexp-list-empty');
   var acctListTotal = document.getElementById('ss-acctexp-list-total');
@@ -1842,7 +1793,8 @@ function renderSummary(rows, acctExpRows) {
         var date   = String(r[0] || '');
         var desc   = String(r[2] || '-');
         var cat    = String(r[3] || '-');
-        var amount = parseFloat(r[4]) || 0;        var tr = document.createElement('tr');
+        var amount = parseFloat(r[4]) || 0;
+        var tr = document.createElement('tr');
         tr.innerHTML =
           '<td class="mono">' + date + '</td>'
           + '<td style="font-size:13px;">' + desc + '</td>'
@@ -1865,6 +1817,7 @@ function renderSummary(rows, acctExpRows) {
   document.getElementById('ss-lime').textContent            = fmtS(tLime);
   document.getElementById('ss-coconut').textContent         = fmtS(tCoconut);
   document.getElementById('ss-extra').textContent           = fmtS(tExtraExp);
+
   var cftdEl = document.getElementById('ss-cftd');
   var cftdBox = document.getElementById('ss-cftd-box');
   if (cftdEl) {
@@ -1890,10 +1843,8 @@ function renderSummary(rows, acctExpRows) {
   var iceEl = document.getElementById('ss-ice-payable');
   var iceBox = document.getElementById('ss-ice-box');
   if (iceEl) {
-    var branchKey = document.getElementById('s-branch') ? document.getElementById('s-branch').value : (cfg.branch || 'passione');
     var iceDisplay = 0;
-    if (branchKey === 'lotus') {
-      // โลตัส: ดึงยอดสะสมน้ำแข็งรายวันจาก Daily sheet (col 20 = Ice)
+    if (isLotus) {
       rows.forEach(function(r) { iceDisplay += parseFloat(r[20])||0; });
     } else {
       iceDisplay = tIcePayable;
@@ -2170,7 +2121,7 @@ function addLoan() {
     from: from,
     amount: amount,
     purpose: purpose,
-    repayments: [] // บันทึกการคืนแต่ละครั้ง
+    repayments: []
   });
   saveLoans();
   renderLoans();
@@ -2190,12 +2141,10 @@ function addRepayment(id) {
   var loan = loans.find(function(l) { return l.id === id; });
   if (!loan) return;
 
-  // บันทึกการคืนใน loan
   loan.repayments.push({ date: dateStr, amount: amount });
   saveLoans();
   renderLoans();
 
-  // สร้างรายการค่าใช้จ่ายบัญชีร้านอัตโนมัติ
   acctExps.unshift({
     id: Date.now(),
     branch: cfg.branch || 'passione',
@@ -2208,7 +2157,6 @@ function addRepayment(id) {
   saveAcctExp();
   renderAcctExp();
 
-  // sync ขึ้น Sheets อัตโนมัติ
   var branch = cfg.branch || 'passione';
   var branchName = BRANCH_NAMES[branch];
   var itemsToSync = acctExps.filter(function(x) { return x.branch === branch; });
@@ -2260,7 +2208,6 @@ function renderLoans() {
       tAll  += loan.amount;
       tPaid += repaid;
 
-      // แถวหลัก
       var tr = document.createElement('tr');
       tr.innerHTML =
         '<td class="mono">' + loan.date + '</td>'
@@ -2275,7 +2222,6 @@ function renderLoans() {
         + '</td>';
       tbody.appendChild(tr);
 
-      // แถวย่อยแสดงประวัติการคืน
       if (loan.repayments.length) {
         loan.repayments.forEach(function(r) {
           var trSub = document.createElement('tr');
@@ -2401,7 +2347,6 @@ async function loadDailyData() {
     var data = await res.json();
     var rows = data.rows || [];
 
-    // หาแถวที่ date ตรงกัน
     var row = null;
     var rowIdx = -1;
     for (var i = 0; i < rows.length; i++) {
@@ -2416,7 +2361,6 @@ async function loadDailyData() {
       return;
     }
 
-    // โหลดข้อมูลเข้าฟอร์ม
     fillDailyForm(row);
     isEditMode = true;
     editRowIndex = rowIdx;
@@ -2447,7 +2391,6 @@ function fillDailyForm(row) {
   document.getElementById('d-cash').value      = p(10) || '';
   document.getElementById('d-snacks').value    = p(12) || '';
   document.getElementById('d-promo').value     = p(13) || '';
-  // ShopExp ใน Sheets รวม extraExpTotal ไว้แล้ว ต้องหักออกเพื่อไม่นับซ้ำ
   var loadedExtraTotal = p(30);
   var loadedShopExp = p(14) - loadedExtraTotal;
   document.getElementById('d-shop-exp').value = loadedShopExp > 0 ? loadedShopExp.toFixed(2) : '';
@@ -2456,7 +2399,6 @@ function fillDailyForm(row) {
   document.getElementById('b-free').value      = p(33) || '';
   document.getElementById('b-coupon').value    = p(34) || '';
 
-  // โหลด std expenses
   var branch = document.getElementById('d-branch').value;
   var ids = branch === 'lotus' ? STD_EXP_LOTUS : STD_EXP_PASSIONE;
   var stdCols = { 'e-ice':20,'e-meji':21,'e-sugar':23,'e-soda':24,'e-yogurt':25,'e-bakery':26,'e-lime':27,'e-coconut':28 };
@@ -2464,13 +2406,862 @@ function fillDailyForm(row) {
     var el = document.getElementById(id);
     if (el && stdCols[id] !== undefined) el.value = p(stdCols[id]) || '';
   });
-  // โลตัส: โหลดค่าน้ำแข็งวางบิลจาก col Ice (20)
   if (branch === 'lotus') {
     var iceEl = document.getElementById('d-ice-bill');
     if (iceEl) iceEl.value = p(20) || '';
   }
 
-  // โหลด extra expenses (col 31 = ExtraDetail)
+  var extraDetail = s(31);
+  document.getElementById('extra-expenses').innerHTML = '';
+  if (extraDetail) {
+    extraDetail.split(' | ').forEach(function(item) {
+      if (!item.trim()) return;
+      var parts = item.split(':');
+      var name   = parts[0] || '';
+      var amount = parseFloat(parts[1]) || 0;
+      addExpRow(name, amount);
+    });
+  } else {
+    addExpRow();
+  }
+  calcSales();
+}
+
+function cancelEditMode() {
+  isEditMode = false;
+  editRowIndex = -1;
+  document.getElementById('submit-text').textContent = 'บันทึกขึ้น Google Sheets';
+  document.getElementById('cancel-edit-btn').style.display = 'none';
+  document.getElementById('load-status').textContent = '';
+  clearDaily();
+  toast('ยกเลิกการแก้ไขแล้ว', 'success');
+}
+
+// ════ ACCTEXP ════
+var acctExps = JSON.parse(localStorage.getItem('ct_acctexps') || '[]');
+var aeFilter = 'all';
+
+function addAcctExp() {
+  var desc   = document.getElementById('ae-desc').value.trim();
+  var amount = parseFloat(document.getElementById('ae-amount').value);
+  if (!desc)              { toast('กรุณาระบุรายการ', 'error'); return; }
+  if (!amount || amount <= 0) { toast('กรุณาระบุจำนวนเงิน', 'error'); return; }
+  acctExps.unshift({
+    id: Date.now(),
+    branch: document.getElementById('ae-branch').value,
+    date: document.getElementById('ae-date').value,
+    desc: desc,
+    cat: document.getElementById('ae-cat').value,
+    amount: amount,
+    note: document.getElementById('ae-note').value.trim()
+  });
+  saveAcctExp();
+  renderAcctExp();
+  document.getElementById('ae-desc').value = '';
+  document.getElementById('ae-amount').value = '';
+  document.getElementById('ae-note').value = '';
+  toast('เพิ่มรายการแล้ว ✓', 'success');
+}
+
+function delAcctExp(id) {
+  if (!confirm('ลบรายการนี้?')) return;
+  acctExps = acctExps.filter(function(x) { return x.id !== id; });
+  saveAcctExp();
+  renderAcctExp();
+}
+
+function saveAcctExp() {
+  localStorage.setItem('ct_acctexps', JSON.stringify(acctExps));
+}
+
+function filterAE(f) {
+  aeFilter = f;
+  ['all','passione','lotus'].forEach(function(k) {
+    var el = document.getElementById('aef-' + k);
+    if (!el) return;
+    el.style.borderColor = k === f ? 'var(--accent)' : '';
+    el.style.color       = k === f ? 'var(--accent)' : '';
+  });
+  renderAcctExp();
+}
+
+function renderAcctExp() {
+  var tbody = document.getElementById('ae-tbody');
+  var empty = document.getElementById('ae-empty');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  var filterMonth = document.getElementById('ae-filter-month') ? document.getElementById('ae-filter-month').value : '';
+  var labelEl = document.getElementById('ae-filter-label');
+
+  var list = acctExps;
+  if (aeFilter !== 'all') list = list.filter(function(x) { return x.branch === aeFilter; });
+  if (filterMonth) list = list.filter(function(x) { return x.date && x.date.startsWith(filterMonth); });
+
+  var tCount = list.length;
+  var tAmount = list.reduce(function(s, x) { return s + x.amount; }, 0);
+  var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
+  document.getElementById('ae-tot-count').textContent  = tCount + ' รายการ';
+  document.getElementById('ae-tot-amount').textContent = fmt(tAmount);
+  if (labelEl) labelEl.textContent = filterMonth ? '(' + filterMonth + ')' : '';
+
+  if (!list.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  list.forEach(function(item) {
+    var branchName = BRANCH_NAMES[item.branch] || item.branch;
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="mono">' + item.date + '</td>'
+      + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
+      + '<td style="font-size:13px;">' + item.desc + '</td>'
+      + '<td><span class="badge badge-gray">' + item.cat + '</span></td>'
+      + '<td class="mono" style="font-weight:500;">' + fmt(item.amount) + '</td>'
+      + '<td style="font-size:12px;color:var(--text3);">' + (item.note || '-') + '</td>'
+      + '<td><button class="btn btn-danger btn-sm" onclick="delAcctExp(' + item.id + ')">ลบ</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+async function syncAcctExp() {
+  if (!cfg.gsUrl) { toast('กรุณาตั้งค่า URL ก่อน', 'error'); return; }
+  var branch = aeFilter !== 'all' ? aeFilter : (cfg.branch || 'passione');
+  var branchName = BRANCH_NAMES[branch];
+  var itemsToSync = acctExps.filter(function(x) { return x.branch === branch; });
+  if (!itemsToSync.length) { toast('ไม่มีรายการของ' + branchName + 'ที่จะบันทึก', 'error'); return; }
+  await syncToSheets('acctexp', branch, branchName, itemsToSync);
+  toast('ซิงค์ ' + branchName + ' ขึ้น Sheets แล้ว ✓', 'success');
+}
+
+function toast(msg, type) {
+  type = type || 'success';
+  var wrap = document.getElementById('toast-wrap');
+  var t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(function() { t.remove(); }, 3200);
+}
+</script>
+
+</body>
+</html>
+  document.getElementById('ss-unpaid-total').textContent = fmtS(tPayableUnpaid);
+
+  var salesLabel = fmtS(tIncome)
+    + ' <span style="font-size:11px;color:var(--text2);font-family:Sarabun,sans-serif;">'
+    + '(QR ' + fmtS(tQr) + ' + Pay In ' + fmtS(tPayIn)
+    + (tLinemanSun > 0 ? ' + LM ' + fmtS(tLinemanSun) : '')
+    + ')</span>';
+  document.getElementById('ss-sales').innerHTML          = salesLabel;
+  document.getElementById('ss-exp').textContent          = fmtS(tStdExp);
+  document.getElementById('ss-payable-paid').textContent = fmtS(tPayablePaid);
+  document.getElementById('ss-payable-raw').textContent  = fmtS(tPayablePaid);
+  var unpaidDetail = document.getElementById('ss-payable-unpaid-detail');
+  if (unpaidDetail) unpaidDetail.textContent = fmtS(tPayableUnpaid);
+  document.getElementById('ss-exp-total').textContent    = fmtS(tExpAll);
+  document.getElementById('ss-profit').textContent       = fmtS(profit);
+  document.getElementById('ss-profit').className         = 'stat-value '+(profit>=0?'pos':'neg');
+  var profitNote = document.getElementById('ss-profit-note');
+  if (profitNote) {
+    profitNote.innerHTML =
+      fmtS(tIncome) + ' (รายรับ)<br>'
+      + '− ' + fmtS(tPayablePaid) + ' (วางบิลชำระแล้ว)<br>'
+      + '− ' + fmtS(tOtherPayable) + ' (ค่าเช่า/ไฟ/ภาษี)<br>'
+      + '− ' + fmtS(tAcctExp) + ' (บัญชีร้าน)<br>'
+      + '− ' + fmtS(tSalary) + ' (เงินเดือน)';
+  }
+  document.getElementById('ss-payin').textContent        = fmtS(tPayIn);
+  document.getElementById('ss-qr-total').textContent     = fmtS(tQr);
+  document.getElementById('ss-lineman-total').textContent= fmtS(tLineman);
+  document.getElementById('ss-cash-total').textContent   = fmtS(tCash);
+  var noteUnpaid = document.getElementById('ss-note-unpaid');
+  if (noteUnpaid) noteUnpaid.textContent = fmtS(tPayableUnpaid);
+
+  var otherCats = ['ค่าเช่า','ค่าไฟ/น้ำ','ค่าบริการ','ภาษี','อุปกรณ์/ซ่อมบำรุง','ค่าแรง','อื่นๆ'];
+  var otherMap = {};
+  var otherPaidMap = {};
+  monthPayables.forEach(function(px) {
+    if (otherCats.indexOf(px.cat) >= 0) {
+      if (!otherMap[px.desc]) { otherMap[px.desc] = 0; otherPaidMap[px.desc] = true; }
+      otherMap[px.desc] += px.amount;
+      if (!px.paid) otherPaidMap[px.desc] = false;
+    }
+  });
+  var otherEl = document.getElementById('ss-other-expenses');
+  var otherKeys = Object.keys(otherMap);
+  if (otherKeys.length) {
+    otherEl.innerHTML = otherKeys.map(function(k) {
+      var isPaid = otherPaidMap[k];
+      var borderColor = isPaid ? 'var(--green)' : 'var(--red)';
+      var statusIcon = isPaid ? '✓ ชำระแล้ว' : '● ค้างชำระ';
+      var statusColor = isPaid ? 'var(--green)' : 'var(--red)';
+      return '<div class="stat-box" style="border-left:3px solid '+borderColor+';">'
+        +'<div class="stat-label">'+k+'</div>'
+        +'<div class="stat-value">'+fmtS(otherMap[k])+'</div>'
+        +'<div style="font-size:11px;color:'+statusColor+';margin-top:4px;">'+statusIcon+'</div>'
+        +'</div>';
+    }).join('');
+  } else {
+    otherEl.innerHTML = '<div style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>';
+  }
+
+  var acctEl = document.getElementById('ss-acctexp-expenses');
+  if (acctEl) {
+    var acctKeys = Object.keys(acctExpMap);
+    if (acctKeys.length) {
+      acctEl.innerHTML = acctKeys.map(function(k) {
+        return '<div class="stat-box"><div class="stat-label">'+k+'</div>'
+          +'<div class="stat-value">'+fmtS(acctExpMap[k])+'</div></div>';
+      }).join('');
+    } else {
+      acctEl.innerHTML = '<div style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>';
+    }
+  }
+  var acctTotEl = document.getElementById('ss-acctexp-total');
+  if (acctTotEl) acctTotEl.textContent = fmtS(tAcctExp);
+  var salTotEl = document.getElementById('ss-salary-total');
+  if (salTotEl) salTotEl.textContent = fmtS(tSalary);
+  var loanRepayEl = document.getElementById('ss-loan-repay');
+  if (loanRepayEl) loanRepayEl.textContent = fmtS(tLoanRepay);
+
+  var acctTbody = document.getElementById('ss-acctexp-tbody');
+  var acctListEmpty = document.getElementById('ss-acctexp-list-empty');
+  var acctListTotal = document.getElementById('ss-acctexp-list-total');
+  if (acctTbody) {
+    acctTbody.innerHTML = '';
+    if (acctExpRows.length) {
+      if (acctListEmpty) acctListEmpty.style.display = 'none';
+      acctExpRows.forEach(function(r) {
+        var date   = String(r[0] || '');
+        var desc   = String(r[2] || '-');
+        var cat    = String(r[3] || '-');
+        var amount = parseFloat(r[4]) || 0;
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td class="mono">' + date + '</td>'
+          + '<td style="font-size:13px;">' + desc + '</td>'
+          + '<td><span class="badge badge-gray">' + cat + '</span></td>'
+          + '<td class="mono" style="font-weight:500;">' + fmtS(amount) + '</td>';
+        acctTbody.appendChild(tr);
+      });
+    } else {
+      if (acctListEmpty) acctListEmpty.style.display = 'block';
+    }
+    if (acctListTotal) acctListTotal.textContent = fmtS(tAcctExp);
+  }
+
+  // ── ค่าใช้จ่ายหน้าร้าน: ซ่อนน้ำแข็งเมื่อเป็นโลตัส (น้ำแข็งโลตัสเป็นวางบิล ไม่ใช่หน้าร้าน)
+  document.getElementById('ss-ice').textContent             = fmtS(tIce);
+  var iceShopExpBox = document.getElementById('ss-ice-shopexp-box');
+  if (iceShopExpBox) iceShopExpBox.style.display = isLotus ? 'none' : '';
+
+  document.getElementById('ss-meji').textContent            = fmtS(tMeji);
+  document.getElementById('ss-sugar').textContent           = fmtS(tSugar);
+  document.getElementById('ss-soda').textContent            = fmtS(tSoda);
+  document.getElementById('ss-yogurt').textContent          = fmtS(tYogurt);
+  document.getElementById('ss-bakery').textContent          = fmtS(tBakery);
+  document.getElementById('ss-lime').textContent            = fmtS(tLime);
+  document.getElementById('ss-coconut').textContent         = fmtS(tCoconut);
+  document.getElementById('ss-extra').textContent           = fmtS(tExtraExp);
+
+  var cftdEl = document.getElementById('ss-cftd');
+  var cftdBox = document.getElementById('ss-cftd-box');
+  if (cftdEl) {
+    cftdEl.textContent = fmtS(tCftdPayable > 0 ? tCftdPayable : tCftd);
+    if (cftdBox) cftdBox.style.borderLeft = tCftdUnpaid > 0 ? '3px solid var(--red)' : '3px solid var(--green)';
+    cftdEl.style.color = tCftdUnpaid > 0 ? 'var(--red)' : '';
+    var cftdPaidEl = document.getElementById('ss-cftd-paid');
+    var cftdUnpaidEl = document.getElementById('ss-cftd-unpaid');
+    if (cftdPaidEl) cftdPaidEl.textContent = fmtS(tCftdPaid);
+    if (cftdUnpaidEl) cftdUnpaidEl.textContent = fmtS(tCftdUnpaid);
+  }
+  var jindaEl = document.getElementById('ss-jinda');
+  var jindaBox = document.getElementById('ss-jinda-box');
+  if (jindaEl) {
+    jindaEl.textContent = fmtS(tJindaPayable > 0 ? tJindaPayable : tJinda);
+    if (jindaBox) jindaBox.style.borderLeft = tJindaUnpaid > 0 ? '3px solid var(--red)' : (tJindaPayable > 0 ? '3px solid var(--green)' : '');
+    jindaEl.style.color = tJindaUnpaid > 0 ? 'var(--red)' : '';
+    var jindaPaidEl = document.getElementById('ss-jinda-paid');
+    var jindaUnpaidEl = document.getElementById('ss-jinda-unpaid');
+    if (jindaPaidEl) jindaPaidEl.textContent = fmtS(tJindaPaid);
+    if (jindaUnpaidEl) jindaUnpaidEl.textContent = fmtS(tJindaUnpaid);
+  }
+  var iceEl = document.getElementById('ss-ice-payable');
+  var iceBox = document.getElementById('ss-ice-box');
+  if (iceEl) {
+    var iceDisplay = 0;
+    if (isLotus) {
+      rows.forEach(function(r) { iceDisplay += parseFloat(r[20])||0; });
+    } else {
+      iceDisplay = tIcePayable;
+    }
+    iceEl.textContent = fmtS(iceDisplay);
+    if (iceBox) iceBox.style.borderLeft = tIceUnpaid > 0 ? '3px solid var(--red)' : (iceDisplay > 0 ? '3px solid var(--green)' : '');
+    iceEl.style.color = tIceUnpaid > 0 ? 'var(--red)' : '';
+    var icePaidEl = document.getElementById('ss-ice-paid');
+    var iceUnpaidEl = document.getElementById('ss-ice-unpaid');
+    if (icePaidEl) icePaidEl.textContent = fmtS(tIcePaid);
+    if (iceUnpaidEl) iceUnpaidEl.textContent = fmtS(tIceUnpaid);
+  }
+  document.getElementById('ss-payable-other').textContent   = fmtS(tOtherPayable);
+  document.getElementById('ss-payable-unpaid-top').textContent = fmtS(tPayableUnpaid);
+  document.getElementById('ss-qr').textContent              = maxQrDate+' ('+fmtS(maxQr)+')';
+  document.getElementById('ss-maxsale').textContent         = maxSaleDate+' ('+fmtS(maxSale)+')';
+  document.getElementById('ss-days').textContent            = rows.length+' วัน';
+
+  // ── ซ่อน/แสดง ss-shopexp-box ตามสาขา
+  var shopExpBox = document.getElementById('ss-shopexp-box');
+  if (shopExpBox) shopExpBox.style.display = isLotus ? 'none' : '';
+}
+
+async function loadYearly() {
+  if (!cfg.gsUrl) { toast('กรุณาตั้งค่า URL ก่อน','error'); return; }
+  var branch = BRANCH_NAMES[document.getElementById('sy-branch').value];
+  var year   = document.getElementById('sy-year').value;
+  if (!year) { toast('กรุณาระบุปี','error'); return; }
+  var txt = document.getElementById('sy-txt');
+  txt.innerHTML = '<span class="loader"></span>';
+
+  var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+  var monthNames = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+  var results = [];
+  for (var i = 0; i < months.length; i++) {
+    var month = year + '-' + months[i];
+    try {
+      var res  = await fetch(cfg.gsUrl+'?branch='+encodeURIComponent(branch)+'&month='+month);
+      var data = await res.json();
+      results.push({ month: monthNames[i], ym: month, rows: data.rows || [] });
+    } catch(e) {
+      results.push({ month: monthNames[i], ym: month, rows: [] });
+    }
+  }
+  renderYearly(results, year);
+  txt.textContent = 'ดึงข้อมูล';
+}
+
+function renderYearly(results, year) {
+  var empty = document.getElementById('sy-empty');
+  var stats = document.getElementById('sy-stats');
+  var tbody = document.getElementById('sy-tbody');
+  var tfoot = document.getElementById('sy-tfoot');
+  tbody.innerHTML = ''; tfoot.innerHTML = '';
+
+  var hasData = results.some(function(r){return r.rows.length > 0;});
+  if (!hasData) { empty.style.display='block'; stats.style.display='none'; toast('ไม่พบข้อมูลในปีนี้','error'); return; }
+  empty.style.display='none'; stats.style.display='block';
+
+  var p    = function(r,i){ return parseFloat(r[i])||0; };
+  var fmtS = function(v){ return '฿'+(parseFloat(v)||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  var ytSales=0, ytExp=0, ytPayIn=0;
+
+  results.forEach(function(m) {
+    if (!m.rows.length) return;
+    var mSales=0, mExp=0, mPayIn=0;
+    m.rows.forEach(function(r){ mSales+=p(r,3); mExp+=p(r,14); mPayIn+=p(r,16); });
+    ytSales+=mSales; ytExp+=mExp; ytPayIn+=mPayIn;
+    var profit = mSales - mExp;
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td style="font-weight:500;">'+m.month+'</td>'
+      +'<td class="mono" style="color:var(--green);">'+fmtS(mSales)+'</td>'
+      +'<td class="mono" style="color:var(--red);">'+fmtS(mExp)+'</td>'
+      +'<td class="mono" style="color:'+(profit>=0?'var(--green)':'var(--red)')+';">'+fmtS(profit)+'</td>'
+      +'<td class="mono">'+fmtS(mPayIn)+'</td>'
+      +'<td class="mono" style="color:var(--text3);">'+m.rows.length+' วัน</td>';
+    tbody.appendChild(tr);
+  });
+
+  var ytProfit = ytSales - ytExp;
+  var tfr = document.createElement('tr');
+  tfr.style.cssText = 'background:var(--bg3);font-weight:700;border-top:2px solid var(--border2);';
+  tfr.innerHTML = '<td>รวมทั้งปี '+year+'</td>'
+    +'<td class="mono" style="color:var(--green);">'+fmtS(ytSales)+'</td>'
+    +'<td class="mono" style="color:var(--red);">'+fmtS(ytExp)+'</td>'
+    +'<td class="mono" style="color:'+(ytProfit>=0?'var(--green)':'var(--red)')+';">'+fmtS(ytProfit)+'</td>'
+    +'<td class="mono">'+fmtS(ytPayIn)+'</td>'
+    +'<td></td>';
+  tfoot.appendChild(tfr);
+
+  document.getElementById('sy-sales').textContent  = fmtS(ytSales);
+  document.getElementById('sy-exp').textContent    = fmtS(ytExp);
+  document.getElementById('sy-profit').textContent = fmtS(ytProfit);
+  document.getElementById('sy-profit').className   = 'stat-value '+(ytProfit>=0?'pos':'neg');
+}
+
+function saveGsUrl() {
+  var url = document.getElementById('gs-url').value.trim();
+  if (!url) { toast('กรุณากรอก URL', 'error'); return; }
+  cfg.gsUrl = url;
+  localStorage.setItem('ct_cfg', JSON.stringify(cfg));
+  document.getElementById('gs-url-display').textContent = url;
+  document.getElementById('no-sheet-warn').style.display = 'none';
+  toast('บันทึก URL แล้ว ✓', 'success');
+}
+
+function saveConfig() {
+  cfg.branch = document.getElementById('cfg-branch').value;
+  cfg.user   = document.getElementById('cfg-user').value.trim();
+  localStorage.setItem('ct_cfg', JSON.stringify(cfg));
+  toast('บันทึกการตั้งค่าแล้ว ✓', 'success');
+}
+
+async function testConn() {
+  if (!cfg.gsUrl) { toast('กรุณาบันทึก URL ก่อน','error'); return; }
+  try {
+    var res = await fetch(cfg.gsUrl + '?test=1');
+    toast(res.ok ? 'เชื่อมต่อสำเร็จ ✓' : 'HTTP ' + res.status, 'success');
+  } catch(e) { toast('ไม่สามารถเชื่อมต่อได้ (อาจปกติถ้า CORS block)', 'error'); }
+}
+
+var ADMIN_PIN = '9999';
+var adminUnlocked = false;
+
+function checkAdminPin() {
+  var pin = document.getElementById('admin-pin').value;
+  var err = document.getElementById('admin-pin-error');
+  if (pin.length === 4) {
+    if (pin === ADMIN_PIN) {
+      adminUnlocked = true;
+      document.getElementById('admin-lock').style.display = 'none';
+      document.getElementById('admin-panel').style.display = 'block';
+      document.getElementById('admin-pin').value = '';
+      err.style.display = 'none';
+      renderAdminPanel();
+    } else {
+      err.style.display = 'block';
+      document.getElementById('admin-pin').value = '';
+    }
+  }
+}
+
+function lockAdmin() {
+  adminUnlocked = false;
+  document.getElementById('admin-lock').style.display = 'block';
+  document.getElementById('admin-panel').style.display = 'none';
+}
+
+function renderAdminPanel() {
+  var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
+  var tAll=0, tPaid=0, tUnpaid=0;
+  payables.forEach(function(p) {
+    tAll++;
+    p.paid ? (tPaid += p.amount) : (tUnpaid += p.amount);
+  });
+  document.getElementById('adm-payable-count').textContent = tAll;
+  document.getElementById('adm-paid-total').textContent    = fmt(tPaid);
+  document.getElementById('adm-unpaid-total').textContent  = fmt(tUnpaid);
+  renderAdminPayables();
+  renderAdminLineman();
+}
+
+function renderAdminPayables() {
+  var tbody  = document.getElementById('adm-tbody');
+  var empty  = document.getElementById('adm-empty');
+  var fBranch = document.getElementById('adm-filter-branch').value;
+  var fStatus = document.getElementById('adm-filter-status').value;
+  var fCat    = document.getElementById('adm-filter-cat').value;
+  tbody.innerHTML = '';
+
+  var list = payables.filter(function(p) {
+    if (fBranch && p.branch !== fBranch) return false;
+    if (fStatus === 'paid'   && !p.paid)  return false;
+    if (fStatus === 'unpaid' &&  p.paid)  return false;
+    if (fCat && p.cat !== fCat) return false;
+    return true;
+  });
+
+  if (!list.length) { empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  var today = new Date().toISOString().split('T')[0];
+  var fmt   = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
+
+  list.forEach(function(item) {
+    var overdue    = !item.paid && item.due && item.due < today;
+    var branchName = BRANCH_NAMES[item.branch] || item.branch;
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="mono">' + item.date + '</td>'
+      + '<td style="font-size:12px;">' + branchName + '</td>'
+      + '<td><div style="font-size:13px;">' + item.desc + '</div>'
+        + (item.note ? '<div style="font-size:11px;color:var(--text3);">' + item.note + '</div>' : '') + '</td>'
+      + '<td><span class="badge badge-gray">' + item.cat + '</span></td>'
+      + '<td class="mono">' + (item.billno || '-') + '</td>'
+      + '<td class="mono" style="font-weight:500;">' + fmt(item.amount) + '</td>'
+      + '<td class="mono" style="' + (overdue ? 'color:var(--red);font-weight:600;' : '') + '">'
+        + (item.due || '-') + (overdue ? ' ⚠' : '') + '</td>'
+      + '<td><span class="p-tag ' + (item.paid ? 'paid' : 'unpaid') + '">'
+        + (item.paid ? '✓ ชำระแล้ว' : '● ค้างชำระ') + '</span></td>'
+      + '<td class="mono">' + (item.paidDate || '-') + '</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function renderAdminLineman() {
+  var tbody = document.getElementById('adm-lineman-tbody');
+  var empty = document.getElementById('adm-lineman-empty');
+  tbody.innerHTML = '';
+  var keys = [];
+  for (var i = 0; i < localStorage.length; i++) {
+    var key = localStorage.key(i);
+    if (key && key.startsWith('ct_lineman_sun_')) keys.push(key);
+  }
+  if (!keys.length) { empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  keys.sort().reverse();
+  keys.forEach(function(key) {
+    var parts  = key.replace('ct_lineman_sun_','').split('_');
+    var branch = parts[0];
+    var month  = parts.slice(1).join('-');
+    var data   = JSON.parse(localStorage.getItem(key) || '{}');
+    var amount = parseFloat(data.amount) || 0;
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="mono">' + month + '</td>'
+      + '<td style="font-size:12px;">' + (BRANCH_NAMES[branch] || branch) + '</td>'
+      + '<td class="mono" style="color:var(--green);font-weight:500;">฿' + amount.toLocaleString('th-TH',{minimumFractionDigits:2}) + '</td>'
+      + '<td style="font-size:12px;color:var(--text2);">' + (data.note || '-') + '</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function exportAdminCSV() {
+  var headers = ['วันที่','สาขา','รายการ','หมวด','เลขบิล','จำนวน','กำหนดจ่าย','สถานะ','วันที่ชำระ','หมายเหตุ'];
+  var rows = [headers.join(',')];
+  payables.forEach(function(p) {
+    rows.push([
+      p.date, BRANCH_NAMES[p.branch]||p.branch, '"'+p.desc+'"', p.cat,
+      p.billno||'', p.amount, p.due||'',
+      p.paid?'ชำระแล้ว':'ค้างชำระ', p.paidDate||'', '"'+(p.note||'')+'"'
+    ].join(','));
+  });
+  var blob = new Blob(['\uFEFF'+rows.join('\n')], {type:'text/csv;charset=utf-8;'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href = url; a.download = 'payables_export.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function adminClearPaid() {
+  if (!confirm('ลบรายการที่ชำระแล้วทั้งหมด?')) return;
+  payables = payables.filter(function(p) { return !p.paid; });
+  savePay(); renderAdminPanel(); renderPayables();
+  toast('ลบรายการที่ชำระแล้วแล้ว', 'success');
+}
+
+function adminClearAll() {
+  if (!confirm('ล้างข้อมูลวางบิลทั้งหมด? ไม่สามารถกู้คืนได้')) return;
+  payables = [];
+  savePay(); renderAdminPanel(); renderPayables();
+  toast('ล้างข้อมูลทั้งหมดแล้ว', 'success');
+}
+
+// ════ LOAN ════
+var loans = JSON.parse(localStorage.getItem('ct_loans') || '[]');
+
+function addLoan() {
+  var from    = document.getElementById('loan-from').value.trim();
+  var amount  = parseFloat(document.getElementById('loan-amount').value);
+  var purpose = document.getElementById('loan-purpose').value.trim();
+  var date    = document.getElementById('loan-date').value;
+  if (!from)              { toast('กรุณาระบุว่ายืมจากใคร', 'error'); return; }
+  if (!amount || amount <= 0) { toast('กรุณาระบุจำนวนเงิน', 'error'); return; }
+  loans.unshift({
+    id: Date.now(),
+    date: date,
+    from: from,
+    amount: amount,
+    purpose: purpose,
+    repayments: []
+  });
+  saveLoans();
+  renderLoans();
+  document.getElementById('loan-from').value = '';
+  document.getElementById('loan-amount').value = '';
+  document.getElementById('loan-purpose').value = '';
+  toast('บันทึกการยืมแล้ว ✓', 'success');
+}
+
+function addRepayment(id) {
+  var amountStr = prompt('กรอกจำนวนที่คืน (฿):');
+  var amount = parseFloat(amountStr);
+  if (!amount || amount <= 0) return;
+  var dateStr = prompt('วันที่คืน (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+  if (!dateStr) return;
+
+  var loan = loans.find(function(l) { return l.id === id; });
+  if (!loan) return;
+
+  loan.repayments.push({ date: dateStr, amount: amount });
+  saveLoans();
+  renderLoans();
+
+  acctExps.unshift({
+    id: Date.now(),
+    branch: cfg.branch || 'passione',
+    date: dateStr,
+    desc: 'คืนเงินยืม — ' + loan.from + (loan.purpose ? ' (' + loan.purpose + ')' : ''),
+    cat: 'เงินยืม',
+    amount: amount,
+    note: 'คืนเงินที่ยืมวันที่ ' + loan.date
+  });
+  saveAcctExp();
+  renderAcctExp();
+
+  var branch = cfg.branch || 'passione';
+  var branchName = BRANCH_NAMES[branch];
+  var itemsToSync = acctExps.filter(function(x) { return x.branch === branch; });
+  if (cfg.gsUrl && itemsToSync.length) {
+    var payload = JSON.stringify({
+      type: 'acctexp',
+      branch: branch,
+      branchName: branchName,
+      items: itemsToSync,
+      timestamp: new Date().toISOString()
+    });
+    var url = cfg.gsUrl + '?payload=' + encodeURIComponent(payload);
+    fetch(url, { method: 'GET', mode: 'no-cors' })
+      .then(function() { toast('ซิงค์รายการคืนเงินแล้ว ✓', 'success'); })
+      .catch(function() { toast('บันทึกการคืนเงินแล้ว แต่ sync ไม่สำเร็จ', 'error'); });
+  } else {
+    toast('บันทึกการคืนเงิน ฿' + amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + ' แล้ว ✓', 'success');
+  }
+}
+
+function delLoan(id) {
+  if (!confirm('ลบรายการนี้?')) return;
+  loans = loans.filter(function(l) { return l.id !== id; });
+  saveLoans();
+  renderLoans();
+}
+
+function saveLoans() {
+  localStorage.setItem('ct_loans', JSON.stringify(loans));
+  syncLoan();
+}
+
+function renderLoans() {
+  var tbody  = document.getElementById('loan-tbody');
+  var empty  = document.getElementById('loan-empty');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
+  var tAll = 0, tPaid = 0;
+
+  if (!loans.length) { empty.style.display = 'block'; }
+  else {
+    empty.style.display = 'none';
+    loans.forEach(function(loan) {
+      var repaid  = loan.repayments.reduce(function(s, r) { return s + r.amount; }, 0);
+      var remain  = loan.amount - repaid;
+      var settled = remain <= 0;
+      tAll  += loan.amount;
+      tPaid += repaid;
+
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td class="mono">' + loan.date + '</td>'
+        + '<td style="font-weight:500;">' + loan.from + '</td>'
+        + '<td class="mono" style="color:var(--yellow);font-weight:500;">' + fmt(loan.amount) + '</td>'
+        + '<td style="font-size:12px;color:var(--text2);">' + (loan.purpose || '-') + '</td>'
+        + '<td class="mono" style="color:' + (settled ? 'var(--green)' : 'var(--red)') + ';font-weight:600;">' + fmt(Math.max(remain, 0)) + '</td>'
+        + '<td><span class="p-tag ' + (settled ? 'paid' : 'unpaid') + '">' + (settled ? '✓ คืนครบแล้ว' : '● ยังค้างอยู่') + '</span></td>'
+        + '<td style="display:flex;gap:4px;">'
+          + (!settled ? '<button class="btn btn-outline btn-sm" onclick="addRepayment(' + loan.id + ')">+ คืนเงิน</button>' : '')
+          + '<button class="btn btn-danger btn-sm" onclick="delLoan(' + loan.id + ')">ลบ</button>'
+        + '</td>';
+      tbody.appendChild(tr);
+
+      if (loan.repayments.length) {
+        loan.repayments.forEach(function(r) {
+          var trSub = document.createElement('tr');
+          trSub.style.cssText = 'background:var(--green-t);';
+          trSub.innerHTML =
+            '<td class="mono" style="font-size:11px;color:var(--text3);padding-left:24px;">↳ คืน ' + r.date + '</td>'
+            + '<td colspan="3" style="font-size:11px;color:var(--green);">คืนเงิน</td>'
+            + '<td class="mono" style="font-size:11px;color:var(--green);">−' + fmt(r.amount) + '</td>'
+            + '<td colspan="2"></td>';
+          tbody.appendChild(trSub);
+        });
+      }
+    });
+  }
+
+  var tRemain = tAll - tPaid;
+  var totAll    = document.getElementById('loan-tot-all');
+  var totPaid   = document.getElementById('loan-tot-paid');
+  var totRemain = document.getElementById('loan-tot-remain');
+  if (totAll)    totAll.textContent    = fmt(tAll);
+  if (totPaid)   totPaid.textContent   = fmt(tPaid);
+  if (totRemain) totRemain.textContent = fmt(Math.max(tRemain, 0));
+}
+
+// ════ SALARY ════
+var salaries = JSON.parse(localStorage.getItem('ct_salaries') || '[]');
+
+function addSalary() {
+  var name   = document.getElementById('sal-name').value.trim();
+  var amount = parseFloat(document.getElementById('sal-amount').value);
+  if (!name)              { toast('กรุณาระบุชื่อพนักงาน', 'error'); return; }
+  if (!amount || amount <= 0) { toast('กรุณาระบุจำนวนเงิน', 'error'); return; }
+  salaries.unshift({
+    id: Date.now(),
+    branch: document.getElementById('sal-branch').value,
+    date: document.getElementById('sal-date').value,
+    month: document.getElementById('sal-month').value,
+    name: name,
+    amount: amount,
+    note: document.getElementById('sal-note').value.trim()
+  });
+  saveSalaries();
+  renderSalaries();
+  document.getElementById('sal-name').value = '';
+  document.getElementById('sal-amount').value = '';
+  document.getElementById('sal-note').value = '';
+  toast('เพิ่มรายการเงินเดือนแล้ว ✓', 'success');
+}
+
+function delSalary(id) {
+  if (!confirm('ลบรายการนี้?')) return;
+  salaries = salaries.filter(function(s) { return s.id !== id; });
+  saveSalaries();
+  renderSalaries();
+}
+
+function saveSalaries() {
+  localStorage.setItem('ct_salaries', JSON.stringify(salaries));
+  syncSalary();
+}
+
+function getSalaryTotal(branch, month) {
+  return salaries.filter(function(s) {
+    var matchBranch = !branch || s.branch === branch;
+    var inMonth = s.month === month || (s.date && s.date.startsWith(month));
+    return matchBranch && inMonth;
+  }).reduce(function(sum, s) { return sum + s.amount; }, 0);
+}
+
+function renderSalaries() {
+  var tbody   = document.getElementById('sal-tbody');
+  var empty   = document.getElementById('sal-empty');
+  var totalEl = document.getElementById('sal-total');
+  var labelEl = document.getElementById('sal-filter-label');
+  var filterMonthEl = document.getElementById('sal-filter-month');
+  var filterMonth = filterMonthEl ? filterMonthEl.value : '';
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  var list = filterMonth
+    ? salaries.filter(function(s) { return s.month === filterMonth || (s.date && s.date.startsWith(filterMonth)); })
+    : salaries;
+
+  var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
+  var total = list.reduce(function(s, x) { return s + x.amount; }, 0);
+  if (totalEl) totalEl.textContent = fmt(total);
+  if (labelEl) labelEl.textContent = filterMonth ? '(' + filterMonth + ')' : '';
+
+  if (!list.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  list.forEach(function(item) {
+    var branchName = BRANCH_NAMES[item.branch] || item.branch;
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="mono">' + (item.date || '-') + '</td>'
+      + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
+      + '<td style="font-size:13px;font-weight:500;">' + item.name + '</td>'
+      + '<td class="mono">' + (item.month || '-') + '</td>'
+      + '<td class="mono" style="color:var(--blue);font-weight:500;">' + fmt(item.amount) + '</td>'
+      + '<td style="font-size:12px;color:var(--text3);">' + (item.note || '-') + '</td>'
+      + '<td><button class="btn btn-danger btn-sm" onclick="delSalary(' + item.id + ')">ลบ</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+// ════ EDIT MODE ════
+var isEditMode = false;
+var editRowIndex = -1;
+
+async function loadDailyData() {
+  if (!cfg.gsUrl) { toast('กรุณาตั้งค่า URL ก่อน', 'error'); return; }
+  var date   = document.getElementById('d-load-date').value;
+  var branch = document.getElementById('d-branch').value;
+  if (!date) { toast('กรุณาเลือกวันที่', 'error'); return; }
+
+  var statusEl = document.getElementById('load-status');
+  statusEl.textContent = 'กำลังโหลด...';
+
+  try {
+    var branchName = BRANCH_NAMES[branch];
+    var month = date.slice(0, 7);
+    var res  = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branchName) + '&month=' + month);
+    var data = await res.json();
+    var rows = data.rows || [];
+
+    var row = null;
+    var rowIdx = -1;
+    for (var i = 0; i < rows.length; i++) {
+      if (String(rows[i][0]) === date) {
+        row = rows[i]; rowIdx = i; break;
+      }
+    }
+
+    if (!row) {
+      statusEl.textContent = '⚠ ไม่พบข้อมูลวันที่ ' + date + ' ในสาขานี้';
+      statusEl.style.color = 'var(--red)';
+      return;
+    }
+
+    fillDailyForm(row);
+    isEditMode = true;
+    editRowIndex = rowIdx;
+
+    document.getElementById('d-date').value = date;
+    document.getElementById('submit-text').textContent = '💾 อัปเดตข้อมูล';
+    document.getElementById('cancel-edit-btn').style.display = 'inline-flex';
+    statusEl.textContent = '✓ โหลดข้อมูลวันที่ ' + date + ' แล้ว — แก้ไขได้เลย';
+    statusEl.style.color = 'var(--green)';
+    toast('โหลดข้อมูลวันที่ ' + date + ' แล้ว', 'success');
+  } catch(err) {
+    statusEl.textContent = 'โหลดไม่สำเร็จ: ' + err.message;
+    statusEl.style.color = 'var(--red)';
+  }
+}
+
+function fillDailyForm(row) {
+  var p = function(i) { return parseFloat(row[i]) || 0; };
+  var s = function(i) { return String(row[i] || ''); };
+
+  document.getElementById('d-cashier').value   = s(2);
+  document.getElementById('d-subtotal').value  = p(3) || '';
+  document.getElementById('d-discount').value  = p(4) || '';
+  document.getElementById('d-rounding').value  = p(5) || '';
+  document.getElementById('d-total-sales').value = p(6) || '';
+  document.getElementById('d-qr').value        = p(7) || '';
+  document.getElementById('d-lineman').value   = p(9) || '';
+  document.getElementById('d-cash').value      = p(10) || '';
+  document.getElementById('d-snacks').value    = p(12) || '';
+  document.getElementById('d-promo').value     = p(13) || '';
+  var loadedExtraTotal = p(30);
+  var loadedShopExp = p(14) - loadedExtraTotal;
+  document.getElementById('d-shop-exp').value = loadedShopExp > 0 ? loadedShopExp.toFixed(2) : '';
+  document.getElementById('d-note').value      = s(35);
+  document.getElementById('b-void').value      = p(32) || '';
+  document.getElementById('b-free').value      = p(33) || '';
+  document.getElementById('b-coupon').value    = p(34) || '';
+
+  var branch = document.getElementById('d-branch').value;
+  var ids = branch === 'lotus' ? STD_EXP_LOTUS : STD_EXP_PASSIONE;
+  var stdCols = { 'e-ice':20,'e-meji':21,'e-sugar':23,'e-soda':24,'e-yogurt':25,'e-bakery':26,'e-lime':27,'e-coconut':28 };
+  ids.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && stdCols[id] !== undefined) el.value = p(stdCols[id]) || '';
+  });
+  if (branch === 'lotus') {
+    var iceEl = document.getElementById('d-ice-bill');
+    if (iceEl) iceEl.value = p(20) || '';
+  }
+
   var extraDetail = s(31);
   document.getElementById('extra-expenses').innerHTML = '';
   if (extraDetail) {

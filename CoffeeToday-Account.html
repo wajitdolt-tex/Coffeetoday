@@ -1424,7 +1424,10 @@ async function loadSummary() {
         };
       });
       var otherBranchPayables = payables.filter(function(px) { return px.branch !== branchKey; });
-      payables = otherBranchPayables.concat(sheetsPayables);
+      // dedup: ถ้า id ซ้ำกันให้เอา Sheets เป็นหลัก
+      var sheetsIds = {};
+      sheetsPayables.forEach(function(p) { sheetsIds[p.id] = true; });
+      payables = otherBranchPayables.filter(function(px) { return !sheetsIds[px.id]; }).concat(sheetsPayables);
       localStorage.setItem('ct_payables', JSON.stringify(payables));
       renderPayables();
     } else if (data.payableRows && data.payableRows.length === 0) {
@@ -1888,12 +1891,12 @@ function renderSummary(rows, acctExpRows) {
   }
   var iceEl = document.getElementById('ss-ice-payable');
   var iceBox = document.getElementById('ss-ice-box');
+  // น้ำแข็งวางบิล: แสดงเฉพาะโลตัส (แพชชั่นจ่ายสดหน้าร้าน ไม่ได้วางบิล)
+  if (iceBox) iceBox.style.display = isLotus ? '' : 'none';
   if (iceEl) {
     var iceDisplay = 0;
     if (isLotus) {
       rows.forEach(function(r) { iceDisplay += parseFloat(r[20])||0; });
-    } else {
-      iceDisplay = tIcePayable;
     }
     iceEl.textContent = fmtS(iceDisplay);
     if (iceBox) iceBox.style.borderLeft = tIceUnpaid > 0 ? '3px solid var(--red)' : (iceDisplay > 0 ? '3px solid var(--green)' : '');

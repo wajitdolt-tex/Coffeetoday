@@ -439,7 +439,7 @@ tr:hover td{background:var(--bg3);}
           <div class="stat-value neg" id="ss-payable-unpaid-detail">฿0</div>
         </div>
         <div class="stat-box" style="background:var(--bg2);">
-          <div class="stat-label">ค่าเช่า/ค่าน้ำไฟ/ค่าภาษี</div>
+          <div class="stat-label" id="ss-payable-other-label">ค่าเช่า/ค่าน้ำไฟ/ค่าภาษี</div>
           <div class="stat-value" id="ss-payable-other">฿0</div>
         </div>
         <div class="stat-box" style="background:var(--bg2);">
@@ -1289,11 +1289,19 @@ function renderPayables() {
   if (pBranchFilter !== 'all') list = list.filter(function(p) { return p.branch === pBranchFilter; });
 
   if (filterMonth) {
+    var fixedCatsFilter = ['ค่าเช่า','ค่าไฟ/น้ำ','ภาษี','ค่าบริการ'];
     list = list.filter(function(p) {
       var d = p.indate || p.date || '';
       var due = p.due || '';
       var paid = p.paidDate || '';
-      return d.startsWith(filterMonth) || due.startsWith(filterMonth) || paid.startsWith(filterMonth);
+      var isFixed = fixedCatsFilter.indexOf(p.cat) >= 0;
+      if (isFixed) {
+        // ค่าเช่า/ไฟ/ภาษี — นับตามวันที่วางบิลเท่านั้น
+        return d.startsWith(filterMonth) || due.startsWith(filterMonth);
+      } else {
+        // วัตถุดิบ/อื่นๆ — นับตามวันที่วางบิล หรือวันที่จ่ายจริง
+        return d.startsWith(filterMonth) || due.startsWith(filterMonth) || paid.startsWith(filterMonth);
+      }
     });
   }
 
@@ -1676,7 +1684,8 @@ function renderSummary(rows, acctExpRows) {
   var tLinemanSun = lsData ? (parseFloat(JSON.parse(lsData).amount)||0) : 0;
   var tIncome = tQr + tPayIn + tLinemanSun;
 
-  var fixedCats = ['ค่าเช่า','ค่าไฟ/น้ำ','ภาษี'];
+  // ค่าใช้จ่ายประจำเดือน (ค่าเช่า/ไฟ/ภาษี/แอร์/บริการ) — นับตามวันที่วางบิลเสมอ
+  var fixedCats = ['ค่าเช่า','ค่าไฟ/น้ำ','ภาษี','ค่าบริการ'];
   var monthPayables = payables.filter(function(px) {
     var matchBranch = !branch || px.branch === branch || px.branch === BRANCH_NAMES[branch];
     var isFixedCat = fixedCats.indexOf(px.cat) >= 0;
@@ -1907,6 +1916,9 @@ function renderSummary(rows, acctExpRows) {
     if (iceUnpaidEl) iceUnpaidEl.textContent = fmtS(tIceUnpaid);
   }
   document.getElementById('ss-payable-other').textContent   = fmtS(tOtherPayable);
+  // เปลี่ยน label ตามสาขา
+  var otherLabelEl = document.getElementById('ss-payable-other-label');
+  if (otherLabelEl) otherLabelEl.textContent = isLotus ? 'ค่าเช่า/ค่าน้ำไฟ/ค่าแอร์ส่วนกลาง' : 'ค่าเช่า/ค่าน้ำไฟ/ค่าภาษี';
   document.getElementById('ss-payable-unpaid-top').textContent = fmtS(tPayableUnpaid);
   document.getElementById('ss-qr').textContent              = maxQrDate+' ('+fmtS(maxQr)+')';
   document.getElementById('ss-maxsale').textContent         = maxSaleDate+' ('+fmtS(maxSale)+')';

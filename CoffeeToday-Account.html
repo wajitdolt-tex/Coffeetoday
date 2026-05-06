@@ -1365,9 +1365,13 @@ async function syncPayable(showToast) {
 
 async function syncSalary() {
   if (!cfg.gsUrl) return;
-  var branch = cfg.branch || 'passione';
-  await syncToSheets('salary', branch, BRANCH_NAMES[branch],
-    salaries.filter(function(s) { return s.branch === branch; }));
+  var branches = ['passione', 'lotus'];
+  for (var b = 0; b < branches.length; b++) {
+    var branch = branches[b];
+    var items = salaries.filter(function(s) { return s.branch === branch; });
+    if (!items.length) continue;
+    await syncToSheets('salary', branch, BRANCH_NAMES[branch], items);
+  }
 }
 
 async function syncLoan() {
@@ -1421,12 +1425,17 @@ async function loadSummary() {
     if (data.salaryRows) {
       if (data.salaryRows.length) {
         var sheetsSalaries = data.salaryRows.map(function(r) {
+          function cleanSalDate(v) {
+            var s = String(v||'');
+            if (s.indexOf('T') >= 0) s = s.split('T')[0];
+            return s;
+          }
           return {
             id: r[6] || Date.now(),
-            date: String(r[0]||''),
+            date: cleanSalDate(r[0]),
             branch: branchKey,
             name: String(r[2]||''),
-            month: String(r[3]||''),
+            month: cleanSalDate(r[3]).slice(0,7),
             amount: parseFloat(r[4])||0,
             note: String(r[5]||'')
           };

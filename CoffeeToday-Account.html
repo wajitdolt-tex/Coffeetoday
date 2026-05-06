@@ -887,7 +887,7 @@ tr:hover td{background:var(--bg3);}
   </div>
   <div class="tbl-wrap">
     <table>
-      <thead><tr><th>วันที่</th><th>สาขา</th><th>รายการ</th><th>หมวด</th><th>เลขบิล</th><th>จำนวน</th><th>กำหนดจ่าย</th><th>สถานะ</th><th>วันที่ชำระ</th></tr></thead>
+      <thead><tr><th>วันที่</th><th>สาขา</th><th>รายการ</th><th>หมวด</th><th>เลขบิล</th><th>จำนวน</th><th>กำหนดจ่าย</th><th>สถานะ</th><th>วันที่ชำระ</th><th></th></tr></thead>
       <tbody id="adm-tbody"></tbody>
     </table>
     <div id="adm-empty" class="empty-state" style="display:none;"><div class="icon">📋</div><p>ไม่มีข้อมูล</p></div>
@@ -2093,9 +2093,19 @@ function renderAdminPayables() {
         + (item.due || '-') + (overdue ? ' ⚠' : '') + '</td>'
       + '<td><span class="p-tag ' + (item.paid ? 'paid' : 'unpaid') + '">'
         + (item.paid ? '✓ ชำระแล้ว' : '● ค้างชำระ') + '</span></td>'
-      + '<td class="mono">' + (item.paidDate || '-') + '</td>';
+      + '<td class="mono">' + (item.paidDate || '-') + '</td>'
+      + '<td><button class="btn btn-danger btn-sm" onclick="admDelPayable(' + item.id + ')">ลบ</button></td>';
     tbody.appendChild(tr);
   });
+}
+
+function admDelPayable(id) {
+  if (!confirm('ลบรายการนี้?')) return;
+  payables = payables.filter(function(p) { return p.id !== id; });
+  savePay();
+  renderAdminPanel();
+  renderPayables();
+  toast('ลบรายการแล้ว ✓', 'success');
 }
 
 function renderAdminLineman() {

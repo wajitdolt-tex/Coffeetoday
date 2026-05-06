@@ -1573,7 +1573,7 @@ function renderSummary(rows, acctExpRows) {
     tSales+=sales; tPayIn+=pi;
     tQr+=qr; tLineman+=lineman; tCash+=cash;
     tExtraExp+=extraExp;
-    tExp += (exp + extraExp) - (isLotus ? iceAmt : 0);
+    tExp += exp + extraExp;
     tCftd  +=p(r,19); tIce   +=iceAmt;
     tMeji  +=p(r,21); tJinda +=p(r,22);
     tSugar +=p(r,23); tSoda  +=p(r,24);

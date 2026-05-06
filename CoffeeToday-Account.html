@@ -1889,9 +1889,7 @@ function renderSummary(rows, acctExpRows) {
   document.getElementById('ss-maxsale').textContent         = maxSaleDate+' ('+fmtS(maxSale)+')';
   document.getElementById('ss-days').textContent            = rows.length+' วัน';
 
-  // ── ซ่อน/แสดง ss-shopexp-box ตามสาขา
-  var shopExpBox = document.getElementById('ss-shopexp-box');
-  if (shopExpBox) shopExpBox.style.display = isLotus ? 'none' : '';
+  // ss-shopexp-box แสดงเสมอทุกสาขา (ซ่อนแค่น้ำแข็งผ่าน ss-ice-shopexp-box)
 }
 
 

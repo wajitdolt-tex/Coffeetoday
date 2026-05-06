@@ -691,7 +691,10 @@ tr:hover td{background:var(--bg3);}
     </div>
     <div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:12px;color:var(--text2);">ยอดรวมเงินเดือน <span id="sal-filter-label" style="color:var(--accent);"></span></span>
-      <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--blue);font-size:15px;" id="sal-total">฿0.00</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="btn btn-primary btn-sm" onclick="syncSalary(true)">☁ บันทึกขึ้น Sheets</button>
+        <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--blue);font-size:15px;" id="sal-total">฿0.00</span>
+      </div>
     </div>
   </div>
 
@@ -775,9 +778,16 @@ tr:hover td{background:var(--bg3);}
 
 <hr class="divider">
 
+<div style="display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+  <span style="font-size:12px;color:var(--text3);">กรองสาขา:</span>
+  <button class="btn btn-sm btn-outline" id="lf-all" onclick="filterLoan('all')" style="border-color:var(--accent);color:var(--accent);">ทั้งหมด</button>
+  <button class="btn btn-sm btn-outline" id="lf-passione" onclick="filterLoan('passione')">แพชชั่น</button>
+  <button class="btn btn-sm btn-outline" id="lf-lotus" onclick="filterLoan('lotus')">โลตัส</button>
+</div>
+
 <div class="tbl-wrap">
   <table>
-    <thead><tr><th>วันที่ยืม</th><th>ยืมจาก</th><th>จำนวน</th><th>ใช้เพื่อ</th><th>ยังค้างอยู่</th><th>สถานะ</th><th></th></tr></thead>
+    <thead><tr><th>วันที่ยืม</th><th>สาขา</th><th>ยืมจาก</th><th>จำนวน</th><th>ใช้เพื่อ</th><th>ยังค้างอยู่</th><th>สถานะ</th><th></th></tr></thead>
     <tbody id="loan-tbody"></tbody>
   </table>
   <div id="loan-empty" class="empty-state" style="display:none;"><div class="icon">💰</div><p>ยังไม่มีรายการ</p></div>
@@ -1363,7 +1373,7 @@ async function syncPayable(showToast) {
   }
 }
 
-async function syncSalary() {
+async function syncSalary(showToast) {
   if (!cfg.gsUrl) return;
   var branches = ['passione', 'lotus'];
   for (var b = 0; b < branches.length; b++) {
@@ -1372,6 +1382,7 @@ async function syncSalary() {
     if (!items.length) continue;
     await syncToSheets('salary', branch, BRANCH_NAMES[branch], items);
   }
+  if (showToast) toast('ซิงค์เงินเดือนขึ้น Sheets แล้ว ✓', 'success');
 }
 
 async function syncLoan() {
@@ -2145,6 +2156,18 @@ function adminClearAll() {
 
 // ════ LOAN ════
 var loans = JSON.parse(localStorage.getItem('ct_loans') || '[]');
+var loanFilter = 'all';
+
+function filterLoan(f) {
+  loanFilter = f;
+  ['all','passione','lotus'].forEach(function(k) {
+    var el = document.getElementById('lf-' + k);
+    if (!el) return;
+    el.style.borderColor = k === f ? 'var(--accent)' : '';
+    el.style.color       = k === f ? 'var(--accent)' : '';
+  });
+  renderLoans();
+}
 
 function addLoan() {
   var from    = document.getElementById('loan-from').value.trim();
@@ -2236,19 +2259,22 @@ function renderLoans() {
   var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
   var tAll = 0, tPaid = 0;
 
-  if (!loans.length) { empty.style.display = 'block'; }
+  var list = loanFilter === 'all' ? loans : loans.filter(function(l) { return l.branch === loanFilter; });
+
+  if (!list.length) { empty.style.display = 'block'; }
   else {
     empty.style.display = 'none';
-    loans.forEach(function(loan) {
+    list.forEach(function(loan) {
       var repaid  = loan.repayments.reduce(function(s, r) { return s + r.amount; }, 0);
       var remain  = loan.amount - repaid;
       var settled = remain <= 0;
       tAll  += loan.amount;
       tPaid += repaid;
-
+      var branchName = BRANCH_NAMES[loan.branch] || loan.branch || '-';
       var tr = document.createElement('tr');
       tr.innerHTML =
         '<td class="mono">' + loan.date + '</td>'
+        + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
         + '<td style="font-weight:500;">' + loan.from + '</td>'
         + '<td class="mono" style="color:var(--yellow);font-weight:500;">' + fmt(loan.amount) + '</td>'
         + '<td style="font-size:12px;color:var(--text2);">' + (loan.purpose || '-') + '</td>'

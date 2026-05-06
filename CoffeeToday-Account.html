@@ -320,7 +320,7 @@ tr:hover td{background:var(--bg3);}
       <div class="form-row"><label>ค่าเช่า (฿)</label><input type="number" id="pm-rent" placeholder="0.00" step="0.01"></div>
       <div class="form-row"><label>ค่าน้ำ/ค่าไฟ (฿)</label><input type="number" id="pm-utility" placeholder="0.00" step="0.01"></div>
       <div class="form-row" id="pm-aircond-row" style="display:none;"><label>ค่าแอร์ส่วนกลาง (฿)</label><input type="number" id="pm-aircond" placeholder="0.00" step="0.01"></div>
-      <div class="form-row"><label>ภาษีสิ่งปลูกสร้างและที่ดิน (฿)</label><input type="number" id="pm-tax-land" placeholder="0.00" step="0.01"></div>
+      <div class="form-row"><label id="pm-tax-land-label">ภาษีสิ่งปลูกสร้างและที่ดิน (฿)</label><input type="number" id="pm-tax-land" placeholder="0.00" step="0.01"></div>
       <div class="form-row"><label>ภาษีป้าย (฿)</label><input type="number" id="pm-tax-sign" placeholder="0.00" step="0.01"></div>
       <div class="form-row"><label>ค่าใบอนุญาตผู้ประกอบการอาหาร (฿)</label><input type="number" id="pm-license" placeholder="0.00" step="0.01"></div>
     </div>
@@ -347,6 +347,12 @@ tr:hover td{background:var(--bg3);}
     <button class="btn btn-sm btn-outline" id="pf-all" onclick="filterP('all')" style="border-color:var(--accent);color:var(--accent);">ทั้งหมด</button>
     <button class="btn btn-sm btn-outline" id="pf-unpaid" onclick="filterP('unpaid')">ค้างชำระ</button>
     <button class="btn btn-sm btn-outline" id="pf-paid" onclick="filterP('paid')">ชำระแล้ว</button>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+    <span style="font-size:12px;color:var(--text3);">กรองสาขา:</span>
+    <button class="btn btn-sm btn-outline" id="pbf-all" onclick="filterPBranch('all')" style="border-color:var(--accent);color:var(--accent);">ทั้งหมด</button>
+    <button class="btn btn-sm btn-outline" id="pbf-passione" onclick="filterPBranch('passione')">แพชชั่น</button>
+    <button class="btn btn-sm btn-outline" id="pbf-lotus" onclick="filterPBranch('lotus')">โลตัส</button>
   </div>
   <div style="display:flex;gap:8px;align-items:center;margin-bottom:13px;flex-wrap:wrap;">
     <span style="font-size:12px;color:var(--text3);">กรองเดือน:</span>
@@ -890,6 +896,18 @@ tr:hover td{background:var(--bg3);}
 
 <script>
 var pFilter = 'all';
+var pBranchFilter = 'all';
+
+function filterPBranch(type) {
+  pBranchFilter = type;
+  ['all','passione','lotus'].forEach(function(t) {
+    var el = document.getElementById('pbf-' + t);
+    if (el) el.style.cssText = t === type
+      ? 'border-color:var(--accent);color:var(--accent);'
+      : '';
+  });
+  renderPayables();
+}
 var payables = JSON.parse(localStorage.getItem('ct_payables') || '[]');
 var cfg = JSON.parse(localStorage.getItem('ct_cfg') || '{}');
 
@@ -1260,6 +1278,7 @@ function renderPayables() {
   var list = payables;
   if (pFilter === 'paid')   list = list.filter(function(p) { return p.paid; });
   if (pFilter === 'unpaid') list = list.filter(function(p) { return !p.paid; });
+  if (pBranchFilter !== 'all') list = list.filter(function(p) { return p.branch === pBranchFilter; });
 
   // กรองเดือน — ใช้ indate หรือ date
   if (filterMonth) {
@@ -1466,20 +1485,24 @@ async function loadSummary() {
 function onPmBranchChange() {
   var branch = document.getElementById('pm-branch').value;
   document.getElementById('pm-aircond-row').style.display = branch === 'lotus' ? 'block' : 'none';
+  // เปลี่ยนเฉพาะ label ภาษีที่ดิน ตามสาขา
+  var taxLandLabel = document.getElementById('pm-tax-land-label');
+  if (taxLandLabel) {
+    taxLandLabel.textContent = branch === 'lotus' ? 'ค่าแอร์ส่วนกลาง (฿)' : 'ภาษีสิ่งปลูกสร้างและที่ดิน (฿)';
+  }
 }
 
 function addMonthlyExpenses() {
   var branch  = document.getElementById('pm-branch').value;
   var month   = document.getElementById('pm-month').value;
   var due     = document.getElementById('pm-due').value;
-  // ใช้วันที่ 1 ของเดือนที่เลือก ไม่ใช่วันที่ลงข้อมูล
   var dateForMonth = month ? month + '-01' : new Date().toISOString().split('T')[0];
 
   var items = [
     { id:'pm-rent',     label:'ค่าเช่า',                              cat:'ค่าเช่า' },
     { id:'pm-utility',  label:'ค่าน้ำ/ค่าไฟ',                         cat:'ค่าไฟ/น้ำ' },
     { id:'pm-aircond',  label:'ค่าแอร์ส่วนกลาง',                      cat:'ค่าบริการ' },
-    { id:'pm-tax-land', label:'ภาษีสิ่งปลูกสร้างและที่ดิน',           cat:'ภาษี' },
+    { id:'pm-tax-land', label: branch === 'lotus' ? 'ค่าแอร์ส่วนกลาง' : 'ภาษีสิ่งปลูกสร้างและที่ดิน', cat: branch === 'lotus' ? 'ค่าบริการ' : 'ภาษี' },
     { id:'pm-tax-sign', label:'ภาษีป้าย',                              cat:'ภาษี' },
     { id:'pm-license',  label:'ค่าใบอนุญาตผู้ประกอบการอาหาร',         cat:'ค่าบริการ' }
   ];

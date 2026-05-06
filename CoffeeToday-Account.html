@@ -1609,7 +1609,17 @@ function renderSummary(rows, acctExpRows) {
   var stats = document.getElementById('s-stats');
   var tbody = document.getElementById('s-tbody');
   tbody.innerHTML = '';
-  if (!rows.length) { empty.style.display='block'; stats.style.display='none'; toast('ไม่พบข้อมูล','error'); return; }
+  if (!rows.length) {
+    empty.style.display='block';
+    stats.style.display='none';
+    toast('ไม่พบข้อมูล','error');
+    // ล้างข้อมูลวางบิลที่ค้างจากสาขาก่อนหน้า
+    var listEl = document.getElementById('ss-unpaid-list');
+    if (listEl) listEl.innerHTML = '<div class="empty-state" style="padding:16px;"><p>ไม่มีรายการค้างชำระในเดือนนี้ ✓</p></div>';
+    var unpaidTot = document.getElementById('ss-unpaid-total');
+    if (unpaidTot) unpaidTot.textContent = '฿0';
+    return;
+  }
   empty.style.display='none'; stats.style.display='block';
 
   var tSales=0, tExp=0, tStdExp=0, tExtraExp=0, tPayIn=0, tQr=0, tLineman=0, tCash=0;

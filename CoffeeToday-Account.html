@@ -1054,20 +1054,21 @@ function calcSales() {
   var totalSales = n('d-total-sales');
 
   var shopExp = n('d-shop-exp');
+  // extra expenses = แค่บันทึกรายละเอียด ไม่บวกเพิ่มใน Pay In
   var extraTotal = 0;
   document.querySelectorAll('#extra-expenses .expense-row').forEach(function(row) {
     var ins = row.querySelectorAll('input');
     extraTotal += parseFloat(ins[1] ? ins[1].value : 0) || 0;
   });
-  var totalExp = shopExp + extraTotal;
 
-  var pi = n('d-cash') - totalExp;
+  // Pay In คำนวณจาก shopExp เท่านั้น (extra คือรายละเอียดของ shopExp ไม่นับซ้ำ)
+  var pi = n('d-cash') - shopExp;
   document.getElementById('d-diff').value = '0.00';
   document.getElementById('d-payin').value = pi.toFixed(2);
 
   var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
   document.getElementById('sum-total').textContent  = fmt(totalSales);
-  document.getElementById('sum-exp').textContent    = fmt(totalExp);
+  document.getElementById('sum-exp').textContent    = fmt(shopExp);
   document.getElementById('sum-payin').textContent  = fmt(pi);
   calcDrinks();
 }
@@ -1643,7 +1644,7 @@ function renderSummary(rows, acctExpRows) {
     tSales+=sales; tPayIn+=pi;
     tQr+=qr; tLineman+=lineman; tCash+=cash;
     tExtraExp+=extraExp;
-    tExp += exp + extraExp;
+    tExp += exp;  // ShopExp รวม extra อยู่แล้ว ไม่บวกซ้ำ
     tCftd  +=p(r,19); tIce   +=iceAmt;
     tMeji  +=p(r,21); tJinda +=p(r,22);
     tSugar +=p(r,23); tSoda  +=p(r,24);
@@ -1678,7 +1679,7 @@ function renderSummary(rows, acctExpRows) {
   if (stCash)     stCash.textContent     = fmt(tCash);
   if (stExp)      stExp.textContent      = fmt(tExp);
   if (stPayin)    stPayin.textContent    = fmt(tPayIn);
-  tStdExp = tExp - tExtraExp;
+  tStdExp = tExp;  // ShopExp คือยอดรวมจริง
 
   var tAcctExp = 0;
   var tLoanRepay = 0;

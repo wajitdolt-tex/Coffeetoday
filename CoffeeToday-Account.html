@@ -499,7 +499,14 @@ tr:hover td{background:var(--bg3);}
       <div class="stat-box"><div class="stat-label">Bakery</div><div class="stat-value" id="ss-bakery">฿0</div></div>
       <div class="stat-box"><div class="stat-label">มะนาวสด</div><div class="stat-value" id="ss-lime">฿0</div></div>
       <div class="stat-box"><div class="stat-label">น้ำมะพร้าว</div><div class="stat-value" id="ss-coconut">฿0</div></div>
-      <div class="stat-box" style="border-left:3px solid var(--accent);"><div class="stat-label">อื่นๆ (รายการเพิ่มเติม)</div><div class="stat-value" id="ss-extra">฿0</div></div>
+      <div class="stat-box" style="border-left:3px solid var(--accent);">
+        <div class="stat-label">อื่นๆ (รายการเพิ่มเติม)</div>
+        <div class="stat-value" id="ss-extra">฿0</div>
+        <div id="ss-extra-toggle" style="display:none;margin-top:6px;">
+          <button onclick="toggleExtraDetail()" style="font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;padding:0;font-family:inherit;" id="ss-extra-btn">▼ ดูรายละเอียด</button>
+          <div id="ss-extra-detail" style="display:none;margin-top:6px;font-size:11px;color:var(--text2);line-height:1.8;"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1626,6 +1633,7 @@ function renderSummary(rows, acctExpRows) {
   var tSales=0, tExp=0, tStdExp=0, tExtraExp=0, tPayIn=0, tQr=0, tLineman=0, tCash=0;
   var tCftd=0,tIce=0,tMeji=0,tJinda=0,tSugar=0,tSoda=0,tYogurt=0,tBakery=0,tLime=0,tCoconut=0;
   var maxQr=0, maxQrDate='-', maxSale=0, maxSaleDate='-';
+  var extraDetailLines = [];  // เก็บรายละเอียด extra ทุกวัน
   var branchKey = document.getElementById('s-branch') ? document.getElementById('s-branch').value : (cfg.branch || 'passione');
   var fmt  = function(v) { return '฿'+(parseFloat(v)||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
   var fmtS = fmt;
@@ -1650,7 +1658,19 @@ function renderSummary(rows, acctExpRows) {
     tSugar +=p(r,23); tSoda  +=p(r,24);
     tYogurt+=p(r,25); tBakery+=p(r,26);
     tLime  +=p(r,27); tCoconut+=p(r,28);
-    if (qr>maxQr)      { maxQr=qr;    maxQrDate=toCleanDate(r[0]); }
+    var extraDetail = String(r[31]||'');
+    if (extraDetail && extraExp > 0) {
+      var rowDate = toCleanDate(r[0]);
+      extraDetail.split(' | ').forEach(function(item) {
+        if (!item.trim()) return;
+        var parts = item.split(':');
+        var name = parts[0] || '';
+        var amt = parseFloat(parts[1]) || 0;
+        if (name && amt > 0) {
+          extraDetailLines.push(rowDate + ' — ' + name + ': ฿' + amt.toLocaleString('th-TH', {minimumFractionDigits:2}));
+        }
+      });
+    }
     if (sales>maxSale) { maxSale=sales; maxSaleDate=toCleanDate(r[0]); }
     var tr=document.createElement('tr');
     var rowDate = String(r[0]||'');
@@ -1896,7 +1916,18 @@ function renderSummary(rows, acctExpRows) {
   document.getElementById('ss-bakery').textContent          = fmtS(tBakery);
   document.getElementById('ss-lime').textContent            = fmtS(tLime);
   document.getElementById('ss-coconut').textContent         = fmtS(tCoconut);
-  document.getElementById('ss-extra').textContent           = fmtS(tExtraExp);
+  document.getElementById('ss-extra').textContent = fmtS(tExtraExp);
+  var extraToggle = document.getElementById('ss-extra-toggle');
+  var extraDetail = document.getElementById('ss-extra-detail');
+  var extraBtn = document.getElementById('ss-extra-btn');
+  if (extraToggle) {
+    if (extraDetailLines.length > 0) {
+      extraToggle.style.display = 'block';
+      if (extraDetail) extraDetail.innerHTML = extraDetailLines.join('<br>');
+    } else {
+      extraToggle.style.display = 'none';
+    }
+  }
 
   var cftdEl = document.getElementById('ss-cftd');
   var cftdBox = document.getElementById('ss-cftd-box');
@@ -2642,6 +2673,15 @@ async function syncAcctExp() {
   if (!itemsToSync.length) { toast('ไม่มีรายการของ' + branchName + 'ที่จะบันทึก', 'error'); return; }
   await syncToSheets('acctexp', branch, branchName, itemsToSync);
   toast('ซิงค์ ' + branchName + ' ขึ้น Sheets แล้ว ✓', 'success');
+}
+
+function toggleExtraDetail() {
+  var detail = document.getElementById('ss-extra-detail');
+  var btn = document.getElementById('ss-extra-btn');
+  if (!detail || !btn) return;
+  var isOpen = detail.style.display !== 'none';
+  detail.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? '▼ ดูรายละเอียด' : '▲ ซ่อน';
 }
 
 function toast(msg, type) {

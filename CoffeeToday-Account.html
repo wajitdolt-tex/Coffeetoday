@@ -721,6 +721,10 @@ tr:hover td{background:var(--bg3);}
     </div>
     <div class="grid-2">
       <div class="form-row"><label>รายการ / คำอธิบาย</label><input type="text" id="ae-desc" placeholder="เช่น ค่าซ่อมเครื่อง, ค่าบรรจุภัณฑ์..."></div>
+      <div style="margin-bottom:12px;padding:10px;background:#fff3cd;border-radius:8px;border:1px solid #ffc107;">
+        <div style="font-size:12px;color:#856404;margin-bottom:6px;">⚠️ กู้คืนข้อมูลบัญชีร้านเดือน เม.ย. ที่หายไป</div>
+        <button class="btn btn-outline btn-sm" onclick="restoreLostAcctExp()" style="color:#856404;border-color:#ffc107;">🔄 กู้คืนข้อมูล เม.ย. 2026</button>
+      </div>
       <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="ae-amount" placeholder="0.00" step="0.01"></div>
     </div>
     <div class="form-row"><label>หมายเหตุ</label><input type="text" id="ae-note" placeholder="..."></div>
@@ -1939,6 +1943,7 @@ function renderSummary(rows, acctExpRows) {
       if (acctListEmpty) acctListEmpty.style.display = 'none';
       acctExpRows.forEach(function(r) {
         var date   = String(r[0] || '');
+        if (date.indexOf('T') >= 0) date = date.split('T')[0];
         var desc   = String(r[2] || '-');
         var cat    = String(r[3] || '-');
         var amount = parseFloat(r[4]) || 0;        var tr = document.createElement('tr');
@@ -2660,6 +2665,26 @@ var acctExps = JSON.parse(localStorage.getItem('ct_acctexps') || '[]');
 var aeFilter = 'all';
 
 function addAcctExp() {
+
+function restoreLostAcctExp() {
+  var lost = [
+    { id: Date.now()+1,  branch: 'passione', date: '2026-04-20', desc: 'คืนเงินยืม — ยืมคุณซัน (ยืมจ่ายค่าเช่ากับค่าน้ำไฟ)', cat: 'เงินยืม', amount: 6100.25, note: '' },
+    { id: Date.now()+2,  branch: 'passione', date: '2026-04-29', desc: 'กล้วยฉาบ/เผือกฉาบ', cat: 'วัตถุดิบ/สินค้า', amount: 560, note: '' },
+    { id: Date.now()+3,  branch: 'passione', date: '2026-04-28', desc: 'ปริ้นและถ่ายเอกสารสาขา', cat: 'วัตถุดิบ/สินค้า', amount: 124, note: '' },
+    { id: Date.now()+4,  branch: 'passione', date: '2026-04-26', desc: 'มะนาว/น้ำดื่ม', cat: 'วัตถุดิบ/สินค้า', amount: 128, note: '' },
+    { id: Date.now()+5,  branch: 'passione', date: '2026-04-21', desc: 'มะนาว/ขนมปัง', cat: 'วัตถุดิบ/สินค้า', amount: 209, note: '' },
+    { id: Date.now()+6,  branch: 'passione', date: '2026-04-19', desc: 'สตรอเบอรี่แช่แข็ง/มิกซ์เบอรี่แช่แข็ง/ทาร์ตสับปะรด', cat: 'วัตถุดิบ/สินค้า', amount: 373, note: '' },
+    { id: Date.now()+7,  branch: 'passione', date: '2026-04-14', desc: 'นมสด', cat: 'วัตถุดิบ/สินค้า', amount: 99.75, note: '' },
+    { id: Date.now()+8,  branch: 'passione', date: '2026-04-11', desc: 'เน็ตร้าน', cat: 'ค่าบริการ', amount: 100, note: '' },
+    { id: Date.now()+9,  branch: 'passione', date: '2026-04-10', desc: 'นมสด/น้ำตาลทราย/ไม้จิ้มขนมปัง/ถุงขยะ', cat: 'วัตถุดิบ/สินค้า', amount: 206, note: '' },
+    { id: Date.now()+10, branch: 'passione', date: '2026-04-04', desc: 'นมสด/โซดา/น้ำตาลทราย', cat: 'วัตถุดิบ/สินค้า', amount: 172, note: '' },
+    { id: Date.now()+11, branch: 'passione', date: '2026-04-02', desc: 'ไซรัปมอคค่า', cat: 'วัตถุดิบ/สินค้า', amount: 189, note: '' }
+  ];
+  acctExps = acctExps.concat(lost);
+  saveAcctExp();
+  renderAcctExp();
+  toast('กู้คืนข้อมูล 11 รายการแล้ว ✓ กรุณากดบันทึกขึ้น Sheets ด้วย', 'success');
+}
   var desc   = document.getElementById('ae-desc').value.trim();
   var amount = parseFloat(document.getElementById('ae-amount').value);
   if (!desc)              { toast('กรุณาระบุรายการ', 'error'); return; }

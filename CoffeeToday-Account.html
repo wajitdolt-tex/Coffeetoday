@@ -1217,9 +1217,9 @@ function addFixedPayable(type) {
     desc: names[type], cat: 'วัตถุดิบ/สินค้า',
     amount: amount, due: due,
     indate: indate, billno: billno,
-    note: note, paid: false, paidDate: null
+    note: note, paid: false, paidDate: null, payments: []
   });
-  savePay(); renderPayables();
+  savePay(branch); renderPayables();
 
   document.getElementById('pf-' + type + '-amount').value = '';
   document.getElementById('pf-' + type + '-indate').value = '';
@@ -1241,9 +1241,10 @@ function addPayable() {
     amount: amount, due: document.getElementById('p-due').value,
     indate: '', billno: '',
     note: document.getElementById('p-note').value,
-    paid: false, paidDate: null
+    paid: false, paidDate: null, payments: []
   });
-  savePay(); renderPayables();
+  var newBranch = document.getElementById('p-branch').value;
+  savePay(newBranch); renderPayables();
   document.getElementById('p-desc').value = '';
   document.getElementById('p-amount').value = '';
   document.getElementById('p-note').value = '';
@@ -1260,7 +1261,7 @@ function togglePaid(id) {
     item.paid = false;
     item.paidDate = null;
     item.payments = [];
-    savePay(); renderPayables();
+    savePay(item.branch); renderPayables();
   }
 }
 
@@ -1284,7 +1285,7 @@ function addPartialPayment(id) {
     item.paid = true;
     item.paidDate = dateStr;
   }
-  savePay(); renderPayables();
+  savePay(item.branch); renderPayables();
   toast('บันทึกการชำระแล้ว ✓', 'success');
 }
 
@@ -1298,18 +1299,20 @@ function delPayablePayment(id, idx) {
     item.paid = false;
     item.paidDate = null;
   }
-  savePay(); renderPayables();
+  savePay(item.branch); renderPayables();
 }
 
 function delPayable(id) {
   if (!confirm('ลบรายการนี้?')) return;
   payables = payables.filter(function(p) { return p.id !== id; });
-  savePay(); renderPayables();
+  savePay(item.branch); renderPayables();
 }
 
-async function savePay() {
+async function savePay(branch) {
   localStorage.setItem('ct_payables', JSON.stringify(payables));
-  await syncPayable();
+  var syncBranch = branch || cfg.branch || 'passione';
+  var items = payables.filter(function(px) { return px.branch === syncBranch; });
+  await syncToSheets('payable', syncBranch, BRANCH_NAMES[syncBranch], items);
 }
 
 function filterP(f) {
@@ -1611,7 +1614,7 @@ function addMonthlyExpenses() {
   });
 
   if (added === 0) { toast('กรุณากรอกยอดอย่างน้อย 1 รายการ', 'error'); return; }
-  savePay(); renderPayables();
+  savePay(item.branch); renderPayables();
   toast('เพิ่ม ' + added + ' รายการแล้ว ✓', 'success');
 }
 
@@ -1769,18 +1772,32 @@ function renderSummary(rows, acctExpRows) {
     }
   });
 
-  // tPayablePaid = วัตถุดิบที่ชำระแล้ว (ไม่รวม fixedCats เพราะนับใน tOtherPayable)
+  // tPayablePaid = วัตถุดิบที่ชำระแล้ว (รวม partial payments ด้วย)
   var tPayablePaid=0, tPayableUnpaid=0;
   monthPayables.forEach(function(px) {
     var isFixedCat = fixedCats.indexOf(px.cat) >= 0;
     if (isFixedCat) {
-      // ไม่นับใน tPayablePaid — จะนับใน tOtherPayable แทน
       tPayableUnpaid += px.paid ? 0 : px.amount;
     } else {
-      if (px.paid && px.paidDate && px.paidDate.startsWith(month)) {
-        tPayablePaid += px.amount;
-      } else if (!px.paid) {
-        tPayableUnpaid += px.amount;
+      // นับ partial payments ที่จ่ายในเดือนนั้น
+      var payments = px.payments || [];
+      payments.forEach(function(p) {
+        if (p.date && p.date.startsWith(month)) {
+          tPayablePaid += p.amount;
+        }
+      });
+      // ถ้าไม่มี payments[] ใช้ paid/paidDate เดิม
+      if (!payments.length) {
+        if (px.paid && px.paidDate && px.paidDate.startsWith(month)) {
+          tPayablePaid += px.amount;
+        } else if (!px.paid) {
+          tPayableUnpaid += px.amount;
+        }
+      } else {
+        // คำนวณยอดคงค้าง
+        var totalPaid = payments.reduce(function(s, p) { return s + p.amount; }, 0);
+        var remaining = px.amount - totalPaid;
+        if (remaining > 0.01) tPayableUnpaid += remaining;
       }
     }
   });

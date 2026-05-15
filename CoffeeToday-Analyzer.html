@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="th">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
@@ -141,7 +140,6 @@ tr.clickable{cursor:pointer;}
 <div class="bnr" id="bnr">⚙️ ยังไม่ได้ตั้งค่า Apps Script URL — ไปที่แท็บ <strong>ตั้งค่า</strong> ก่อนครับ</div>
 
 <!-- ===== DASHBOARD ===== -->
-
 <div class="pg active" id="tab-dash">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
     <div class="month-sel">
@@ -153,7 +151,6 @@ tr.clickable{cursor:pointer;}
   </div>
 
   <!-- KPI -->
-
   <div class="sg" id="dash-kpi">
     <div class="st"><div class="sl">📅 วันที่เปิด</div><div class="sv a" id="kpi-days">—</div><div class="ss">วัน</div></div>
     <div class="st hl"><div class="sl">💚 ยอดขายรวม</div><div class="sv g" id="kpi-rev">—</div><div class="ss">บาท</div></div>
@@ -164,7 +161,6 @@ tr.clickable{cursor:pointer;}
   </div>
 
   <!-- Daily table -->
-
   <div class="card">
     <div class="ct">
       <div class="ct-l">📅 ยอดขายรายวัน</div>
@@ -181,7 +177,6 @@ tr.clickable{cursor:pointer;}
 </div>
 
 <!-- ===== ต้นทุนเมนู ===== -->
-
 <div class="pg" id="tab-cost">
   <div class="sg">
     <div class="st"><div class="sl">☕ เมนูทั้งหมด</div><div class="sv a" id="s-tm">0</div><div class="ss">ใช้ร่วมกัน 2 สาขา</div></div>
@@ -209,7 +204,6 @@ tr.clickable{cursor:pointer;}
 </div>
 
 <!-- ===== วัตถุดิบ ===== -->
-
 <div class="pg" id="tab-ing">
   <div class="card">
     <div class="ct"><div class="ct-l">➕ เพิ่มวัตถุดิบ <span class="pill">ใช้ร่วมกัน 2 สาขา</span></div></div>
@@ -231,7 +225,6 @@ tr.clickable{cursor:pointer;}
 </div>
 
 <!-- ===== สั่งสินค้า ===== -->
-
 <div class="pg" id="tab-ord">
   <div class="tc">
     <div class="card"><div class="ct"><div class="ct-l">📦 รายการสั่งซื้อ</div></div><div class="scr" id="o-list"><div class="emp">ยังไม่มีวัตถุดิบ</div></div></div>
@@ -246,7 +239,6 @@ tr.clickable{cursor:pointer;}
 </div>
 
 <!-- ===== P&L รายเดือน ===== -->
-
 <div class="pg" id="tab-pl">
   <!-- ประวัติจาก Daily (auto) -->
   <div class="card">
@@ -258,7 +250,6 @@ tr.clickable{cursor:pointer;}
   </div>
 
   <!-- กรอก Fixed Cost -->
-
   <div class="card" id="pl-fixed-card">
     <div class="ct"><div class="ct-l">🏠 กรอก Fixed Cost — เดือน <span id="pl-sel-m" style="color:var(--ac)">—</span></div></div>
     <div class="no-fixed" id="pl-nofixed">⚠️ คลิกแถวในตารางด้านบนเพื่อกรอก Fixed Cost ของเดือนนั้น</div>
@@ -275,7 +266,6 @@ tr.clickable{cursor:pointer;}
   </div>
 
   <!-- ผล P&L -->
-
   <div class="tc">
     <div class="card" id="pl-res" style="display:none"><div class="ct"><div class="ct-l">📑 งบกำไรขาดทุน</div></div><div id="pl-det"></div></div>
     <div class="card" id="pl-anl" style="display:none"><div class="ct"><div class="ct-l">🔍 วิเคราะห์</div></div><div id="pl-anld"></div></div>
@@ -283,7 +273,6 @@ tr.clickable{cursor:pointer;}
 </div>
 
 <!-- ===== ตั้งค่า ===== -->
-
 <div class="pg" id="tab-set">
   <div class="card">
     <div class="ct"><div class="ct-l">⚙️ เชื่อมต่อ Google Apps Script</div></div>
@@ -631,18 +620,17 @@ function printOrd(){const items=ings.filter(i=>ords[i.id]>0);if(!items.length)re
 // ============================================================
 // BRANCH + TAB
 // ============================================================
-function setBr(b,el){br=b;document.querySelectorAll(’.bb’).forEach(s=>s.classList.remove(‘active’));el.classList.add(‘active’);document.getElementById(‘pl-br-l’).textContent=b===‘passion’?‘แพชชั่น’:‘โลตัส’;plAllCache[br]=null;document.getElementById(‘pl-overview’).innerHTML=’<div class="emp">กด “โหลดจากชีท” เพื่อดึงข้อมูล</div>’;document.getElementById(‘pl-res’).style.display=‘none’;document.getElementById(‘pl-anl’).style.display=‘none’;document.getElementById(‘pl-fixed-form’).style.display=‘none’;document.getElementById(‘pl-nofixed’).style.display=‘block’;}
-function sTab(t,el){document.querySelectorAll(’.pg’).forEach(p=>p.classList.remove(‘active’));document.querySelectorAll(’.tab’).forEach(x=>x.classList.remove(‘active’));document.getElementById(‘tab-’+t).classList.add(‘active’);el.classList.add(‘active’);}
+function setBr(b,el){br=b;document.querySelectorAll('.bb').forEach(s=>s.classList.remove('active'));el.classList.add('active');document.getElementById('pl-br-l').textContent=b==='passion'?'แพชชั่น':'โลตัส';plAllCache[br]=null;document.getElementById('pl-overview').innerHTML='<div class="emp">กด "โหลดจากชีท" เพื่อดึงข้อมูล</div>';document.getElementById('pl-res').style.display='none';document.getElementById('pl-anl').style.display='none';document.getElementById('pl-fixed-form').style.display='none';document.getElementById('pl-nofixed').style.display='block';}
+function sTab(t,el){document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.getElementById('tab-'+t).classList.add('active');el.classList.add('active');}
 function rAll(){rIng();rMenus();uSt();rOrd();bRec();}
 
 // ============================================================
 // INIT
 // ============================================================
-document.getElementById(‘dash-month’).value=new Date().toISOString().slice(0,7);
-API=localStorage.getItem(‘ct_url’)||’’;
-if(API){document.getElementById(‘sc-url’).value=API;loadAll();}
-else{document.getElementById(‘bnr’).classList.add(‘show’);}
+document.getElementById('dash-month').value=new Date().toISOString().slice(0,7);
+API=localStorage.getItem('ct_url')||'';
+if(API){document.getElementById('sc-url').value=API;loadAll();}
+else{document.getElementById('bnr').classList.add('show');}
 </script>
-
 </body>
 </html>

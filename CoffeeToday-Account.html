@@ -2664,8 +2664,6 @@ function cancelEditMode() {
 var acctExps = JSON.parse(localStorage.getItem('ct_acctexps') || '[]');
 var aeFilter = 'all';
 
-function addAcctExp() {
-
 function restoreLostAcctExp() {
   var lost = [
     { id: Date.now()+1,  branch: 'passione', date: '2026-04-20', desc: 'คืนเงินยืม — ยืมคุณซัน (ยืมจ่ายค่าเช่ากับค่าน้ำไฟ)', cat: 'เงินยืม', amount: 6100.25, note: '' },
@@ -2685,6 +2683,8 @@ function restoreLostAcctExp() {
   renderAcctExp();
   toast('กู้คืนข้อมูล 11 รายการแล้ว ✓ กรุณากดบันทึกขึ้น Sheets ด้วย', 'success');
 }
+
+function addAcctExp() {
   var desc   = document.getElementById('ae-desc').value.trim();
   var amount = parseFloat(document.getElementById('ae-amount').value);
   if (!desc)              { toast('กรุณาระบุรายการ', 'error'); return; }

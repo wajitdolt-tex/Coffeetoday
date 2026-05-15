@@ -721,10 +721,6 @@ tr:hover td{background:var(--bg3);}
     </div>
     <div class="grid-2">
       <div class="form-row"><label>รายการ / คำอธิบาย</label><input type="text" id="ae-desc" placeholder="เช่น ค่าซ่อมเครื่อง, ค่าบรรจุภัณฑ์..."></div>
-      <div style="margin-bottom:12px;padding:10px;background:#fff3cd;border-radius:8px;border:1px solid #ffc107;">
-        <div style="font-size:12px;color:#856404;margin-bottom:6px;">⚠️ กู้คืนข้อมูลบัญชีร้านเดือน เม.ย. ที่หายไป</div>
-        <button class="btn btn-outline btn-sm" onclick="restoreLostAcctExp()" style="color:#856404;border-color:#ffc107;">🔄 กู้คืนข้อมูล เม.ย. 2026</button>
-      </div>
       <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="ae-amount" placeholder="0.00" step="0.01"></div>
     </div>
     <div class="form-row"><label>หมายเหตุ</label><input type="text" id="ae-note" placeholder="..."></div>
@@ -922,6 +918,7 @@ tr:hover td{background:var(--bg3);}
 
 <script>
 var pFilter = 'all';
+function cd(val) { var s = String(val||''); return s.indexOf('T') >= 0 ? s.split('T')[0] : s; }
 var pBranchFilter = 'all';
 
 function filterPBranch(type) {
@@ -1380,7 +1377,7 @@ function renderPayables() {
       paymentsHtml = '<div style="margin-top:4px;">';
       payments.forEach(function(p, idx) {
         paymentsHtml += '<div style="font-size:10px;color:var(--green);display:flex;gap:6px;align-items:center;">'
-          + '✓ ' + p.date + ' ' + fmt2(p.amount)
+          + '✓ ' + cd(p.date) + ' ' + fmt2(p.amount)
           + ' <span style="cursor:pointer;color:var(--red);font-size:9px;" onclick="delPayablePayment(' + item.id + ',' + idx + ')">✕</span>'
           + '</div>';
       });
@@ -2183,7 +2180,7 @@ function renderAdminPayables() {
     var branchName = BRANCH_NAMES[item.branch] || item.branch;
     var tr = document.createElement('tr');
     tr.innerHTML =
-      '<td class="mono">' + item.date + '</td>'
+      '<td class="mono">' + cd(item.date) + '</td>'
       + '<td style="font-size:12px;">' + branchName + '</td>'
       + '<td><div style="font-size:13px;">' + item.desc + '</div>'
         + (item.note ? '<div style="font-size:11px;color:var(--text3);">' + item.note + '</div>' : '') + '</td>'
@@ -2191,10 +2188,10 @@ function renderAdminPayables() {
       + '<td class="mono">' + (item.billno || '-') + '</td>'
       + '<td class="mono" style="font-weight:500;">' + fmt(item.amount) + '</td>'
       + '<td class="mono" style="' + (overdue ? 'color:var(--red);font-weight:600;' : '') + '">'
-        + (item.due || '-') + (overdue ? ' ⚠' : '') + '</td>'
+        + cd(item.due || '-') + (overdue ? ' ⚠' : '') + '</td>'
       + '<td><span class="p-tag ' + (item.paid ? 'paid' : 'unpaid') + '">'
         + (item.paid ? '✓ ชำระแล้ว' : '● ค้างชำระ') + '</span></td>'
-      + '<td class="mono">' + (item.paidDate || '-') + '</td>';
+      + '<td class="mono">' + cd(item.paidDate || '-') + '</td>';
     tbody.appendChild(tr);
   });
 }
@@ -2385,7 +2382,7 @@ function renderLoans() {
           var trSub = document.createElement('tr');
           trSub.style.cssText = 'background:var(--green-t);';
           trSub.innerHTML =
-            '<td class="mono" style="font-size:11px;color:var(--text3);padding-left:24px;">↳ คืน ' + r.date + '</td>'
+            '<td class="mono" style="font-size:11px;color:var(--text3);padding-left:24px;">↳ คืน ' + cd(r.date) + '</td>'
             + '<td colspan="3" style="font-size:11px;color:var(--green);">คืนเงิน</td>'
             + '<td class="mono" style="font-size:11px;color:var(--green);">−' + fmt(r.amount) + '</td>'
             + '<td colspan="2"></td>';
@@ -2513,7 +2510,7 @@ function renderSalaries() {
       paymentsHtml = '<div style="margin-top:4px;">';
       payments.forEach(function(p, idx) {
         paymentsHtml += '<div style="font-size:10px;color:var(--green);display:flex;gap:6px;align-items:center;">'
-          + '✓ ' + p.date + ' ' + fmt2(p.amount)
+          + '✓ ' + cd(p.date) + ' ' + fmt2(p.amount)
           + ' <span style="cursor:pointer;color:var(--red);font-size:9px;" onclick="delSalaryPayment(' + item.id + ',' + idx + ')">✕</span>'
           + '</div>';
       });
@@ -2664,26 +2661,6 @@ function cancelEditMode() {
 var acctExps = JSON.parse(localStorage.getItem('ct_acctexps') || '[]');
 var aeFilter = 'all';
 
-function restoreLostAcctExp() {
-  var lost = [
-    { id: Date.now()+1,  branch: 'passione', date: '2026-04-20', desc: 'คืนเงินยืม — ยืมคุณซัน (ยืมจ่ายค่าเช่ากับค่าน้ำไฟ)', cat: 'เงินยืม', amount: 6100.25, note: '' },
-    { id: Date.now()+2,  branch: 'passione', date: '2026-04-29', desc: 'กล้วยฉาบ/เผือกฉาบ', cat: 'วัตถุดิบ/สินค้า', amount: 560, note: '' },
-    { id: Date.now()+3,  branch: 'passione', date: '2026-04-28', desc: 'ปริ้นและถ่ายเอกสารสาขา', cat: 'วัตถุดิบ/สินค้า', amount: 124, note: '' },
-    { id: Date.now()+4,  branch: 'passione', date: '2026-04-26', desc: 'มะนาว/น้ำดื่ม', cat: 'วัตถุดิบ/สินค้า', amount: 128, note: '' },
-    { id: Date.now()+5,  branch: 'passione', date: '2026-04-21', desc: 'มะนาว/ขนมปัง', cat: 'วัตถุดิบ/สินค้า', amount: 209, note: '' },
-    { id: Date.now()+6,  branch: 'passione', date: '2026-04-19', desc: 'สตรอเบอรี่แช่แข็ง/มิกซ์เบอรี่แช่แข็ง/ทาร์ตสับปะรด', cat: 'วัตถุดิบ/สินค้า', amount: 373, note: '' },
-    { id: Date.now()+7,  branch: 'passione', date: '2026-04-14', desc: 'นมสด', cat: 'วัตถุดิบ/สินค้า', amount: 99.75, note: '' },
-    { id: Date.now()+8,  branch: 'passione', date: '2026-04-11', desc: 'เน็ตร้าน', cat: 'ค่าบริการ', amount: 100, note: '' },
-    { id: Date.now()+9,  branch: 'passione', date: '2026-04-10', desc: 'นมสด/น้ำตาลทราย/ไม้จิ้มขนมปัง/ถุงขยะ', cat: 'วัตถุดิบ/สินค้า', amount: 206, note: '' },
-    { id: Date.now()+10, branch: 'passione', date: '2026-04-04', desc: 'นมสด/โซดา/น้ำตาลทราย', cat: 'วัตถุดิบ/สินค้า', amount: 172, note: '' },
-    { id: Date.now()+11, branch: 'passione', date: '2026-04-02', desc: 'ไซรัปมอคค่า', cat: 'วัตถุดิบ/สินค้า', amount: 189, note: '' }
-  ];
-  acctExps = acctExps.concat(lost);
-  saveAcctExp();
-  renderAcctExp();
-  toast('กู้คืนข้อมูล 11 รายการแล้ว ✓ กรุณากดบันทึกขึ้น Sheets ด้วย', 'success');
-}
-
 function addAcctExp() {
   var desc   = document.getElementById('ae-desc').value.trim();
   var amount = parseFloat(document.getElementById('ae-amount').value);
@@ -2755,7 +2732,7 @@ function renderAcctExp() {
     var branchName = BRANCH_NAMES[item.branch] || item.branch;
     var tr = document.createElement('tr');
     tr.innerHTML =
-      '<td class="mono">' + item.date + '</td>'
+      '<td class="mono">' + cd(item.date) + '</td>'
       + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
       + '<td style="font-size:13px;">' + item.desc + '</td>'
       + '<td><span class="badge badge-gray">' + item.cat + '</span></td>'

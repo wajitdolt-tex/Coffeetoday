@@ -766,10 +766,6 @@ tr:hover td{background:var(--bg3);}
 <!-- เพิ่มการยืม -->
 <div style="margin-bottom:16px;">
   <div class="sec-label">บันทึกการยืม</div>
-  <div style="margin-bottom:10px;padding:10px;background:#fff3cd;border-radius:8px;border:1px solid #ffc107;">
-    <div style="font-size:12px;color:#856404;margin-bottom:6px;">⚠️ กู้คืนข้อมูลเงินยืมที่หายไป</div>
-    <button class="btn btn-outline btn-sm" onclick="restoreLostLoan()" style="color:#856404;border-color:#ffc107;">🔄 กู้คืนเงินยืม พ.ค. 2026</button>
-  </div>
   <div class="grid-3">
     <div class="form-row"><label>วันที่ยืม</label><input type="date" id="loan-date"></div>
     <div class="form-row"><label>ยืมจาก</label><input type="text" id="loan-from" placeholder="เช่น เจ้าของ, คุณซัน..."></div>
@@ -780,6 +776,19 @@ tr:hover td{background:var(--bg3);}
 </div>
 
 <hr class="divider">
+
+<!-- กรองเงินยืม -->
+<div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+  <span style="font-size:12px;color:var(--text3);">กรองสาขา:</span>
+  <button class="btn btn-sm btn-outline" id="lf-all" onclick="filterLoan('branch','all')" style="border-color:var(--accent);color:var(--accent);">ทั้งหมด</button>
+  <button class="btn btn-sm btn-outline" id="lf-passione" onclick="filterLoan('branch','passione')">แพชชั่น</button>
+  <button class="btn btn-sm btn-outline" id="lf-lotus" onclick="filterLoan('branch','lotus')">โลตัส</button>
+</div>
+<div style="display:flex;gap:8px;align-items:center;margin-bottom:13px;flex-wrap:wrap;">
+  <span style="font-size:12px;color:var(--text3);">กรองเดือน:</span>
+  <input type="month" id="loan-filter-month" oninput="renderLoans()" style="width:150px;font-size:13px;padding:4px 8px;">
+  <button class="btn btn-outline btn-sm" onclick="document.getElementById('loan-filter-month').value='';renderLoans()">ทั้งหมด</button>
+</div>
 
 <!-- รายการยืมทั้งหมด -->
 <div class="tbl-wrap">
@@ -2366,6 +2375,17 @@ function saveLoans() {
   syncLoan();
 }
 
+var loanBranchFilter = 'all';
+
+function filterLoan(type, val) {
+  loanBranchFilter = val;
+  ['all','passione','lotus'].forEach(function(t) {
+    var el = document.getElementById('lf-' + t);
+    if (el) el.style.cssText = t === val ? 'border-color:var(--accent);color:var(--accent);' : '';
+  });
+  renderLoans();
+}
+
 function renderLoans() {
   var tbody  = document.getElementById('loan-tbody');
   var empty  = document.getElementById('loan-empty');
@@ -2375,20 +2395,24 @@ function renderLoans() {
   var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
   var tAll = 0, tPaid = 0;
 
-  if (!loans.length) { empty.style.display = 'block'; }
+  var filterMonth = document.getElementById('loan-filter-month') ? document.getElementById('loan-filter-month').value : '';
+  var list = loans;
+  if (loanBranchFilter !== 'all') list = list.filter(function(l) { return l.branch === loanBranchFilter; });
+  if (filterMonth) list = list.filter(function(l) { return l.date && l.date.startsWith(filterMonth); });
+
+  if (!list.length) { empty.style.display = 'block'; }
   else {
     empty.style.display = 'none';
-    loans.forEach(function(loan) {
-      var repaid  = loan.repayments.reduce(function(s, r) { return s + r.amount; }, 0);
+    list.forEach(function(loan) {
+      var repaid  = (loan.repayments||[]).reduce(function(s, r) { return s + r.amount; }, 0);
       var remain  = loan.amount - repaid;
       var settled = remain <= 0;
       tAll  += loan.amount;
       tPaid += repaid;
 
-      // แถวหลัก
       var tr = document.createElement('tr');
       tr.innerHTML =
-        '<td class="mono">' + loan.date + '</td>'
+        '<td class="mono">' + cd(loan.date) + '</td>'
         + '<td style="font-weight:500;">' + loan.from + '</td>'
         + '<td class="mono" style="color:var(--yellow);font-weight:500;">' + fmt(loan.amount) + '</td>'
         + '<td style="font-size:12px;color:var(--text2);">' + (loan.purpose || '-') + '</td>'
@@ -2400,8 +2424,7 @@ function renderLoans() {
         + '</td>';
       tbody.appendChild(tr);
 
-      // แถวย่อยแสดงประวัติการคืน
-      if (loan.repayments.length) {
+      if ((loan.repayments||[]).length) {
         loan.repayments.forEach(function(r) {
           var trSub = document.createElement('tr');
           trSub.style.cssText = 'background:var(--green-t);';

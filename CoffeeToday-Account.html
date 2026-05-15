@@ -1477,6 +1477,8 @@ async function loadSummary() {
         return s;
       }
       var sheetsPayables = data.payableRows.map(function(r) {
+        var payments = [];
+        try { payments = JSON.parse(String(r[12]||'[]')); } catch(e) {}
         return {
           id: r[9] || Date.now(),
           date: cleanDate(r[0]),
@@ -1489,16 +1491,15 @@ async function loadSummary() {
           paidDate: cleanDate(r[7]),
           note: String(r[8]||''),
           billno: String(r[10]||''),
-          indate: cleanDate(r[11])
+          indate: cleanDate(r[11]),
+          payments: payments
         };
       });
-      // เก็บข้อมูลสาขาอื่นไว้ ไม่เขียนทับ
       var otherBranchPayables = payables.filter(function(px) { return px.branch !== branchKey; });
       payables = otherBranchPayables.concat(sheetsPayables);
       localStorage.setItem('ct_payables', JSON.stringify(payables));
       renderPayables();
     } else if (data.payableRows && data.payableRows.length === 0) {
-      // Sheets ว่าง — เคลียร์เฉพาะสาขานี้
       payables = payables.filter(function(px) { return px.branch !== branchKey; });
       localStorage.setItem('ct_payables', JSON.stringify(payables));
       renderPayables();
@@ -1507,6 +1508,8 @@ async function loadSummary() {
     if (data.salaryRows) {
       if (data.salaryRows.length) {
         var sheetsSalaries = data.salaryRows.map(function(r) {
+          var payments = [];
+          try { payments = JSON.parse(String(r[7]||'[]')); } catch(e) {}
           return {
             id: r[6] || Date.now(),
             date: String(r[0]||''),
@@ -1514,15 +1517,14 @@ async function loadSummary() {
             name: String(r[2]||''),
             month: String(r[3]||''),
             amount: parseFloat(r[4])||0,
-            note: String(r[5]||'')
+            note: String(r[5]||''),
+            payments: payments
           };
         });
-        // เก็บข้อมูลสาขาอื่นไว้
         var otherBranchSalaries = salaries.filter(function(s) { return s.branch !== branchKey; });
         salaries = otherBranchSalaries.concat(sheetsSalaries);
         localStorage.setItem('ct_salaries', JSON.stringify(salaries));
       } else {
-        // Sheets ว่าง — เคลียร์เฉพาะสาขานี้
         salaries = salaries.filter(function(s) { return s.branch !== branchKey; });
         localStorage.setItem('ct_salaries', JSON.stringify(salaries));
       }

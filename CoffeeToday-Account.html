@@ -766,6 +766,10 @@ tr:hover td{background:var(--bg3);}
 <!-- เพิ่มการยืม -->
 <div style="margin-bottom:16px;">
   <div class="sec-label">บันทึกการยืม</div>
+  <div style="margin-bottom:10px;padding:10px;background:#fff3cd;border-radius:8px;border:1px solid #ffc107;">
+    <div style="font-size:12px;color:#856404;margin-bottom:6px;">⚠️ กู้คืนข้อมูลเงินยืมที่หายไป</div>
+    <button class="btn btn-outline btn-sm" onclick="restoreLostLoan()" style="color:#856404;border-color:#ffc107;">🔄 กู้คืนเงินยืม พ.ค. 2026</button>
+  </div>
   <div class="grid-3">
     <div class="form-row"><label>วันที่ยืม</label><input type="date" id="loan-date"></div>
     <div class="form-row"><label>ยืมจาก</label><input type="text" id="loan-from" placeholder="เช่น เจ้าของ, คุณซัน..."></div>
@@ -2257,6 +2261,26 @@ function adminClearAll() {
 
 // ════ LOAN ════
 var loans = JSON.parse(localStorage.getItem('ct_loans') || '[]');
+
+function restoreLostLoan() {
+  var lost = [{
+    id: Date.now(),
+    branch: 'passione',
+    date: '2026-05-05',
+    from: 'ยืมจ่ายค่าเช่ากับค่าสินค้า',
+    amount: 10202.07,
+    purpose: 'ค่าเช่ากับค่าน้ำไฟ=16006.45, ค่าสินค้าคอฟฟี่ทูเดย์=4950',
+    repayments: [
+      { date: '2026-05-08', amount: 2500 },
+      { date: '2026-05-11', amount: 5000 },
+      { date: '2026-05-15', amount: 2702.07 }
+    ]
+  }];
+  loans = loans.concat(lost);
+  saveLoans();
+  renderLoans();
+  toast('กู้คืนข้อมูลเงินยืมแล้ว ✓ กรุณา sync ขึ้น Sheets ด้วย', 'success');
+}
 
 function addLoan() {
   var from    = document.getElementById('loan-from').value.trim();

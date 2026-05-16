@@ -102,15 +102,15 @@ tr:hover td{background:var(--s2);}
   </div>
 </header>
 <div class="tabs">
-  <div class="tab active" onclick="sTab('cost',this)">✏️ ต้นทุนเมนู</div>
+  <div class="tab active" onclick="sTab('ord',this)">📦 สั่งสินค้า</div>
   <div class="tab" onclick="sTab('ing',this)">🧪 วัตถุดิบ</div>
-  <div class="tab" onclick="sTab('ord',this)">📦 สั่งสินค้า</div>
+  <div class="tab" onclick="sTab('cost',this)">✏️ ต้นทุนเมนู</div>
   <div class="tab" onclick="sTab('set',this)">⚙️ ตั้งค่า</div>
 </div>
 <div class="main">
 
 <!-- ต้นทุนเมนู -->
-<div class="pg active" id="tab-cost">
+<div class="pg" id="tab-cost">
   <div class="sg">
     <div class="st"><div class="sl">☕ เมนูทั้งหมด</div><div class="sv a" id="s-tm">0</div></div>
     <div class="st hl"><div class="sl">📈 Margin เฉลี่ย</div><div class="sv" id="s-am">—</div></div>
@@ -192,7 +192,7 @@ tr:hover td{background:var(--s2);}
 </div>
 
 <!-- สั่งสินค้า -->
-<div class="pg" id="tab-ord">
+<div class="pg active" id="tab-ord">
   <div class="card">
     <div class="ct">📦 เลือกหมวดหมู่</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px" id="ord-cats"></div>
@@ -207,11 +207,15 @@ tr:hover td{background:var(--s2);}
       <div id="o-sum"><div class="emp">เลือกรายการ</div></div>
       <div class="divhr"></div>
       <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bd)">
-        <span style="font-size:13px;color:var(--t2)">ยอดรวม (incl. VAT 7%)</span>
-        <span style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700" id="o-pre">฿0.00</span>
+        <span style="font-size:13px;color:var(--t2)">ยอดสินค้า (excl. VAT)</span>
+        <span style="font-family:'Space Mono',monospace;font-size:13px;" id="o-exvat">฿0.00</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bd)">
+        <span style="font-size:13px;color:var(--t2)">VAT 7%</span>
+        <span style="font-family:'Space Mono',monospace;font-size:13px;color:var(--ac)" id="o-vat">฿0.00</span>
       </div>
       <div style="display:flex;justify-content:space-between;padding-top:12px;border-top:2px solid var(--br);margin-top:4px">
-        <span style="font-weight:700;font-size:14px;color:var(--br)">ยอดรวมทั้งสิ้น</span>
+        <span style="font-weight:700;font-size:14px;color:var(--br)">ยอดรวมทั้งสิ้น (incl. VAT)</span>
         <span style="font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--ac)" id="o-tot">฿0.00</span>
       </div>
       <button class="btn bp" style="width:100%;margin-top:12px" onclick="printOrd()">🖨️ พิมพ์ใบสั่งซื้อ</button>
@@ -768,14 +772,14 @@ function rOrd(){
     return '<div class="oi">'
       +'<div style="flex:1;min-width:0">'
       +'<div style="font-weight:600">'+i.name+'</div>'
-      +'<div style="color:var(--t3);font-size:11px">'+fB(i.price)+'/แพ็ค incl.VAT | excl: '+fB(exVat(i.price))+'</div>'
+      +(i.price>0 ? '<div style="color:var(--ac);font-size:12px;font-family:\'Space Mono\',monospace;font-weight:600">'+fB(i.price)+' / แพ็ค</div>' : '<div style="color:var(--t3);font-size:11px">ยังไม่ได้กรอกราคา</div>')
       +'</div>'
-      +'<div class="qc">'
+      +'<div class="qc" style="padding:2px 6px;">'
       +'<button class="qb" onclick="co(\''+i.id+'\',-1)">−</button>'
-      +'<input class="qn" type="number" value="'+qty+'" min="0" onchange="so(\''+i.id+'\',parseInt(this.value)||0)">'
+      +'<input class="qn" type="number" value="'+qty+'" min="0" onchange="so(\''+i.id+'\',parseInt(this.value)||0)" style="width:44px;">'
       +'<button class="qb" onclick="co(\''+i.id+'\',1)">+</button>'
       +'</div>'
-      +(qty>0 ? '<div style="color:var(--ac);font-family:\'Space Mono\',monospace;font-size:11px;font-weight:700;min-width:56px;text-align:right">'+fB(tot)+'</div>' : '<div style="min-width:56px"></div>')
+      +(qty>0 ? '<div style="color:var(--ac);font-family:\'Space Mono\',monospace;font-size:12px;font-weight:700;min-width:70px;text-align:right">'+fB(tot)+'</div>' : '<div style="min-width:70px"></div>')
       +'</div>';
   }).join('');
   uOS();
@@ -789,7 +793,8 @@ function uOS(){
   var s=document.getElementById('o-sum');
   if(!items.length){
     s.innerHTML='<div class="emp">เลือกรายการ</div>';
-    document.getElementById('o-pre').textContent='฿0.00';
+    document.getElementById('o-exvat').textContent='฿0.00';
+    document.getElementById('o-vat').textContent='฿0.00';
     document.getElementById('o-tot').textContent='฿0.00';
     return;
   }
@@ -800,7 +805,9 @@ function uOS(){
       +'<span style="font-family:\'Space Mono\',monospace;font-size:13px;font-weight:700">'+fB(c)+'</span>'
       +'</div>';
   }).join('');
-  document.getElementById('o-pre').textContent=fB(tot);
+  var vatAmt = tot - exVat(tot);
+  document.getElementById('o-exvat').textContent=fB(exVat(tot));
+  document.getElementById('o-vat').textContent=fB(vatAmt);
   document.getElementById('o-tot').textContent=fB(tot);
 }
 

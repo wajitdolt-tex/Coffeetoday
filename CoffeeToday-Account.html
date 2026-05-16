@@ -927,7 +927,135 @@ tr:hover td{background:var(--bg3);}
   </div>
 </div>
 ```
+<!-- ════ KPI DASHBOARD ════ -->
+<div class="card" style="margin-top:20px;border-color:rgba(61,139,94,.3);">
+  <div class="card-title" style="color:var(--green);">📊 KPI Dashboard & P&L</div>
 
+  <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px;">
+    <div>
+      <label>สาขา</label>
+      <select id="kpi-branch" style="width:180px;">
+        <option value="passione">แพชชั่นระยอง</option>
+        <option value="lotus">โลตัสระยอง</option>
+      </select>
+    </div>
+    <div>
+      <label>เดือน/ปี</label>
+      <input type="month" id="kpi-month" style="width:160px;">
+    </div>
+    <button class="btn btn-primary" onclick="loadKPI()"><span id="kpi-txt">📈 ดึงข้อมูล</span></button>
+  </div>
+
+  <div id="kpi-stats" style="display:none;">
+
+    <!-- รายได้ -->
+    <div class="grid-3" style="margin-bottom:13px;">
+      <div class="stat-box" style="border-left:3px solid var(--green);">
+        <div class="stat-label">💚 รายได้รวม (QR+PayIn+LM)</div>
+        <div class="stat-value pos" id="kpi-rev">฿0</div>
+        <div id="kpi-rev-sub" style="font-size:11px;color:var(--text3);margin-top:4px;line-height:1.7;"></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">เฉลี่ย / วัน</div>
+        <div class="stat-value" id="kpi-avg">฿0</div>
+        <div class="stat-label" style="margin-top:10px;">สูงสุด / วัน</div>
+        <div class="stat-value pos" id="kpi-top">฿0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">วันที่บันทึก</div>
+        <div class="stat-value" id="kpi-days">0</div>
+        <div class="stat-label" style="margin-top:10px;">Cash หน้าร้าน</div>
+        <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--text2);" id="kpi-cash">฿0</div>
+      </div>
+    </div>
+
+    <!-- งบ P&L -->
+    <div style="background:var(--bg3);border-radius:var(--r);padding:14px 16px;margin-bottom:13px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;">งบกำไรขาดทุน</div>
+
+      <!-- รายได้ -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:13px;font-weight:600;color:var(--green);">💚 รายได้รวม</span>
+        <span style="font-family:'DM Mono',monospace;font-weight:700;font-size:15px;color:var(--green);" id="pl-rev">฿0</span>
+      </div>
+
+      <!-- ต้นทุน -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:13px;color:var(--text2);padding-left:8px;">− วัตถุดิบหน้าร้าน (Daily)</span>
+        <span style="font-family:'DM Mono',monospace;" id="pl-cogs-daily">฿0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:13px;color:var(--text2);padding-left:8px;">− วางบิลวัตถุดิบ (Payable Paid)</span>
+        <span style="font-family:'DM Mono',monospace;" id="pl-cogs-payable">฿0</span>
+      </div>
+      <div id="pl-unpaid-row" style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:13px;color:var(--yellow);padding-left:8px;">⚠ วางบิลค้างชำระ (ไม่นับในต้นทุน)</span>
+        <span style="font-family:'DM Mono',monospace;color:var(--yellow);" id="pl-unpaid">฿0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:13px;color:var(--text2);padding-left:8px;">− ค่าใช้จ่ายร้าน (StdExp+Extra)</span>
+        <span style="font-family:'DM Mono',monospace;" id="pl-shop">฿0</span>
+      </div>
+
+      <!-- กำไรขั้นต้น -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 8px;background:rgba(61,139,94,.09);border-radius:6px;margin:8px 0;">
+        <span style="font-size:14px;font-weight:700;color:var(--green);">กำไรขั้นต้น</span>
+        <span style="font-family:'DM Mono',monospace;font-weight:700;font-size:15px;" id="pl-gp">฿0</span>
+      </div>
+
+      <!-- ค่าใช้จ่ายคงที่ -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:13px;color:var(--text2);padding-left:8px;">− ค่าเช่า + น้ำไฟ + ภาษี</span>
+        <span style="font-family:'DM Mono',monospace;" id="pl-rent">฿0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:13px;color:var(--text2);padding-left:8px;">− เงินเดือนพนักงาน</span>
+        <span style="font-family:'DM Mono',monospace;" id="pl-salary">฿0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:13px;color:var(--text2);padding-left:8px;">− บัญชีร้าน (AcctExp)</span>
+        <span style="font-family:'DM Mono',monospace;" id="pl-acct">฿0</span>
+      </div>
+
+      <!-- กำไรสุทธิ -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0 4px;border-top:2px solid var(--accent);margin-top:6px;">
+        <span style="font-size:15px;font-weight:700;color:var(--accent2);">กำไร / ขาดทุนสุทธิ</span>
+        <span style="font-family:'DM Mono',monospace;font-weight:700;font-size:20px;" id="pl-net">฿0</span>
+      </div>
+    </div>
+
+    <!-- แจ้งเตือน -->
+    <div id="kpi-alerts" style="margin-bottom:12px;"></div>
+
+    <!-- Break-even -->
+    <div class="grid-4">
+      <div class="stat-box">
+        <div class="stat-label">Break-even / วัน</div>
+        <div class="stat-value" id="kpi-be" style="color:var(--yellow);">฿0</div>
+      </div>
+      <div class="stat-box" id="kpi-actual-box">
+        <div class="stat-label">ยอดจริง / วัน</div>
+        <div class="stat-value" id="kpi-actual">฿0</div>
+        <div id="kpi-bep-status" style="font-size:11px;margin-top:4px;"></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Gross Margin</div>
+        <div class="stat-value" id="kpi-gm">0%</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Net Margin</div>
+        <div class="stat-value" id="kpi-nm">0%</div>
+      </div>
+    </div>
+
+    <!-- สัดส่วนต้นทุน -->
+    <div style="margin-top:14px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">สัดส่วนต่อรายได้</div>
+      <div id="kpi-bars"></div>
+    </div>
+
+  </div><!-- end kpi-stats -->
+</div><!-- end KPI card -->
   </div>
 </div>
 

@@ -500,7 +500,12 @@ tr:hover td{background:var(--bg3);}
       <div class="stat-box"><div class="stat-label">Bakery</div><div class="stat-value" id="ss-bakery">฿0</div></div>
       <div class="stat-box"><div class="stat-label">มะนาวสด</div><div class="stat-value" id="ss-lime">฿0</div></div>
       <div class="stat-box"><div class="stat-label">น้ำมะพร้าว</div><div class="stat-value" id="ss-coconut">฿0</div></div>
-      <div class="stat-box" style="border-left:3px solid var(--accent);"><div class="stat-label">อื่นๆ (รายการเพิ่มเติม)</div><div class="stat-value" id="ss-extra">฿0</div></div>
+      <div class="stat-box" style="border-left:3px solid var(--accent);">
+        <div class="stat-label">อื่นๆ (รายการเพิ่มเติม)</div>
+        <div class="stat-value" id="ss-extra">฿0</div>
+        <div id="ss-extra-list" style="display:none;margin-top:6px;font-size:11px;color:var(--text3);"></div>
+        <button onclick="var el=document.getElementById('ss-extra-list');el.style.display=el.style.display==='none'?'block':'none';this.textContent=el.style.display==='none'?'ดูรายการ':'ซ่อน';" style="margin-top:4px;font-size:10px;color:var(--accent);background:none;border:none;cursor:pointer;padding:0;">ดูรายการ</button>
+      </div>
     </div>
   </div>
 
@@ -1978,7 +1983,22 @@ function renderSummary(rows, acctExpRows) {
   document.getElementById('ss-bakery').textContent          = fmtS(tBakery);
   document.getElementById('ss-lime').textContent            = fmtS(tLime);
   document.getElementById('ss-coconut').textContent         = fmtS(tCoconut);
-  document.getElementById('ss-extra').textContent           = fmtS(tExtraExp);
+  document.getElementById('ss-extra').textContent = fmtS(tExtraExp);
+  // แสดงรายการย่อย extra expenses
+  var extraListEl = document.getElementById('ss-extra-list');
+  if (extraListEl) {
+    var extraItems = [];
+    rows.forEach(function(r) {
+      var detail = String(r[31]||'');
+      if (!detail) return;
+      detail.split(' | ').forEach(function(item) {
+        if (!item.trim()) return;
+        var parts = item.split(':');
+        extraItems.push((parts[0]||'') + ' ฿' + (parseFloat(parts[1])||0).toLocaleString('th-TH',{minimumFractionDigits:2}));
+      });
+    });
+    extraListEl.innerHTML = extraItems.length ? extraItems.join('<br>') : '-';
+  }
   var cftdEl = document.getElementById('ss-cftd');
   var cftdBox = document.getElementById('ss-cftd-box');
   if (cftdEl) {
@@ -2003,22 +2023,22 @@ function renderSummary(rows, acctExpRows) {
   }
   var iceEl = document.getElementById('ss-ice-payable');
   var iceBox = document.getElementById('ss-ice-box');
-  if (iceEl) {
-    var branchKey = document.getElementById('s-branch') ? document.getElementById('s-branch').value : (cfg.branch || 'passione');
-    var iceDisplay = 0;
+  if (iceBox) {
     if (branchKey === 'lotus') {
-      // โลตัส: ดึงยอดสะสมน้ำแข็งรายวันจาก Daily sheet (col 20 = Ice)
+      iceBox.style.display = '';
+      var iceDisplay = 0;
       rows.forEach(function(r) { iceDisplay += parseFloat(r[20])||0; });
+      iceEl.textContent = fmtS(iceDisplay);
+      iceBox.style.borderLeft = tIceUnpaid > 0 ? '3px solid var(--red)' : (iceDisplay > 0 ? '3px solid var(--green)' : '');
+      iceEl.style.color = tIceUnpaid > 0 ? 'var(--red)' : '';
+      var icePaidEl = document.getElementById('ss-ice-paid');
+      var iceUnpaidEl = document.getElementById('ss-ice-unpaid');
+      if (icePaidEl) icePaidEl.textContent = fmtS(tIcePaid);
+      if (iceUnpaidEl) iceUnpaidEl.textContent = fmtS(tIceUnpaid);
     } else {
-      iceDisplay = tIcePayable;
+      // แพชชั่น — ซ่อนช่องน้ำแข็งวางบิล เพราะเป็นค่าใช้จ่ายหน้าร้านอยู่แล้ว
+      iceBox.style.display = 'none';
     }
-    iceEl.textContent = fmtS(iceDisplay);
-    if (iceBox) iceBox.style.borderLeft = tIceUnpaid > 0 ? '3px solid var(--red)' : (iceDisplay > 0 ? '3px solid var(--green)' : '');
-    iceEl.style.color = tIceUnpaid > 0 ? 'var(--red)' : '';
-    var icePaidEl = document.getElementById('ss-ice-paid');
-    var iceUnpaidEl = document.getElementById('ss-ice-unpaid');
-    if (icePaidEl) icePaidEl.textContent = fmtS(tIcePaid);
-    if (iceUnpaidEl) iceUnpaidEl.textContent = fmtS(tIceUnpaid);
   }
   document.getElementById('ss-payable-other').textContent   = fmtS(tOtherPayable);
   document.getElementById('ss-payable-unpaid-top').textContent = fmtS(tPayableUnpaid);
@@ -2577,7 +2597,7 @@ function renderSalaries() {
 
     var tr = document.createElement('tr');
     tr.innerHTML =
-      '<td class="mono">' + (item.month || '-') + '</td>'
+      '<td class="mono">' + cd(item.month || '-') + '</td>'
       + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
       + '<td style="font-size:13px;font-weight:500;">' + item.name + '</td>'
       + '<td class="mono" style="color:var(--blue);font-weight:500;">' + fmt2(item.amount) + '</td>'

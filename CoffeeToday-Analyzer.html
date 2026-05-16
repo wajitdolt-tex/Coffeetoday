@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="th">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
@@ -128,7 +127,6 @@ tr:hover td{background:var(--s2);}
 <div class="main">
 
 <!-- DASHBOARD -->
-
 <div class="pg active" id="tab-dash">
   <div class="card">
     <div class="ct">📊 Dashboard — <span id="dash-br-l" style="color:var(--ac)">แพชชั่น</span></div>
@@ -154,7 +152,6 @@ tr:hover td{background:var(--s2);}
 </div>
 
 <!-- ต้นทุนเมนู -->
-
 <div class="pg" id="tab-cost">
   <div class="sg">
     <div class="st"><div class="sl">☕ เมนูทั้งหมด</div><div class="sv a" id="s-tm">0</div></div>
@@ -190,7 +187,6 @@ tr:hover td{background:var(--s2);}
 </div>
 
 <!-- วัตถุดิบ -->
-
 <div class="pg" id="tab-ing">
   <div class="card">
     <div class="ct">➕ เพิ่มวัตถุดิบ <span class="pill">ใช้ร่วมกัน 2 สาขา</span></div>
@@ -221,7 +217,6 @@ tr:hover td{background:var(--s2);}
 </div>
 
 <!-- สั่งสินค้า -->
-
 <div class="pg" id="tab-ord">
   <div class="card">
     <div class="ct">📦 เลือกหมวดหมู่</div>
@@ -242,7 +237,6 @@ tr:hover td{background:var(--s2);}
 </div>
 
 <!-- P&L -->
-
 <div class="pg" id="tab-pl">
   <div class="card">
     <div class="ct">💰 P&L — <span id="pl-br-l" style="color:var(--ac)">แพชชั่น</span></div>
@@ -266,7 +260,6 @@ tr:hover td{background:var(--s2);}
 </div>
 
 <!-- ตั้งค่า -->
-
 <div class="pg" id="tab-set">
   <div class="card">
     <div class="ct">⚙️ เชื่อมต่อ Google Apps Script</div>
@@ -677,7 +670,6 @@ function printOrd(){
   const vat=pre*0.07,tot=pre+vat;
   const w=window.open('','_blank');
   w.document.write(`<html><head><title>ใบสั่งซื้อ</title><style>body{font-family:sans-serif;padding:24px}table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #ccc;text-align:left}th{background:#f5efe6}.tot{font-weight:bold;font-size:16px;margin-top:12px;color:#5c3d2e}</style></head><body>
-
   <h2 style="color:#5c3d2e">☕ Coffee Today — ใบสั่งซื้อ</h2><p>สาขา: ${bTh} | ${now}</p><br>
   <table><tr><th>รายการ</th><th>จำนวน</th><th>ราคา/หน่วย</th><th>รวม</th></tr>${rows}</table>
   <p class="tot">ราคาก่อนภาษี: ฿${f(pre)}</p>
@@ -691,116 +683,142 @@ function printOrd(){
 // P&L
 // ============================================================
 async function loadPL(){
-if(!API){alert(‘กรุณาตั้งค่า Script URL ก่อนครับ’);return;}
-const month=document.getElementById(‘pl-m’).value;
-if(!month)return alert(‘กรุณาเลือกเดือน’);
-sS(‘syn’,‘กำลังโหลด…’);sL(‘กำลังสรุป P&L…’);
-try{
-const brKey=br===‘lotus’?‘lotus’:‘passione’;
-const d=await apiG({action:‘monthly_pl’,branch:br});
-if(d.error)throw new Error(d.error);
-const pl=(d.pl||[]).find(p=>p.month===month);
-if(!pl){hL();alert(’ไม่มีข้อมูลในเดือน ’+month);return;}
-document.getElementById(‘pl-content’).style.display=‘block’;
-showPLResult(pl);
-sS(‘ok’,‘โหลดแล้ว’);
-}catch(e){sS(‘err’,‘ผิดพลาด’);alert(’โหลดไม่ได้: ’+e.message);}
-hL();
+  if(!API){alert('กรุณาตั้งค่า Script URL ก่อนครับ');return;}
+  const month=document.getElementById('pl-m').value;
+  if(!month)return alert('กรุณาเลือกเดือน');
+  sS('syn','กำลังโหลด...');sL('กำลังสรุป P&L...');
+  try{
+    const brKey=br==='lotus'?'lotus':'passione';
+    const d=await apiG({action:'monthly_pl',branch:br});
+    if(d.error)throw new Error(d.error);
+    const pl=(d.pl||[]).find(p=>p.month===month);
+    if(!pl){hL();alert('ไม่มีข้อมูลในเดือน '+month);return;}
+    document.getElementById('pl-content').style.display='block';
+    showPLResult(pl);
+    sS('ok','โหลดแล้ว');
+  }catch(e){sS('err','ผิดพลาด');alert('โหลดไม่ได้: '+e.message);}
+  hL();
 }
 
 async function loadPLAll(){
-if(!API){alert(‘กรุณาตั้งค่า Script URL ก่อนครับ’);return;}
-sS(‘syn’,‘กำลังโหลด…’);sL(‘กำลังสรุป P&L ทั้งหมด…’);
-try{
-const d=await apiG({action:‘monthly_pl’,branch:br});
-if(d.error)throw new Error(d.error);
-plAllCache[br]=d.pl||[];
-renderPLHist(d.pl||[]);
-sS(‘ok’,‘โหลดแล้ว’);
-}catch(e){sS(‘err’,‘ผิดพลาด’);alert(’โหลดไม่ได้: ’+e.message);}
-hL();
+  if(!API){alert('กรุณาตั้งค่า Script URL ก่อนครับ');return;}
+  sS('syn','กำลังโหลด...');sL('กำลังสรุป P&L ทั้งหมด...');
+  try{
+    const d=await apiG({action:'monthly_pl',branch:br});
+    if(d.error)throw new Error(d.error);
+    plAllCache[br]=d.pl||[];
+    renderPLHist(d.pl||[]);
+    sS('ok','โหลดแล้ว');
+  }catch(e){sS('err','ผิดพลาด');alert('โหลดไม่ได้: '+e.message);}
+  hL();
 }
 
 function showPLResult(p){
-const tc=p.rent+p.salary+p.utility+p.other;
-const fixedAll=p.rent+p.salary+p.utility+p.other; // rent รวม ค่าน้ำไฟ+ภาษีแล้ว
-const varCost=p.varCost||0;
-const totalCost=p.totalCost||0;
-const gp=p.grossProfit||0,gm=p.grossMargin||0;
-const net=p.netProfit||0,nm=p.netMargin||0;
-const be=totalCost/30,rd=p.revenue/30;
+  const tc=p.rent+p.salary+p.utility+p.other;
+  const fixedAll=p.rent+p.salary+p.utility+p.other; // rent รวม ค่าน้ำไฟ+ภาษีแล้ว
+  const varCost=p.varCost||0;
+  const totalCost=p.totalCost||0;
+  const gp=p.grossProfit||0,gm=p.grossMargin||0;
+  const net=p.netProfit||0,nm=p.netMargin||0;
+  const be=totalCost/30,rd=p.revenue/30;
 
-document.getElementById(‘pl-det’).innerHTML=` <div class="pr"><div class="pll" style="font-weight:600">💚 รายได้รวม</div><div class="plv" style="color:var(--gn)">${fB(p.revenue)}</div></div> <div style="padding:4px 0 4px 12px;font-size:12px;color:var(--t3)">QR ${fB(p.qr)} | Cash ${fB(p.cash)} | Lineman ${fB(p.lineman)}</div> <div class="divhr"></div> <div class="pr"><div class="pll" style="padding-left:8px;color:var(--t3)">− ต้นทุนวัตถุดิบ <span class="pill">จาก Daily sheet</span></div><div class="plv">${fB(p.cogs)}</div></div> <div class="pr"><div class="pll" style="padding-left:8px;color:var(--t3)">− ค่าใช้จ่ายร้าน (ShopExp+StdExp+Extra)</div><div class="plv">${fB((p.shopExp||0)+(p.stdExp||0)+(p.extraExp||0))}</div></div> <div class="pr" style="background:var(--gbg);margin:4px -8px;padding:10px 8px;border-radius:8px"> <div class="pll" style="font-weight:700;color:var(--gn)">กำไรขั้นต้น</div> <div class="plv" style="color:${gp>=0?'var(--gn)':'var(--rd)'}">${fB(gp)} <span style="font-size:11px;font-weight:400">(${gm.toFixed(0)}%)</span></div> </div> <div class="divhr"></div> <div class="pr"><div class="pll" style="padding-left:8px;color:var(--t3)">− ค่าเช่า+น้ำไฟ+ภาษี <span class="pill">Payable</span></div><div class="plv">${fB(p.rent+p.utility+p.tax)}</div></div> <div class="pr"><div class="pll" style="padding-left:8px;color:var(--t3)">− เงินเดือนพนักงาน <span class="pill">Salary</span></div><div class="plv">${fB(p.salary)}</div></div> <div class="pr"><div class="pll" style="padding-left:8px;color:var(--t3)">− ค่าใช้จ่ายอื่น <span class="pill">AcctExp</span></div><div class="plv">${fB(p.other)}</div></div> <div class="pr tot"><div class="pll">กำไร / ขาดทุนสุทธิ</div><div class="plv" style="color:${net>=0?'var(--gn)':'var(--rd)'}">${fB(net)}</div></div>`;
+  document.getElementById('pl-det').innerHTML=`
+    <div class="pr"><div class="pll" style="font-weight:600">💚 รายได้รวม</div><div class="plv" style="color:var(--gn)">${fB(p.revenue)}</div></div>
+    <div style="padding:4px 0 4px 12px;font-size:12px;color:var(--t3)">QR ${fB(p.qr)} | Cash ${fB(p.cash)} | Lineman ${fB(p.lineman)}</div>
+    <div class="divhr"></div>
+    <div class="pr"><div class="pll" style="padding-left:8px;color:var(--t3)">− ต้นทุนวัตถุดิบ <span class="pill">จาก Daily sheet</span></div><div class="plv">${fB(p.cogs)}</div></div>
+    <div class="pr"><div class="pll" style="padding-left:8px;color:var(--t3)">− ค่าใช้จ่ายร้าน (ShopExp+StdExp+Extra)</div><div class="plv">${fB((p.shopExp||0)+(p.stdExp||0)+(p.extraExp||0))}</div></div>
+    <div class="pr" style="background:var(--gbg);margin:4px -8px;padding:10px 8px;border-radius:8px">
+      <div class="pll" style="font-weight:700;color:var(--gn)">กำไรขั้นต้น</div>
+      <div class="plv" style="color:${gp>=0?'var(--gn)':'var(--rd)'}">${fB(gp)} <span style="font-size:11px;font-weight:400">(${gm.toFixed(0)}%)</span></div>
+    </div>
+    <div class="divhr"></div>
+    <div class="pr"><div class="pll" style="padding-left:8px;color:var(--t3)">− ค่าเช่า+น้ำไฟ+ภาษี <span class="pill">Payable</span></div><div class="plv">${fB(p.rent+p.utility+p.tax)}</div></div>
+    <div class="pr"><div class="pll" style="padding-left:8px;color:var(--t3)">− เงินเดือนพนักงาน <span class="pill">Salary</span></div><div class="plv">${fB(p.salary)}</div></div>
+    <div class="pr"><div class="pll" style="padding-left:8px;color:var(--t3)">− ค่าใช้จ่ายอื่น <span class="pill">AcctExp</span></div><div class="plv">${fB(p.other)}</div></div>
+    <div class="pr tot"><div class="pll">กำไร / ขาดทุนสุทธิ</div><div class="plv" style="color:${net>=0?'var(--gn)':'var(--rd)'}">${fB(net)}</div></div>`;
 
-const alts=[];
-if(p.salary/p.revenue*100>40)alts.push({t:‘aw’,m:`ค่าแรง ${(p.salary/p.revenue*100).toFixed(0)}% ของรายได้`});
-if((p.rent+p.utility)/p.revenue*100>35)alts.push({t:‘ad’,m:`ค่าเช่า+น้ำไฟ ${((p.rent+p.utility)/p.revenue*100).toFixed(0)}% ของรายได้`});
-if(net<0)alts.push({t:‘ad’,m:`ขาดทุน ${fB(Math.abs(net))}`});
-else if(net<5000)alts.push({t:‘aw’,m:‘กำไรน้อยมาก’});
-else alts.push({t:‘as’,m:`กำไรสุทธิ ${fB(net)}`});
+  const alts=[];
+  if(p.salary/p.revenue*100>40)alts.push({t:'aw',m:`ค่าแรง ${(p.salary/p.revenue*100).toFixed(0)}% ของรายได้`});
+  if((p.rent+p.utility)/p.revenue*100>35)alts.push({t:'ad',m:`ค่าเช่า+น้ำไฟ ${((p.rent+p.utility)/p.revenue*100).toFixed(0)}% ของรายได้`});
+  if(net<0)alts.push({t:'ad',m:`ขาดทุน ${fB(Math.abs(net))}`});
+  else if(net<5000)alts.push({t:'aw',m:'กำไรน้อยมาก'});
+  else alts.push({t:'as',m:`กำไรสุทธิ ${fB(net)}`});
 
-const bars=[
-{l:‘ค่าเช่า+น้ำไฟ+ภาษี’,v:p.rent+p.utility+(p.tax||0),c:’#c0392b’},
-{l:‘เงินเดือน’,v:p.salary,c:’#c8860a’},
-{l:‘วัตถุดิบ’,v:p.cogs,c:’#2e7d52’},
-{l:‘ค่าใช้จ่ายร้าน’,v:(p.shopExp||0)+(p.stdExp||0)+(p.extraExp||0),c:’#1a6b9a’},
-{l:‘อื่นๆ’,v:p.other,c:’#7a5240’},
-];
-document.getElementById(‘pl-anld’).innerHTML=` ${alts.map(a=>`<div class="alt ${a.t}">${a.t===‘ad’?‘🚨’:a.t===‘aw’?‘⚠️’:‘✅’} ${a.m}</div>`).join('')} <div class="sg" style="grid-template-columns:1fr 1fr;margin:12px 0"> <div class="st"><div class="sl">Break-even/วัน</div><div class="sv y">${fB(be)}</div></div> <div class="st ${rd>=be?'hl':''}"><div class="sl">ยอดจริง/วัน</div><div class="sv ${rd>=be?'g':'r'}">${fB(rd)}</div><div class="ss">${rd>=be?'✅ เกิน':'❌ ต่ำกว่า'}</div></div> <div class="st"><div class="sl">วันที่เปิด</div><div class="sv a">${p.days}</div></div> <div class="st"><div class="sl">ยอดสูงสุด/วัน</div><div class="sv g">${fB(p.topDay)}</div></div> </div> <div class="slb">สัดส่วนต่อรายได้</div> ${bars.map(b=>{const pct=p.revenue>0?b.v/p.revenue*100:0;return`<div class="cb"><div class="cbh"><span>${b.l}</span><span style="font-weight:700;color:${b.c}">${pct.toFixed(0)}% ${fB(b.v)}</span></div><div class="cbt"><div class="cbf" style="width:${Math.min(pct,100)}%;background:${b.c}"></div></div></div>`;}).join('')}`;
+  const bars=[
+    {l:'ค่าเช่า+น้ำไฟ+ภาษี',v:p.rent+p.utility+(p.tax||0),c:'#c0392b'},
+    {l:'เงินเดือน',v:p.salary,c:'#c8860a'},
+    {l:'วัตถุดิบ',v:p.cogs,c:'#2e7d52'},
+    {l:'ค่าใช้จ่ายร้าน',v:(p.shopExp||0)+(p.stdExp||0)+(p.extraExp||0),c:'#1a6b9a'},
+    {l:'อื่นๆ',v:p.other,c:'#7a5240'},
+  ];
+  document.getElementById('pl-anld').innerHTML=`
+    ${alts.map(a=>`<div class="alt ${a.t}">${a.t==='ad'?'🚨':a.t==='aw'?'⚠️':'✅'} ${a.m}</div>`).join('')}
+    <div class="sg" style="grid-template-columns:1fr 1fr;margin:12px 0">
+      <div class="st"><div class="sl">Break-even/วัน</div><div class="sv y">${fB(be)}</div></div>
+      <div class="st ${rd>=be?'hl':''}"><div class="sl">ยอดจริง/วัน</div><div class="sv ${rd>=be?'g':'r'}">${fB(rd)}</div><div class="ss">${rd>=be?'✅ เกิน':'❌ ต่ำกว่า'}</div></div>
+      <div class="st"><div class="sl">วันที่เปิด</div><div class="sv a">${p.days}</div></div>
+      <div class="st"><div class="sl">ยอดสูงสุด/วัน</div><div class="sv g">${fB(p.topDay)}</div></div>
+    </div>
+    <div class="slb">สัดส่วนต่อรายได้</div>
+    ${bars.map(b=>{const pct=p.revenue>0?b.v/p.revenue*100:0;return`<div class="cb"><div class="cbh"><span>${b.l}</span><span style="font-weight:700;color:${b.c}">${pct.toFixed(0)}% ${fB(b.v)}</span></div><div class="cbt"><div class="cbf" style="width:${Math.min(pct,100)}%;background:${b.c}"></div></div></div>`;}).join('')}`;
 }
 
 function renderPLHist(pl){
-const c=document.getElementById(‘pl-hist’);
-if(!pl.length){c.innerHTML=’<div class="emp">ไม่มีข้อมูล</div>’;return;}
-c.innerHTML=`<div class="tw"><table><thead><tr><th>เดือน</th><th>รายได้</th><th>ต้นทุนรวม</th><th>กำไร/ขาดทุน</th><th>Net Margin</th><th>เฉลี่ย/วัน</th></tr></thead><tbody> ${pl.map((p,i)=>{ const net=p.netProfit,mg=p.netMargin; const prev=i>0?pl[i-1].netProfit:null,diff=prev!==null?net-prev:null; const mTh=new Date(p.month+'-01').toLocaleDateString('th-TH',{year:'numeric',month:'long'}); return`<tr style="cursor:pointer" onclick="selPLMonth('${p.month}')">
-<td style="font-weight:600">${mTh}</td>
-<td class="mn" style="color:var(--gn)">${fB(p.revenue)}</td>
-<td class="mn">${fB(p.totalCost)}</td>
-<td class="mn" style="color:${net>=0?'var(--gn)':'var(--rd)'};font-weight:700">${fB(net)}</td>
-<td style="font-family:'Space Mono',monospace;font-weight:700;color:${mg>=10?'var(--gn)':mg>=0?'var(--yl)':'var(--rd)'}">${mg.toFixed(1)}%</td>
-<td class="mn">${fB(p.avgDaily)}</td>
-</tr>`;
-}).join(’’)}</tbody></table></div>
-
+  const c=document.getElementById('pl-hist');
+  if(!pl.length){c.innerHTML='<div class="emp">ไม่มีข้อมูล</div>';return;}
+  c.innerHTML=`<div class="tw"><table><thead><tr><th>เดือน</th><th>รายได้</th><th>ต้นทุนรวม</th><th>กำไร/ขาดทุน</th><th>Net Margin</th><th>เฉลี่ย/วัน</th></tr></thead><tbody>
+  ${pl.map((p,i)=>{
+    const net=p.netProfit,mg=p.netMargin;
+    const prev=i>0?pl[i-1].netProfit:null,diff=prev!==null?net-prev:null;
+    const mTh=new Date(p.month+'-01').toLocaleDateString('th-TH',{year:'numeric',month:'long'});
+    return`<tr style="cursor:pointer" onclick="selPLMonth('${p.month}')">
+      <td style="font-weight:600">${mTh}</td>
+      <td class="mn" style="color:var(--gn)">${fB(p.revenue)}</td>
+      <td class="mn">${fB(p.totalCost)}</td>
+      <td class="mn" style="color:${net>=0?'var(--gn)':'var(--rd)'};font-weight:700">${fB(net)}</td>
+      <td style="font-family:'Space Mono',monospace;font-weight:700;color:${mg>=10?'var(--gn)':mg>=0?'var(--yl)':'var(--rd)'}">${mg.toFixed(1)}%</td>
+      <td class="mn">${fB(p.avgDaily)}</td>
+    </tr>`;
+  }).join('')}</tbody></table></div>
   <p style="font-size:11px;color:var(--t3);margin-top:6px">💡 คลิกแถวเพื่อดู P&L ของเดือนนั้น</p>`;
 }
 
 function selPLMonth(month){
-document.getElementById(‘pl-m’).value=month;
-const pl=(plAllCache[br]||[]).find(p=>p.month===month);
-if(pl){document.getElementById(‘pl-content’).style.display=‘block’;showPLResult(pl);}
+  document.getElementById('pl-m').value=month;
+  const pl=(plAllCache[br]||[]).find(p=>p.month===month);
+  if(pl){document.getElementById('pl-content').style.display='block';showPLResult(pl);}
 }
 
 // ============================================================
 // BRANCH + TAB
 // ============================================================
 function setBr(b,el){
-br=b;
-document.querySelectorAll(’.bb’).forEach(s=>s.classList.remove(‘active’));el.classList.add(‘active’);
-const lbl=b===‘passion’?‘แพชชั่น’:‘โลตัส’;
-document.getElementById(‘dash-br-l’).textContent=lbl;
-document.getElementById(‘pl-br-l’).textContent=lbl;
-document.getElementById(‘pl-hl’).textContent=lbl;
-document.getElementById(‘pl-content’).style.display=‘none’;
-document.getElementById(‘pl-hist’).innerHTML=’<div class="emp">กด “โหลดทั้งหมด” เพื่อดูประวัติ</div>’;
-document.getElementById(‘dash-kpi’).style.display=‘none’;
-document.getElementById(‘dash-tbl-card’).style.display=‘none’;
+  br=b;
+  document.querySelectorAll('.bb').forEach(s=>s.classList.remove('active'));el.classList.add('active');
+  const lbl=b==='passion'?'แพชชั่น':'โลตัส';
+  document.getElementById('dash-br-l').textContent=lbl;
+  document.getElementById('pl-br-l').textContent=lbl;
+  document.getElementById('pl-hl').textContent=lbl;
+  document.getElementById('pl-content').style.display='none';
+  document.getElementById('pl-hist').innerHTML='<div class="emp">กด "โหลดทั้งหมด" เพื่อดูประวัติ</div>';
+  document.getElementById('dash-kpi').style.display='none';
+  document.getElementById('dash-tbl-card').style.display='none';
 }
 function sTab(t,el){
-document.querySelectorAll(’.pg’).forEach(p=>p.classList.remove(‘active’));
-document.querySelectorAll(’.tab’).forEach(x=>x.classList.remove(‘active’));
-document.getElementById(‘tab-’+t).classList.add(‘active’);
-el.classList.add(‘active’);
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  el.classList.add('active');
 }
 function rAll(){rIng();rMenus();uSt();rOrdCats();rOrd();bRec();}
 
 // INIT
-document.getElementById(‘dash-m’).value=new Date().toISOString().slice(0,7);
-document.getElementById(‘pl-m’).value=new Date().toISOString().slice(0,7);
-API=localStorage.getItem(‘ct_url’)||’’;
-if(API){document.getElementById(‘sc-url’).value=API;loadMeta();}
+document.getElementById('dash-m').value=new Date().toISOString().slice(0,7);
+document.getElementById('pl-m').value=new Date().toISOString().slice(0,7);
+API=localStorage.getItem('ct_url')||'';
+if(API){document.getElementById('sc-url').value=API;loadMeta();}
 else loadDefaultIngs();
 </script>
-
 </body>
 </html>

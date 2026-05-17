@@ -455,8 +455,20 @@ function loadMeta(){
   ]).then(function(results){
     var iR=results[0], mR=results[1];
     var si=(iR.rows||[]).map(function(r){ return Object.assign({},r,{price:parseFloat(r.price)||0, qty:parseFloat(r.qty)||0}); });
-    ings = si.length ? si : DEFAULT_INGS.slice();
-    menus = (mR.rows||[]).map(function(r){
+
+    if(si.length){
+      ings=si;
+    } else {
+      // ชีทว่าง — ใช้ default แล้ว sync ขึ้นชีทเลย
+      ings=DEFAULT_INGS.slice();
+      sS('syn','กำลัง sync วัตถุดิบ...');
+      var syncAll = ings.map(function(item){
+        return apiP({action:'upsert', sheet:'Ingredients', data:item});
+      });
+      Promise.all(syncAll).catch(function(){});
+    }
+
+    menus=(mR.rows||[]).map(function(r){
       return Object.assign({},r,{
         price:parseFloat(r.price)||0,
         recipe: typeof r.recipe==='string' ? JSON.parse(r.recipe||'[]') : (r.recipe||[])
@@ -550,8 +562,17 @@ function editIng(id){
   } else { rAll(); }
 }
 
-// Drag-to-sort Ingredients
-function dSt(e,id){ dragSrc=id; e.currentTarget.classList.add('dragging'); }
+// ============================================================
+// DRAG-TO-SORT (รองรับทั้ง mouse และ touch/iPad)
+// ============================================================
+var _touchDragEl = null;
+var _touchDragId = null;
+var _touchClone  = null;
+
+function dSt(e,id){
+  dragSrc=id;
+  e.currentTarget.classList.add('dragging');
+}
 function dOv(e){
   e.preventDefault();
   document.querySelectorAll('.drag-over').forEach(function(el){ el.classList.remove('drag-over'); });
@@ -559,22 +580,99 @@ function dOv(e){
 }
 function dDp(e,toId){
   e.preventDefault();
-  if(!dragSrc||dragSrc===toId) return;
-  var fi=ings.findIndex(function(x){ return x.id===dragSrc; });
-  var ti=ings.findIndex(function(x){ return x.id===toId; });
-  if(fi<0||ti<0) return;
-  var item=ings.splice(fi,1)[0]; ings.splice(ti,0,item);
-  if(API){
-    ings.forEach(function(ing,idx){
-      ing.order=idx;
-      apiP({action:'upsert', sheet:'Ingredients', data:ing}).catch(function(){});
-    });
-  }
+  _doSwap(dragSrc, toId, ings, function(ing,idx){ ing.order=idx; if(API) apiP({action:'upsert',sheet:'Ingredients',data:ing}).catch(function(){}); });
   rAll();
 }
 function dEd(e){
   e.currentTarget.classList.remove('dragging');
   document.querySelectorAll('.drag-over').forEach(function(el){ el.classList.remove('drag-over'); });
+}
+
+// touch handlers สำหรับ iPad
+function tSt(e,id){
+  e.preventDefault();
+  _touchDragId=id;
+  _touchDragEl=e.currentTarget;
+  _touchDragEl.classList.add('dragging');
+  // สร้าง clone ลอยตาม finger
+  _touchClone=_touchDragEl.cloneNode(true);
+  _touchClone.style.cssText='position:fixed;opacity:.7;pointer-events:none;z-index:9999;width:'+_touchDragEl.offsetWidth+'px;background:var(--s3);border-radius:8px;padding:8px;';
+  document.body.appendChild(_touchClone);
+}
+function tMv(e){
+  if(!_touchClone) return;
+  e.preventDefault();
+  var t=e.touches[0];
+  _touchClone.style.left=(t.clientX-20)+'px';
+  _touchClone.style.top=(t.clientY-20)+'px';
+  // หา element ที่อยู่ใต้นิ้ว
+  _touchClone.style.display='none';
+  var el=document.elementFromPoint(t.clientX,t.clientY);
+  _touchClone.style.display='';
+  var row=el ? el.closest('tr[data-id]') : null;
+  document.querySelectorAll('.drag-over').forEach(function(x){ x.classList.remove('drag-over'); });
+  if(row) row.classList.add('drag-over');
+}
+function tEd(e){
+  if(!_touchClone) return;
+  e.preventDefault();
+  _touchClone.remove(); _touchClone=null;
+  if(_touchDragEl) _touchDragEl.classList.remove('dragging');
+  var t=e.changedTouches[0];
+  var el=document.elementFromPoint(t.clientX,t.clientY);
+  var row=el ? el.closest('tr[data-id]') : null;
+  document.querySelectorAll('.drag-over').forEach(function(x){ x.classList.remove('drag-over'); });
+  if(row && row.dataset.id && row.dataset.id!==_touchDragId){
+    _doSwap(_touchDragId, row.dataset.id, ings, function(ing,idx){ ing.order=idx; if(API) apiP({action:'upsert',sheet:'Ingredients',data:ing}).catch(function(){}); });
+    rAll();
+  }
+  _touchDragId=null; _touchDragEl=null;
+}
+
+// touch สำหรับ menu
+function tmSt(e,id){
+  e.preventDefault();
+  dragMSrc=id;
+  e.currentTarget.classList.add('dragging');
+  _touchClone=e.currentTarget.cloneNode(true);
+  _touchClone.style.cssText='position:fixed;opacity:.7;pointer-events:none;z-index:9999;width:'+e.currentTarget.offsetWidth+'px;background:var(--s3);border-radius:8px;padding:8px;';
+  document.body.appendChild(_touchClone);
+}
+function tmMv(e){
+  if(!_touchClone) return;
+  e.preventDefault();
+  var t=e.touches[0];
+  _touchClone.style.left=(t.clientX-20)+'px';
+  _touchClone.style.top=(t.clientY-20)+'px';
+  _touchClone.style.display='none';
+  var el=document.elementFromPoint(t.clientX,t.clientY);
+  _touchClone.style.display='';
+  var row=el ? el.closest('tr[data-mid]') : null;
+  document.querySelectorAll('.drag-over').forEach(function(x){ x.classList.remove('drag-over'); });
+  if(row) row.classList.add('drag-over');
+}
+function tmEd(e){
+  if(!_touchClone) return;
+  e.preventDefault();
+  _touchClone.remove(); _touchClone=null;
+  var t=e.changedTouches[0];
+  var el=document.elementFromPoint(t.clientX,t.clientY);
+  var row=el ? el.closest('tr[data-mid]') : null;
+  document.querySelectorAll('.drag-over').forEach(function(x){ x.classList.remove('drag-over'); });
+  if(row && row.dataset.mid && row.dataset.mid!==dragMSrc){
+    _doSwap(dragMSrc, row.dataset.mid, menus, function(m,idx){ if(API){ var d=Object.assign({},m,{order:idx,recipe:JSON.stringify(m.recipe)}); apiP({action:'upsert',sheet:'Menus',data:d}).catch(function(){}); } });
+    rAll();
+  }
+  dragMSrc=null;
+}
+
+function _doSwap(fromId, toId, arr, onSave){
+  if(!fromId||!toId||fromId===toId) return;
+  var fi=arr.findIndex(function(x){ return x.id===fromId||x.id===fromId; });
+  var ti=arr.findIndex(function(x){ return x.id===toId; });
+  if(fi<0||ti<0) return;
+  var item=arr.splice(fi,1)[0]; arr.splice(ti,0,item);
+  if(onSave) arr.forEach(onSave);
 }
 
 function rIng(){
@@ -586,11 +684,14 @@ function rIng(){
     return '<div class="cat-hdr">'+cat+'</div>'
       +'<div class="tw"><table><thead><tr><th></th><th>ชื่อ</th><th>ราคาบิล (incl.VAT)</th><th>excl.VAT</th><th>ปริมาณ</th><th>ต้นทุน/หน่วย</th><th></th></tr></thead>'
       +'<tbody>'+ci.map(function(i){
-        return '<tr class="drag-row" draggable="true"'
+        return '<tr class="drag-row" draggable="true" data-id="'+i.id+'"'
           +' ondragstart="dSt(event,\''+i.id+'\')"'
           +' ondragover="dOv(event)"'
           +' ondrop="dDp(event,\''+i.id+'\')"'
-          +' ondragend="dEd(event)">'
+          +' ondragend="dEd(event)"'
+          +' ontouchstart="tSt(event,\''+i.id+'\')"'
+          +' ontouchmove="tMv(event)"'
+          +' ontouchend="tEd(event)">'
           +'<td><span class="drag-handle">⠿</span></td>'
           +'<td style="font-weight:600">'+i.name+'</td>'
           +'<td class="mn">'+fB(i.price)+'</td>'
@@ -685,17 +786,9 @@ function dmOv(e){
 }
 function dmDp(e,toId){
   e.preventDefault();
-  if(!dragMSrc||dragMSrc===toId) return;
-  var fi=menus.findIndex(function(x){ return x.id===dragMSrc; });
-  var ti=menus.findIndex(function(x){ return x.id===toId; });
-  if(fi<0||ti<0) return;
-  var item=menus.splice(fi,1)[0]; menus.splice(ti,0,item);
-  if(API){
-    menus.forEach(function(m,idx){
-      var d=Object.assign({},m,{order:idx, recipe:JSON.stringify(m.recipe)});
-      apiP({action:'upsert', sheet:'Menus', data:d}).catch(function(){});
-    });
-  }
+  _doSwap(dragMSrc, toId, menus, function(m,idx){
+    if(API){ var d=Object.assign({},m,{order:idx,recipe:JSON.stringify(m.recipe)}); apiP({action:'upsert',sheet:'Menus',data:d}).catch(function(){}); }
+  });
   rAll();
 }
 function dmEd(e){
@@ -714,11 +807,14 @@ function rMenus(){
       var ing=ings.find(function(x){ return String(x.id)===String(r.iId); });
       return ing ? ing.name+' '+r.qty+ing.unit : '';
     }).filter(Boolean).join(', ');
-    return '<tr class="drag-row" draggable="true"'
+    return '<tr class="drag-row" draggable="true" data-mid="'+m.id+'"'
       +' ondragstart="dmSt(event,\''+m.id+'\')"'
       +' ondragover="dmOv(event)"'
       +' ondrop="dmDp(event,\''+m.id+'\')"'
-      +' ondragend="dmEd(event)">'
+      +' ondragend="dmEd(event)"'
+      +' ontouchstart="tmSt(event,\''+m.id+'\')"'
+      +' ontouchmove="tmMv(event)"'
+      +' ontouchend="tmEd(event)">'
       +'<td><span class="drag-handle">⠿</span></td>'
       +'<td><div style="font-weight:700;color:var(--br)">'+m.name+'</div>'
       +'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+rs+'</div></td>'

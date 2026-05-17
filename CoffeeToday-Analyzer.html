@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="th">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
@@ -110,6 +111,7 @@ tr:hover td{background:var(--s2);}
 <div class="main">
 
 <!-- ต้นทุนเมนู -->
+
 <div class="pg" id="tab-cost">
   <div class="sg">
     <div class="st"><div class="sl">☕ เมนูทั้งหมด</div><div class="sv a" id="s-tm">0</div></div>
@@ -146,6 +148,7 @@ tr:hover td{background:var(--s2);}
 </div>
 
 <!-- วัตถุดิบ -->
+
 <div class="pg" id="tab-ing">
   <div class="card">
     <div class="ct">➕ เพิ่มวัตถุดิบ <span class="pill">ใช้ร่วมกัน 2 สาขา</span></div>
@@ -192,6 +195,7 @@ tr:hover td{background:var(--s2);}
 </div>
 
 <!-- สั่งสินค้า -->
+
 <div class="pg active" id="tab-ord">
   <div class="card">
     <div class="ct">📦 เลือกหมวดหมู่</div>
@@ -224,6 +228,7 @@ tr:hover td{background:var(--s2);}
 </div>
 
 <!-- ตั้งค่า -->
+
 <div class="pg" id="tab-set">
   <div class="card">
     <div class="ct">⚙️ เชื่อมต่อ Google Apps Script</div>
@@ -825,24 +830,28 @@ function printOrd(){
     +'<style>body{font-family:sans-serif;padding:24px}table{width:100%;border-collapse:collapse}'
     +'th,td{padding:8px;border:1px solid #ccc;text-align:left}th{background:#f5efe6}'
     +'.tot{font-weight:bold;font-size:16px;margin-top:12px;color:#5c3d2e}</style>'
-    +'</head><body>'
-    +'<h2 style="color:#5c3d2e">☕ Coffee Today — ใบสั่งซื้อ</h2>'
-    +'<p>'+now+'</p><br>'
-    +'<table><tr><th>รายการ</th><th>จำนวน</th><th>ราคา/แพ็ค (incl.VAT)</th><th>ราคา (excl.VAT)</th><th>รวม</th></tr>'
-    +rows+'</table>'
-    +'<p class="tot">ยอดรวม (incl. VAT): ฿'+f(tot)+'</p>'
-    +'</body></html>');
-  w.print(); ords={}; rOrd();
+
+```
++'</head><body>'
++'<h2 style="color:#5c3d2e">☕ Coffee Today — ใบสั่งซื้อ</h2>'
++'<p>'+now+'</p><br>'
++'<table><tr><th>รายการ</th><th>จำนวน</th><th>ราคา/แพ็ค (incl.VAT)</th><th>ราคา (excl.VAT)</th><th>รวม</th></tr>'
++rows+'</table>'
++'<p class="tot">ยอดรวม (incl. VAT): ฿'+f(tot)+'</p>'
++'</body></html>');
+```
+
+w.print(); ords={}; rOrd();
 }
 
 // ============================================================
 // TAB
 // ============================================================
 function sTab(t,el){
-  document.querySelectorAll('.pg').forEach(function(p){ p.classList.remove('active'); });
-  document.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('active'); });
-  document.getElementById('tab-'+t).classList.add('active');
-  el.classList.add('active');
+document.querySelectorAll(’.pg’).forEach(function(p){ p.classList.remove(‘active’); });
+document.querySelectorAll(’.tab’).forEach(function(x){ x.classList.remove(‘active’); });
+document.getElementById(‘tab-’+t).classList.add(‘active’);
+el.classList.add(‘active’);
 }
 
 function rAll(){ rIng(); rMenus(); uSt(); rOrdCats(); rOrd(); bRec(); }
@@ -850,13 +859,14 @@ function rAll(){ rIng(); rMenus(); uSt(); rOrdCats(); rOrd(); bRec(); }
 // ============================================================
 // INIT
 // ============================================================
-API = localStorage.getItem('ct_analysis_url')||'';
+API = localStorage.getItem(‘ct_analysis_url’)||’’;
 if(API){
-  document.getElementById('sc-url').value=API;
-  loadMeta();
+document.getElementById(‘sc-url’).value=API;
+loadMeta();
 } else {
-  loadDefaultIngs();
+loadDefaultIngs();
 }
 </script>
+
 </body>
 </html>

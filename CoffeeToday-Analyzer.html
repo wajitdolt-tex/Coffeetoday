@@ -704,8 +704,12 @@ function editIng(id){
   if(isNaN(np)) return;
   var nq=parseFloat(prompt('ปริมาณต่อแพ็ค:', ing.qty));
   if(isNaN(nq)||nq<=0) return;
+  var units='g, ml, ขวด, ลัง, หีบ, ชิ้น, ใบ, แผ่น, กระป๋อง, ถุง, ซอง, เส้น, อัน, ม้วน, เล่ม, ดวง';
+  var nu=prompt('หน่วย ('+units+'):', ing.unit);
+  if(nu===null) return;
   ing.name=nn.trim()||ing.name;
   ing.price=np; ing.qty=nq;
+  ing.unit=nu.trim()||ing.unit;
   if(API){
     apiP({action:'upsert',sheet:'Ingredients',data:ing})
       .then(function(){ rAll(); sS('ok','อัพเดตแล้ว'); })

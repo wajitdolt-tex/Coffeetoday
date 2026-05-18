@@ -469,8 +469,24 @@ function loadMeta(){
     }
 
     ings = si.length ? si : DEFAULT_INGS.slice();
-    // sort ตาม order field เสมอ (เก็บลำดับที่ลากไว้)
-    ings.sort(function(a,b){ return (parseFloat(a.order)||0)-(parseFloat(b.order)||0); });
+    // สร้าง map จาก DEFAULT_INGS เพื่อใช้เป็น fallback order
+    var defaultOrderMap={};
+    DEFAULT_INGS.forEach(function(d,idx){ defaultOrderMap[d.id]=d.order!==undefined?d.order:idx; });
+
+    // ถ้า order ใน Sheets เป็น 0 ทั้งหมด (ยังไม่เคย set) → ใช้ default order
+    var allZero = ings.every(function(x){ return !parseFloat(x.order); });
+    ings.sort(function(a,b){
+      var oa = allZero ? (defaultOrderMap[a.id]!==undefined ? defaultOrderMap[a.id] : 999) : (parseFloat(a.order)||999);
+      var ob = allZero ? (defaultOrderMap[b.id]!==undefined ? defaultOrderMap[b.id] : 999) : (parseFloat(b.order)||999);
+      return oa-ob;
+    });
+    // sync order ที่ถูกต้องขึ้น Sheets ถ้ายังไม่มี
+    if(allZero && API){
+      ings.forEach(function(ing,idx){
+        ing.order=idx;
+        apiP({action:'upsert',sheet:'Ingredients',data:ing}).catch(function(){});
+      });
+    }
     menus=(mR.rows||[]).map(function(r){
       return Object.assign({},r,{
         price:parseFloat(r.price)||0,
@@ -559,12 +575,16 @@ function delIng(id){
 function editIng(id){
   var ing=ings.find(function(i){ return i.id===id; });
   if(!ing) return;
-  var np=parseFloat(prompt('ราคาใหม่ตามบิล รวม VAT (บาท)\n(excl.VAT ปัจจุบัน: ฿'+f(exVat(ing.price))+')', ing.price));
-  var nq=parseFloat(prompt('ปริมาณใหม่:', ing.qty));
-  if(isNaN(np)||isNaN(nq)) return;
+  var nn=prompt('ชื่อวัตถุดิบ:', ing.name);
+  if(nn===null) return;
+  var np=parseFloat(prompt('ราคาตามบิล รวม VAT (บาท):', ing.price));
+  if(isNaN(np)) return;
+  var nq=parseFloat(prompt('ปริมาณต่อแพ็ค:', ing.qty));
+  if(isNaN(nq)||nq<=0) return;
+  ing.name=nn.trim()||ing.name;
   ing.price=np; ing.qty=nq;
   if(API){
-    apiP({action:'upsert', sheet:'Ingredients', data:ing})
+    apiP({action:'upsert',sheet:'Ingredients',data:ing})
       .then(function(){ rAll(); sS('ok','อัพเดตแล้ว'); })
       .catch(function(e){ alert(e.message); });
   } else { rAll(); }
@@ -704,7 +724,14 @@ function rIng(){
   container.innerHTML=cats.map(function(cat){
     var ci=ings.filter(function(i){ return (i.cat||'อื่นๆ')===cat; });
     return '<div class="cat-hdr">'+cat+'</div>'
-      +'<div class="tw"><table><thead><tr><th></th><th>ชื่อ</th><th>ราคาบิล (incl.VAT)</th><th>excl.VAT</th><th>ปริมาณ</th><th>ต้นทุน/หน่วย</th><th></th></tr></thead>'
+      +'<div class="tw"><table style="table-layout:fixed;width:100%"><thead><tr>'
+      +'<th style="width:36px"></th>'
+      +'<th>ชื่อ</th>'
+      +'<th style="width:120px">ราคาบิล (incl.VAT)</th>'
+      +'<th style="width:90px">ปริมาณ</th>'
+      +'<th style="width:110px">ต้นทุน/หน่วย</th>'
+      +'<th style="width:80px"></th>'
+      +'</tr></thead>'
       +'<tbody>'+ci.map(function(i){
         return '<tr class="drag-row" draggable="true" data-id="'+i.id+'"'
           +' ondragstart="dSt(event,\''+i.id+'\')"'
@@ -715,13 +742,12 @@ function rIng(){
           +' ontouchmove="tMv(event)"'
           +' ontouchend="tEd(event)">'
           +'<td><span class="drag-handle">⠿</span></td>'
-          +'<td style="font-weight:600">'+i.name+'</td>'
+          +'<td style="font-weight:600;word-break:break-word">'+i.name+'</td>'
           +'<td class="mn">'+fB(i.price)+'</td>'
-          +'<td class="mn" style="color:var(--t3)">'+fB(exVat(i.price))+'</td>'
           +'<td class="mn">'+fmt(i.qty)+' '+i.unit+'</td>'
           +'<td class="mn" style="color:var(--ac);font-weight:700">'+fB(cpu(i))+'/'+i.unit+'</td>'
-          +'<td style="display:flex;gap:4px">'
-          +'<button class="btn bg2 bsm" onclick="editIng(\''+i.id+'\')">✏️</button>'
+          +'<td style="white-space:nowrap">'
+          +'<button class="btn bg2 bsm" onclick="editIng(\''+i.id+'\')">✏️</button> '
           +'<button class="btn bd2 bsm" onclick="delIng(\''+i.id+'\')">ลบ</button>'
           +'</td></tr>';
       }).join('')+'</tbody></table></div>';

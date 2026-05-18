@@ -1093,17 +1093,26 @@ function printOrd(){
     var q=ords[i.id], c=i.price*q; tot+=c;
     return '<tr><td>'+i.name+'</td><td>'+q+'</td><td>฿'+f(i.price)+'</td><td>฿'+f(exVat(i.price))+'</td><td>฿'+f(c)+'</td></tr>';
   }).join('');
+  var exVatTot = exVat(tot);
+  var vatAmt   = tot - exVatTot;
   var w=window.open('','_blank');
   w.document.write('<html><head><title>ใบสั่งซื้อ</title>'
     +'<style>body{font-family:sans-serif;padding:24px}table{width:100%;border-collapse:collapse}'
     +'th,td{padding:8px;border:1px solid #ccc;text-align:left}th{background:#f5efe6}'
-    +'.tot{font-weight:bold;font-size:16px;margin-top:12px;color:#5c3d2e}</style>'
+    +'.sub-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e2d5c3;font-size:14px;}'
+    +'.tot-row{display:flex;justify-content:space-between;padding:10px 0;border-top:2px solid #5c3d2e;margin-top:4px;font-weight:bold;font-size:16px;color:#5c3d2e;}'
+    +'.vat-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e2d5c3;font-size:14px;color:#c8860a;}'
+    +'</style>'
     +'</head><body>'
     +'<h2 style="color:#5c3d2e">☕ Coffee Today — ใบสั่งซื้อ</h2>'
     +'<p>'+now+'</p><br>'
     +'<table><tr><th>รายการ</th><th>จำนวน</th><th>ราคา/แพ็ค (incl.VAT)</th><th>ราคา (excl.VAT)</th><th>รวม</th></tr>'
     +rows+'</table>'
-    +'<p class="tot">ยอดรวม (incl. VAT): ฿'+f(tot)+'</p>'
+    +'<div style="max-width:320px;margin-top:16px;margin-left:auto;">'
+    +'<div class="sub-row"><span>ยอดสินค้า (excl. VAT)</span><span>฿'+f(exVatTot)+'</span></div>'
+    +'<div class="vat-row"><span>VAT 7%</span><span>฿'+f(vatAmt)+'</span></div>'
+    +'<div class="tot-row"><span>ยอดรวมทั้งสิ้น (incl. VAT)</span><span>฿'+f(tot)+'</span></div>'
+    +'</div>'
     +'</body></html>');
   w.print(); ords={}; rOrd();
 }

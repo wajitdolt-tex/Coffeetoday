@@ -311,7 +311,7 @@ var DEFAULT_INGS = [
   {id:'d32', name:'ถ้วย 22 oz. (25ใบ/แถว)',     cat:'บรรจุภัณฑ์',        price:0, qty:25,   unit:'ใบ',   order:25},
   {id:'d33', name:'ถ้วย Big Cup (25ใบ/แถว)',    cat:'บรรจุภัณฑ์',        price:0, qty:25,   unit:'ใบ',   order:26},
   {id:'d34', name:'ฝา 8 oz. (50ใบ/แถว)',        cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:27},
-  {id:'d35', name:'ฝาเรียบ (50ใบ/แถว)',       cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:28},
+  {id:'d35', name:'ฝาเรียบดำ (50ใบ/แถว)',       cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:28},
   {id:'d36', name:'ฝาโดม (50ใบ/แถว)',           cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:29},
   {id:'d37', name:'ฝา Big Cup (50ใบ/แถว)',       cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:30},
   {id:'d38', name:'หลอดงอหุ้ม (100 เส้น/ห่อ)',  cat:'บรรจุภัณฑ์',        price:0, qty:100,  unit:'เส้น', order:31},
@@ -473,18 +473,30 @@ function loadMeta(){
     var defaultOrderMap={};
     DEFAULT_INGS.forEach(function(d,idx){ defaultOrderMap[d.id]=d.order!==undefined?d.order:idx; });
 
-    // ถ้า order ใน Sheets เป็น 0 ทั้งหมด (ยังไม่เคย set) → ใช้ default order
-    var allZero = ings.every(function(x){ return !parseFloat(x.order); });
+    // sort: หมวดหมู่ตาม CAT_ORDER ก่อน → แล้วค่อย order ภายในหมวด
     ings.sort(function(a,b){
-      var oa = allZero ? (defaultOrderMap[a.id]!==undefined ? defaultOrderMap[a.id] : 999) : (parseFloat(a.order)||999);
-      var ob = allZero ? (defaultOrderMap[b.id]!==undefined ? defaultOrderMap[b.id] : 999) : (parseFloat(b.order)||999);
-      return oa-ob;
+      var ca=CAT_ORDER.indexOf(a.cat||'อื่นๆ');
+      var cb=CAT_ORDER.indexOf(b.cat||'อื่นๆ');
+      if(ca<0) ca=99; if(cb<0) cb=99;
+      if(ca!==cb) return ca-cb;
+      // ภายในหมวดเดียวกัน ใช้ order field ถ้ามี ไม่งั้นใช้ DEFAULT position
+      var oa=parseFloat(a.order);
+      var ob=parseFloat(b.order);
+      var hasOa=!isNaN(oa)&&oa>0;
+      var hasOb=!isNaN(ob)&&ob>0;
+      if(hasOa&&hasOb) return oa-ob;
+      // fallback ใช้ position ใน DEFAULT_INGS
+      var da=defaultOrderMap[a.id]!==undefined?defaultOrderMap[a.id]:999;
+      var db=defaultOrderMap[b.id]!==undefined?defaultOrderMap[b.id]:999;
+      return da-db;
     });
-    // sync order ที่ถูกต้องขึ้น Sheets ถ้ายังไม่มี
-    if(allZero && API){
+    // sync order ที่ถูกต้องขึ้น Sheets
+    if(API){
       ings.forEach(function(ing,idx){
-        ing.order=idx;
-        apiP({action:'upsert',sheet:'Ingredients',data:ing}).catch(function(){});
+        if(parseFloat(ing.order)!==idx){
+          ing.order=idx;
+          apiP({action:'upsert',sheet:'Ingredients',data:ing}).catch(function(){});
+        }
       });
     }
     menus=(mR.rows||[]).map(function(r){
@@ -508,7 +520,13 @@ function loadMeta(){
 
 function loadDefaultIngs(){
   ings=DEFAULT_INGS.slice();
-  ings.sort(function(a,b){ return (a.order||0)-(b.order||0); });
+  ings.sort(function(a,b){
+    var ca=CAT_ORDER.indexOf(a.cat||'อื่นๆ');
+    var cb=CAT_ORDER.indexOf(b.cat||'อื่นๆ');
+    if(ca<0) ca=99; if(cb<0) cb=99;
+    if(ca!==cb) return ca-cb;
+    return (a.order||0)-(b.order||0);
+  });
   menus=[];
   rAll(); updInfoBar('default (ไม่มี API)');
 }

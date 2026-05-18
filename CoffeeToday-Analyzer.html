@@ -166,7 +166,7 @@ tr:hover td{background:var(--s2);}
         </select>
       </div>
       <div class="fgrp">
-        <label>ราคาตามบิล รวม VAT 7% (บาท)</label>
+        <label>ราคาตามบิล (บาท)</label>
         <input type="number" id="i-price" placeholder="160.50" min="0" step="0.01" oninput="previewVat()">
         <div id="i-price-preview" class="vat-note" style="display:none"></div>
       </div>
@@ -454,33 +454,39 @@ function loadMeta(){
     apiG({action:'read', sheet:'Menus'})
   ]).then(function(results){
     var iR=results[0], mR=results[1];
-    var si=(iR.rows||[]).map(function(r){ return Object.assign({},r,{price:parseFloat(r.price)||0, qty:parseFloat(r.qty)||0}); });
+    var si=(iR.rows||[]).map(function(r){
+      return Object.assign({},r,{price:parseFloat(r.price)||0, qty:parseFloat(r.qty)||0});
+    });
 
-    if(si.length){
-      ings=si;
-    } else {
-      // ชีทว่าง — ใช้ default แล้ว sync ขึ้นชีทเลย
-      ings=DEFAULT_INGS.slice();
-      sS('syn','กำลัง sync วัตถุดิบ...');
-      var syncAll = ings.map(function(item){
-        return apiP({action:'upsert', sheet:'Ingredients', data:item});
+    // merge: ถ้า DEFAULT_INGS มี id ที่ไม่อยู่ใน Sheets → เพิ่มเข้าไปและ sync
+    var sheetIds={};
+    si.forEach(function(r){ sheetIds[r.id]=true; });
+    var missing=DEFAULT_INGS.filter(function(d){ return !sheetIds[d.id]; });
+    if(missing.length){
+      sS('syn','กำลัง sync วัตถุดิบที่ขาด '+missing.length+' รายการ...');
+      missing.forEach(function(item){
+        si.push(item);
+        if(API) apiP({action:'upsert',sheet:'Ingredients',data:item}).catch(function(){});
       });
-      Promise.all(syncAll).catch(function(){});
     }
 
+    ings = si.length ? si : DEFAULT_INGS.slice();
     menus=(mR.rows||[]).map(function(r){
       return Object.assign({},r,{
         price:parseFloat(r.price)||0,
-        recipe: typeof r.recipe==='string' ? JSON.parse(r.recipe||'[]') : (r.recipe||[])
+        recipe:typeof r.recipe==='string'?JSON.parse(r.recipe||'[]'):(r.recipe||[])
       });
     });
-    rAll(); updInfoBar('Google Sheets');
+    rAll();
+    updInfoBar('Google Sheets ('+ings.length+' รายการ)');
     sS('ok','โหลดแล้ว '+new Date().toLocaleTimeString('th-TH'));
     document.getElementById('ls').textContent='โหลดล่าสุด: '+new Date().toLocaleString('th-TH');
   }).catch(function(e){
-    sS('err','โหลดไม่ได้');
-    loadDefaultIngs();
-    document.getElementById('ls').textContent='⚠️ ใช้ข้อมูล default';
+    sS('err','โหลดไม่ได้: '+e.message);
+    // ใช้ default เสมอถ้า Sheets ดึงไม่ได้
+    ings=DEFAULT_INGS.slice(); menus=[];
+    rAll(); updInfoBar('default (API error)');
+    document.getElementById('ls').textContent='⚠️ ดึงข้อมูลไม่ได้: '+e.message;
   }).then(function(){ hL(); });
 }
 
@@ -676,7 +682,8 @@ function _doSwap(fromId, toId, arr, onSave){
 }
 
 function rIng(){
-  var cats=[...new Set(ings.map(function(i){ return i.cat||'อื่นๆ'; }))];
+  var seen={}, cats=[];
+  ings.forEach(function(i){ var c=i.cat||'อื่นๆ'; if(!seen[c]){ seen[c]=1; cats.push(c); } });
   var container=document.getElementById('ing-by-cat');
   if(!ings.length){ container.innerHTML='<div class="emp">ยังไม่มีวัตถุดิบ</div>'; return; }
   container.innerHTML=cats.map(function(cat){
@@ -852,7 +859,9 @@ function uSt(){
 // ORDER
 // ============================================================
 function rOrdCats(){
-  var cats=['ทั้งหมด'].concat([...new Set(ings.map(function(i){ return i.cat||'อื่นๆ'; }))]);
+  var seen={}, catList=[];
+  ings.forEach(function(i){ var c=i.cat||'อื่นๆ'; if(!seen[c]){ seen[c]=1; catList.push(c); } });
+  var cats=['ทั้งหมด'].concat(catList);
   document.getElementById('ord-cats').innerHTML=cats.map(function(c){
     return '<button class="btn '+(c===ordCat?'bp':'bg2')+' bsm" onclick="setOrdCat(\''+c+'\')">'+c+'</button>';
   }).join('');

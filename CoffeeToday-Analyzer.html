@@ -306,12 +306,12 @@ var DEFAULT_INGS = [
   {id:'d22', name:'ไซรัปคาราเมลมัคคิอาโต',     cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:21},
   {id:'d23', name:'ไซรัปทับทิมเบอรี่',         cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:22},
   // ── บรรจุภัณฑ์ (23-46)
-  {id:'d30', name:'แก้ว 8 oz. (20ใบ/แถว)',      cat:'บรรจุภัณฑ์',        price:0, qty:20,   unit:'ใบ',   order:23},
-  {id:'d31', name:'แก้ว 16 oz. (50ใบ/แถว)',     cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:24},
-  {id:'d32', name:'แก้ว 22 oz. (25ใบ/แถว)',     cat:'บรรจุภัณฑ์',        price:0, qty:25,   unit:'ใบ',   order:25},
-  {id:'d33', name:'แก้ว Big Cup (25ใบ/แถว)',    cat:'บรรจุภัณฑ์',        price:0, qty:25,   unit:'ใบ',   order:26},
+  {id:'d30', name:'ถ้วย 8 oz. (20ใบ/แถว)',      cat:'บรรจุภัณฑ์',        price:0, qty:20,   unit:'ใบ',   order:23},
+  {id:'d31', name:'ถ้วย 16 oz. (50ใบ/แถว)',     cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:24},
+  {id:'d32', name:'ถ้วย 22 oz. (25ใบ/แถว)',     cat:'บรรจุภัณฑ์',        price:0, qty:25,   unit:'ใบ',   order:25},
+  {id:'d33', name:'ถ้วย Big Cup (25ใบ/แถว)',    cat:'บรรจุภัณฑ์',        price:0, qty:25,   unit:'ใบ',   order:26},
   {id:'d34', name:'ฝา 8 oz. (50ใบ/แถว)',        cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:27},
-  {id:'d35', name:'ฝาเรียบ(ใบพัด) (50ใบ/แถว)',       cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:28},
+  {id:'d35', name:'ฝาเรียบดำ (50ใบ/แถว)',       cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:28},
   {id:'d36', name:'ฝาโดม (50ใบ/แถว)',           cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:29},
   {id:'d37', name:'ฝา Big Cup (50ใบ/แถว)',       cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:30},
   {id:'d38', name:'หลอดงอหุ้ม (100 เส้น/ห่อ)',  cat:'บรรจุภัณฑ์',        price:0, qty:100,  unit:'เส้น', order:31},
@@ -743,12 +743,12 @@ function rIng(){
     var ci=ings.filter(function(i){ return (i.cat||'อื่นๆ')===cat; });
     return '<div class="cat-hdr">'+cat+'</div>'
       +'<div class="tw"><table style="table-layout:fixed;width:100%"><thead><tr>'
-      +'<th style="width:36px"></th>'
-      +'<th>ชื่อ</th>'
-      +'<th style="width:120px">ราคาบิล (incl.VAT)</th>'
-      +'<th style="width:90px">ปริมาณ</th>'
-      +'<th style="width:110px">ต้นทุน/หน่วย</th>'
-      +'<th style="width:80px"></th>'
+      +'<th style="width:28px"></th>'
+      +'<th style="width:32%">ชื่อ</th>'
+      +'<th style="width:17%">ราคาบิล</th>'
+      +'<th style="width:14%">ปริมาณ</th>'
+      +'<th style="width:16%">ต้นทุน/หน่วย</th>'
+      +'<th style="width:21%"></th>'
       +'</tr></thead>'
       +'<tbody>'+ci.map(function(i){
         return '<tr class="drag-row" draggable="true" data-id="'+i.id+'"'

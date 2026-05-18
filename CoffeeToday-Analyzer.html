@@ -252,6 +252,7 @@ tr:hover td{background:var(--s2);}
       <button class="btn bp" onclick="saveUrl()">💾 บันทึก URL</button>
       <button class="btn bg2" onclick="testConn()">🔌 ทดสอบ</button>
       <button class="btn bg2" onclick="initSync()">🔄 Init + ซิงค์</button>
+      <button class="btn bac" onclick="forceSyncAll()" style="background:var(--gn);">⬆️ Force Sync วัตถุดิบทั้งหมด</button>
     </div>
     <div id="t-res" style="margin-top:10px"></div>
   </div>
@@ -317,7 +318,7 @@ var DEFAULT_INGS = [
   {id:'d22', name:'ไซรัปคาราเมลมัคคิอาโต',     cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:21},
   {id:'d23', name:'ไซรัปทับทิมเบอรี่',         cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:22},
   // ── บรรจุภัณฑ์ (23-46)
-  {id:'d30', name:'แก้ว 8 oz. (20ใบ/แถว)',      cat:'บรรจุภัณฑ์',        price:0, qty:20,   unit:'ใบ',   order:23},
+  {id:'d30', name:'ถ้วย 8 oz. (20ใบ/แถว)',      cat:'บรรจุภัณฑ์',        price:0, qty:20,   unit:'ใบ',   order:23},
   {id:'d31', name:'ถ้วย 16 oz. (50ใบ/แถว)',     cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:24},
   {id:'d32', name:'ถ้วย 22 oz. (25ใบ/แถว)',     cat:'บรรจุภัณฑ์',        price:0, qty:25,   unit:'ใบ',   order:25},
   {id:'d33', name:'ถ้วย Big Cup (25ใบ/แถว)',    cat:'บรรจุภัณฑ์',        price:0, qty:25,   unit:'ใบ',   order:26},
@@ -349,17 +350,32 @@ var DEFAULT_INGS = [
   {id:'d28', name:'ครีมเทียม (ถุง)',            cat:'นม/ครีม',           price:0, qty:1000, unit:'g',    order:51},
   {id:'d29', name:'น้ำตาลซอง (100 ซอง)',        cat:'นม/ครีม',           price:0, qty:100,  unit:'ซอง',  order:52},
   // ── ทำความสะอาด / สิ้นเปลือง (53-63)
-  {id:'d54', name:'กระดาษความร้อนเล็ก (5ม้วน)', cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:5,   unit:'ม้วน', order:53},
-  {id:'d55', name:'กระดาษความร้อนใหญ่ (5ม้วน)', cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:5,   unit:'ม้วน', order:54},
-  {id:'d56', name:'สมุดบิลเงินสด',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'เล่ม', order:55},
-  {id:'d57', name:'ถุงมือทำอาหาร',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ถุง',  order:56},
-  {id:'d58', name:'ถุงขยะ 28*36',               cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ถุง',  order:57},
-  {id:'d59', name:'ถุงขยะ 30*40',               cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ถุง',  order:58},
-  {id:'d60', name:'น้ำยาเช็ดโต๊ะ',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ขวด',  order:59},
-  {id:'d61', name:'น้ำยาเช็ดพื้น',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ขวด',  order:60},
-  {id:'d62', name:'น้ำยาล้างจาน',               cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ขวด',  order:61},
-  {id:'d63', name:'น้ำยาบ่อดัก',                cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ขวด',  order:62},
-  {id:'d64', name:'ผงล้างเครื่อง (113g)',        cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:113, unit:'g',    order:63},
+  {id:'d54', name:'กระดาษความร้อนเล็ก (5ม้วน)', cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:5,   unit:'ม้วน', order:67},
+  {id:'d55', name:'กระดาษความร้อนใหญ่ (5ม้วน)', cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:5,   unit:'ม้วน', order:68},
+  {id:'d56', name:'สมุดบิลเงินสด',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'เล่ม', order:69},
+  {id:'d57', name:'ถุงมือทำอาหาร',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ถุง',  order:70},
+  {id:'d58', name:'ถุงขยะ 28*36',               cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ถุง',  order:71},
+  {id:'d59', name:'ถุงขยะ 30*40',               cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ถุง',  order:72},
+  {id:'d60', name:'น้ำยาเช็ดโต๊ะ',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ขวด',  order:73},
+  {id:'d61', name:'น้ำยาเช็ดพื้น',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ขวด',  order:74},
+  {id:'d62', name:'น้ำยาล้างจาน',               cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ขวด',  order:75},
+  {id:'d63', name:'น้ำยาบ่อดัก',                cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ขวด',  order:76},
+  {id:'d64', name:'ผงล้างเครื่อง (113g)',        cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:113, unit:'g',    order:77},
+  // ── วัตถุดิบรอง (64-77)
+  {id:'d65', name:'ช็อคเหลว',                   cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'ขวด',  order:53},
+  {id:'d66', name:'คาราเมล (Topping)',           cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'ขวด',  order:54},
+  {id:'d67', name:'น้ำกีวี',                    cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'ขวด',  order:55},
+  {id:'d68', name:'ก๊าซวิปครีม (10ดอก/กก.)',    cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'กระป๋อง',order:56},
+  {id:'d69', name:'สตรอเบอร์รี่แช่แข็ง (1000g)',cat:'วัตถุดิบรอง', price:0, qty:1000, unit:'g',    order:57},
+  {id:'d70', name:'น้ำตาลทราย',                 cat:'วัตถุดิบรอง', price:0, qty:1000, unit:'g',    order:58},
+  {id:'d71', name:'น้ำตาลทรายแดง',              cat:'วัตถุดิบรอง', price:0, qty:1000, unit:'g',    order:59},
+  {id:'d72', name:'เนยเหลือง',                  cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'ขวด',  order:60},
+  {id:'d73', name:'แป้งแพนเค้ก (500g)',          cat:'วัตถุดิบรอง', price:0, qty:500,  unit:'g',    order:61},
+  {id:'d74', name:'แยมส้ม',                     cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'ขวด',  order:62},
+  {id:'d75', name:'แยมสตรอเบอร์รี่',            cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'ขวด',  order:63},
+  {id:'d76', name:'คาราเมลวาฟเฟิล',             cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'ขวด',  order:64},
+  {id:'d77', name:'วิปครีมผง',                  cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'ถุง',  order:65},
+  {id:'d78', name:'โซดา (ขวด)',                 cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'ขวด',  order:66},
 ];
 
 // ============================================================
@@ -417,7 +433,23 @@ function apiP(body){
 // ============================================================
 // SETTINGS
 // ============================================================
-function saveUrl(){
+function forceSyncAll(){
+  if(!API) return alert('กรุณาตั้งค่า URL ก่อน');
+  if(!confirm('จะ sync วัตถุดิบทั้งหมด '+DEFAULT_INGS.length+' รายการขึ้น Sheets\n(รายการที่มีอยู่แล้วจะถูก overwrite เฉพาะ name/cat/qty/unit/order — ราคาจะไม่เปลี่ยน)\nดำเนินการต่อ?')) return;
+  var i=0;
+  sS('syn','กำลัง sync...');
+  (function next(){
+    if(i>=DEFAULT_INGS.length){ sS('ok','Force sync ครบ '+DEFAULT_INGS.length+' รายการ ✅'); hL(); loadMeta(); return; }
+    var item=DEFAULT_INGS[i];
+    sL('Force sync '+(i+1)+'/'+DEFAULT_INGS.length+': '+item.name);
+    // ดึงราคาจากที่มีอยู่แล้วใน ings (ไม่ overwrite ราคา)
+    var existing=ings.find(function(x){ return x.id===item.id; });
+    var toSend=Object.assign({},item,{ price: existing ? existing.price : item.price });
+    apiP({action:'upsert',sheet:'Ingredients',data:toSend})
+      .then(function(){ i++; next(); })
+      .catch(function(){ i++; next(); });
+  })();
+}
   var u=document.getElementById('sc-url').value.trim();
   if(!u) return alert('กรุณาใส่ URL');
   API=u; localStorage.setItem('ct_analysis_url',u);
@@ -467,16 +499,23 @@ function loadMeta(){
       return Object.assign({},r,{price:parseFloat(r.price)||0, qty:parseFloat(r.qty)||0});
     });
 
-    // merge: ถ้า DEFAULT_INGS มี id ที่ไม่อยู่ใน Sheets → เพิ่มเข้าไปและ sync
+    // merge: ถ้า DEFAULT_INGS มี id ที่ไม่อยู่ใน Sheets → เพิ่มเข้าไปและ sync ทีละตัว
     var sheetIds={};
     si.forEach(function(r){ sheetIds[r.id]=true; });
     var missing=DEFAULT_INGS.filter(function(d){ return !sheetIds[d.id]; });
     if(missing.length){
       sS('syn','กำลัง sync วัตถุดิบที่ขาด '+missing.length+' รายการ...');
-      missing.forEach(function(item){
-        si.push(item);
-        if(API) apiP({action:'upsert',sheet:'Ingredients',data:item}).catch(function(){});
-      });
+      missing.forEach(function(item){ si.push(item); });
+      // sync ทีละตัว ป้องกัน timeout
+      if(API){
+        (function syncMissing(i){
+          if(i>=missing.length){ sS('ok','sync ครบแล้ว'); return; }
+          sL('sync วัตถุดิบ '+(i+1)+'/'+missing.length+'...');
+          apiP({action:'upsert',sheet:'Ingredients',data:missing[i]})
+            .then(function(){ syncMissing(i+1); })
+            .catch(function(){ syncMissing(i+1); });
+        })(0);
+      }
     }
 
     ings = si.length ? si : DEFAULT_INGS.slice();

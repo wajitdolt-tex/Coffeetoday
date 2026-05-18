@@ -450,6 +450,8 @@ function forceSyncAll(){
       .catch(function(){ i++; next(); });
   })();
 }
+
+function saveUrl(){
   var u=document.getElementById('sc-url').value.trim();
   if(!u) return alert('กรุณาใส่ URL');
   API=u; localStorage.setItem('ct_analysis_url',u);

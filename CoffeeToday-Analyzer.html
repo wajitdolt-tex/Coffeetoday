@@ -173,10 +173,20 @@ tr:hover td{background:var(--s2);}
       <div class="fgrp"><label>ปริมาณต่อแพ็ค</label><input type="number" id="i-qty" placeholder="250" min="0" step="0.01"></div>
       <div class="fgrp"><label>หน่วย</label>
         <select id="i-unit">
-          <option value="g">กรัม (g)</option><option value="ml">มิลลิลิตร (ml)</option>
-          <option value="ชิ้น">ชิ้น</option><option value="ใบ">ใบ</option>
-          <option value="แผ่น">แผ่น</option><option value="กระป๋อง">กระป๋อง</option>
+          <option value="g">กรัม (g)</option>
+          <option value="ml">มิลลิลิตร (ml)</option>
+          <option value="ขวด">ขวด</option>
+          <option value="ชิ้น">ชิ้น</option>
+          <option value="ใบ">ใบ</option>
+          <option value="แผ่น">แผ่น</option>
+          <option value="กระป๋อง">กระป๋อง</option>
           <option value="ถุง">ถุง</option>
+          <option value="ซอง">ซอง</option>
+          <option value="เส้น">เส้น</option>
+          <option value="อัน">อัน</option>
+          <option value="ม้วน">ม้วน</option>
+          <option value="เล่ม">เล่ม</option>
+          <option value="ดวง">ดวง</option>
         </select>
       </div>
       <div class="fgrp" style="align-self:end">
@@ -490,14 +500,17 @@ function loadMeta(){
       var db=defaultOrderMap[b.id]!==undefined?defaultOrderMap[b.id]:999;
       return da-db;
     });
-    // sync order ที่ถูกต้องขึ้น Sheets
+    // sync order ที่ถูกต้องขึ้น Sheets เฉพาะรายการที่ order เปลี่ยน (ไม่ส่งทีเดียว 64 requests)
     if(API){
-      ings.forEach(function(ing,idx){
-        if(parseFloat(ing.order)!==idx){
-          ing.order=idx;
-          apiP({action:'upsert',sheet:'Ingredients',data:ing}).catch(function(){});
-        }
-      });
+      var toSync=[];
+      ings.forEach(function(ing,idx){ if(parseFloat(ing.order)!==idx){ ing.order=idx; toSync.push(ing); } });
+      // ส่งทีละ 1 เพื่อป้องกัน race condition
+      (function syncNext(i){
+        if(i>=toSync.length) return;
+        apiP({action:'upsert',sheet:'Ingredients',data:toSync[i]})
+          .then(function(){ syncNext(i+1); })
+          .catch(function(){ syncNext(i+1); });
+      })(0);
     }
     menus=(mR.rows||[]).map(function(r){
       return Object.assign({},r,{

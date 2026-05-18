@@ -90,7 +90,7 @@ tr:hover td{background:var(--s2);}
 .drag-row:active{cursor:grabbing;}
 .drag-row.dragging{opacity:.4;background:var(--s3)!important;}
 .drag-row.drag-over{border-top:2px solid var(--ac);}
-.drag-handle{color:var(--b2);font-size:16px;cursor:grab;padding:0 4px;user-select:none;}
+.drag-handle{color:var(--b2);font-size:20px;cursor:grab;padding:4px 10px;user-select:none;touch-action:none;display:inline-block;}
 </style>
 </head>
 <body>
@@ -594,82 +594,93 @@ function dEd(e){
   document.querySelectorAll('.drag-over').forEach(function(el){ el.classList.remove('drag-over'); });
 }
 
-// touch handlers สำหรับ iPad
+// touch handlers สำหรับ iPad — ทำงานเฉพาะเมื่อกดที่ ⠿ handle เท่านั้น
 function tSt(e,id){
+  if(!e.target.classList.contains('drag-handle')) return;
   e.preventDefault();
   _touchDragId=id;
   _touchDragEl=e.currentTarget;
   _touchDragEl.classList.add('dragging');
-  // สร้าง clone ลอยตาม finger
-  _touchClone=_touchDragEl.cloneNode(true);
-  _touchClone.style.cssText='position:fixed;opacity:.7;pointer-events:none;z-index:9999;width:'+_touchDragEl.offsetWidth+'px;background:var(--s3);border-radius:8px;padding:8px;';
+  var t=e.touches[0];
+  _touchClone=document.createElement('div');
+  _touchClone.textContent='⠿ '+(_touchDragEl.querySelector('td:nth-child(2)')||{}).textContent;
+  _touchClone.style.cssText='position:fixed;opacity:.9;pointer-events:none;z-index:9999;background:var(--s3);border:1.5px solid var(--ac);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--br);box-shadow:0 4px 16px rgba(0,0,0,.18);';
+  _touchClone.style.left=(t.clientX-20)+'px';
+  _touchClone.style.top=(t.clientY-30)+'px';
   document.body.appendChild(_touchClone);
 }
 function tMv(e){
-  if(!_touchClone) return;
+  if(!_touchDragId) return;
   e.preventDefault();
   var t=e.touches[0];
-  _touchClone.style.left=(t.clientX-20)+'px';
-  _touchClone.style.top=(t.clientY-20)+'px';
-  // หา element ที่อยู่ใต้นิ้ว
-  _touchClone.style.display='none';
+  if(_touchClone){ _touchClone.style.left=(t.clientX-20)+'px'; _touchClone.style.top=(t.clientY-30)+'px'; }
+  if(_touchClone) _touchClone.style.display='none';
   var el=document.elementFromPoint(t.clientX,t.clientY);
-  _touchClone.style.display='';
+  if(_touchClone) _touchClone.style.display='';
   var row=el ? el.closest('tr[data-id]') : null;
   document.querySelectorAll('.drag-over').forEach(function(x){ x.classList.remove('drag-over'); });
   if(row) row.classList.add('drag-over');
 }
 function tEd(e){
-  if(!_touchClone) return;
-  e.preventDefault();
-  _touchClone.remove(); _touchClone=null;
-  if(_touchDragEl) _touchDragEl.classList.remove('dragging');
+  if(!_touchDragId) return;
+  if(_touchClone){ _touchClone.remove(); _touchClone=null; }
+  if(_touchDragEl){ _touchDragEl.classList.remove('dragging'); }
   var t=e.changedTouches[0];
   var el=document.elementFromPoint(t.clientX,t.clientY);
   var row=el ? el.closest('tr[data-id]') : null;
   document.querySelectorAll('.drag-over').forEach(function(x){ x.classList.remove('drag-over'); });
   if(row && row.dataset.id && row.dataset.id!==_touchDragId){
-    _doSwap(_touchDragId, row.dataset.id, ings, function(ing,idx){ ing.order=idx; if(API) apiP({action:'upsert',sheet:'Ingredients',data:ing}).catch(function(){}); });
+    _doSwap(_touchDragId, row.dataset.id, ings, function(ing,idx){
+      ing.order=idx;
+      if(API) apiP({action:'upsert',sheet:'Ingredients',data:ing}).catch(function(){});
+    });
     rAll();
   }
   _touchDragId=null; _touchDragEl=null;
 }
 
-// touch สำหรับ menu
+// touch สำหรับ menu — เฉพาะ handle เท่านั้น
 function tmSt(e,id){
+  if(!e.target.classList.contains('drag-handle')) return;
   e.preventDefault();
   dragMSrc=id;
-  e.currentTarget.classList.add('dragging');
-  _touchClone=e.currentTarget.cloneNode(true);
-  _touchClone.style.cssText='position:fixed;opacity:.7;pointer-events:none;z-index:9999;width:'+e.currentTarget.offsetWidth+'px;background:var(--s3);border-radius:8px;padding:8px;';
+  _touchDragEl=e.currentTarget;
+  _touchDragEl.classList.add('dragging');
+  var t=e.touches[0];
+  _touchClone=document.createElement('div');
+  _touchClone.textContent='⠿ '+(_touchDragEl.querySelector('td:nth-child(2)')||{}).textContent;
+  _touchClone.style.cssText='position:fixed;opacity:.9;pointer-events:none;z-index:9999;background:var(--s3);border:1.5px solid var(--ac);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--br);box-shadow:0 4px 16px rgba(0,0,0,.18);';
+  _touchClone.style.left=(t.clientX-20)+'px';
+  _touchClone.style.top=(t.clientY-30)+'px';
   document.body.appendChild(_touchClone);
 }
 function tmMv(e){
-  if(!_touchClone) return;
+  if(!dragMSrc) return;
   e.preventDefault();
   var t=e.touches[0];
-  _touchClone.style.left=(t.clientX-20)+'px';
-  _touchClone.style.top=(t.clientY-20)+'px';
-  _touchClone.style.display='none';
+  if(_touchClone){ _touchClone.style.left=(t.clientX-20)+'px'; _touchClone.style.top=(t.clientY-30)+'px'; }
+  if(_touchClone) _touchClone.style.display='none';
   var el=document.elementFromPoint(t.clientX,t.clientY);
-  _touchClone.style.display='';
+  if(_touchClone) _touchClone.style.display='';
   var row=el ? el.closest('tr[data-mid]') : null;
   document.querySelectorAll('.drag-over').forEach(function(x){ x.classList.remove('drag-over'); });
   if(row) row.classList.add('drag-over');
 }
 function tmEd(e){
-  if(!_touchClone) return;
-  e.preventDefault();
-  _touchClone.remove(); _touchClone=null;
+  if(!dragMSrc) return;
+  if(_touchClone){ _touchClone.remove(); _touchClone=null; }
+  if(_touchDragEl){ _touchDragEl.classList.remove('dragging'); }
   var t=e.changedTouches[0];
   var el=document.elementFromPoint(t.clientX,t.clientY);
   var row=el ? el.closest('tr[data-mid]') : null;
   document.querySelectorAll('.drag-over').forEach(function(x){ x.classList.remove('drag-over'); });
   if(row && row.dataset.mid && row.dataset.mid!==dragMSrc){
-    _doSwap(dragMSrc, row.dataset.mid, menus, function(m,idx){ if(API){ var d=Object.assign({},m,{order:idx,recipe:JSON.stringify(m.recipe)}); apiP({action:'upsert',sheet:'Menus',data:d}).catch(function(){}); } });
+    _doSwap(dragMSrc, row.dataset.mid, menus, function(m,idx){
+      if(API){ var d=Object.assign({},m,{order:idx,recipe:JSON.stringify(m.recipe)}); apiP({action:'upsert',sheet:'Menus',data:d}).catch(function(){}); }
+    });
     rAll();
   }
-  dragMSrc=null;
+  dragMSrc=null; _touchDragEl=null;
 }
 
 function _doSwap(fromId, toId, arr, onSave){

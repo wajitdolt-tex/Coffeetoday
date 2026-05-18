@@ -274,83 +274,81 @@ var rR = [{iId:'', qty:0}];
 var dragSrc = null;
 var dragMSrc = null;
 
-// วัตถุดิบ default (ราคา incl. VAT — กรอกราคาเองในระบบ)
+// ลำดับหมวดหมู่ที่ต้องการ
+var CAT_ORDER = ['กาแฟ','ชา/โกโก้','น้ำตาล/ไซรัป','บรรจุภัณฑ์','นม/ครีม','ทำความสะอาด/สิ้นเปลือง','อื่นๆ'];
+
+// วัตถุดิบ default พร้อม order field (0-based)
 var DEFAULT_INGS = [
-  // ── กาแฟ
-  {id:'d1',  name:'กาแฟ TD-1 (250g)',           cat:'กาแฟ',              price:0, qty:250,  unit:'g'},
-  {id:'d2',  name:'กาแฟ TD-2 (250g)',           cat:'กาแฟ',              price:0, qty:250,  unit:'g'},
-  {id:'d3',  name:'กาแฟ TD-3 (250g)',           cat:'กาแฟ',              price:0, qty:250,  unit:'g'},
-  {id:'d4',  name:'กาแฟ TD-4 (250g)',           cat:'กาแฟ',              price:0, qty:250,  unit:'g'},
-
-  // ── ชา / โกโก้
-  {id:'d5',  name:'ชาไทย (500g)',               cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g'},
-  {id:'d6',  name:'ชาเขียวนม (250g)',           cat:'ชา/โกโก้',          price:0, qty:250,  unit:'g'},
-  {id:'d7',  name:'ชาเขียวธรรมชาติ (200g)',     cat:'ชา/โกโก้',          price:0, qty:200,  unit:'g'},
-  {id:'d8',  name:'ชามะนาว (500g)',             cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g'},
-  {id:'d9',  name:'ชาแอปเปิ้ล (500g)',          cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g'},
-  {id:'d10', name:'ชาพีท (500g)',               cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g'},
-  {id:'d11', name:'ชาจีน',                      cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g'},
-  {id:'d12', name:'ช็อคผงโคเลตต์',             cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g'},
-  {id:'d13', name:'ชาเขียวมัทฉะ',              cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g'},
-  {id:'d14', name:'ผงโกโก้',                   cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g'},
-
-  // ── ไซรัป
-  {id:'d15', name:'ไซรัปมอคค่า/ขวด',           cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด'},
-  {id:'d16', name:'ไซรัปสตอร์เบอร์รี่',         cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด'},
-  {id:'d17', name:'ไซรัปบูลเบอรี่',            cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด'},
-  {id:'d18', name:'ไซรัปมะม่วง',               cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด'},
-  {id:'d19', name:'ไซรัปน้ำผึ้ง',              cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด'},
-  {id:'d20', name:'ไซรัปเมเปิ้ล',              cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด'},
-  {id:'d21', name:'ไซรัปคาราเมล',              cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด'},
-  {id:'d22', name:'ไซรัปคาราเมลมัคคิอาโต',     cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด'},
-  {id:'d23', name:'ไซรัปทับทิมเบอรี่',         cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด'},
-
-  // ── นม / ครีม
-  {id:'d24', name:'นมจืด (เมจิ) ขวดใหญ่',      cat:'นม/ครีม',           price:0, qty:2000, unit:'ml'},
-  {id:'d25', name:'นมจืด (Pack)',               cat:'นม/ครีม',           price:0, qty:1000, unit:'ml'},
-  {id:'d26', name:'นมข้นหวาน (Pack)',           cat:'นม/ครีม',           price:0, qty:1,    unit:'กระป๋อง'},
-  {id:'d27', name:'ครีมซอง (100 ซอง)',          cat:'นม/ครีม',           price:0, qty:100,  unit:'ซอง'},
-  {id:'d28', name:'ครีมเทียม (ถุง)',            cat:'นม/ครีม',           price:0, qty:1000, unit:'g'},
-  {id:'d29', name:'น้ำตาลซอง (100 ซอง)',        cat:'นม/ครีม',           price:0, qty:100,  unit:'ซอง'},
-
-  // ── บรรจุภัณฑ์
-  {id:'d30', name:'ถ้วย 8 oz. (20ใบ/แถว)',      cat:'บรรจุภัณฑ์',        price:0, qty:20,   unit:'ใบ'},
-  {id:'d31', name:'ถ้วย 16 oz. (50ใบ/แถว)',     cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ'},
-  {id:'d32', name:'ถ้วย 22 oz. (25ใบ/แถว)',     cat:'บรรจุภัณฑ์',        price:0, qty:25,   unit:'ใบ'},
-  {id:'d33', name:'ถ้วย Big Cup (25ใบ/แถว)',    cat:'บรรจุภัณฑ์',        price:0, qty:25,   unit:'ใบ'},
-  {id:'d34', name:'ฝา 8 oz. (50ใบ/แถว)',        cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ'},
-  {id:'d35', name:'ฝาเรียบดำ (50ใบ/แถว)',       cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ'},
-  {id:'d36', name:'ฝาโดม (50ใบ/แถว)',           cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ'},
-  {id:'d37', name:'ฝา Big Cup (50ใบ/แถว)',       cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ'},
-  {id:'d38', name:'หลอดงอหุ้ม (100 เส้น/ห่อ)',  cat:'บรรจุภัณฑ์',        price:0, qty:100,  unit:'เส้น'},
-  {id:'d39', name:'หลอดช้อน (100 เส้น/ห่อ)',    cat:'บรรจุภัณฑ์',        price:0, qty:100,  unit:'เส้น'},
-  {id:'d40', name:'หลอดชาไข่มุก',              cat:'บรรจุภัณฑ์',        price:0, qty:100,  unit:'เส้น'},
-  {id:'d41', name:'ถุงรีฟิล (ถุง TakeHome)',    cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ถุง'},
-  {id:'d42', name:'แท่งคนกาแฟ (250 อัน)',       cat:'บรรจุภัณฑ์',        price:0, qty:250,  unit:'อัน'},
-  {id:'d43', name:'ดอกวิปครีม',                cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ชิ้น'},
-  {id:'d44', name:'ขวดบีบนม (ใหญ่)',           cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ขวด'},
-  {id:'d45', name:'ขวดบีบนม (เล็ก)',           cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ขวด'},
-  {id:'d46', name:'ขวดคาราเมล (เหลือง)',        cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ขวด'},
-  {id:'d47', name:'ขวดช็อค (แดง)',             cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ขวด'},
-  {id:'d48', name:'สติกเกอร์ติดขวด (10ดวง)',   cat:'บรรจุภัณฑ์',        price:0, qty:10,   unit:'ดวง'},
-  {id:'d49', name:'ถ้วยกาแฟเซรามิก 2.0 oz.',   cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ใบ'},
-  {id:'d50', name:'ถุงหิ้ว TH/T',              cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ถุง'},
-  {id:'d51', name:'ถุง TH เล็ก',              cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ถุง'},
-  {id:'d52', name:'ถุง TH ใหญ่',              cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ถุง'},
-  {id:'d53', name:'ถุง TH คู่',               cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ถุง'},
-
-  // ── ทำความสะอาด / สิ้นเปลือง
-  {id:'d54', name:'กระดาษความร้อนเล็ก (5ม้วน)', cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:5, unit:'ม้วน'},
-  {id:'d55', name:'กระดาษความร้อนใหญ่ (5ม้วน)', cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:5, unit:'ม้วน'},
-  {id:'d56', name:'สมุดบิลเงินสด',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1, unit:'เล่ม'},
-  {id:'d57', name:'ถุงมือทำอาหาร',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1, unit:'ถุง'},
-  {id:'d58', name:'ถุงขยะ 28*36',               cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1, unit:'ถุง'},
-  {id:'d59', name:'ถุงขยะ 30*40',               cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1, unit:'ถุง'},
-  {id:'d60', name:'น้ำยาเช็ดโต๊ะ',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1, unit:'ขวด'},
-  {id:'d61', name:'น้ำยาเช็ดพื้น',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1, unit:'ขวด'},
-  {id:'d62', name:'น้ำยาล้างจาน',               cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1, unit:'ขวด'},
-  {id:'d63', name:'น้ำยาบ่อดัก',                cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1, unit:'ขวด'},
-  {id:'d64', name:'ผงล้างเครื่อง (113g)',        cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:113, unit:'g'},
+  // ── กาแฟ (0-3)
+  {id:'d1',  name:'กาแฟ TD-1 (250g)',           cat:'กาแฟ',              price:0, qty:250,  unit:'g',    order:0},
+  {id:'d2',  name:'กาแฟ TD-2 (250g)',           cat:'กาแฟ',              price:0, qty:250,  unit:'g',    order:1},
+  {id:'d3',  name:'กาแฟ TD-3 (250g)',           cat:'กาแฟ',              price:0, qty:250,  unit:'g',    order:2},
+  {id:'d4',  name:'กาแฟ TD-4 (250g)',           cat:'กาแฟ',              price:0, qty:250,  unit:'g',    order:3},
+  // ── ชา / โกโก้ (4-13)
+  {id:'d5',  name:'ชาไทย (500g)',               cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g',    order:4},
+  {id:'d6',  name:'ชาเขียวนม (250g)',           cat:'ชา/โกโก้',          price:0, qty:250,  unit:'g',    order:5},
+  {id:'d7',  name:'ชาเขียวธรรมชาติ (200g)',     cat:'ชา/โกโก้',          price:0, qty:200,  unit:'g',    order:6},
+  {id:'d8',  name:'ชามะนาว (500g)',             cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g',    order:7},
+  {id:'d9',  name:'ชาแอปเปิ้ล (500g)',          cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g',    order:8},
+  {id:'d10', name:'ชาพีท (500g)',               cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g',    order:9},
+  {id:'d11', name:'ชาจีน',                      cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g',    order:10},
+  {id:'d12', name:'ช็อคผงโคเลตต์',             cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g',    order:11},
+  {id:'d13', name:'ชาเขียวมัทฉะ',              cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g',    order:12},
+  {id:'d14', name:'ผงโกโก้',                   cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g',    order:13},
+  // ── ไซรัป (14-22)
+  {id:'d15', name:'ไซรัปมอคค่า/ขวด',           cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:14},
+  {id:'d16', name:'ไซรัปสตอร์เบอร์รี่',         cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:15},
+  {id:'d17', name:'ไซรัปบูลเบอรี่',            cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:16},
+  {id:'d18', name:'ไซรัปมะม่วง',               cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:17},
+  {id:'d19', name:'ไซรัปน้ำผึ้ง',              cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:18},
+  {id:'d20', name:'ไซรัปเมเปิ้ล',              cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:19},
+  {id:'d21', name:'ไซรัปคาราเมล',              cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:20},
+  {id:'d22', name:'ไซรัปคาราเมลมัคคิอาโต',     cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:21},
+  {id:'d23', name:'ไซรัปทับทิมเบอรี่',         cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:22},
+  // ── บรรจุภัณฑ์ (23-46)
+  {id:'d30', name:'ถ้วย 8 oz. (20ใบ/แถว)',      cat:'บรรจุภัณฑ์',        price:0, qty:20,   unit:'ใบ',   order:23},
+  {id:'d31', name:'ถ้วย 16 oz. (50ใบ/แถว)',     cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:24},
+  {id:'d32', name:'ถ้วย 22 oz. (25ใบ/แถว)',     cat:'บรรจุภัณฑ์',        price:0, qty:25,   unit:'ใบ',   order:25},
+  {id:'d33', name:'ถ้วย Big Cup (25ใบ/แถว)',    cat:'บรรจุภัณฑ์',        price:0, qty:25,   unit:'ใบ',   order:26},
+  {id:'d34', name:'ฝา 8 oz. (50ใบ/แถว)',        cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:27},
+  {id:'d35', name:'ฝาเรียบดำ (50ใบ/แถว)',       cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:28},
+  {id:'d36', name:'ฝาโดม (50ใบ/แถว)',           cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:29},
+  {id:'d37', name:'ฝา Big Cup (50ใบ/แถว)',       cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:30},
+  {id:'d38', name:'หลอดงอหุ้ม (100 เส้น/ห่อ)',  cat:'บรรจุภัณฑ์',        price:0, qty:100,  unit:'เส้น', order:31},
+  {id:'d39', name:'หลอดช้อน (100 เส้น/ห่อ)',    cat:'บรรจุภัณฑ์',        price:0, qty:100,  unit:'เส้น', order:32},
+  {id:'d40', name:'หลอดชาไข่มุก',              cat:'บรรจุภัณฑ์',        price:0, qty:100,  unit:'เส้น', order:33},
+  {id:'d41', name:'ถุงรีฟิล (ถุง TakeHome)',    cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ถุง',  order:34},
+  {id:'d42', name:'แท่งคนกาแฟ (250 อัน)',       cat:'บรรจุภัณฑ์',        price:0, qty:250,  unit:'อัน',  order:35},
+  {id:'d43', name:'ดอกวิปครีม',                cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ชิ้น', order:36},
+  {id:'d44', name:'ขวดบีบนม (ใหญ่)',           cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ขวด',  order:37},
+  {id:'d45', name:'ขวดบีบนม (เล็ก)',           cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ขวด',  order:38},
+  {id:'d46', name:'ขวดคาราเมล (เหลือง)',        cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ขวด',  order:39},
+  {id:'d47', name:'ขวดช็อค (แดง)',             cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ขวด',  order:40},
+  {id:'d48', name:'สติกเกอร์ติดขวด (10ดวง)',   cat:'บรรจุภัณฑ์',        price:0, qty:10,   unit:'ดวง',  order:41},
+  {id:'d49', name:'ถ้วยกาแฟเซรามิก 2.0 oz.',   cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ใบ',   order:42},
+  {id:'d50', name:'ถุงหิ้ว TH/T',              cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ถุง',  order:43},
+  {id:'d51', name:'ถุง TH เล็ก',              cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ถุง',  order:44},
+  {id:'d52', name:'ถุง TH ใหญ่',              cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ถุง',  order:45},
+  {id:'d53', name:'ถุง TH คู่',               cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ถุง',  order:46},
+  // ── นม / ครีม (47-52)
+  {id:'d24', name:'นมจืด (เมจิ) ขวดใหญ่',      cat:'นม/ครีม',           price:0, qty:2000, unit:'ml',   order:47},
+  {id:'d25', name:'นมจืด (Pack)',               cat:'นม/ครีม',           price:0, qty:1000, unit:'ml',   order:48},
+  {id:'d26', name:'นมข้นหวาน (Pack)',           cat:'นม/ครีม',           price:0, qty:1,    unit:'กระป๋อง',order:49},
+  {id:'d27', name:'ครีมซอง (100 ซอง)',          cat:'นม/ครีม',           price:0, qty:100,  unit:'ซอง',  order:50},
+  {id:'d28', name:'ครีมเทียม (ถุง)',            cat:'นม/ครีม',           price:0, qty:1000, unit:'g',    order:51},
+  {id:'d29', name:'น้ำตาลซอง (100 ซอง)',        cat:'นม/ครีม',           price:0, qty:100,  unit:'ซอง',  order:52},
+  // ── ทำความสะอาด / สิ้นเปลือง (53-63)
+  {id:'d54', name:'กระดาษความร้อนเล็ก (5ม้วน)', cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:5,   unit:'ม้วน', order:53},
+  {id:'d55', name:'กระดาษความร้อนใหญ่ (5ม้วน)', cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:5,   unit:'ม้วน', order:54},
+  {id:'d56', name:'สมุดบิลเงินสด',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'เล่ม', order:55},
+  {id:'d57', name:'ถุงมือทำอาหาร',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ถุง',  order:56},
+  {id:'d58', name:'ถุงขยะ 28*36',               cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ถุง',  order:57},
+  {id:'d59', name:'ถุงขยะ 30*40',               cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ถุง',  order:58},
+  {id:'d60', name:'น้ำยาเช็ดโต๊ะ',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ขวด',  order:59},
+  {id:'d61', name:'น้ำยาเช็ดพื้น',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ขวด',  order:60},
+  {id:'d62', name:'น้ำยาล้างจาน',               cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ขวด',  order:61},
+  {id:'d63', name:'น้ำยาบ่อดัก',                cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ขวด',  order:62},
+  {id:'d64', name:'ผงล้างเครื่อง (113g)',        cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:113, unit:'g',    order:63},
 ];
 
 // ============================================================
@@ -471,6 +469,8 @@ function loadMeta(){
     }
 
     ings = si.length ? si : DEFAULT_INGS.slice();
+    // sort ตาม order field เสมอ (เก็บลำดับที่ลากไว้)
+    ings.sort(function(a,b){ return (parseFloat(a.order)||0)-(parseFloat(b.order)||0); });
     menus=(mR.rows||[]).map(function(r){
       return Object.assign({},r,{
         price:parseFloat(r.price)||0,
@@ -491,7 +491,9 @@ function loadMeta(){
 }
 
 function loadDefaultIngs(){
-  ings=DEFAULT_INGS.slice(); menus=[];
+  ings=DEFAULT_INGS.slice();
+  ings.sort(function(a,b){ return (a.order||0)-(b.order||0); });
+  menus=[];
   rAll(); updInfoBar('default (ไม่มี API)');
 }
 
@@ -685,10 +687,12 @@ function tmEd(e){
 
 function _doSwap(fromId, toId, arr, onSave){
   if(!fromId||!toId||fromId===toId) return;
-  var fi=arr.findIndex(function(x){ return x.id===fromId||x.id===fromId; });
-  var ti=arr.findIndex(function(x){ return x.id===toId; });
+  var fi=arr.findIndex(function(x){ return String(x.id)===String(fromId); });
+  var ti=arr.findIndex(function(x){ return String(x.id)===String(toId); });
   if(fi<0||ti<0) return;
   var item=arr.splice(fi,1)[0]; arr.splice(ti,0,item);
+  // อัพเดต order field ทุกตัวให้ตรงกับลำดับใหม่
+  arr.forEach(function(x,idx){ x.order=idx; });
   if(onSave) arr.forEach(onSave);
 }
 

@@ -551,30 +551,59 @@ function addIng(){
   var unit  = document.getElementById('i-unit').value;
   if(!name||isNaN(price)||isNaN(qty)||qty<=0) return alert('กรุณากรอกข้อมูลให้ครบ');
 
-  var item={id:uid(), name:name, cat:cat, price:price, qty:qty, unit:unit};
+  // กำหนด order ให้รายการใหม่อยู่ท้ายหมวดนั้น
+  var catMax = -1;
+  ings.forEach(function(i){ if(i.cat===cat) catMax=Math.max(catMax, parseFloat(i.order)||0); });
+  var newOrder = catMax >= 0 ? catMax + 1 : ings.length;
+
+  var item={id:uid(), name:name, cat:cat, price:price, qty:qty, unit:unit, order:newOrder};
   var b=document.getElementById('b-ai'); b.disabled=true; b.textContent='⏳...';
 
-  var doAdd = function(){
-    ings.push(item);
+  var clearForm = function(){
     ['i-name','i-price','i-qty'].forEach(function(id){ document.getElementById(id).value=''; });
     document.getElementById('i-price-preview').style.display='none';
-    rAll(); updInfoBar(API?'Google Sheets':'local');
     b.disabled=false; b.textContent='+ บันทึก';
   };
 
   if(API){
-    // บันทึกแล้ว reload จาก Sheets ทันที (sync กับระบบวิเคราะห์)
     apiP({action:'upsert', sheet:'Ingredients', data:item})
-      .then(function(){ sS('syn','กำลัง sync...'); return apiG({action:'read', sheet:'Ingredients'}); })
-      .then(function(iR){
-        var si=(iR.rows||[]).map(function(r){ return Object.assign({},r,{price:parseFloat(r.price)||0,qty:parseFloat(r.qty)||0}); });
-        if(si.length) ings=si;
-        sS('ok','sync แล้ว');
-        doAdd();
+      .then(function(){
+        sS('syn','กำลัง sync...');
+        return apiG({action:'read', sheet:'Ingredients'});
       })
-      .catch(function(e){ alert('บันทึกไม่ได้: '+e.message); sS('err','ผิดพลาด'); b.disabled=false; b.textContent='+ บันทึก'; });
+      .then(function(iR){
+        var si=(iR.rows||[]).map(function(r){
+          return Object.assign({},r,{price:parseFloat(r.price)||0, qty:parseFloat(r.qty)||0});
+        });
+        if(si.length){
+          ings=si;
+          // sort ตามหมวดหมู่ + order
+          var defaultOrderMap={};
+          DEFAULT_INGS.forEach(function(d){ defaultOrderMap[d.id]=d.order||0; });
+          ings.sort(function(a,b){
+            var ca=CAT_ORDER.indexOf(a.cat||'อื่นๆ'); if(ca<0) ca=99;
+            var cb=CAT_ORDER.indexOf(b.cat||'อื่นๆ'); if(cb<0) cb=99;
+            if(ca!==cb) return ca-cb;
+            return (parseFloat(a.order)||0)-(parseFloat(b.order)||0);
+          });
+        }
+        sS('ok','เพิ่มแล้ว');
+        clearForm(); rAll(); updInfoBar('Google Sheets');
+      })
+      .catch(function(e){
+        alert('บันทึกไม่ได้: '+e.message);
+        sS('err','ผิดพลาด');
+        clearForm();
+      });
   } else {
-    doAdd();
+    ings.push(item);
+    ings.sort(function(a,b){
+      var ca=CAT_ORDER.indexOf(a.cat||'อื่นๆ'); if(ca<0) ca=99;
+      var cb=CAT_ORDER.indexOf(b.cat||'อื่นๆ'); if(cb<0) cb=99;
+      if(ca!==cb) return ca-cb;
+      return (parseFloat(a.order)||0)-(parseFloat(b.order)||0);
+    });
+    clearForm(); rAll(); updInfoBar('local');
   }
 }
 
@@ -764,7 +793,7 @@ function rIng(){
           +'<td class="mn">'+fB(i.price)+'</td>'
           +'<td class="mn">'+fmt(i.qty)+' '+i.unit+'</td>'
           +'<td class="mn" style="color:var(--ac);font-weight:700">'+fB(cpu(i))+'/'+i.unit+'</td>'
-          +'<td style="white-space:nowrap">'
+          +'<td style="white-space:nowrap;text-align:right;padding-right:6px">'
           +'<button class="btn bg2 bsm" onclick="editIng(\''+i.id+'\')">✏️</button> '
           +'<button class="btn bd2 bsm" onclick="delIng(\''+i.id+'\')">ลบ</button>'
           +'</td></tr>';

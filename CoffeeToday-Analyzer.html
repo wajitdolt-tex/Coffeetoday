@@ -437,20 +437,39 @@ function apiP(body){
 // ============================================================
 function forceSyncAll(){
   if(!API) return alert('กรุณาตั้งค่า URL ก่อน');
-  if(!confirm('จะ sync วัตถุดิบทั้งหมด '+DEFAULT_INGS.length+' รายการขึ้น Sheets\n(รายการที่มีอยู่แล้วจะถูก overwrite เฉพาะ name/cat/qty/unit/order — ราคาจะไม่เปลี่ยน)\nดำเนินการต่อ?')) return;
-  var i=0;
-  sS('syn','กำลัง sync...');
-  (function next(){
-    if(i>=DEFAULT_INGS.length){ sS('ok','Force sync ครบ '+DEFAULT_INGS.length+' รายการ ✅'); hL(); loadMeta(); return; }
-    var item=DEFAULT_INGS[i];
-    sL('Force sync '+(i+1)+'/'+DEFAULT_INGS.length+': '+item.name);
-    // ดึงราคาจากที่มีอยู่แล้วใน ings (ไม่ overwrite ราคา)
-    var existing=ings.find(function(x){ return x.id===item.id; });
-    var toSend=Object.assign({},item,{ price: existing ? existing.price : item.price });
-    apiP({action:'upsert',sheet:'Ingredients',data:toSend})
-      .then(function(){ i++; next(); })
-      .catch(function(){ i++; next(); });
-  })();
+  if(!confirm('จะ sync วัตถุดิบที่ขาดหายจาก Sheets\n(ราคาที่กรอกไว้จะไม่หาย)\nดำเนินการต่อ?')) return;
+  sL('กำลังโหลดข้อมูลจาก Sheets ก่อน sync...');
+  // โหลดจาก Sheets ก่อนเสมอ เพื่อรักษาราคาที่กรอกไว้
+  apiG({action:'read', sheet:'Ingredients'})
+    .then(function(iR){
+      var sheetRows=(iR.rows||[]).map(function(r){
+        return Object.assign({},r,{price:parseFloat(r.price)||0, qty:parseFloat(r.qty)||0});
+      });
+      var sheetMap={};
+      sheetRows.forEach(function(r){ sheetMap[r.id]=r; });
+
+      // sync เฉพาะรายการที่ไม่มีใน Sheets (ไม่แตะรายการที่มีอยู่แล้ว)
+      var toSync=DEFAULT_INGS.filter(function(d){ return !sheetMap[d.id]; });
+      if(!toSync.length){
+        hL();
+        sS('ok','ทุกรายการอยู่ใน Sheets ครบแล้ว ✅');
+        return;
+      }
+      var i=0;
+      sS('syn','กำลัง sync '+toSync.length+' รายการที่ขาด...');
+      (function next(){
+        if(i>=toSync.length){
+          sS('ok','Force sync ครบ '+toSync.length+' รายการ ✅');
+          hL(); loadMeta(); return;
+        }
+        var item=toSync[i];
+        sL('Force sync '+(i+1)+'/'+toSync.length+': '+item.name);
+        apiP({action:'upsert',sheet:'Ingredients',data:item})
+          .then(function(){ i++; next(); })
+          .catch(function(){ i++; next(); });
+      })();
+    })
+    .catch(function(e){ hL(); alert('โหลดไม่ได้: '+e.message); });
 }
 
 function saveUrl(){

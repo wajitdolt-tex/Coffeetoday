@@ -142,6 +142,7 @@ tr:hover td{background:var(--s2);}
 
   <div class="card">
     <div class="ct">📋 รายการเมนูทั้งหมด <span class="pill">ใช้ร่วมกัน 2 สาขา</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="menu-cat-btns"></div>
     <div class="tw"><table><thead><tr><th></th><th>ชื่อเมนู</th><th>ราคาขาย</th><th>ต้นทุน/แก้ว</th><th>กำไร</th><th>Margin</th><th>สถานะ</th><th></th></tr></thead>
     <tbody id="m-tb"><tr><td colspan="8"><div class="emp">ยังไม่มีเมนู</div></td></tr></tbody></table></div>
   </div>
@@ -1344,7 +1345,44 @@ function updCP(){
 // ============================================================
 // MENUS
 // ============================================================
-var _editingMenuId = null; // null = add mode, id = edit mode
+var _editingMenuId = null;
+var _menuCatFilter = 'ทั้งหมด';
+
+// จัดหมวดเมนูจากชื่อ
+function getMenuCat(name){
+  var n=name||'';
+  if(n.match(/ร้อน|Hot/i))          return '☕ ร้อน';
+  if(n.match(/ปั่น|Frappe/i))       return '🥤 ปั่น';
+  if(n.match(/โซดา|Soda/i))         return '🫧 โซดา';
+  if(n.match(/สมูทตี้|Smoothie/i))  return '🍓 สมูทตี้';
+  if(n.match(/ชา|Tea|Matcha|Twining/i)) return '🍵 ชา';
+  if(n.match(/นม|Milk|โกโก้|ช็อค|Choc/i)) return '🥛 นม/โกโก้';
+  if(n.match(/เย็น|Iced/i))         return '🧊 เย็น';
+  if(n.match(/ขนมปัง|วาฟเฟิล|แครกเกอร์|กล้วย|น้ำดื่ม/i)) return '🍞 อาหาร/ของว่าง';
+  if(n.match(/เพิ่ม|บุก|Topping/i)) return '➕ Topping';
+  return '☕ เย็น';
+}
+
+function rMenuCatBtns(){
+  var cats=['ทั้งหมด'];
+  var seen={};
+  menus.forEach(function(m){
+    var c=getMenuCat(m.name);
+    if(!seen[c]){ seen[c]=1; cats.push(c); }
+  });
+  var el=document.getElementById('menu-cat-btns');
+  if(!el) return;
+  el.innerHTML=cats.map(function(c){
+    var active=_menuCatFilter===c;
+    return '<button class="btn bsm '+(active?'bp':'bg2')+'" onclick="setMenuCat(\''+c+'\')" style="font-size:11px">'+c+'</button>';
+  }).join('');
+}
+
+function setMenuCat(cat){
+  _menuCatFilter=cat;
+  rMenuCatBtns();
+  rMenus();
+}
 
 function editMenu(id){
   var m=menus.find(function(x){ return x.id===id; });
@@ -1456,9 +1494,12 @@ function toggleMenuDetail(id){
 }
 
 function rMenus(){
+  rMenuCatBtns();
   var tb=document.getElementById('m-tb');
   if(!menus.length){ tb.innerHTML='<tr><td colspan="8"><div class="emp">ยังไม่มีเมนู</div></td></tr>'; return; }
-  tb.innerHTML=menus.map(function(m){
+  var filtered=_menuCatFilter==='ทั้งหมด' ? menus : menus.filter(function(m){ return getMenuCat(m.name)===_menuCatFilter; });
+  if(!filtered.length){ tb.innerHTML='<tr><td colspan="8"><div class="emp">ไม่มีเมนูในหมวดนี้</div></td></tr>'; return; }
+  tb.innerHTML=filtered.map(function(m){
     var cost=cc(m), profit=m.price-cost;
     var margin=m.price>0 ? profit/m.price*100 : 0;
     var color=mc(margin);

@@ -259,16 +259,10 @@ tr:hover td{background:var(--s2);}
         💾 ระบบจำค่าที่กรอกไว้ให้อัตโนมัติ
       </div>
 
-      <!-- เลือกวัตถุดิบที่จะสั่ง -->
+      <!-- เลือกหมวดวัตถุดิบ -->
       <div style="margin-bottom:14px">
-        <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px">เลือกวัตถุดิบที่จะสั่งรอบนี้</div>
-        <div id="plan-ing-select" style="display:flex;flex-wrap:wrap;gap:6px;max-height:150px;overflow-y:auto;background:var(--s2);border-radius:8px;padding:8px">
-          <div class="emp" style="font-size:12px">โหลดวัตถุดิบ...</div>
-        </div>
-        <div style="display:flex;gap:6px;margin-top:6px">
-          <button class="btn bg2 bsm" onclick="selectAllIngs(true)">เลือกทั้งหมด</button>
-          <button class="btn bg2 bsm" onclick="selectAllIngs(false)">ล้างทั้งหมด</button>
-        </div>
+        <label style="font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:6px">แสดงหมวดวัตถุดิบ</label>
+        <div id="plan-cat-btns" style="display:flex;flex-wrap:wrap;gap:6px"></div>
       </div>
 
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
@@ -1532,7 +1526,7 @@ function uSt(){
 //        สั่งรอบถัดไป = ใช้/วัน × วันรอบถัดไป × (1 + buffer%)
 // ============================================================
 var planStock = {};   // ingId -> {current, lastIn, borrow, packUnit}
-var planIngSel = {};  // ingId -> bool (default false = ไม่เลือก)
+var planCatSel = {};  // cat -> bool (default false)
 
 function togglePlan(){
   var panel=document.getElementById('plan-panel');
@@ -1541,7 +1535,7 @@ function togglePlan(){
     panel.style.display='block';
     btn.textContent='▲ ซ่อน';
     loadPlanSettings();
-    renderPlanIngSelect();
+    renderPlanCatBtns();
     renderPlanStockTable();
   } else {
     panel.style.display='none';
@@ -1549,28 +1543,20 @@ function togglePlan(){
   }
 }
 
-function renderPlanIngSelect(){
-  var el=document.getElementById('plan-ing-select');
-  if(!ings.length){ el.innerHTML='<div class="emp" style="font-size:12px">ยังไม่มีวัตถุดิบ</div>'; return; }
-  // จัดกลุ่มตามหมวด
+function renderPlanCatBtns(){
+  var el=document.getElementById('plan-cat-btns');
   var seen={}, cats=[];
   ings.forEach(function(i){ var c=i.cat||'อื่นๆ'; if(!seen[c]){ seen[c]=1; cats.push(c); } });
   el.innerHTML=cats.map(function(cat){
-    var ci=ings.filter(function(i){ return (i.cat||'อื่นๆ')===cat; });
-    return '<div style="width:100%;font-size:10px;font-weight:700;color:var(--t3);margin:4px 0 2px;text-transform:uppercase;letter-spacing:.5px">'+cat+'</div>'
-      +ci.map(function(i){
-        var checked=planIngSel[i.id]===true;
-        return '<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;background:var(--s3);border-radius:6px;padding:4px 8px;white-space:nowrap">'
-          +'<input type="checkbox" '+(checked?'checked':'')+' onchange="planIngSel[\''+i.id+'\']=this.checked;savePlanSettings();renderPlanStockTable()">'
-          +i.name+'</label>';
-      }).join('');
+    var active=planCatSel[cat]===true;
+    return '<button class="btn bsm '+(active?'bp':'bg2')+'" onclick="togglePlanCat(\''+cat+'\')" style="font-size:12px">'+cat+'</button>';
   }).join('');
 }
 
-function selectAllIngs(val){
-  ings.forEach(function(i){ planIngSel[i.id]=val; });
+function togglePlanCat(cat){
+  planCatSel[cat]=!planCatSel[cat];
   savePlanSettings();
-  renderPlanIngSelect();
+  renderPlanCatBtns();
   renderPlanStockTable();
 }
 
@@ -1580,7 +1566,7 @@ function savePlanSettings(){
     daysNext: document.getElementById('plan-days-next').value,
     buffer:   document.getElementById('plan-buffer').value,
     stock:    planStock,
-    ingSel:   planIngSel
+    catSel:   planCatSel
   };
   localStorage.setItem('ct_plan_settings', JSON.stringify(s));
 }
@@ -1594,20 +1580,19 @@ function loadPlanSettings(){
     if(d.daysNext) document.getElementById('plan-days-next').value=d.daysNext;
     if(d.buffer)   document.getElementById('plan-buffer').value=d.buffer;
     if(d.stock)    planStock=d.stock;
-    if(d.ingSel)   planIngSel=d.ingSel;
-    // backward compat
-    if(d.menuSel && !d.ingSel) planIngSel={};
+    if(d.catSel)   planCatSel=d.catSel;
   }catch(e){}
 }
 
 function getPlanIngs(){
-  return ings.filter(function(i){ return planIngSel[i.id]===true; });
+  // แสดงวัตถุดิบในหมวดที่เลือก
+  var activeCats=Object.keys(planCatSel).filter(function(c){ return planCatSel[c]; });
+  if(!activeCats.length) return [];
+  return ings.filter(function(i){ return planCatSel[i.cat||'อื่นๆ']===true; });
 }
 
 function defaultPackUnit(i){
-  var u=i.unit;
-  if(u==='g'||u==='ml') return 'ถุง';
-  return u;
+  return (i.unit==='g'||i.unit==='ml') ? 'ถุง' : i.unit;
 }
 
 var PACK_UNITS=['ถุง','ขวด','ลัง','หีบ','กระป๋อง','แพ็ค','ชิ้น','ใบ','ม้วน','อัน'];
@@ -1616,7 +1601,7 @@ function renderPlanStockTable(){
   var tb=document.getElementById('plan-stock-tb');
   var planIngs=getPlanIngs();
   if(!planIngs.length){
-    tb.innerHTML='<tr><td colspan="6"><div class="emp">เลือกเมนูที่มีสูตรส่วนผสมก่อน</div></td></tr>';
+    tb.innerHTML='<tr><td colspan="6"><div class="emp">เลือกหมวดวัตถุดิบด้านบนก่อน</div></td></tr>';
     return;
   }
   var daysPast=parseFloat(document.getElementById('plan-days-past').value)||15;

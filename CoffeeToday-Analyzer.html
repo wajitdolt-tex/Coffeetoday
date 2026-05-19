@@ -1003,14 +1003,17 @@ function editIng(id){
   if(nn===null) return;
   var np=parseFloat(prompt('ราคาตามบิล รวม VAT (บาท):', ing.price));
   if(isNaN(np)) return;
-  var nq=parseFloat(prompt('ปริมาณต่อแพ็ค:', ing.qty));
+  var nq=parseFloat(prompt('ปริมาณต่อแพ็ค (หน่วยย่อย เช่น 750 ml, 250 g):', ing.qty));
   if(isNaN(nq)||nq<=0) return;
   var units='g, ml, ขวด, ลัง, หีบ, ชิ้น, ใบ, แผ่น, กระป๋อง, ถุง, ซอง, เส้น, อัน, ม้วน, เล่ม, ดวง';
-  var nu=prompt('หน่วย ('+units+'):', ing.unit);
+  var nu=prompt('หน่วยย่อย (เช่น ml, g):\n('+units+')', ing.unit);
   if(nu===null) return;
+  var npu=prompt('หน่วยบรรจุ/หน่วยเต็ม (เช่น ขวด, ถุง)\nเว้นว่างถ้าไม่ต้องการแสดงแยก:', ing.packUnit||'');
+  if(npu===null) return;
   ing.name=nn.trim()||ing.name;
   ing.price=np; ing.qty=nq;
   ing.unit=nu.trim()||ing.unit;
+  ing.packUnit=npu.trim();
   if(API){
     apiP({action:'upsert',sheet:'Ingredients',data:ing})
       .then(function(){ rAll(); sS('ok','อัพเดตแล้ว'); })
@@ -1155,12 +1158,18 @@ function rIng(){
       +'<div class="tw"><table style="table-layout:fixed;width:100%"><thead><tr>'
       +'<th style="width:28px"></th>'
       +'<th style="width:32%">ชื่อ</th>'
-      +'<th style="width:17%">ราคาบิล</th>'
-      +'<th style="width:14%">ปริมาณ</th>'
-      +'<th style="width:16%">ต้นทุน/หน่วย</th>'
+      +'<th style="width:19%">ราคาบิล</th>'
+      +'<th style="width:16%">ปริมาณ</th>'
+      +'<th style="width:18%">ต้นทุน/หน่วย</th>'
       +'<th style="width:21%"></th>'
       +'</tr></thead>'
       +'<tbody>'+ci.map(function(i){
+        // ราคาบิล: ถ้ามี packUnit แสดง ฿X/packUnit ถ้าไม่มีแสดง ฿X ปกติ
+        var priceDisp = i.packUnit ? fB(i.price)+'<span style="font-size:10px;color:var(--t3)">'+'/'+i.packUnit+'</span>' : fB(i.price);
+        // ปริมาณ: qty + unit (หน่วยย่อย)
+        var qtyDisp = fmt(i.qty)+' '+i.unit;
+        // ต้นทุน/หน่วย: price/qty per unit (หน่วยย่อย)
+        var cpuDisp = fB(cpu(i))+'/'+i.unit;
         return '<tr class="drag-row" draggable="true" data-id="'+i.id+'"'
           +' ondragstart="dSt(event,\''+i.id+'\')"'
           +' ondragover="dOv(event)"'
@@ -1171,9 +1180,9 @@ function rIng(){
           +' ontouchend="tEd(event)">'
           +'<td><span class="drag-handle">⠿</span></td>'
           +'<td style="font-weight:600;word-break:break-word">'+i.name+'</td>'
-          +'<td class="mn">'+fB(i.price)+'</td>'
-          +'<td class="mn">'+fmt(i.qty)+' '+i.unit+'</td>'
-          +'<td class="mn" style="color:var(--ac);font-weight:700">'+fB(cpu(i))+'/'+i.unit+'</td>'
+          +'<td class="mn">'+priceDisp+'</td>'
+          +'<td class="mn">'+qtyDisp+'</td>'
+          +'<td class="mn" style="color:var(--ac);font-weight:700">'+cpuDisp+'</td>'
           +'<td style="white-space:nowrap;text-align:right;padding-right:6px">'
           +'<button class="btn bg2 bsm" onclick="editIng(\''+i.id+'\')">✏️</button> '
           +'<button class="btn bd2 bsm" onclick="delIng(\''+i.id+'\')">ลบ</button>'

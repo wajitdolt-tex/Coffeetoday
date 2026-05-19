@@ -259,15 +259,15 @@ tr:hover td{background:var(--s2);}
         💾 ระบบจำค่าที่กรอกไว้ให้อัตโนมัติ
       </div>
 
-      <!-- เลือกเมนู -->
+      <!-- เลือกวัตถุดิบที่จะสั่ง -->
       <div style="margin-bottom:14px">
-        <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px">เลือกเมนูที่ขาย (เพื่อกรองวัตถุดิบที่ต้องใช้)</div>
-        <div id="plan-menu-select" style="display:flex;flex-wrap:wrap;gap:6px;max-height:120px;overflow-y:auto;background:var(--s2);border-radius:8px;padding:8px">
-          <div class="emp" style="font-size:12px">โหลดเมนู...</div>
+        <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px">เลือกวัตถุดิบที่จะสั่งรอบนี้</div>
+        <div id="plan-ing-select" style="display:flex;flex-wrap:wrap;gap:6px;max-height:150px;overflow-y:auto;background:var(--s2);border-radius:8px;padding:8px">
+          <div class="emp" style="font-size:12px">โหลดวัตถุดิบ...</div>
         </div>
         <div style="display:flex;gap:6px;margin-top:6px">
-          <button class="btn bg2 bsm" onclick="selectAllMenus(true)">เลือกทั้งหมด</button>
-          <button class="btn bg2 bsm" onclick="selectAllMenus(false)">ล้างทั้งหมด</button>
+          <button class="btn bg2 bsm" onclick="selectAllIngs(true)">เลือกทั้งหมด</button>
+          <button class="btn bg2 bsm" onclick="selectAllIngs(false)">ล้างทั้งหมด</button>
         </div>
       </div>
 
@@ -1532,7 +1532,7 @@ function uSt(){
 //        สั่งรอบถัดไป = ใช้/วัน × วันรอบถัดไป × (1 + buffer%)
 // ============================================================
 var planStock = {};   // ingId -> {current, lastIn, borrow, packUnit}
-var planMenuSel = {}; // menuId -> bool (default true)
+var planIngSel = {};  // ingId -> bool (default false = ไม่เลือก)
 
 function togglePlan(){
   var panel=document.getElementById('plan-panel');
@@ -1541,7 +1541,7 @@ function togglePlan(){
     panel.style.display='block';
     btn.textContent='▲ ซ่อน';
     loadPlanSettings();
-    renderPlanMenuSelect();
+    renderPlanIngSelect();
     renderPlanStockTable();
   } else {
     panel.style.display='none';
@@ -1549,24 +1549,28 @@ function togglePlan(){
   }
 }
 
-function renderPlanMenuSelect(){
-  var el=document.getElementById('plan-menu-select');
-  if(!menus.length){ el.innerHTML='<div class="emp" style="font-size:12px">ยังไม่มีเมนู</div>'; return; }
-  // กรอง เฉพาะเมนูที่มีสูตร
-  var withRecipe=menus.filter(function(m){ return m.recipe&&m.recipe.length; });
-  if(!withRecipe.length){ el.innerHTML='<div class="emp" style="font-size:12px">ยังไม่มีเมนูที่ตั้งสูตรไว้</div>'; return; }
-  el.innerHTML=withRecipe.map(function(m){
-    var checked=planMenuSel[m.id]!==false;
-    return '<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;background:var(--s3);border-radius:6px;padding:4px 8px;white-space:nowrap">'
-      +'<input type="checkbox" '+(checked?'checked':'')+' onchange="planMenuSel[\''+m.id+'\']=this.checked;savePlanSettings();renderPlanStockTable()">'
-      +m.name+'</label>';
+function renderPlanIngSelect(){
+  var el=document.getElementById('plan-ing-select');
+  if(!ings.length){ el.innerHTML='<div class="emp" style="font-size:12px">ยังไม่มีวัตถุดิบ</div>'; return; }
+  // จัดกลุ่มตามหมวด
+  var seen={}, cats=[];
+  ings.forEach(function(i){ var c=i.cat||'อื่นๆ'; if(!seen[c]){ seen[c]=1; cats.push(c); } });
+  el.innerHTML=cats.map(function(cat){
+    var ci=ings.filter(function(i){ return (i.cat||'อื่นๆ')===cat; });
+    return '<div style="width:100%;font-size:10px;font-weight:700;color:var(--t3);margin:4px 0 2px;text-transform:uppercase;letter-spacing:.5px">'+cat+'</div>'
+      +ci.map(function(i){
+        var checked=planIngSel[i.id]===true;
+        return '<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;background:var(--s3);border-radius:6px;padding:4px 8px;white-space:nowrap">'
+          +'<input type="checkbox" '+(checked?'checked':'')+' onchange="planIngSel[\''+i.id+'\']=this.checked;savePlanSettings();renderPlanStockTable()">'
+          +i.name+'</label>';
+      }).join('');
   }).join('');
 }
 
-function selectAllMenus(val){
-  menus.forEach(function(m){ planMenuSel[m.id]=val; });
+function selectAllIngs(val){
+  ings.forEach(function(i){ planIngSel[i.id]=val; });
   savePlanSettings();
-  renderPlanMenuSelect();
+  renderPlanIngSelect();
   renderPlanStockTable();
 }
 
@@ -1576,7 +1580,7 @@ function savePlanSettings(){
     daysNext: document.getElementById('plan-days-next').value,
     buffer:   document.getElementById('plan-buffer').value,
     stock:    planStock,
-    menuSel:  planMenuSel
+    ingSel:   planIngSel
   };
   localStorage.setItem('ct_plan_settings', JSON.stringify(s));
 }
@@ -1590,31 +1594,16 @@ function loadPlanSettings(){
     if(d.daysNext) document.getElementById('plan-days-next').value=d.daysNext;
     if(d.buffer)   document.getElementById('plan-buffer').value=d.buffer;
     if(d.stock)    planStock=d.stock;
-    if(d.menuSel)  planMenuSel=d.menuSel;
+    if(d.ingSel)   planIngSel=d.ingSel;
+    // backward compat
+    if(d.menuSel && !d.ingSel) planIngSel={};
   }catch(e){}
 }
 
 function getPlanIngs(){
-  var used={};
-  menus.forEach(function(m){
-    if(planMenuSel[m.id]===false) return; // ข้ามเมนูที่ไม่ได้เลือก
-    (m.recipe||[]).forEach(function(r){
-      if(!r.iId) return;
-      if(r.iId.startsWith('sr_')){
-        var sr=subRecipes.find(function(x){return x.id===r.iId;});
-        if(!sr) return;
-        (typeof sr.recipe==='string'?JSON.parse(sr.recipe):sr.recipe||[]).forEach(function(sr2){
-          if(sr2.iId) used[sr2.iId]=true;
-        });
-      } else {
-        used[r.iId]=true;
-      }
-    });
-  });
-  return ings.filter(function(i){ return used[String(i.id)]; });
+  return ings.filter(function(i){ return planIngSel[i.id]===true; });
 }
 
-// หน่วยสั่งซื้อ default ตาม unit ของ ingredient
 function defaultPackUnit(i){
   var u=i.unit;
   if(u==='g'||u==='ml') return 'ถุง';

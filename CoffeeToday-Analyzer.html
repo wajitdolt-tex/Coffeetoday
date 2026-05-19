@@ -137,6 +137,7 @@ tr:hover td{background:var(--s2);}
       <span style="font-family:'Space Mono',monospace;font-weight:700;font-size:16px;color:var(--ac)" id="cost-preview">฿0.00</span>
     </div>
     <button class="btn bp" style="width:100%" onclick="addMenu()" id="b-am">+ บันทึกเมนู</button>
+    <button class="btn bg2" style="width:100%;margin-top:6px;display:none" id="b-cancel-edit" onclick="cancelEditMenu()">✕ ยกเลิกการแก้ไข</button>
   </div>
 
   <div class="card">
@@ -1336,30 +1337,77 @@ function updCP(){
 // ============================================================
 // MENUS
 // ============================================================
+var _editingMenuId = null; // null = add mode, id = edit mode
+
+function editMenu(id){
+  var m=menus.find(function(x){ return x.id===id; });
+  if(!m) return;
+  _editingMenuId=id;
+  document.getElementById('nm-name').value=m.name;
+  document.getElementById('nm-price').value=m.price;
+  rR=(m.recipe&&m.recipe.length)
+    ? m.recipe.map(function(r){ return Object.assign({},r); })
+    : [{iId:'',qty:0,unit:'g'}];
+  // เปลี่ยนปุ่มและหัวข้อ
+  var btn=document.getElementById('b-am');
+  btn.textContent='💾 บันทึกการแก้ไข';
+  btn.style.background='var(--yl)';
+  btn.style.color='#000';
+  document.getElementById('b-cancel-edit').style.display='block';
+  // scroll ขึ้นไปที่ฟอร์ม
+  document.getElementById('nm-name').scrollIntoView({behavior:'smooth',block:'center'});
+  bRec();
+}
+
+function cancelEditMenu(){
+  _editingMenuId=null;
+  document.getElementById('nm-name').value='';
+  document.getElementById('nm-price').value='';
+  rR=[{iId:'',qty:0,unit:'g'}];
+  var btn=document.getElementById('b-am');
+  btn.textContent='+ บันทึกเมนู';
+  btn.style.background='';
+  btn.style.color='';
+  document.getElementById('b-cancel-edit').style.display='none';
+  bRec();
+}
+
 function addMenu(){
   var name=document.getElementById('nm-name').value.trim();
   var price=parseFloat(document.getElementById('nm-price').value);
   if(!name||isNaN(price)) return alert('กรุณากรอกชื่อเมนูและราคา');
   var recipe=rR.filter(function(r){ return r.iId&&r.qty>0; });
-  if(!recipe.length) return alert('กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 รายการ');
 
   var b=document.getElementById('b-am'); b.disabled=true; b.textContent='⏳...';
-  var item={id:uid(), name:name, price:price, recipe:JSON.stringify(recipe)};
 
-  var doAdd=function(){
-    menus.push(Object.assign({},item,{recipe:recipe}));
-    document.getElementById('nm-name').value='';
-    document.getElementById('nm-price').value='';
-    rR=[{iId:'',qty:0}]; rAll(); updInfoBar(API?'Google Sheets':'local');
-    sS('ok','บันทึกแล้ว');
-    b.disabled=false; b.textContent='+ บันทึกเมนู';
-  };
-
-  if(API){
-    apiP({action:'upsert', sheet:'Menus', data:item})
-      .then(doAdd)
-      .catch(function(e){ alert(e.message); b.disabled=false; b.textContent='+ บันทึกเมนู'; });
-  } else { doAdd(); }
+  if(_editingMenuId){
+    // โหมดแก้ไข
+    var m=menus.find(function(x){ return x.id===_editingMenuId; });
+    if(!m){ b.disabled=false; return; }
+    m.name=name; m.price=price; m.recipe=recipe;
+    var item=Object.assign({},m,{recipe:JSON.stringify(recipe)});
+    var doSave=function(){
+      cancelEditMenu(); rAll(); sS('ok','อัพเดตเมนูแล้ว');
+      b.disabled=false; b.textContent='+ บันทึกเมนู';
+    };
+    if(API){
+      apiP({action:'upsert',sheet:'Menus',data:item}).then(doSave).catch(function(e){ alert(e.message); b.disabled=false; b.textContent='💾 บันทึกการแก้ไข'; });
+    } else { doSave(); }
+  } else {
+    // โหมดเพิ่มใหม่
+    if(!recipe.length) return alert('กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 รายการ');
+    var newItem={id:uid(), name:name, price:price, recipe:JSON.stringify(recipe)};
+    var doAdd=function(){
+      menus.push(Object.assign({},newItem,{recipe:recipe}));
+      document.getElementById('nm-name').value='';
+      document.getElementById('nm-price').value='';
+      rR=[{iId:'',qty:0,unit:'g'}]; rAll(); sS('ok','บันทึกแล้ว');
+      b.disabled=false; b.textContent='+ บันทึกเมนู';
+    };
+    if(API){
+      apiP({action:'upsert',sheet:'Menus',data:newItem}).then(doAdd).catch(function(e){ alert(e.message); b.disabled=false; b.textContent='+ บันทึกเมนู'; });
+    } else { doAdd(); }
+  }
 }
 
 function delMenu(id){
@@ -1438,7 +1486,10 @@ function rMenus(){
       +'<td><div class="mw"><div class="mb"><div class="mf" style="width:'+Math.min(margin,100)+'%;background:'+color+'"></div></div>'
       +'<span class="mp" style="color:'+color+'">'+margin.toFixed(0)+'%</span></div></td>'
       +'<td>'+bdg(margin)+'</td>'
-      +'<td><button class="btn bd2 bsm" onclick="delMenu(\''+m.id+'\')">ลบ</button></td>'
+      +'<td><div style="display:flex;gap:4px">'
+      +'<button class="btn bg2 bsm" onclick="editMenu(\''+m.id+'\')">✏️</button>'
+      +'<button class="btn bd2 bsm" onclick="delMenu(\''+m.id+'\')">ลบ</button>'
+      +'</div></td>'
       +'</tr>';
   }).join('');
 }

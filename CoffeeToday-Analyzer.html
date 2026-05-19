@@ -118,6 +118,7 @@ tr:hover td{background:var(--s2);}
     <div class="st"><div class="sl">⚠️ Margin ต่ำสุด</div><div class="sv r" id="s-wm">—</div><div class="ss" id="s-wn">—</div></div>
   </div>
 
+  <!-- เมนู -->
   <div class="card">
     <div class="ct">✏️ เพิ่ม / แก้ไขเมนู</div>
     <div class="fgrp" style="margin-bottom:12px">
@@ -128,9 +129,9 @@ tr:hover td{background:var(--s2);}
       <label>ราคาขาย (บาท)</label>
       <input type="number" id="nm-price" placeholder="55" min="0">
     </div>
-    <div class="slb">วัตถุดิบในสูตร</div>
+    <div class="slb">ส่วนผสม (วัตถุดิบ + สูตรย่อย)</div>
     <div id="rec-ings"></div>
-    <button class="btn bg2" style="width:100%;margin:8px 0 14px" onclick="addIR()">+ เพิ่มวัตถุดิบในสูตร</button>
+    <button class="btn bg2" style="width:100%;margin:8px 0 14px" onclick="addIR()">+ เพิ่มส่วนผสม</button>
     <div style="background:var(--abg);border:1px solid var(--ac2);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
       <span style="font-size:13px;color:var(--t2)">ต้นทุนรวมโดยประมาณ</span>
       <span style="font-family:'Space Mono',monospace;font-weight:700;font-size:16px;color:var(--ac)" id="cost-preview">฿0.00</span>
@@ -142,6 +143,44 @@ tr:hover td{background:var(--s2);}
     <div class="ct">📋 รายการเมนูทั้งหมด <span class="pill">ใช้ร่วมกัน 2 สาขา</span></div>
     <div class="tw"><table><thead><tr><th></th><th>ชื่อเมนู</th><th>ราคาขาย</th><th>ต้นทุน/แก้ว</th><th>กำไร</th><th>Margin</th><th>สถานะ</th><th></th></tr></thead>
     <tbody id="m-tb"><tr><td colspan="8"><div class="emp">ยังไม่มีเมนู</div></td></tr></tbody></table></div>
+  </div>
+
+  <!-- สูตรย่อย -->
+  <div class="card" style="border-color:rgba(200,134,10,.3);background:var(--abg)">
+    <div class="ct">🧪 สูตรย่อย (Sub-recipe) <span class="pill">เพื่อใช้เป็นส่วนผสมในเมนู</span></div>
+    <div class="fgrp" style="margin-bottom:10px">
+      <label>ชื่อสูตรย่อย</label>
+      <input type="text" id="sr-name" placeholder="เช่น น้ำคาปู, วิปครีม">
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+      <div class="fgrp" style="flex:1;min-width:100px">
+        <label>ทำได้กี่หน่วย</label>
+        <input type="number" id="sr-yield" placeholder="เช่น 12" min="0.01" step="0.01" oninput="updSrCP()">
+      </div>
+      <div class="fgrp" style="width:100px">
+        <label>หน่วย</label>
+        <select id="sr-yield-unit" onchange="updSrCP()">
+          <option value="oz">oz</option>
+          <option value="ml">ml</option>
+          <option value="g">g</option>
+          <option value="กระป๋อง">กระป๋อง</option>
+          <option value="ชิ้น">ชิ้น</option>
+          <option value="แก้ว">แก้ว</option>
+        </select>
+      </div>
+    </div>
+    <div class="slb">วัตถุดิบในสูตรย่อย</div>
+    <div id="sr-rec-ings"></div>
+    <button class="btn bg2" style="width:100%;margin:8px 0 10px" onclick="addSrIR()">+ เพิ่มวัตถุดิบ</button>
+    <div style="background:var(--sf);border:1px solid var(--ac2);border-radius:8px;padding:10px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px;color:var(--t2)">ต้นทุนรวมสูตรย่อย</span>
+      <div style="text-align:right">
+        <div style="font-family:'Space Mono',monospace;font-weight:700;font-size:15px;color:var(--ac)" id="sr-cost-total">฿0.00</div>
+        <div style="font-size:11px;color:var(--t3)" id="sr-cost-unit">฿0.00 / oz</div>
+      </div>
+    </div>
+    <button class="btn bp" style="width:100%" onclick="addSubRecipe()" id="b-asr">+ บันทึกสูตรย่อย</button>
+    <div id="sr-list" style="margin-top:14px"></div>
   </div>
 </div>
 
@@ -206,6 +245,64 @@ tr:hover td{background:var(--s2);}
 
 <!-- สั่งสินค้า -->
 <div class="pg active" id="tab-ord">
+
+  <!-- วางแผนสั่งสินค้า -->
+  <div class="card" style="border-color:rgba(46,125,82,.3);background:var(--gbg)">
+    <div class="ct" style="cursor:pointer" onclick="togglePlan()">
+      📊 วางแผนสั่งสินค้า
+      <span id="plan-toggle-btn" style="font-size:12px;color:var(--t3);font-weight:400">▼ แสดง</span>
+    </div>
+    <div id="plan-panel" style="display:none">
+      <div style="font-size:12px;color:var(--t2);margin-bottom:12px;background:var(--s3);border-radius:8px;padding:10px 12px;line-height:1.8">
+        📌 <strong>วิธีใช้:</strong> กรอกสต็อกคงเหลือและของที่เข้ารอบที่แล้ว ระบบคำนวณการใช้งานจริงแล้วแนะนำยอดสั่งรอบถัดไป<br>
+        💾 ระบบจำค่าที่กรอกไว้ให้อัตโนมัติ
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:3px">รอบที่ผ่านมา (วัน)</label>
+          <input type="number" id="plan-days-past" value="15" min="1" max="60" style="width:80px;font-family:'Space Mono',monospace" onchange="savePlanSettings()">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:3px">รอบถัดไป (วัน)</label>
+          <input type="number" id="plan-days-next" value="15" min="1" max="60" style="width:80px;font-family:'Space Mono',monospace" onchange="savePlanSettings()">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:3px">Buffer เผื่อสำรอง</label>
+          <select id="plan-buffer" style="width:80px;" onchange="savePlanSettings();calcStockOrder()">
+            <option value="0">0%</option>
+            <option value="0.1" selected>10%</option>
+            <option value="0.2">20%</option>
+            <option value="0.3">30%</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ตารางกรอกสต็อก -->
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:35%">วัตถุดิบ</th>
+              <th style="width:20%">คงเหลือ<br><span style="font-weight:400;text-transform:none;letter-spacing:0">(นับวันนี้)</span></th>
+              <th style="width:20%">ของเข้ารอบที่แล้ว</th>
+              <th style="width:12%;color:var(--ac)">ใช้/วัน</th>
+              <th style="width:13%;color:var(--gn)">สั่งแนะนำ</th>
+            </tr>
+          </thead>
+          <tbody id="plan-stock-tb"></tbody>
+        </table>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn bp" style="flex:1" onclick="calcStockOrder()">🧮 คำนวณ</button>
+        <button class="btn bg2" style="flex:1" onclick="applyPlanToOrder()">⬇️ ใส่ใบสั่งซื้อ</button>
+      </div>
+
+      <div id="plan-summary" style="display:none;margin-top:12px;background:var(--s2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--t2);line-height:1.8"></div>
+    </div>
+  </div>
+
   <div class="card">
     <div class="ct">📦 เลือกหมวดหมู่</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px" id="ord-cats"></div>
@@ -254,7 +351,8 @@ tr:hover td{background:var(--s2);}
       <button class="btn bp" onclick="saveUrl()">💾 บันทึก URL</button>
       <button class="btn bg2" onclick="testConn()">🔌 ทดสอบ</button>
       <button class="btn bg2" onclick="initSync()">🔄 Init + ซิงค์</button>
-      <button class="btn bac" onclick="forceSyncAll()" style="background:var(--gn);">⬆️ Force Sync วัตถุดิบทั้งหมด</button>
+      <button class="btn bac" onclick="forceSyncAll()" style="background:var(--gn);">⬆️ Force Sync วัตถุดิบ</button>
+      <button class="btn bac" onclick="forceSyncMenus()" style="background:var(--gn);">⬆️ Force Sync เมนู</button>
     </div>
     <div id="t-res" style="margin-top:10px"></div>
   </div>
@@ -282,9 +380,152 @@ tr:hover td{background:var(--s2);}
 var API = '';
 var ings = [];
 var menus = [];
+var subRecipes = [];
+
+// เมนูทั้งหมดจาก Coffee Today Menu v2
+var DEFAULT_MENUS = [
+  // ── HOT COFFEE ร้อน ──
+  {id:'m01',name:'ทูเดย์ร้อน 8oz',       price:40,  recipe:[], order:0},
+  {id:'m02',name:'ทูเดย์ร้อน 12oz',      price:50,  recipe:[], order:1},
+  {id:'m03',name:'เอสปูชิโนร้อน 8oz',    price:40,  recipe:[], order:2},
+  {id:'m04',name:'เอสปูชิโนร้อน 12oz',   price:50,  recipe:[], order:3},
+  {id:'m05',name:'อเมริกาโนร้อน 8oz',    price:40,  recipe:[], order:4},
+  {id:'m06',name:'อเมริกาโนร้อน 12oz',   price:50,  recipe:[], order:5},
+  {id:'m07',name:'อเมริกาโนน้ำผึ้งร้อน 8oz', price:40, recipe:[], order:6},
+  {id:'m08',name:'อเมริกาโนน้ำผึ้งร้อน 12oz',price:50, recipe:[], order:7},
+  {id:'m09',name:'เอสเปรสโซร้อน 8oz',    price:50,  recipe:[], order:8},
+  {id:'m10',name:'เอสเปรสโซร้อน 12oz',   price:60,  recipe:[], order:9},
+  {id:'m11',name:'คาปูชิโนร้อน 8oz',     price:50,  recipe:[], order:10},
+  {id:'m12',name:'คาปูชิโนร้อน 12oz',    price:60,  recipe:[], order:11},
+  {id:'m13',name:'ลาเต้ร้อน 8oz',        price:50,  recipe:[], order:12},
+  {id:'m14',name:'ลาเต้ร้อน 12oz',       price:55,  recipe:[], order:13},
+  {id:'m15',name:'คาราเมลมัคคิอาโตร้อน 8oz', price:60, recipe:[], order:14},
+  {id:'m16',name:'คาราเมลมัคคิอาโตร้อน 12oz',price:65, recipe:[], order:15},
+  {id:'m17',name:'มอคคาร้อน 8oz',        price:50,  recipe:[], order:16},
+  {id:'m18',name:'มอคคาร้อน 12oz',       price:55,  recipe:[], order:17},
+  // ── ICED กาแฟเย็น ──
+  {id:'m19',name:'ทูเดย์เย็น 22oz',              price:55, recipe:[], order:18},
+  {id:'m20',name:'ทูเดย์ปั่น 16oz',              price:60, recipe:[], order:19},
+  {id:'m21',name:'ทูเดย์ปั่น 22oz',              price:65, recipe:[], order:20},
+  {id:'m22',name:'เอสปูชิโนเย็น 22oz',           price:55, recipe:[], order:21},
+  {id:'m23',name:'เอสปูชิโนปั่น 16oz',           price:60, recipe:[], order:22},
+  {id:'m24',name:'เอสปูชิโนปั่น 22oz',           price:65, recipe:[], order:23},
+  {id:'m25',name:'เอสเปรสโซเย็น 22oz',           price:55, recipe:[], order:24},
+  {id:'m26',name:'เอสเปรสโซปั่น 16oz',           price:60, recipe:[], order:25},
+  {id:'m27',name:'เอสเปรสโซปั่น 22oz',           price:65, recipe:[], order:26},
+  {id:'m28',name:'มอคคาเย็น 22oz',               price:65, recipe:[], order:27},
+  {id:'m29',name:'มอคคาปั่น 16oz',               price:70, recipe:[], order:28},
+  {id:'m30',name:'มอคคาปั่น 22oz',               price:75, recipe:[], order:29},
+  {id:'m31',name:'คาปูชิโนเย็น 22oz',            price:60, recipe:[], order:30},
+  {id:'m32',name:'คาปูชิโนปั่น 16oz',            price:70, recipe:[], order:31},
+  {id:'m33',name:'คาปูชิโนปั่น 22oz',            price:75, recipe:[], order:32},
+  {id:'m34',name:'คาราเมลมัคคิอาโตเย็น 22oz',   price:65, recipe:[], order:33},
+  {id:'m35',name:'คาราเมลมัคคิอาโตปั่น 16oz',   price:70, recipe:[], order:34},
+  {id:'m36',name:'คาราเมลมัคคิอาโตปั่น 22oz',   price:75, recipe:[], order:35},
+  {id:'m37',name:'ลาเต้เย็น 22oz',              price:60, recipe:[], order:36},
+  {id:'m38',name:'ลาเต้ปั่น 16oz',              price:65, recipe:[], order:37},
+  {id:'m39',name:'ลาเต้ปั่น 22oz',              price:70, recipe:[], order:38},
+  {id:'m40',name:'อเมริกาโนเย็น 22oz',           price:55, recipe:[], order:39},
+  {id:'m41',name:'อเมริกาโนน้ำผึ้งเย็น 22oz',   price:65, recipe:[], order:40},
+  {id:'m42',name:'กาแฟลิ้นจี่โซดาเย็น',         price:65, recipe:[], order:41},
+  {id:'m43',name:'กาแฟส้ม',                      price:65, recipe:[], order:42},
+  {id:'m44',name:'กาแฟยูซุเย็น',                price:65, recipe:[], order:43},
+  {id:'m45',name:'กาแฟมะพร้าว',                 price:60, recipe:[], order:44},
+  // ── TEA ชาร้อน ──
+  {id:'m46',name:'ชาเขียวธรรมชาติร้อน',  price:60, recipe:[], order:45},
+  {id:'m47',name:'ชาไทยร้อน',            price:70, recipe:[], order:46},
+  {id:'m48',name:'ชาไทยดำร้อน',          price:65, recipe:[], order:47},
+  {id:'m49',name:'ชาเขียวนมร้อน',        price:75, recipe:[], order:48},
+  {id:'m50',name:'ชามัทฉะลาเต้ร้อน',    price:85, recipe:[], order:49},
+  {id:'m51',name:'ชาซีลอนร้อน',          price:75, recipe:[], order:50},
+  // ── TEA ชาเย็น ──
+  {id:'m52',name:'ชาไทยเย็น',            price:70, recipe:[], order:51},
+  {id:'m53',name:'ชาไทยดำเย็น',          price:65, recipe:[], order:52},
+  {id:'m54',name:'ชาเขียวนมเย็น',        price:70, recipe:[], order:53},
+  {id:'m55',name:'Matcha Green Tea',      price:95, recipe:[], order:54},
+  {id:'m56',name:'ชาเขียวธรรมชาติเย็น', price:60, recipe:[], order:55},
+  {id:'m57',name:'ชามะนาว',              price:65, recipe:[], order:56},
+  {id:'m58',name:'ชาแอปเปิ้ล',           price:65, recipe:[], order:57},
+  {id:'m59',name:'ชาพีช',               price:65, recipe:[], order:58},
+  {id:'m60',name:'ชามะนาวน้ำผึ้ง',       price:85, recipe:[], order:59},
+  {id:'m61',name:'ชาพีทลิ้นจี่ซากุระ',   price:85, recipe:[], order:60},
+  {id:'m62',name:'Orange Thai Tea',      price:80, recipe:[], order:61},
+  {id:'m63',name:'ชาธรรมชาติยูซุเย็น',  price:85, recipe:[], order:62},
+  {id:'m64',name:'ชาซีลอนเย็น',          price:85, recipe:[], order:63},
+  {id:'m65',name:'เพียวมัทฉะ',           price:80, recipe:[], order:64},
+  {id:'m66',name:'มัทฉะยูซุ',            price:95, recipe:[], order:65},
+  {id:'m67',name:'ครีมมัทฉะมะพร้าว',    price:95, recipe:[], order:66},
+  {id:'m68',name:'Twining สตรอเบอร์รี่ แอนด์แมงโกเย็น', price:75, recipe:[], order:67},
+  {id:'m69',name:'Twining โฟเรดฟรุตเย็น',   price:75, recipe:[], order:68},
+  {id:'m70',name:'Twining เปปเปอร์มินท์เย็น',price:75, recipe:[], order:69},
+  {id:'m71',name:'Twining คาโมมายล์เย็น',   price:75, recipe:[], order:70},
+  {id:'m72',name:'Twining เอิร์ลเกรย์เย็น', price:75, recipe:[], order:71},
+  {id:'m73',name:'Twining อิงลิชเบรกฟาสต์เย็น',price:75,recipe:[],order:72},
+  // ── TEA ชาปั่น ──
+  {id:'m74',name:'ชาไทยปั่น',            price:75,  recipe:[], order:73},
+  {id:'m75',name:'ชาเขียวนมปั่น',        price:75,  recipe:[], order:74},
+  {id:'m76',name:'ชามัทฉะลาเต้ปั่น',    price:105, recipe:[], order:75},
+  {id:'m77',name:'ชามะนาวปั่น',          price:75,  recipe:[], order:76},
+  {id:'m78',name:'ชาแอปเปิ้ลปั่น',       price:75,  recipe:[], order:77},
+  {id:'m79',name:'ชาพีชปั่น',            price:75,  recipe:[], order:78},
+  // ── MILK / CHOC / COCO ──
+  {id:'m80',name:'คาราเมลนมสดร้อน',      price:75, recipe:[], order:79},
+  {id:'m81',name:'นมสดร้อน',             price:65, recipe:[], order:80},
+  {id:'m82',name:'ช็อคโกแลตร้อน',        price:85, recipe:[], order:81},
+  {id:'m83',name:'โกโก้ร้อน',            price:85, recipe:[], order:82},
+  {id:'m84',name:'โกโก้เย็น',            price:85, recipe:[], order:83},
+  {id:'m85',name:'ช็อคโกแลตเย็น',        price:85, recipe:[], order:84},
+  {id:'m86',name:'คาราเมลนมสดเย็น',      price:75, recipe:[], order:85},
+  {id:'m87',name:'นมสดเย็น',             price:65, recipe:[], order:86},
+  {id:'m88',name:'นมสดบราวน์ชูการ์เย็น', price:85, recipe:[], order:87},
+  {id:'m89',name:'Chocolate Orange',     price:80, recipe:[], order:88},
+  {id:'m90',name:'ช็อคโกซีลอนเย็น',     price:85, recipe:[], order:89},
+  {id:'m91',name:'ชาซีลอนบราวน์ชูการ์เย็น',price:85,recipe:[],order:90},
+  {id:'m92',name:'โกโก้ปั่น',            price:90, recipe:[], order:91},
+  {id:'m93',name:'ช็อคโกแลตปั่น',        price:90, recipe:[], order:92},
+  {id:'m94',name:'คาราเมลนมสดปั่น',      price:85, recipe:[], order:93},
+  {id:'m95',name:'นมสดปั่น',             price:75, recipe:[], order:94},
+  // ── SMOOTHIE & FRUIT ──
+  {id:'m96', name:'ทับทิมเบอร์รี่โซดา',   price:75, recipe:[], order:95},
+  {id:'m97', name:'สตรอเบอร์รี่เย็น',    price:70, recipe:[], order:96},
+  {id:'m98', name:'ยูซุเย็น',            price:75, recipe:[], order:97},
+  {id:'m99', name:'บูลเบอร์รี่เย็น',     price:70, recipe:[], order:98},
+  {id:'m100',name:'ลิ้นจี่เย็น',         price:70, recipe:[], order:99},
+  {id:'m101',name:'ลิ้นจี่มิ้นท์',       price:85, recipe:[], order:100},
+  {id:'m102',name:'ชาซีลอนสตรอเบอร์รี่เย็น',price:80,recipe:[],order:101},
+  {id:'m103',name:'ยูซุน้ำผึ้งเย็น',     price:85, recipe:[], order:102},
+  {id:'m104',name:'Sunday Just The Chilling Time',price:75,recipe:[],order:103},
+  {id:'m105',name:'Monday Good Morning', price:75, recipe:[], order:104},
+  {id:'m106',name:'Tuesday Pink Lady',   price:75, recipe:[], order:105},
+  {id:'m107',name:'Wednesday In The Garden',price:75,recipe:[],order:106},
+  {id:'m108',name:'Thursday Happy Sunrise',price:75,recipe:[],order:107},
+  {id:'m109',name:'Friday On The Beach', price:75, recipe:[], order:108},
+  {id:'m110',name:'Saturday Go To The Galaxy',price:75,recipe:[],order:109},
+  {id:'m111',name:'Mango Today Frappe',  price:75, recipe:[], order:110},
+  {id:'m112',name:'โยเกิร์ตสมูทตี้',    price:75, recipe:[], order:111},
+  {id:'m113',name:'สตรอเบอร์รี่สมูทตี้',price:75, recipe:[], order:112},
+  {id:'m114',name:'บลูเบอร์รี่สมูทตี้', price:75, recipe:[], order:113},
+  {id:'m115',name:'ยูซุปั่น',            price:80, recipe:[], order:114},
+  // ── TOPPINGS ──
+  {id:'m116',name:'เพิ่มบุกบราวน์ชูการ์',price:20, recipe:[], order:115},
+  {id:'m117',name:'เพิ่มน้ำผึ้ง',        price:15, recipe:[], order:116},
+  {id:'m118',name:'บุกซากุระคริสตัล',    price:20, recipe:[], order:117},
+  {id:'m119',name:'เพิ่มน้ำมะนาว',       price:12, recipe:[], order:118},
+  // ── FOOD / ขนม ──
+  {id:'m120',name:'ขนมปังปิ้ง เนย+นม',   price:45, recipe:[], order:119},
+  {id:'m121',name:'ขนมปังปิ้ง เนย+น้ำตาล',price:45,recipe:[],order:120},
+  {id:'m122',name:'ขนมปังปิ้ง ช็อคโกแลต',price:50, recipe:[], order:121},
+  {id:'m123',name:'ขนมปังปิ้ง แยมสตรอเบอร์รี่',price:55,recipe:[],order:122},
+  {id:'m124',name:'ขนมปังปิ้ง แยมส้ม',   price:55, recipe:[], order:123},
+  {id:'m125',name:'Caramel Waffle Today', price:55, recipe:[], order:124},
+  {id:'m126',name:'แครกเกอร์ดาร์กช็อค', price:69, recipe:[], order:125},
+  {id:'m127',name:'กล้วยเคี้ยวหนึบ',    price:65, recipe:[], order:126},
+  {id:'m128',name:'น้ำดื่ม Coffee Today', price:15, recipe:[], order:127},
+];
 var ords = {};
 var ordCat = 'ทั้งหมด';
-var rR = [{iId:'', qty:0}];
+var rR = [{iId:'', qty:0, unit:'g'}];
+var srR = [{iId:'', qty:0, unit:'g'}];
 var dragSrc = null;
 var dragMSrc = null;
 
@@ -390,8 +631,17 @@ function cpu(i){ return i.qty>0 ? i.price/i.qty : 0; }
 function exVat(p){ return p/1.07; }
 function cc(m){
   return (m.recipe||[]).reduce(function(s,r){
-    var ing = ings.find(function(x){ return String(x.id)===String(r.iId); });
-    return s + (ing ? cpu(ing)*r.qty : 0);
+    if(!r.iId||!r.qty) return s;
+    if(r.iId.startsWith('sr_')){
+      var sr=subRecipes.find(function(x){return x.id===r.iId;});
+      return s+(sr?cpSR(sr)*r.qty:0);
+    }
+    var ing=ings.find(function(x){ return String(x.id)===String(r.iId); });
+    if(!ing) return s;
+    var qty=r.qty;
+    if(r.unit==='oz'&&ing.unit==='ml') qty=qty*29.57;
+    else if(r.unit==='oz'&&ing.unit==='g') qty=qty*28.35;
+    return s+cpu(ing)*qty;
   }, 0);
 }
 function mc(m){ if(m>=60) return 'var(--gn)'; if(m>=45) return 'var(--yl)'; return 'var(--rd)'; }
@@ -472,6 +722,26 @@ function forceSyncAll(){
     .catch(function(e){ hL(); alert('โหลดไม่ได้: '+e.message); });
 }
 
+function forceSyncMenus(){
+  if(!API) return alert('กรุณาตั้งค่า URL ก่อน');
+  if(!confirm('จะ sync เมนูที่ขาดใน Sheets ('+DEFAULT_MENUS.length+' เมนู)\nเมนูที่มีอยู่แล้วจะไม่ถูกแตะ\nดำเนินการต่อ?')) return;
+  sL('กำลังโหลดเมนูจาก Sheets...');
+  apiG({action:'read',sheet:'Menus'}).then(function(mR){
+    var sheetIds={};
+    (mR.rows||[]).forEach(function(r){ sheetIds[r.id]=true; });
+    var missing=DEFAULT_MENUS.filter(function(m){ return !sheetIds[m.id]; });
+    if(!missing.length){ hL(); sS('ok','เมนูครบแล้ว ✅'); return; }
+    var i=0;
+    sS('syn','กำลัง sync เมนู '+missing.length+' รายการ...');
+    (function next(){
+      if(i>=missing.length){ sS('ok','Sync เมนูครบ '+missing.length+' รายการ ✅'); hL(); loadMeta(); return; }
+      var d=Object.assign({},missing[i],{recipe:JSON.stringify([])});
+      sL('sync เมนู '+(i+1)+'/'+missing.length+': '+d.name);
+      apiP({action:'upsert',sheet:'Menus',data:d}).then(function(){i++;next();}).catch(function(){i++;next();});
+    })();
+  }).catch(function(e){ hL(); alert('โหลดไม่ได้: '+e.message); });
+}
+
 function saveUrl(){
   var u=document.getElementById('sc-url').value.trim();
   if(!u) return alert('กรุณาใส่ URL');
@@ -515,9 +785,10 @@ function loadMeta(){
   sS('syn','กำลังโหลด...'); sL('กำลังดึงข้อมูล...');
   return Promise.all([
     apiG({action:'read', sheet:'Ingredients'}),
-    apiG({action:'read', sheet:'Menus'})
+    apiG({action:'read', sheet:'Menus'}),
+    apiG({action:'read', sheet:'SubRecipes'})
   ]).then(function(results){
-    var iR=results[0], mR=results[1];
+    var iR=results[0], mR=results[1], srRes=results[2];
     var si=(iR.rows||[]).map(function(r){
       return Object.assign({},r,{price:parseFloat(r.price)||0, qty:parseFloat(r.qty)||0});
     });
@@ -578,6 +849,27 @@ function loadMeta(){
     menus=(mR.rows||[]).map(function(r){
       return Object.assign({},r,{
         price:parseFloat(r.price)||0,
+        recipe:typeof r.recipe==='string'?JSON.parse(r.recipe||'[]'):(r.recipe||[])
+      });
+    });
+    // merge DEFAULT_MENUS — sync เฉพาะที่ขาด
+    var sheetMenuIds={};
+    menus.forEach(function(m){ sheetMenuIds[m.id]=true; });
+    var missingMenus=DEFAULT_MENUS.filter(function(m){ return !sheetMenuIds[m.id]; });
+    if(missingMenus.length){
+      missingMenus.forEach(function(m){ menus.push(Object.assign({},m)); });
+      menus.sort(function(a,b){ return (parseFloat(a.order)||999)-(parseFloat(b.order)||999); });
+      if(API){
+        (function syncM(i){
+          if(i>=missingMenus.length) return;
+          var d=Object.assign({},missingMenus[i],{recipe:JSON.stringify([])});
+          apiP({action:'upsert',sheet:'Menus',data:d}).then(function(){syncM(i+1);}).catch(function(){syncM(i+1);});
+        })(0);
+      }
+    }
+    subRecipes=(srRes.rows||[]).map(function(r){
+      return Object.assign({},r,{
+        yield:parseFloat(r.yield)||1,
         recipe:typeof r.recipe==='string'?JSON.parse(r.recipe||'[]'):(r.recipe||[])
       });
     });
@@ -882,32 +1174,161 @@ function rIng(){
 }
 
 // ============================================================
-// RECIPE BUILDER
+// SUB-RECIPE
 // ============================================================
-function bRec(){
-  document.getElementById('rec-ings').innerHTML=rR.map(function(r,i){
-    var unitLabel=r.iId ? ((ings.find(function(x){ return x.id==r.iId; })||{}).unit||'') : 'หน่วย';
+function cpSR(sr){
+  if(!sr.yield||sr.yield<=0) return 0;
+  var total=(sr.recipe||[]).reduce(function(s,r){
+    var ing=ings.find(function(x){ return String(x.id)===String(r.iId); });
+    if(!ing) return s;
+    var qty=r.qty;
+    if(r.unit==='oz'&&ing.unit==='ml') qty=qty*29.57;
+    else if(r.unit==='oz'&&ing.unit==='g') qty=qty*28.35;
+    return s+cpu(ing)*qty;
+  },0);
+  return total/sr.yield;
+}
+
+function bSrRec(){
+  var unitOpts=['g','ml','oz','ขวด','ชิ้น','ซอง','ถุง','แพ็ค'];
+  document.getElementById('sr-rec-ings').innerHTML=srR.map(function(r,i){
+    var defUnit=r.unit||(r.iId?((ings.find(function(x){return x.id==r.iId;})||{}).unit||'g'):'g');
     return '<div class="ing-row">'
-      +'<select onchange="rR['+i+'].iId=this.value;updCP()">'
+      +'<select onchange="srR['+i+'].iId=this.value;updSrCP()">'
       +'<option value="">— เลือกวัตถุดิบ —</option>'
       +ings.map(function(x){
         return '<option value="'+x.id+'"'+(r.iId==x.id?' selected':'')+'>'+x.name+' ('+fB(cpu(x))+'/'+x.unit+')</option>';
-      }).join('')
+      }).join('')+'</select>'
+      +'<input type="number" value="'+(r.qty||'')+'" placeholder="ปริมาณ" min="0" step="0.01"'
+      +' onchange="srR['+i+'].qty=parseFloat(this.value)||0;updSrCP()" style="text-align:center">'
+      +'<select style="width:70px;padding:6px 4px;font-size:12px;" onchange="srR['+i+'].unit=this.value;updSrCP()">'
+      +unitOpts.map(function(u){return '<option value="'+u+'"'+(defUnit===u?' selected':'')+'>'+u+'</option>';}).join('')
+      +'</select>'
+      +'<button class="btn bd2" style="padding:4px 7px" onclick="rmSrRR('+i+')">×</button>'
+      +'</div>';
+  }).join('');
+  updSrCP();
+}
+function addSrIR(){ srR.push({iId:'',qty:0,unit:'g'}); bSrRec(); }
+function rmSrRR(i){ srR.splice(i,1); if(!srR.length) srR=[{iId:'',qty:0,unit:'g'}]; bSrRec(); }
+function updSrCP(){
+  var yld=parseFloat(document.getElementById('sr-yield').value)||0;
+  var yUnit=document.getElementById('sr-yield-unit').value;
+  var total=srR.reduce(function(s,r){
+    var ing=ings.find(function(x){return String(x.id)===String(r.iId);});
+    if(!ing||!r.qty) return s;
+    var qty=r.qty;
+    if(r.unit==='oz'&&ing.unit==='ml') qty=qty*29.57;
+    else if(r.unit==='oz'&&ing.unit==='g') qty=qty*28.35;
+    return s+cpu(ing)*qty;
+  },0);
+  document.getElementById('sr-cost-total').textContent=fB(total);
+  document.getElementById('sr-cost-unit').textContent=yld>0?fB(total/yld)+' / '+yUnit:'กรอกจำนวนที่ทำได้';
+}
+
+function addSubRecipe(){
+  var name=document.getElementById('sr-name').value.trim();
+  var yld=parseFloat(document.getElementById('sr-yield').value);
+  var yUnit=document.getElementById('sr-yield-unit').value;
+  if(!name||isNaN(yld)||yld<=0) return alert('กรุณากรอกชื่อและจำนวนที่ทำได้');
+  var recipe=srR.filter(function(r){return r.iId&&r.qty>0;});
+  if(!recipe.length) return alert('กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 รายการ');
+  var item={id:'sr_'+uid(), name:name, yield:yld, yieldUnit:yUnit, recipe:JSON.stringify(recipe)};
+  var b=document.getElementById('b-asr'); b.disabled=true; b.textContent='⏳...';
+  var doAdd=function(){
+    subRecipes.push(Object.assign({},item,{recipe:recipe}));
+    document.getElementById('sr-name').value='';
+    document.getElementById('sr-yield').value='';
+    srR=[{iId:'',qty:0,unit:'g'}];
+    rAll(); sS('ok','บันทึกสูตรย่อยแล้ว');
+    b.disabled=false; b.textContent='+ บันทึกสูตรย่อย';
+  };
+  if(API){
+    apiP({action:'upsert',sheet:'SubRecipes',data:item}).then(doAdd).catch(function(e){alert(e.message);b.disabled=false;b.textContent='+ บันทึกสูตรย่อย';});
+  } else { doAdd(); }
+}
+
+function delSubRecipe(id){
+  if(!confirm('ลบสูตรย่อยนี้?')) return;
+  subRecipes=subRecipes.filter(function(s){return s.id!==id;});
+  if(API) apiP({action:'delete',sheet:'SubRecipes',data:{id:id}}).catch(function(){});
+  rAll();
+}
+
+function rSubRecipes(){
+  var el=document.getElementById('sr-list');
+  if(!subRecipes.length){ el.innerHTML=''; return; }
+  el.innerHTML='<div class="divhr"></div><div class="slb">สูตรย่อยทั้งหมด</div>'
+    +subRecipes.map(function(sr){
+      var costPer=cpSR(sr);
+      var recipe=(typeof sr.recipe==='string'?JSON.parse(sr.recipe):sr.recipe)||[];
+      var rs=recipe.map(function(r){
+        var ing=ings.find(function(x){return String(x.id)===String(r.iId);});
+        return ing?ing.name+' '+r.qty+(r.unit||ing.unit):'';
+      }).filter(Boolean).join(', ');
+      return '<div style="background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;margin-bottom:8px;">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+        +'<span style="font-weight:700;color:var(--br)">🧪 '+sr.name+'</span>'
+        +'<div style="display:flex;align-items:center;gap:8px">'
+        +'<span style="font-family:\'Space Mono\',monospace;font-weight:700;color:var(--ac);font-size:13px">'+fB(costPer)+'/'+sr.yieldUnit+'</span>'
+        +'<button class="btn bd2 bsm" onclick="delSubRecipe(\''+sr.id+'\')">ลบ</button>'
+        +'</div></div>'
+        +'<div style="font-size:11px;color:var(--t3)">ทำได้ '+sr.yield+' '+sr.yieldUnit+' | ต้นทุนรวม '+fB(cpSR(sr)*sr.yield)+'</div>'
+        +'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+rs+'</div>'
+        +'</div>';
+    }).join('');
+}
+function bRec(){
+  var unitOptions=['g','ml','oz','ขวด','ชิ้น','ใบ','ซอง','ถุง','แพ็ค','หน่วย'];
+  document.getElementById('rec-ings').innerHTML=rR.map(function(r,i){
+    var defUnit=r.unit||'g';
+    if(r.iId){
+      if(r.iId.startsWith('sr_')){
+        var sr=subRecipes.find(function(x){return x.id===r.iId;});
+        if(sr) defUnit=r.unit||sr.yieldUnit;
+      } else {
+        var ing2=ings.find(function(x){return x.id==r.iId;});
+        if(ing2) defUnit=r.unit||ing2.unit;
+      }
+    }
+    return '<div class="ing-row">'
+      +'<select onchange="rR['+i+'].iId=this.value;rR['+i+'].unit=\'\';updCP();bRec();">'
+      +'<option value="">— เลือกส่วนผสม —</option>'
+      +(subRecipes.length?'<optgroup label="🧪 สูตรย่อย">'
+        +subRecipes.map(function(sr){
+          return '<option value="'+sr.id+'"'+(r.iId===sr.id?' selected':'')+'>'+sr.name+' ('+fB(cpSR(sr))+'/'+sr.yieldUnit+')</option>';
+        }).join('')+'</optgroup>':'')
+      +'<optgroup label="🌿 วัตถุดิบ">'
+      +ings.map(function(x){
+        return '<option value="'+x.id+'"'+(r.iId==x.id?' selected':'')+'>'+x.name+' ('+fB(cpu(x))+'/'+x.unit+')</option>';
+      }).join('')+'</optgroup>'
       +'</select>'
       +'<input type="number" value="'+(r.qty||'')+'" placeholder="ปริมาณ" min="0" step="0.1"'
       +' onchange="rR['+i+'].qty=parseFloat(this.value)||0;updCP()" style="text-align:center">'
-      +'<span style="font-size:11px;color:var(--t3);padding-left:4px">'+unitLabel+'</span>'
+      +'<select style="width:70px;padding:6px 4px;font-size:12px;" onchange="rR['+i+'].unit=this.value;updCP()">'
+      +unitOptions.map(function(u){ return '<option value="'+u+'"'+(defUnit===u?' selected':'')+'>'+u+'</option>'; }).join('')
+      +'</select>'
       +'<button class="btn bd2" style="padding:4px 7px" onclick="rmRR('+i+')">×</button>'
       +'</div>';
   }).join('');
   updCP();
 }
-function addIR(){ rR.push({iId:'',qty:0}); bRec(); }
-function rmRR(i){ rR.splice(i,1); if(!rR.length) rR=[{iId:'',qty:0}]; bRec(); }
+function addIR(){ rR.push({iId:'',qty:0,unit:'g'}); bRec(); }
+function rmRR(i){ rR.splice(i,1); if(!rR.length) rR=[{iId:'',qty:0,unit:'g'}]; bRec(); }
 function updCP(){
   var cost=rR.reduce(function(s,r){
+    if(!r.iId||!r.qty) return s;
+    if(r.iId.startsWith('sr_')){
+      // sub-recipe
+      var sr=subRecipes.find(function(x){return x.id===r.iId;});
+      return s+(sr?cpSR(sr)*r.qty:0);
+    }
     var ing=ings.find(function(x){ return String(x.id)===String(r.iId); });
-    return s+(ing&&r.qty ? cpu(ing)*r.qty : 0);
+    if(!ing) return s;
+    var qty=r.qty;
+    if(r.unit==='oz'&&ing.unit==='ml') qty=qty*29.57;
+    else if(r.unit==='oz'&&ing.unit==='g') qty=qty*28.35;
+    return s+cpu(ing)*qty;
   },0);
   document.getElementById('cost-preview').textContent=fB(cost);
 }
@@ -971,6 +1392,14 @@ function dmEd(e){
   document.querySelectorAll('.drag-over').forEach(function(el){ el.classList.remove('drag-over'); });
 }
 
+function toggleMenuDetail(id){
+  var el=document.getElementById('mdet-'+id);
+  if(!el) return;
+  var btn=document.getElementById('mbtn-'+id);
+  if(el.style.display==='none'){ el.style.display=''; if(btn) btn.textContent='▲'; }
+  else { el.style.display='none'; if(btn) btn.textContent='▼'; }
+}
+
 function rMenus(){
   var tb=document.getElementById('m-tb');
   if(!menus.length){ tb.innerHTML='<tr><td colspan="8"><div class="emp">ยังไม่มีเมนู</div></td></tr>'; return; }
@@ -979,9 +1408,13 @@ function rMenus(){
     var margin=m.price>0 ? profit/m.price*100 : 0;
     var color=mc(margin);
     var rs=(m.recipe||[]).map(function(r){
+      if(r.iId && r.iId.startsWith('sr_')){
+        var sr=subRecipes.find(function(x){return x.id===r.iId;});
+        return sr?'🧪 '+sr.name+' '+r.qty+sr.yieldUnit:'';
+      }
       var ing=ings.find(function(x){ return String(x.id)===String(r.iId); });
-      return ing ? ing.name+' '+r.qty+ing.unit : '';
-    }).filter(Boolean).join(', ');
+      return ing?ing.name+' '+r.qty+(r.unit||ing.unit):'';
+    }).filter(Boolean).join(' · ');
     return '<tr class="drag-row" draggable="true" data-mid="'+m.id+'"'
       +' ondragstart="dmSt(event,\''+m.id+'\')"'
       +' ondragover="dmOv(event)"'
@@ -991,8 +1424,14 @@ function rMenus(){
       +' ontouchmove="tmMv(event)"'
       +' ontouchend="tmEd(event)">'
       +'<td><span class="drag-handle">⠿</span></td>'
-      +'<td><div style="font-weight:700;color:var(--br)">'+m.name+'</div>'
-      +'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+rs+'</div></td>'
+      +'<td>'
+      +'<div style="display:flex;align-items:center;gap:6px">'
+      +'<span style="font-weight:700;color:var(--br)">'+m.name+'</span>'
+      +'<button id="mbtn-'+m.id+'" onclick="toggleMenuDetail(\''+m.id+'\')" '
+      +'style="border:none;background:none;cursor:pointer;color:var(--t3);font-size:11px;padding:0 2px;">▼</button>'
+      +'</div>'
+      +'<div id="mdet-'+m.id+'" style="display:none;font-size:11px;color:var(--t3);margin-top:3px;line-height:1.7">'+rs+'</div>'
+      +'</td>'
       +'<td class="mn" style="font-weight:700">'+fB(m.price)+'</td>'
       +'<td class="mn" style="color:var(--b2c)">'+fB(cost)+'</td>'
       +'<td class="mn" style="color:'+color+';font-weight:700">'+fB(profit)+'</td>'
@@ -1024,8 +1463,150 @@ function uSt(){
 }
 
 // ============================================================
-// ORDER
+// ORDER PLANNING — คำนวณจากสต็อกจริง
+// สูตร: ใช้/วัน = (ของเข้ารอบที่แล้ว − คงเหลือ) ÷ วันในรอบที่แล้ว
+//        สั่งรอบถัดไป = ใช้/วัน × วันรอบถัดไป × (1 + buffer%)
 // ============================================================
+var planStock = {}; // ingId -> {current, lastIn}
+
+function togglePlan(){
+  var panel=document.getElementById('plan-panel');
+  var btn=document.getElementById('plan-toggle-btn');
+  if(panel.style.display==='none'){
+    panel.style.display='block';
+    btn.textContent='▲ ซ่อน';
+    loadPlanSettings();
+    renderPlanStockTable();
+  } else {
+    panel.style.display='none';
+    btn.textContent='▼ แสดง';
+  }
+}
+
+function savePlanSettings(){
+  var s={
+    daysPast: document.getElementById('plan-days-past').value,
+    daysNext: document.getElementById('plan-days-next').value,
+    buffer:   document.getElementById('plan-buffer').value,
+    stock:    planStock
+  };
+  localStorage.setItem('ct_plan_settings', JSON.stringify(s));
+}
+
+function loadPlanSettings(){
+  var s=localStorage.getItem('ct_plan_settings');
+  if(!s) return;
+  try{
+    var d=JSON.parse(s);
+    if(d.daysPast) document.getElementById('plan-days-past').value=d.daysPast;
+    if(d.daysNext) document.getElementById('plan-days-next').value=d.daysNext;
+    if(d.buffer)   document.getElementById('plan-buffer').value=d.buffer;
+    if(d.stock)    planStock=d.stock;
+  }catch(e){}
+}
+
+function getPlanIngs(){
+  // หาวัตถุดิบทั้งหมดที่ใช้ใน menus (รวม sub-recipe)
+  var used={};
+  menus.forEach(function(m){
+    (m.recipe||[]).forEach(function(r){
+      if(!r.iId) return;
+      if(r.iId.startsWith('sr_')){
+        var sr=subRecipes.find(function(x){return x.id===r.iId;});
+        if(!sr) return;
+        (typeof sr.recipe==='string'?JSON.parse(sr.recipe):sr.recipe||[]).forEach(function(sr2){
+          if(sr2.iId) used[sr2.iId]=true;
+        });
+      } else {
+        used[r.iId]=true;
+      }
+    });
+  });
+  return ings.filter(function(i){ return used[String(i.id)]; });
+}
+
+function renderPlanStockTable(){
+  var tb=document.getElementById('plan-stock-tb');
+  var planIngs=getPlanIngs();
+  if(!planIngs.length){
+    tb.innerHTML='<tr><td colspan="5"><div class="emp">ยังไม่มีวัตถุดิบในสูตรเมนู</div></td></tr>';
+    return;
+  }
+  tb.innerHTML=planIngs.map(function(i){
+    var s=planStock[i.id]||{current:'',lastIn:''};
+    var daysPast=parseFloat(document.getElementById('plan-days-past').value)||15;
+    var buffer=parseFloat(document.getElementById('plan-buffer').value)||0;
+    var daysNext=parseFloat(document.getElementById('plan-days-next').value)||15;
+    var cur=parseFloat(s.current)||0;
+    var last=parseFloat(s.lastIn)||0;
+    var used=last-cur;
+    var perDay=daysPast>0&&used>0?used/daysPast:0;
+    var suggest=perDay>0?Math.ceil(perDay*daysNext*(1+buffer)):0;
+    var suggestColor=suggest>0?'var(--gn)':'var(--t3)';
+    return '<tr>'
+      +'<td style="font-weight:600;font-size:13px">'+i.name
+      +'<div style="font-size:10px;color:var(--t3)">'+i.unit+'</div></td>'
+      +'<td><input type="number" value="'+(s.current||'')+'" placeholder="0" min="0" step="0.01"'
+      +' style="width:100%;font-family:\'Space Mono\',monospace;text-align:center;font-size:12px"'
+      +' onchange="planStock[\''+i.id+'\']=(planStock[\''+i.id+'\'||{}]||{});planStock[\''+i.id+'\'].current=parseFloat(this.value)||0;savePlanSettings();calcStockOrder()"></td>'
+      +'<td><input type="number" value="'+(s.lastIn||'')+'" placeholder="0" min="0" step="0.01"'
+      +' style="width:100%;font-family:\'Space Mono\',monospace;text-align:center;font-size:12px"'
+      +' onchange="planStock[\''+i.id+'\']=(planStock[\''+i.id+'\']||{});planStock[\''+i.id+'\'].lastIn=parseFloat(this.value)||0;savePlanSettings();calcStockOrder()"></td>'
+      +'<td class="mn" style="color:var(--ac);text-align:center">'+
+        (perDay>0?perDay.toFixed(2):'-')
+      +'</td>'
+      +'<td class="mn" style="color:'+suggestColor+';font-weight:700;text-align:center">'+
+        (suggest>0?suggest+' '+i.unit:'-')
+      +'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+function calcStockOrder(){
+  savePlanSettings();
+  renderPlanStockTable();
+  // แสดง summary
+  var daysPast=parseFloat(document.getElementById('plan-days-past').value)||15;
+  var daysNext=parseFloat(document.getElementById('plan-days-next').value)||15;
+  var buffer=parseFloat(document.getElementById('plan-buffer').value)||0;
+  var planIngs=getPlanIngs();
+  var filled=planIngs.filter(function(i){
+    var s=planStock[i.id]||{};
+    return s.lastIn>0;
+  }).length;
+  var sumEl=document.getElementById('plan-summary');
+  sumEl.style.display='block';
+  sumEl.innerHTML='📋 กรอกข้อมูลแล้ว '+filled+'/'+planIngs.length+' รายการ'
+    +' | รอบที่แล้ว '+daysPast+' วัน → รอบถัดไป '+daysNext+' วัน | buffer '+Math.round(buffer*100)+'%';
+}
+
+function applyPlanToOrder(){
+  var daysPast=parseFloat(document.getElementById('plan-days-past').value)||15;
+  var daysNext=parseFloat(document.getElementById('plan-days-next').value)||15;
+  var buffer=parseFloat(document.getElementById('plan-buffer').value)||0;
+  var planIngs=getPlanIngs();
+  var count=0;
+  planIngs.forEach(function(i){
+    var s=planStock[i.id]||{};
+    var cur=parseFloat(s.current)||0;
+    var last=parseFloat(s.lastIn)||0;
+    var used=last-cur;
+    if(used<=0||!daysPast) return;
+    var perDay=used/daysPast;
+    var suggest=Math.ceil(perDay*daysNext*(1+buffer));
+    if(suggest>0&&i.qty>0){
+      // แปลงเป็นแพ็ค
+      var packs=Math.ceil(suggest/i.qty);
+      ords[i.id]=packs;
+      count++;
+    }
+  });
+  if(!count){ alert('ยังไม่มีข้อมูลเพียงพอ กรุณากรอกของเข้ารอบที่แล้วก่อนครับ'); return; }
+  rOrd();
+  alert('ใส่ยอดแนะนำ '+count+' รายการลงใบสั่งซื้อแล้ว ✅\nตรวจสอบและปรับได้ในรายการด้านล่าง');
+}
+
+
 function rOrdCats(){
   var seen={}, catList=[];
   ings.forEach(function(i){ var c=i.cat||'อื่นๆ'; if(!seen[c]){ seen[c]=1; catList.push(c); } });
@@ -1127,7 +1708,7 @@ function sTab(t,el){
   el.classList.add('active');
 }
 
-function rAll(){ rIng(); rMenus(); uSt(); rOrdCats(); rOrd(); bRec(); }
+function rAll(){ rIng(); rMenus(); uSt(); rOrdCats(); rOrd(); bRec(); bSrRec(); rSubRecipes(); }
 
 // ============================================================
 // INIT

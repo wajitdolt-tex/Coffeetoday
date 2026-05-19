@@ -786,7 +786,7 @@ function loadMeta(){
   return Promise.all([
     apiG({action:'read', sheet:'Ingredients'}),
     apiG({action:'read', sheet:'Menus'}),
-    apiG({action:'read', sheet:'SubRecipes'})
+    apiG({action:'read', sheet:'SubRecipes'}).catch(function(){ return {rows:[]}; })
   ]).then(function(results){
     var iR=results[0], mR=results[1], srRes=results[2];
     var si=(iR.rows||[]).map(function(r){

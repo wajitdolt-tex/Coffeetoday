@@ -284,11 +284,11 @@ tr:hover td{background:var(--s2);}
         <table>
           <thead>
             <tr>
-              <th style="width:35%">วัตถุดิบ</th>
-              <th style="width:20%">คงเหลือ<br><span style="font-weight:400;text-transform:none;letter-spacing:0">(นับวันนี้)</span></th>
-              <th style="width:20%">ของเข้ารอบที่แล้ว</th>
-              <th style="width:12%;color:var(--ac)">ใช้/วัน</th>
-              <th style="width:13%;color:var(--gn)">สั่งแนะนำ</th>
+              <th style="width:30%">วัตถุดิบ</th>
+              <th style="width:17%">คงเหลือ<br><span style="font-weight:400;font-size:10px">(หน่วย)</span></th>
+              <th style="width:17%">ของเข้า<br><span style="font-weight:400;font-size:10px">รอบที่แล้ว</span></th>
+              <th style="width:17%">ยืมสาขา<br><span style="font-weight:400;font-size:10px;color:var(--yl)">+เพิ่ม</span></th>
+              <th style="width:19%;color:var(--gn)">สั่งแนะนำ</th>
             </tr>
           </thead>
           <tbody id="plan-stock-tb"></tbody>
@@ -1583,31 +1583,44 @@ function renderPlanStockTable(){
     tb.innerHTML='<tr><td colspan="5"><div class="emp">ยังไม่มีวัตถุดิบในสูตรเมนู</div></td></tr>';
     return;
   }
+  var daysPast=parseFloat(document.getElementById('plan-days-past').value)||15;
+  var daysNext=parseFloat(document.getElementById('plan-days-next').value)||15;
+  var buffer=parseFloat(document.getElementById('plan-buffer').value)||0;
+
   tb.innerHTML=planIngs.map(function(i){
-    var s=planStock[i.id]||{current:'',lastIn:''};
-    var daysPast=parseFloat(document.getElementById('plan-days-past').value)||15;
-    var buffer=parseFloat(document.getElementById('plan-buffer').value)||0;
-    var daysNext=parseFloat(document.getElementById('plan-days-next').value)||15;
-    var cur=parseFloat(s.current)||0;
-    var last=parseFloat(s.lastIn)||0;
-    var used=last-cur;
-    var perDay=daysPast>0&&used>0?used/daysPast:0;
-    var suggest=perDay>0?Math.ceil(perDay*daysNext*(1+buffer)):0;
-    var suggestColor=suggest>0?'var(--gn)':'var(--t3)';
+    var s=planStock[i.id]||{current:'',lastIn:'',borrow:''};
+    var cur   = parseFloat(s.current)||0;   // คงเหลือ (หน่วย)
+    var last  = parseFloat(s.lastIn)||0;    // ของเข้ารอบที่แล้ว (หน่วย)
+    var borrow= parseFloat(s.borrow)||0;    // ยืมสาขาอื่น (หน่วย)
+    var used  = (last + borrow) - cur;
+    var perDay= daysPast>0&&used>0 ? used/daysPast : 0;
+    var suggest= perDay>0 ? Math.ceil(perDay*daysNext*(1+buffer)) : 0;
+    var sColor = suggest>0 ? 'var(--gn)' : 'var(--t3)';
+
+    var onChange=function(field){
+      return 'planStock[\''+i.id+'\']=planStock[\''+i.id+'\'||{}]||{};'
+        +'planStock[\''+i.id+'\'].'+field+'=parseFloat(this.value)||0;'
+        +'savePlanSettings();calcStockOrder()';
+    };
+
     return '<tr>'
-      +'<td style="font-weight:600;font-size:13px">'+i.name
-      +'<div style="font-size:10px;color:var(--t3)">'+i.unit+'</div></td>'
-      +'<td><input type="number" value="'+(s.current||'')+'" placeholder="0" min="0" step="0.01"'
+      +'<td style="font-weight:600;font-size:12px;line-height:1.4">'+i.name
+      +'<br><span style="font-size:10px;color:var(--t3)">หน่วย: '+i.unit+'</span></td>'
+      // คงเหลือ
+      +'<td><input type="number" value="'+(s.current||'')+'" placeholder="0" min="0" step="1"'
       +' style="width:100%;font-family:\'Space Mono\',monospace;text-align:center;font-size:12px"'
-      +' onchange="planStock[\''+i.id+'\']=(planStock[\''+i.id+'\'||{}]||{});planStock[\''+i.id+'\'].current=parseFloat(this.value)||0;savePlanSettings();calcStockOrder()"></td>'
-      +'<td><input type="number" value="'+(s.lastIn||'')+'" placeholder="0" min="0" step="0.01"'
+      +' onchange="'+onChange('current')+'"></td>'
+      // ของเข้ารอบที่แล้ว
+      +'<td><input type="number" value="'+(s.lastIn||'')+'" placeholder="0" min="0" step="1"'
       +' style="width:100%;font-family:\'Space Mono\',monospace;text-align:center;font-size:12px"'
-      +' onchange="planStock[\''+i.id+'\']=(planStock[\''+i.id+'\']||{});planStock[\''+i.id+'\'].lastIn=parseFloat(this.value)||0;savePlanSettings();calcStockOrder()"></td>'
-      +'<td class="mn" style="color:var(--ac);text-align:center">'+
-        (perDay>0?perDay.toFixed(2):'-')
-      +'</td>'
-      +'<td class="mn" style="color:'+suggestColor+';font-weight:700;text-align:center">'+
-        (suggest>0?suggest+' '+i.unit:'-')
+      +' onchange="'+onChange('lastIn')+'"></td>'
+      // ยืมสาขา
+      +'<td><input type="number" value="'+(s.borrow||'')+'" placeholder="0" min="0" step="1"'
+      +' style="width:100%;font-family:\'Space Mono\',monospace;text-align:center;font-size:12px;color:var(--yl)"'
+      +' onchange="'+onChange('borrow')+'"></td>'
+      // แนะนำสั่ง (หน่วยเต็ม)
+      +'<td style="text-align:center;font-weight:700;font-size:13px;color:'+sColor+'">'
+        +(suggest>0 ? suggest+'<br><span style="font-size:10px;font-weight:400;color:var(--t3)">'+i.unit+'</span>' : '-')
       +'</td>'
       +'</tr>';
   }).join('');
@@ -1616,15 +1629,11 @@ function renderPlanStockTable(){
 function calcStockOrder(){
   savePlanSettings();
   renderPlanStockTable();
-  // แสดง summary
   var daysPast=parseFloat(document.getElementById('plan-days-past').value)||15;
   var daysNext=parseFloat(document.getElementById('plan-days-next').value)||15;
   var buffer=parseFloat(document.getElementById('plan-buffer').value)||0;
   var planIngs=getPlanIngs();
-  var filled=planIngs.filter(function(i){
-    var s=planStock[i.id]||{};
-    return s.lastIn>0;
-  }).length;
+  var filled=planIngs.filter(function(i){ return (planStock[i.id]||{}).lastIn>0; }).length;
   var sumEl=document.getElementById('plan-summary');
   sumEl.style.display='block';
   sumEl.innerHTML='📋 กรอกข้อมูลแล้ว '+filled+'/'+planIngs.length+' รายการ'
@@ -1635,22 +1644,16 @@ function applyPlanToOrder(){
   var daysPast=parseFloat(document.getElementById('plan-days-past').value)||15;
   var daysNext=parseFloat(document.getElementById('plan-days-next').value)||15;
   var buffer=parseFloat(document.getElementById('plan-buffer').value)||0;
-  var planIngs=getPlanIngs();
   var count=0;
-  planIngs.forEach(function(i){
+  getPlanIngs().forEach(function(i){
     var s=planStock[i.id]||{};
-    var cur=parseFloat(s.current)||0;
-    var last=parseFloat(s.lastIn)||0;
-    var used=last-cur;
+    var cur   =parseFloat(s.current)||0;
+    var last  =parseFloat(s.lastIn)||0;
+    var borrow=parseFloat(s.borrow)||0;
+    var used  =(last+borrow)-cur;
     if(used<=0||!daysPast) return;
-    var perDay=used/daysPast;
-    var suggest=Math.ceil(perDay*daysNext*(1+buffer));
-    if(suggest>0&&i.qty>0){
-      // แปลงเป็นแพ็ค
-      var packs=Math.ceil(suggest/i.qty);
-      ords[i.id]=packs;
-      count++;
-    }
+    var suggest=Math.ceil((used/daysPast)*daysNext*(1+buffer));
+    if(suggest>0){ ords[i.id]=suggest; count++; }
   });
   if(!count){ alert('ยังไม่มีข้อมูลเพียงพอ กรุณากรอกของเข้ารอบที่แล้วก่อนครับ'); return; }
   rOrd();

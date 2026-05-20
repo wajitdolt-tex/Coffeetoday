@@ -148,7 +148,6 @@ tr:hover td{background:var(--bg3);}
       <div class="form-row"><label>(−) Discount — ส่วนลด (฿)</label><input type="number" id="d-discount" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
       <div class="form-row"><label>(+) Rounding — ปัดเศษ (฿)</label><input type="number" id="d-rounding" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
       <div class="form-row"><label>Sales before TAX (฿)</label><input type="number" id="d-before-tax" readonly placeholder="คำนวณอัตโนมัติ"></div>
-      <!-- ✅ แก้: เอา readonly ออก ให้กรอกยอดขายทั้งหมดเองได้ -->
       <div class="form-row"><label>Total Sales — ยอดขายทั้งหมด (฿)</label><input type="number" id="d-total-sales" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
     </div>
     <hr class="divider">
@@ -203,7 +202,6 @@ tr:hover td{background:var(--bg3);}
   </div>
 
   <!-- ช่องน้ำแข็งวางบิล เฉพาะโลตัส -->
-
   <div class="card" id="lotus-ice-card" style="display:none;">
     <div class="card-title">🧊 น้ำแข็ง (วางบิลเครดิต)</div>
     <p style="font-size:12px;color:var(--text3);margin-bottom:12px;">บันทึกค่าน้ำแข็งรายวัน — ไม่หักจาก Pay In จะรวมยอดเป็นวางบิลปลายเดือน</p>
@@ -260,79 +258,73 @@ tr:hover td{background:var(--bg3);}
     <div class="card-title">วัตถุดิบวางบิลประจำ</div>
     <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">รายการที่วางบิลเป็นประจำ — กรอกแล้วกด "เพิ่มเข้ารายการวางบิล"</p>
 
-```
-<div class="payable-fixed-card">
-  <div class="payable-fixed-title">📦 วัตถุดิบ CFTD <span style="font-size:11px;color:var(--text3);font-weight:400;">(ทั้ง 2 สาขา)</span></div>
-  <div class="grid-4">
-    <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="pf-cftd-amount" placeholder="0.00" step="0.01"></div>
-    <div class="form-row"><label>วันที่สินค้าเข้า</label><input type="date" id="pf-cftd-indate"></div>
-    <div class="form-row"><label>เลขที่บิล</label><input type="text" id="pf-cftd-billno" placeholder="เลขบิล..."></div>
-    <div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pf-cftd-due"></div>
-  </div>
-  <div class="grid-2">
-    <div class="form-row"><label>สาขา</label><select id="pf-cftd-branch"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
-    <div class="form-row"><label>หมายเหตุ</label><input type="text" id="pf-cftd-note" placeholder="..."></div>
-  </div>
-  <button class="btn btn-primary btn-sm" onclick="addFixedPayable('cftd')">+ เพิ่มเข้ารายการ</button>
-</div>
+    <div class="payable-fixed-card">
+      <div class="payable-fixed-title">📦 วัตถุดิบ CFTD <span style="font-size:11px;color:var(--text3);font-weight:400;">(ทั้ง 2 สาขา)</span></div>
+      <div class="grid-4">
+        <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="pf-cftd-amount" placeholder="0.00" step="0.01"></div>
+        <div class="form-row"><label>วันที่สินค้าเข้า</label><input type="date" id="pf-cftd-indate"></div>
+        <div class="form-row"><label>เลขที่บิล</label><input type="text" id="pf-cftd-billno" placeholder="เลขบิล..."></div>
+        <div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pf-cftd-due"></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-row"><label>สาขา</label><select id="pf-cftd-branch"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
+        <div class="form-row"><label>หมายเหตุ</label><input type="text" id="pf-cftd-note" placeholder="..."></div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="addFixedPayable('cftd')">+ เพิ่มเข้ารายการ</button>
+    </div>
 
-<div class="payable-fixed-card">
-  <div class="payable-fixed-title">🥛 นมจินดา <span style="font-size:11px;color:var(--text3);font-weight:400;">(ทั้ง 2 สาขา)</span></div>
-  <div class="grid-4">
-    <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="pf-jinda-amount" placeholder="0.00" step="0.01"></div>
-    <div class="form-row"><label>วันที่สินค้าเข้า</label><input type="date" id="pf-jinda-indate"></div>
-    <div class="form-row"><label>เลขที่บิล</label><input type="text" id="pf-jinda-billno" placeholder="เลขบิล..."></div>
-    <div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pf-jinda-due"></div>
-  </div>
-  <div class="grid-2">
-    <div class="form-row"><label>สาขา</label><select id="pf-jinda-branch"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
-    <div class="form-row"><label>หมายเหตุ</label><input type="text" id="pf-jinda-note" placeholder="..."></div>
-  </div>
-  <button class="btn btn-primary btn-sm" onclick="addFixedPayable('jinda')">+ เพิ่มเข้ารายการ</button>
-</div>
+    <div class="payable-fixed-card">
+      <div class="payable-fixed-title">🥛 นมจินดา <span style="font-size:11px;color:var(--text3);font-weight:400;">(ทั้ง 2 สาขา)</span></div>
+      <div class="grid-4">
+        <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="pf-jinda-amount" placeholder="0.00" step="0.01"></div>
+        <div class="form-row"><label>วันที่สินค้าเข้า</label><input type="date" id="pf-jinda-indate"></div>
+        <div class="form-row"><label>เลขที่บิล</label><input type="text" id="pf-jinda-billno" placeholder="เลขบิล..."></div>
+        <div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pf-jinda-due"></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-row"><label>สาขา</label><select id="pf-jinda-branch"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
+        <div class="form-row"><label>หมายเหตุ</label><input type="text" id="pf-jinda-note" placeholder="..."></div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="addFixedPayable('jinda')">+ เพิ่มเข้ารายการ</button>
+    </div>
 
-<div class="payable-fixed-card" id="pf-ice-card">
-  <div class="payable-fixed-title">🧊 น้ำแข็ง <span style="font-size:11px;color:var(--text3);font-weight:400;">(โลตัสระยองเท่านั้น)</span></div>
-  <div class="grid-4">
-    <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="pf-ice-amount" placeholder="0.00" step="0.01"></div>
-    <div class="form-row"><label>วันที่สินค้าเข้า</label><input type="date" id="pf-ice-indate"></div>
-    <div class="form-row"><label>เลขที่บิล</label><input type="text" id="pf-ice-billno" placeholder="เลขบิล..."></div>
-    <div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pf-ice-due"></div>
-  </div>
-  <div class="form-row"><label>หมายเหตุ</label><input type="text" id="pf-ice-note" placeholder="..."></div>
-  <button class="btn btn-primary btn-sm" onclick="addFixedPayable('ice')">+ เพิ่มเข้ารายการ</button>
-</div>
-```
-
+    <div class="payable-fixed-card" id="pf-ice-card">
+      <div class="payable-fixed-title">🧊 น้ำแข็ง <span style="font-size:11px;color:var(--text3);font-weight:400;">(โลตัสระยองเท่านั้น)</span></div>
+      <div class="grid-4">
+        <div class="form-row"><label>จำนวนเงิน (฿)</label><input type="number" id="pf-ice-amount" placeholder="0.00" step="0.01"></div>
+        <div class="form-row"><label>วันที่สินค้าเข้า</label><input type="date" id="pf-ice-indate"></div>
+        <div class="form-row"><label>เลขที่บิล</label><input type="text" id="pf-ice-billno" placeholder="เลขบิล..."></div>
+        <div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pf-ice-due"></div>
+      </div>
+      <div class="form-row"><label>หมายเหตุ</label><input type="text" id="pf-ice-note" placeholder="..."></div>
+      <button class="btn btn-primary btn-sm" onclick="addFixedPayable('ice')">+ เพิ่มเข้ารายการ</button>
+    </div>
   </div>
 
   <div class="card">
     <div class="card-title">ค่าใช้จ่ายประจำเดือน</div>
     <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">กรอกค่าใช้จ่ายประจำเดือน แล้วกด "เพิ่มเข้ารายการ" เพื่อติดตามสถานะการชำระ</p>
 
-```
-<div class="grid-2" style="margin-bottom:10px;">
-  <div class="form-row"><label>สาขา</label>
-    <select id="pm-branch" onchange="onPmBranchChange()">
-      <option value="passione">แพชชั่นระยอง</option>
-      <option value="lotus">โลตัสระยอง</option>
-    </select>
-  </div>
-  <div class="form-row"><label>เดือน/ปี</label><input type="month" id="pm-month"></div>
-</div>
+    <div class="grid-2" style="margin-bottom:10px;">
+      <div class="form-row"><label>สาขา</label>
+        <select id="pm-branch" onchange="onPmBranchChange()">
+          <option value="passione">แพชชั่นระยอง</option>
+          <option value="lotus">โลตัสระยอง</option>
+        </select>
+      </div>
+      <div class="form-row"><label>เดือน/ปี</label><input type="month" id="pm-month"></div>
+    </div>
 
-<div class="grid-3" style="margin-bottom:10px;">
-  <div class="form-row"><label>ค่าเช่า (฿)</label><input type="number" id="pm-rent" placeholder="0.00" step="0.01"></div>
-  <div class="form-row"><label>ค่าน้ำ/ค่าไฟ (฿)</label><input type="number" id="pm-utility" placeholder="0.00" step="0.01"></div>
-  <div class="form-row" id="pm-aircond-row" style="display:none;"><label>ค่าแอร์ส่วนกลาง (฿)</label><input type="number" id="pm-aircond" placeholder="0.00" step="0.01"></div>
-  <div class="form-row"><label id="pm-tax-land-label">ภาษีสิ่งปลูกสร้างและที่ดิน (฿)</label><input type="number" id="pm-tax-land" placeholder="0.00" step="0.01"></div>
-  <div class="form-row"><label>ภาษีป้าย (฿)</label><input type="number" id="pm-tax-sign" placeholder="0.00" step="0.01"></div>
-  <div class="form-row"><label>ค่าใบอนุญาตผู้ประกอบการอาหาร (฿)</label><input type="number" id="pm-license" placeholder="0.00" step="0.01"></div>
-</div>
-<div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pm-due"></div>
-<button class="btn btn-primary btn-sm" onclick="addMonthlyExpenses()">+ เพิ่มเข้ารายการทั้งหมด</button>
-```
-
+    <div class="grid-3" style="margin-bottom:10px;">
+      <div class="form-row"><label>ค่าเช่า (฿)</label><input type="number" id="pm-rent" placeholder="0.00" step="0.01"></div>
+      <div class="form-row"><label>ค่าน้ำ/ค่าไฟ (฿)</label><input type="number" id="pm-utility" placeholder="0.00" step="0.01"></div>
+      <div class="form-row" id="pm-aircond-row" style="display:none;"><label>ค่าแอร์ส่วนกลาง (฿)</label><input type="number" id="pm-aircond" placeholder="0.00" step="0.01"></div>
+      <div class="form-row"><label id="pm-tax-land-label">ภาษีสิ่งปลูกสร้างและที่ดิน (฿)</label><input type="number" id="pm-tax-land" placeholder="0.00" step="0.01"></div>
+      <div class="form-row"><label>ภาษีป้าย (฿)</label><input type="number" id="pm-tax-sign" placeholder="0.00" step="0.01"></div>
+      <div class="form-row"><label>ค่าใบอนุญาตผู้ประกอบการอาหาร (฿)</label><input type="number" id="pm-license" placeholder="0.00" step="0.01"></div>
+    </div>
+    <div class="form-row"><label>กำหนดชำระ</label><input type="date" id="pm-due"></div>
+    <button class="btn btn-primary btn-sm" onclick="addMonthlyExpenses()">+ เพิ่มเข้ารายการทั้งหมด</button>
   </div>
 
   <div class="card">
@@ -404,212 +396,210 @@ tr:hover td{background:var(--bg3);}
       <div><button class="btn btn-primary" onclick="loadSummary()"><span id="s-txt">ดึงข้อมูล</span></button></div>
     </div>
 
-```
-<div id="s-stats" style="display:none;">
-  <div class="card" style="margin-bottom:13px;">
-    <div class="card-title">รายรับ — รายจ่าย — กำไร/ขาดทุน</div>
-    <div class="grid-3" style="margin-bottom:10px;">
-      <div class="stat-box" style="border-left:3px solid var(--green);">
-        <div class="stat-label">รายรับรวม</div>
-        <div class="stat-value pos" id="ss-sales">฿0</div>
+    <div id="s-stats" style="display:none;">
+      <div class="card" style="margin-bottom:13px;">
+        <div class="card-title">รายรับ — รายจ่าย — กำไร/ขาดทุน</div>
+        <div class="grid-3" style="margin-bottom:10px;">
+          <div class="stat-box" style="border-left:3px solid var(--green);">
+            <div class="stat-label">รายรับรวม</div>
+            <div class="stat-value pos" id="ss-sales">฿0</div>
+          </div>
+          <div class="stat-box" style="border-left:3px solid var(--red);">
+            <div class="stat-label">รายจ่ายรวม <span style="font-weight:400;font-size:10px;">(ไม่รวมค่าใช้จ่ายหน้าร้าน)</span></div>
+            <div class="stat-value neg" id="ss-exp-total">฿0</div>
+          </div>
+          <div class="stat-box" style="border-left:3px solid var(--accent);">
+            <div class="stat-label">กำไร / ขาดทุน</div>
+            <div class="stat-value" id="ss-profit">฿0</div>
+            <div id="ss-profit-note" style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.6;"></div>
+          </div>
+        </div>
+        <div style="background:var(--bg3);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:10px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">รายละเอียดรายจ่าย</div>
+          <div class="grid-3">
+            <div class="stat-box" id="ss-shopexp-box" style="background:var(--bg2);opacity:0.7;">
+              <div class="stat-label" style="color:var(--text3);">ค่าใช้จ่ายหน้าร้าน <span style="font-weight:400;">(หักจาก Cash แล้ว)</span></div>
+              <div class="stat-value" id="ss-exp" style="color:var(--text2);">฿0</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px;">ถูกหักออกจากยอดขายก่อนส่ง Pay In แล้ว<br>ไม่นับซ้ำในรายจ่ายรวม</div>
+            </div>
+            <div class="stat-box" style="background:var(--bg2);border-left:3px solid var(--green);">
+              <div class="stat-label">วางบิล (ชำระแล้ว) ✓</div>
+              <div class="stat-value pos" id="ss-payable-raw">฿0</div>
+            </div>
+            <div class="stat-box" style="background:var(--bg2);border-left:3px solid var(--red);">
+              <div class="stat-label">วางบิล (ยังค้างชำระ) ⚠</div>
+              <div class="stat-value neg" id="ss-payable-unpaid-detail">฿0</div>
+            </div>
+            <div class="stat-box" style="background:var(--bg2);">
+              <div class="stat-label" id="ss-payable-other-label">ค่าเช่า/ค่าน้ำไฟ/ค่าภาษี</div>
+              <div class="stat-value" id="ss-payable-other">฿0</div>
+            </div>
+            <div class="stat-box" style="background:var(--bg2);">
+              <div class="stat-label">บัญชีร้าน</div>
+              <div class="stat-value" id="ss-acctexp-total">฿0</div>
+            </div>
+            <div class="stat-box" style="background:var(--bg2);border-left:3px solid var(--blue);">
+              <div class="stat-label">เงินเดือนพนักงาน</div>
+              <div class="stat-value" id="ss-salary-total">฿0</div>
+            </div>
+          </div>
+          <div style="margin-top:10px;padding:8px 10px;background:rgba(160,120,32,.07);border-radius:var(--r-sm);font-size:11px;color:var(--yellow);">
+            ⚠ วางบิลที่ยังค้างชำระ <span style="font-family:'DM Mono',monospace;font-weight:600;" id="ss-note-unpaid">฿0</span> — ไม่นับรวมในรายจ่ายเดือนนี้ เพราะยังไม่ได้จ่ายจริง
+          </div>
+        </div>
+        <div class="grid-3">
+          <div class="stat-box"><div class="stat-label">ยอด Pay In รวม</div><div class="stat-value" id="ss-payin">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">ค่าวางบิลรวมเดือนนี้</div><div class="stat-value" id="ss-payable-paid">฿0</div></div>
+          <div class="stat-box"><div class="stat-label" style="color:var(--red);">ค้างชำระ</div><div class="stat-value neg" id="ss-payable-unpaid-top">฿0</div></div>
+        </div>
       </div>
-      <div class="stat-box" style="border-left:3px solid var(--red);">
-        <div class="stat-label">รายจ่ายรวม <span style="font-weight:400;font-size:10px;">(ไม่รวมค่าใช้จ่ายหน้าร้าน)</span></div>
-        <div class="stat-value neg" id="ss-exp-total">฿0</div>
-      </div>
-      <div class="stat-box" style="border-left:3px solid var(--accent);">
-        <div class="stat-label">กำไร / ขาดทุน</div>
-        <div class="stat-value" id="ss-profit">฿0</div>
-        <div id="ss-profit-note" style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.6;"></div>
-      </div>
-    </div>
-    <div style="background:var(--bg3);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:10px;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">รายละเอียดรายจ่าย</div>
-      <div class="grid-3">
-        <div class="stat-box" style="background:var(--bg2);opacity:0.7;">
-          <div class="stat-label" style="color:var(--text3);">ค่าใช้จ่ายหน้าร้าน <span style="font-weight:400;">(หักจาก Cash แล้ว)</span></div>
-          <div class="stat-value" id="ss-exp" style="color:var(--text2);">฿0</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:4px;">ถูกหักออกจากยอดขายก่อนส่ง Pay In แล้ว<br>ไม่นับซ้ำในรายจ่ายรวม</div>
-        </div>
-        <div class="stat-box" style="background:var(--bg2);border-left:3px solid var(--green);">
-          <div class="stat-label">วางบิล (ชำระแล้ว) ✓</div>
-          <div class="stat-value pos" id="ss-payable-raw">฿0</div>
-        </div>
-        <div class="stat-box" style="background:var(--bg2);border-left:3px solid var(--red);">
-          <div class="stat-label">วางบิล (ยังค้างชำระ) ⚠</div>
-          <div class="stat-value neg" id="ss-payable-unpaid-detail">฿0</div>
-        </div>
-        <div class="stat-box" style="background:var(--bg2);">
-          <div class="stat-label">ค่าเช่า/ค่าน้ำไฟ/ค่าภาษี</div>
-          <div class="stat-value" id="ss-payable-other">฿0</div>
-        </div>
-        <div class="stat-box" style="background:var(--bg2);">
-          <div class="stat-label">บัญชีร้าน</div>
-          <div class="stat-value" id="ss-acctexp-total">฿0</div>
-        </div>
-        <div class="stat-box" style="background:var(--bg2);border-left:3px solid var(--blue);">
-          <div class="stat-label">เงินเดือนพนักงาน</div>
-          <div class="stat-value" id="ss-salary-total">฿0</div>
-        </div>
-      </div>
-      <div style="margin-top:10px;padding:8px 10px;background:rgba(160,120,32,.07);border-radius:var(--r-sm);font-size:11px;color:var(--yellow);">
-        ⚠ วางบิลที่ยังค้างชำระ <span style="font-family:'DM Mono',monospace;font-weight:600;" id="ss-note-unpaid">฿0</span> — ไม่นับรวมในรายจ่ายเดือนนี้ เพราะยังไม่ได้จ่ายจริง
-      </div>
-    </div>
-    <div class="grid-3">
-      <div class="stat-box"><div class="stat-label">ยอด Pay In รวม</div><div class="stat-value" id="ss-payin">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">ค่าวางบิลรวมเดือนนี้</div><div class="stat-value" id="ss-payable-paid">฿0</div></div>
-      <div class="stat-box"><div class="stat-label" style="color:var(--red);">ค้างชำระ</div><div class="stat-value neg" id="ss-payable-unpaid-top">฿0</div></div>
-    </div>
-  </div>
 
-  <div class="card" style="margin-bottom:13px;">
-    <div class="card-title">ช่องทางรับเงิน</div>
+      <div class="card" style="margin-bottom:13px;">
+        <div class="card-title">ช่องทางรับเงิน</div>
+        <div class="grid-3" style="margin-bottom:13px;">
+          <div class="stat-box"><div class="stat-label">QR Payment</div><div class="stat-value" id="ss-qr-total">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">Line Man (รวม)</div><div class="stat-value" id="ss-lineman-total">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">Cash (ยอดปิดกะ)</div><div class="stat-value" id="ss-cash-total">฿0</div></div>
+        </div>
+        <div style="background:var(--blue-t);border:1px solid rgba(37,99,168,.2);border-radius:var(--r-sm);padding:14px 16px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;">💳 Line Man — ยอดเข้าบัญชีคุณซัน</div>
+          <div class="grid-2">
+            <div class="form-row">
+              <label>ยอดที่ Line Man โอนเข้าบัญชีคุณซัน (฿)</label>
+              <input type="number" id="ss-lineman-sun" placeholder="กรอกหลังได้รับสรุปยอดจาก Line Man" step="0.01">
+            </div>
+            <div class="form-row">
+              <label>หมายเหตุ / รอบที่</label>
+              <input type="text" id="ss-lineman-sun-note" placeholder="เช่น รอบ 1-15 เม.ย.">
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+            <button class="btn btn-sm" style="background:var(--blue);color:#fff;" onclick="saveLinemanSun()">บันทึก</button>
+            <span style="font-size:12px;color:var(--text2);" id="ss-lineman-sun-saved"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:13px;">
+        <div class="card-title">ค่าใช้จ่ายหน้าร้าน</div>
+        <div class="grid-3">
+          <div class="stat-box" id="ss-ice-shopexp-box"><div class="stat-label">น้ำแข็ง</div><div class="stat-value" id="ss-ice">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">นมเมจิ</div><div class="stat-value" id="ss-meji">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">น้ำตาลทราย</div><div class="stat-value" id="ss-sugar">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">โซดา</div><div class="stat-value" id="ss-soda">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">โยเกิร์ต</div><div class="stat-value" id="ss-yogurt">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">Bakery</div><div class="stat-value" id="ss-bakery">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">มะนาวสด</div><div class="stat-value" id="ss-lime">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">น้ำมะพร้าว</div><div class="stat-value" id="ss-coconut">฿0</div></div>
+          <div class="stat-box" style="border-left:3px solid var(--accent);">
+            <div class="stat-label">อื่นๆ (รายการเพิ่มเติม)</div>
+            <div class="stat-value" id="ss-extra">฿0</div>
+            <div id="ss-extra-toggle" style="display:none;margin-top:6px;">
+              <button onclick="toggleExtraDetail()" style="font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;padding:0;font-family:inherit;" id="ss-extra-btn">▼ ดูรายละเอียด</button>
+              <div id="ss-extra-detail" style="display:none;margin-top:6px;font-size:11px;color:var(--text2);line-height:1.8;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:13px;">
+        <div class="card-title">ค่าใช้จ่ายวางบิล (วัตถุดิบ)</div>
+        <div class="grid-3">
+          <div class="stat-box" id="ss-cftd-box">
+            <div class="stat-label">วัตถุดิบ CFTD</div>
+            <div class="stat-value" id="ss-cftd">฿0</div>
+            <div style="margin-top:6px;font-size:11px;display:flex;gap:8px;">
+              <span style="color:var(--green);">✓ <span id="ss-cftd-paid">฿0</span></span>
+              <span style="color:var(--red);">● <span id="ss-cftd-unpaid">฿0</span></span>
+            </div>
+          </div>
+          <div class="stat-box" id="ss-jinda-box">
+            <div class="stat-label">นมจินดา</div>
+            <div class="stat-value" id="ss-jinda">฿0</div>
+            <div style="margin-top:6px;font-size:11px;display:flex;gap:8px;">
+              <span style="color:var(--green);">✓ <span id="ss-jinda-paid">฿0</span></span>
+              <span style="color:var(--red);">● <span id="ss-jinda-unpaid">฿0</span></span>
+            </div>
+          </div>
+          <div class="stat-box" id="ss-ice-box">
+            <div class="stat-label">น้ำแข็ง (วางบิล)</div>
+            <div class="stat-value" id="ss-ice-payable">฿0</div>
+            <div style="margin-top:6px;font-size:11px;display:flex;gap:8px;">
+              <span style="color:var(--green);">✓ <span id="ss-ice-paid">฿0</span></span>
+              <span style="color:var(--red);">● <span id="ss-ice-unpaid">฿0</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:13px;">
+        <div class="card-title">ค่าใช้จ่ายอื่นๆ ประจำเดือน</div>
+        <div class="grid-3" id="ss-other-expenses">
+          <div class="stat-box" style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:13px;">
+        <div class="card-title">ค่าใช้จ่ายบัญชีร้าน</div>
+        <div class="grid-3" id="ss-acctexp-expenses">
+          <div class="stat-box" style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>
+        </div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:12px;color:var(--text2);">รวมคืนเงินยืมเดือนนี้</span>
+          <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--yellow);font-size:14px;" id="ss-loan-repay">฿0</span>
+        </div>
+      </div>
+
+      <!-- ตารางรายการบัญชีร้านแยกรายการ -->
+      <div class="card" style="padding:0;overflow:hidden;margin-top:13px;">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);">รายการบัญชีร้านเดือนนี้</span>
+          <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--accent);font-size:13px;" id="ss-acctexp-list-total">฿0.00</span>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>วันที่</th><th>รายการ</th><th>หมวด</th><th>จำนวน</th></tr></thead>
+            <tbody id="ss-acctexp-tbody"></tbody>
+          </table>
+          <div id="ss-acctexp-list-empty" class="empty-state" style="padding:16px;display:none;"><p>ยังไม่มีข้อมูล</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:13px;">
+      <div class="card-title">รายการวางบิลค้างชำระ (เดือนนี้)</div>
+      <div id="ss-unpaid-list">
+        <div class="empty-state" style="padding:20px;"><p>ไม่มีรายการค้างชำระในเดือนนี้ ✓</p></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+        <span style="font-size:12px;color:var(--text2);">ยอดค้างชำระทั้งหมด</span>
+        <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--red);font-size:16px;" id="ss-unpaid-total">฿0</span>
+      </div>
+    </div>
+
     <div class="grid-3" style="margin-bottom:13px;">
-      <div class="stat-box"><div class="stat-label">QR Payment</div><div class="stat-value" id="ss-qr-total">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">Line Man (รวมก่อนหักGP)</span></div><div class="stat-value" id="ss-lineman-total">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">Cash (ยอดปิดกะ)</div><div class="stat-value" id="ss-cash-total">฿0</div></div>
+      <div class="stat-box"><div class="stat-label">QR สูงสุดวันที่</div><div class="stat-value" id="ss-qr" style="font-size:13px;">-</div></div>
+      <div class="stat-box"><div class="stat-label">ยอดขายสูงสุดวันที่</div><div class="stat-value" id="ss-maxsale" style="font-size:13px;">-</div></div>
+      <div class="stat-box"><div class="stat-label">จำนวนวันที่บันทึก</div><div class="stat-value" id="ss-days">0</div></div>
     </div>
-        
-    <div style="background:var(--blue-t);border:1px solid rgba(37,99,168,.2);border-radius:var(--r-sm);padding:14px 16px;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;">💳 Line Man — ยอดเข้าบัญชีคุณซัน</div>
-      <div class="grid-2">
-        <div class="form-row">
-          <label>ยอดที่ Line Man โอนเข้าบัญชีคุณซัน (฿)</label>
-          <input type="number" id="ss-lineman-sun" placeholder="กรอกหลังได้รับสรุปยอดจาก Line Man" step="0.01">
-        </div>
-        <div class="form-row">
-          <label>หมายเหตุ / รอบที่</label>
-          <input type="text" id="ss-lineman-sun-note" placeholder="เช่น รอบ 1-15 เม.ย.">
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
-        <button class="btn btn-sm" style="background:var(--blue);color:#fff;" onclick="saveLinemanSun()">บันทึก</button>
-        <span style="font-size:12px;color:var(--text2);" id="ss-lineman-sun-saved"></span>
-      </div>
-    </div>
-  </div>
 
-  <div class="card" style="margin-bottom:13px;">
-    <div class="card-title">ค่าใช้จ่ายหน้าร้าน</div>
-    <div class="grid-3">
-      <div class="stat-box"><div class="stat-label">น้ำแข็ง</div><div class="stat-value" id="ss-ice">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">นมเมจิ</div><div class="stat-value" id="ss-meji">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">น้ำตาลทราย</div><div class="stat-value" id="ss-sugar">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">โซดา</div><div class="stat-value" id="ss-soda">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">โยเกิร์ต</div><div class="stat-value" id="ss-yogurt">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">Bakery</div><div class="stat-value" id="ss-bakery">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">มะนาวสด</div><div class="stat-value" id="ss-lime">฿0</div></div>
-      <div class="stat-box"><div class="stat-label">น้ำมะพร้าว</div><div class="stat-value" id="ss-coconut">฿0</div></div>
-      <div class="stat-box" style="border-left:3px solid var(--accent);">
-        <div class="stat-label">อื่นๆ (รายการเพิ่มเติม)</div>
-        <div class="stat-value" id="ss-extra">฿0</div>
-        <div id="ss-extra-list" style="display:none;margin-top:6px;font-size:11px;color:var(--text3);"></div>
-        <button onclick="var el=document.getElementById('ss-extra-list');el.style.display=el.style.display==='none'?'block':'none';this.textContent=el.style.display==='none'?'ดูรายการ':'ซ่อน';" style="margin-top:4px;font-size:10px;color:var(--accent);background:none;border:none;cursor:pointer;padding:0;">ดูรายการ</button>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div class="tbl-wrap">
+        <table><thead><tr><th>วันที่</th><th>Sub Total</th><th>Discount</th><th>ยอดสุทธิ</th><th>QR</th><th>Cash</th><th>ค่าใช้จ่าย</th><th>Pay In</th></tr></thead>
+        <tbody id="s-tbody"></tbody>
+        <tfoot><tr style="background:var(--bg3);font-weight:700;border-top:2px solid var(--border);">
+          <td style="font-size:12px;padding:8px 12px;">รวม</td>
+          <td class="mono" id="st-subtotal">฿0</td>
+          <td class="mono" id="st-discount">฿0</td>
+          <td class="mono" id="st-netsales">฿0</td>
+          <td class="mono" id="st-qr">฿0</td>
+          <td class="mono" id="st-cash">฿0</td>
+          <td class="mono" id="st-exp">฿0</td>
+          <td class="mono" id="st-payin">฿0</td>
+        </tr></tfoot></table>
       </div>
     </div>
-  </div>
-
-  <div class="card" style="margin-bottom:13px;">
-    <div class="card-title">ค่าใช้จ่ายวางบิล (วัตถุดิบ)</div>
-    <div class="grid-3">
-      <div class="stat-box" id="ss-cftd-box">
-        <div class="stat-label">วัตถุดิบ CFTD</div>
-        <div class="stat-value" id="ss-cftd">฿0</div>
-        <div style="margin-top:6px;font-size:11px;display:flex;gap:8px;">
-          <span style="color:var(--green);">✓ <span id="ss-cftd-paid">฿0</span></span>
-          <span style="color:var(--red);">● <span id="ss-cftd-unpaid">฿0</span></span>
-        </div>
-      </div>
-      <div class="stat-box" id="ss-jinda-box">
-        <div class="stat-label">นมจินดา</div>
-        <div class="stat-value" id="ss-jinda">฿0</div>
-        <div style="margin-top:6px;font-size:11px;display:flex;gap:8px;">
-          <span style="color:var(--green);">✓ <span id="ss-jinda-paid">฿0</span></span>
-          <span style="color:var(--red);">● <span id="ss-jinda-unpaid">฿0</span></span>
-        </div>
-      </div>
-      <div class="stat-box" id="ss-ice-box">
-        <div class="stat-label">น้ำแข็ง (วางบิล)</div>
-        <div class="stat-value" id="ss-ice-payable">฿0</div>
-        <div style="margin-top:6px;font-size:11px;display:flex;gap:8px;">
-          <span style="color:var(--green);">✓ <span id="ss-ice-paid">฿0</span></span>
-          <span style="color:var(--red);">● <span id="ss-ice-unpaid">฿0</span></span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-bottom:13px;">
-    <div class="card-title">ค่าใช้จ่ายอื่นๆ ประจำเดือน</div>
-    <div class="grid-3" id="ss-other-expenses">
-      <div class="stat-box" style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-bottom:13px;">
-    <div class="card-title">ค่าใช้จ่ายบัญชีร้าน</div>
-    <div class="grid-3" id="ss-acctexp-expenses">
-      <div class="stat-box" style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>
-    </div>
-    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:12px;color:var(--text2);">รวมคืนเงินยืมเดือนนี้</span>
-      <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--yellow);font-size:14px;" id="ss-loan-repay">฿0</span>
-    </div>
-  </div>
-
-  <!-- ตารางรายการบัญชีร้านแยกรายการ -->
-  <div class="card" style="padding:0;overflow:hidden;margin-top:13px;">
-    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);">รายการบัญชีร้านเดือนนี้</span>
-      <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--accent);font-size:13px;" id="ss-acctexp-list-total">฿0.00</span>
-    </div>
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr><th>วันที่</th><th>รายการ</th><th>หมวด</th><th>จำนวน</th></tr></thead>
-        <tbody id="ss-acctexp-tbody"></tbody>
-      </table>
-      <div id="ss-acctexp-list-empty" class="empty-state" style="padding:16px;display:none;"><p>ยังไม่มีข้อมูล</p></div>
-    </div>
-  </div>
-</div>
-
-<div class="card" style="margin-bottom:13px;">
-  <div class="card-title">รายการวางบิลค้างชำระ (เดือนนี้)</div>
-  <div id="ss-unpaid-list">
-    <div class="empty-state" style="padding:20px;"><p>ไม่มีรายการค้างชำระในเดือนนี้ ✓</p></div>
-  </div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
-    <span style="font-size:12px;color:var(--text2);">ยอดค้างชำระทั้งหมด</span>
-    <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--red);font-size:16px;" id="ss-unpaid-total">฿0</span>
-  </div>
-</div>
-
-<div class="grid-3" style="margin-bottom:13px;">
-  <div class="stat-box"><div class="stat-label">QR สูงสุดวันที่</div><div class="stat-value" id="ss-qr" style="font-size:13px;">-</div></div>
-  <div class="stat-box"><div class="stat-label">ยอดขายสูงสุดวันที่</div><div class="stat-value" id="ss-maxsale" style="font-size:13px;">-</div></div>
-  <div class="stat-box"><div class="stat-label">จำนวนวันที่บันทึก</div><div class="stat-value" id="ss-days">0</div></div>
-</div>
-
-<div class="card" style="padding:0;overflow:hidden;">
-  <div class="tbl-wrap">
-    <table><thead><tr><th>วันที่</th><th>Sub Total</th><th>Discount</th><th>ยอดสุทธิ</th><th>QR</th><th>Cash</th><th>ค่าใช้จ่าย</th><th>Pay In</th></tr></thead>
-    <tbody id="s-tbody"></tbody>
-    <tfoot><tr style="background:var(--bg3);font-weight:700;border-top:2px solid var(--border);">
-      <td style="font-size:12px;padding:8px 12px;">รวม</td>
-      <td class="mono" id="st-subtotal">฿0</td>
-      <td class="mono" id="st-discount">฿0</td>
-      <td class="mono" id="st-netsales">฿0</td>
-      <td class="mono" id="st-qr">฿0</td>
-      <td class="mono" id="st-cash">฿0</td>
-      <td class="mono" id="st-exp">฿0</td>
-      <td class="mono" id="st-payin">฿0</td>
-    </tr></tfoot></table>
-  </div>
-</div>
-<div id="s-empty" class="empty-state"><div class="icon">📊</div><p>เลือกสาขาและเดือน แล้วกดดึงข้อมูล</p></div>
-```
-
+    <div id="s-empty" class="empty-state"><div class="icon">📊</div><p>เลือกสาขาและเดือน แล้วกดดึงข้อมูล</p></div>
   </div>
 
   <div id="stab-year-content" style="display:none;">
@@ -619,35 +609,32 @@ tr:hover td{background:var(--bg3);}
       <div><button class="btn btn-primary" onclick="loadYearly()"><span id="sy-txt">ดึงข้อมูล</span></button></div>
     </div>
 
-```
-<div id="sy-stats" style="display:none;">
-  <div class="grid-3" style="margin-bottom:13px;">
-    <div class="stat-box" style="border-left:3px solid var(--green);">
-      <div class="stat-label">รายรับรวมทั้งปี</div>
-      <div class="stat-value pos" id="sy-sales">฿0</div>
+    <div id="sy-stats" style="display:none;">
+      <div class="grid-3" style="margin-bottom:13px;">
+        <div class="stat-box" style="border-left:3px solid var(--green);">
+          <div class="stat-label">รายรับรวมทั้งปี</div>
+          <div class="stat-value pos" id="sy-sales">฿0</div>
+        </div>
+        <div class="stat-box" style="border-left:3px solid var(--red);">
+          <div class="stat-label">รายจ่ายรวมทั้งปี</div>
+          <div class="stat-value neg" id="sy-exp">฿0</div>
+        </div>
+        <div class="stat-box" style="border-left:3px solid var(--accent);">
+          <div class="stat-label">กำไร/ขาดทุนรวมทั้งปี</div>
+          <div class="stat-value" id="sy-profit">฿0</div>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>เดือน</th><th>รายรับ</th><th>ค่าใช้จ่าย</th><th>กำไร/ขาดทุน</th><th>Pay In</th><th>วันที่บันทึก</th></tr></thead>
+            <tbody id="sy-tbody"></tbody>
+            <tfoot id="sy-tfoot"></tfoot>
+          </table>
+        </div>
+      </div>
     </div>
-    <div class="stat-box" style="border-left:3px solid var(--red);">
-      <div class="stat-label">รายจ่ายรวมทั้งปี</div>
-      <div class="stat-value neg" id="sy-exp">฿0</div>
-    </div>
-    <div class="stat-box" style="border-left:3px solid var(--accent);">
-      <div class="stat-label">กำไร/ขาดทุนรวมทั้งปี</div>
-      <div class="stat-value" id="sy-profit">฿0</div>
-    </div>
-  </div>
-  <div class="card" style="padding:0;overflow:hidden;">
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr><th>เดือน</th><th>รายรับ</th><th>ค่าใช้จ่าย</th><th>กำไร/ขาดทุน</th><th>Pay In</th><th>วันที่บันทึก</th></tr></thead>
-        <tbody id="sy-tbody"></tbody>
-        <tfoot id="sy-tfoot"></tfoot>
-      </table>
-    </div>
-  </div>
-</div>
-<div id="sy-empty" class="empty-state"><div class="icon">📅</div><p>เลือกสาขาและปี แล้วกดดึงข้อมูล</p></div>
-```
-
+    <div id="sy-empty" class="empty-state"><div class="icon">📅</div><p>เลือกสาขาและปี แล้วกดดึงข้อมูล</p></div>
   </div>
 </div>
 
@@ -657,7 +644,6 @@ tr:hover td{background:var(--bg3);}
   <div class="page-header"><h1>บัญชีร้าน</h1><p>บันทึกค่าใช้จ่ายที่หักผ่านบัญชีร้าน — กรอกได้อิสระ ไม่ต้องกรอกยอดขาย</p></div>
 
   <!-- เงินเดือนพนักงาน -->
-
   <div class="card" style="border-color:rgba(37,99,168,.25);background:var(--blue-t);">
     <div class="card-title" style="color:var(--blue);">เงินเดือนพนักงาน</div>
     <div class="grid-3">
@@ -679,7 +665,6 @@ tr:hover td{background:var(--bg3);}
   </div>
 
   <!-- ตารางเงินเดือน -->
-
   <div class="card" style="padding:0;overflow:hidden;margin-bottom:20px;">
     <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
       <span style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);">รายการเงินเดือนพนักงาน</span>
@@ -698,7 +683,10 @@ tr:hover td{background:var(--bg3);}
     </div>
     <div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:12px;color:var(--text2);">ยอดรวมเงินเดือน <span id="sal-filter-label" style="color:var(--accent);"></span></span>
-      <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--blue);font-size:15px;" id="sal-total">฿0.00</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="btn btn-primary btn-sm" onclick="syncSalary(true)">☁ บันทึกขึ้น Sheets</button>
+        <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--blue);font-size:15px;" id="sal-total">฿0.00</span>
+      </div>
     </div>
   </div>
 
@@ -764,54 +752,42 @@ tr:hover td{background:var(--bg3);}
   </div>
 
   <!-- เงินยืม -->
-
   <div class="card" style="border-color:rgba(160,120,32,.25);background:rgba(160,120,32,.05);margin-top:8px;">
     <div class="card-title" style="color:var(--yellow);">เงินยืม</div>
 
-```
-<!-- เพิ่มการยืม -->
-<div style="margin-bottom:16px;">
-  <div class="sec-label">บันทึกการยืม</div>
-  <div class="grid-3">
-    <div class="form-row"><label>วันที่ยืม</label><input type="date" id="loan-date"></div>
-    <div class="form-row"><label>ยืมจาก</label><input type="text" id="loan-from" placeholder="เช่น เจ้าของ, คุณซัน..."></div>
-    <div class="form-row"><label>จำนวน (฿)</label><input type="number" id="loan-amount" placeholder="0.00" step="0.01"></div>
-  </div>
-  <div class="form-row"><label>ใช้จ่ายเพื่ออะไร</label><input type="text" id="loan-purpose" placeholder="เช่น จ่ายค่าเช่าก่อน, ซื้อวัตถุดิบ..."></div>
-  <button class="btn btn-sm" style="background:var(--yellow);color:#fff;" onclick="addLoan()">+ บันทึกการยืม</button>
-</div>
+    <div style="margin-bottom:16px;">
+      <div class="sec-label">บันทึกการยืม</div>
+      <div class="grid-3">
+        <div class="form-row"><label>วันที่ยืม</label><input type="date" id="loan-date"></div>
+        <div class="form-row"><label>ยืมจาก</label><input type="text" id="loan-from" placeholder="เช่น เจ้าของ, คุณซัน..."></div>
+        <div class="form-row"><label>จำนวน (฿)</label><input type="number" id="loan-amount" placeholder="0.00" step="0.01"></div>
+      </div>
+      <div class="form-row"><label>ใช้จ่ายเพื่ออะไร</label><input type="text" id="loan-purpose" placeholder="เช่น จ่ายค่าเช่าก่อน, ซื้อวัตถุดิบ..."></div>
+      <button class="btn btn-sm" style="background:var(--yellow);color:#fff;" onclick="addLoan()">+ บันทึกการยืม</button>
+    </div>
 
-<hr class="divider">
+    <hr class="divider">
 
-<!-- กรองเงินยืม -->
-<div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
-  <span style="font-size:12px;color:var(--text3);">กรองสาขา:</span>
-  <button class="btn btn-sm btn-outline" id="lf-all" onclick="filterLoan('branch','all')" style="border-color:var(--accent);color:var(--accent);">ทั้งหมด</button>
-  <button class="btn btn-sm btn-outline" id="lf-passione" onclick="filterLoan('branch','passione')">แพชชั่น</button>
-  <button class="btn btn-sm btn-outline" id="lf-lotus" onclick="filterLoan('branch','lotus')">โลตัส</button>
-</div>
-<div style="display:flex;gap:8px;align-items:center;margin-bottom:13px;flex-wrap:wrap;">
-  <span style="font-size:12px;color:var(--text3);">กรองเดือน:</span>
-  <input type="month" id="loan-filter-month" oninput="renderLoans()" style="width:150px;font-size:13px;padding:4px 8px;">
-  <button class="btn btn-outline btn-sm" onclick="document.getElementById('loan-filter-month').value='';renderLoans()">ทั้งหมด</button>
-</div>
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+      <span style="font-size:12px;color:var(--text3);">กรองสาขา:</span>
+      <button class="btn btn-sm btn-outline" id="lf-all" onclick="filterLoan('all')" style="border-color:var(--accent);color:var(--accent);">ทั้งหมด</button>
+      <button class="btn btn-sm btn-outline" id="lf-passione" onclick="filterLoan('passione')">แพชชั่น</button>
+      <button class="btn btn-sm btn-outline" id="lf-lotus" onclick="filterLoan('lotus')">โลตัส</button>
+    </div>
 
-<!-- รายการยืมทั้งหมด -->
-<div class="tbl-wrap">
-  <table>
-    <thead><tr><th>วันที่ยืม</th><th>ยืมจาก</th><th>จำนวน</th><th>ใช้เพื่อ</th><th>ยังค้างอยู่</th><th>สถานะ</th><th></th></tr></thead>
-    <tbody id="loan-tbody"></tbody>
-  </table>
-  <div id="loan-empty" class="empty-state" style="display:none;"><div class="icon">💰</div><p>ยังไม่มีรายการ</p></div>
-</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>วันที่ยืม</th><th>สาขา</th><th>ยืมจาก</th><th>จำนวน</th><th>ใช้เพื่อ</th><th>ยังค้างอยู่</th><th>สถานะ</th><th></th></tr></thead>
+        <tbody id="loan-tbody"></tbody>
+      </table>
+      <div id="loan-empty" class="empty-state" style="display:none;"><div class="icon">💰</div><p>ยังไม่มีรายการ</p></div>
+    </div>
 
-<div class="grid-3" style="margin-top:13px;">
-  <div class="stat-box"><div class="stat-label">ยืมทั้งหมด</div><div class="stat-value" id="loan-tot-all">฿0.00</div></div>
-  <div class="stat-box"><div class="stat-label">คืนแล้ว</div><div class="stat-value pos" id="loan-tot-paid">฿0.00</div></div>
-  <div class="stat-box"><div class="stat-label" style="color:var(--red);">ยังค้างคืน</div><div class="stat-value neg" id="loan-tot-remain">฿0.00</div></div>
-</div>
-```
-
+    <div class="grid-3" style="margin-top:13px;">
+      <div class="stat-box"><div class="stat-label">ยืมทั้งหมด</div><div class="stat-value" id="loan-tot-all">฿0.00</div></div>
+      <div class="stat-box"><div class="stat-label">คืนแล้ว</div><div class="stat-value pos" id="loan-tot-paid">฿0.00</div></div>
+      <div class="stat-box"><div class="stat-label" style="color:var(--red);">ยังค้างคืน</div><div class="stat-value neg" id="loan-tot-remain">฿0.00</div></div>
+    </div>
   </div>
 </div>
 
@@ -862,201 +838,70 @@ tr:hover td{background:var(--bg3);}
       <p>ข้อมูลหลังบ้าน Coffee Today — <span style="color:var(--red);font-size:12px;cursor:pointer;" onclick="lockAdmin()">ออกจากระบบ</span></p>
     </div>
 
-```
-<div class="card">
-  <div class="card-title">ข้อมูลระบบ</div>
-  <div class="grid-3">
-    <div class="stat-box"><div class="stat-label">รายการวางบิลทั้งหมด</div><div class="stat-value" id="adm-payable-count">0</div></div>
-    <div class="stat-box"><div class="stat-label">ค้างชำระทั้งหมด</div><div class="stat-value neg" id="adm-unpaid-total">฿0</div></div>
-    <div class="stat-box"><div class="stat-label">ชำระแล้วทั้งหมด</div><div class="stat-value pos" id="adm-paid-total">฿0</div></div>
-  </div>
-</div>
-
-<div class="card">
-  <div class="card-title">รายการวางบิลทั้งหมด</div>
-  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-    <select id="adm-filter-branch" onchange="renderAdminPayables()" style="width:auto;">
-      <option value="">ทุกสาขา</option>
-      <option value="passione">แพชชั่นระยอง</option>
-      <option value="lotus">โลตัสระยอง</option>
-    </select>
-    <select id="adm-filter-status" onchange="renderAdminPayables()" style="width:auto;">
-      <option value="">ทุกสถานะ</option>
-      <option value="unpaid">ค้างชำระ</option>
-      <option value="paid">ชำระแล้ว</option>
-    </select>
-    <select id="adm-filter-cat" onchange="renderAdminPayables()" style="width:auto;">
-      <option value="">ทุกหมวด</option>
-      <option>วัตถุดิบ/สินค้า</option>
-      <option>ค่าเช่า</option>
-      <option>ค่าไฟ/น้ำ</option>
-      <option>ค่าแรง</option>
-      <option>ค่าบริการ</option>
-      <option>ภาษี</option>
-      <option>อุปกรณ์/ซ่อมบำรุง</option>
-      <option>อื่นๆ</option>
-    </select>
-  </div>
-  <div class="tbl-wrap">
-    <table>
-      <thead><tr><th>วันที่</th><th>สาขา</th><th>รายการ</th><th>หมวด</th><th>เลขบิล</th><th>จำนวน</th><th>กำหนดจ่าย</th><th>สถานะ</th><th>วันที่ชำระ</th></tr></thead>
-      <tbody id="adm-tbody"></tbody>
-    </table>
-    <div id="adm-empty" class="empty-state" style="display:none;"><div class="icon">📋</div><p>ไม่มีข้อมูล</p></div>
-  </div>
-  <div style="display:flex;justify-content:flex-end;margin-top:12px;gap:8px;">
-    <button class="btn btn-outline btn-sm" onclick="exportAdminCSV()">⬇ Export CSV</button>
-  </div>
-</div>
-
-<div class="card">
-  <div class="card-title">ยอด Line Man บัญชีคุณซัน (ทุกเดือน)</div>
-  <div class="tbl-wrap">
-    <table>
-      <thead><tr><th>เดือน</th><th>สาขา</th><th>ยอดรับ</th><th>หมายเหตุ</th></tr></thead>
-      <tbody id="adm-lineman-tbody"></tbody>
-    </table>
-    <div id="adm-lineman-empty" class="empty-state" style="display:none;padding:20px;"><p>ยังไม่มีข้อมูล</p></div>
-  </div>
-</div>
-
-<div class="card" style="border-color:rgba(184,64,64,.3);">
-  <div class="card-title" style="color:var(--red);">⚠ Danger Zone</div>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;">
-    <button class="btn btn-danger btn-sm" onclick="adminClearPaid()">ลบรายการที่ชำระแล้วทั้งหมด</button>
-    <button class="btn btn-danger btn-sm" onclick="adminClearAll()">ล้างข้อมูลวางบิลทั้งหมด</button>
-  </div>
-</div>
-```
-<!-- ════ KPI DASHBOARD ════ -->
-<div class="card" style="margin-top:20px;border-color:rgba(61,139,94,.3);">
-  <div class="card-title" style="color:var(--green);">📊 KPI Dashboard & P&L</div>
-
-  <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px;">
-    <div>
-      <label>สาขา</label>
-      <select id="kpi-branch" style="width:180px;">
-        <option value="passione">แพชชั่นระยอง</option>
-        <option value="lotus">โลตัสระยอง</option>
-      </select>
-    </div>
-    <div>
-      <label>เดือน/ปี</label>
-      <input type="month" id="kpi-month" style="width:160px;">
-    </div>
-    <button class="btn btn-primary" onclick="loadKPI()"><span id="kpi-txt">📈 ดึงข้อมูล</span></button>
-  </div>
-
-  <div id="kpi-stats" style="display:none;">
-
-    <!-- รายได้ -->
-    <div class="grid-3" style="margin-bottom:13px;">
-      <div class="stat-box" style="border-left:3px solid var(--green);">
-        <div class="stat-label">💚 รายได้รวม (QR+PayIn+LM)</div>
-        <div class="stat-value pos" id="kpi-rev">฿0</div>
-        <div id="kpi-rev-sub" style="font-size:11px;color:var(--text3);margin-top:4px;line-height:1.7;"></div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">เฉลี่ย / วัน</div>
-        <div class="stat-value" id="kpi-avg">฿0</div>
-        <div class="stat-label" style="margin-top:10px;">สูงสุด / วัน</div>
-        <div class="stat-value pos" id="kpi-top">฿0</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">วันที่บันทึก</div>
-        <div class="stat-value" id="kpi-days">0</div>
-        <div class="stat-label" style="margin-top:10px;">Cash หน้าร้าน</div>
-        <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--text2);" id="kpi-cash">฿0</div>
+    <div class="card">
+      <div class="card-title">ข้อมูลระบบ</div>
+      <div class="grid-3">
+        <div class="stat-box"><div class="stat-label">รายการวางบิลทั้งหมด</div><div class="stat-value" id="adm-payable-count">0</div></div>
+        <div class="stat-box"><div class="stat-label">ค้างชำระทั้งหมด</div><div class="stat-value neg" id="adm-unpaid-total">฿0</div></div>
+        <div class="stat-box"><div class="stat-label">ชำระแล้วทั้งหมด</div><div class="stat-value pos" id="adm-paid-total">฿0</div></div>
       </div>
     </div>
 
-    <!-- งบ P&L -->
-    <div style="background:var(--bg3);border-radius:var(--r);padding:14px 16px;margin-bottom:13px;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;">งบกำไรขาดทุน</div>
-
-      <!-- รายได้ -->
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:13px;font-weight:600;color:var(--green);">💚 รายได้รวม</span>
-        <span style="font-family:'DM Mono',monospace;font-weight:700;font-size:15px;color:var(--green);" id="pl-rev">฿0</span>
+    <div class="card">
+      <div class="card-title">รายการวางบิลทั้งหมด</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+        <select id="adm-filter-branch" onchange="renderAdminPayables()" style="width:auto;">
+          <option value="">ทุกสาขา</option>
+          <option value="passione">แพชชั่นระยอง</option>
+          <option value="lotus">โลตัสระยอง</option>
+        </select>
+        <select id="adm-filter-status" onchange="renderAdminPayables()" style="width:auto;">
+          <option value="">ทุกสถานะ</option>
+          <option value="unpaid">ค้างชำระ</option>
+          <option value="paid">ชำระแล้ว</option>
+        </select>
+        <select id="adm-filter-cat" onchange="renderAdminPayables()" style="width:auto;">
+          <option value="">ทุกหมวด</option>
+          <option>วัตถุดิบ/สินค้า</option>
+          <option>ค่าเช่า</option>
+          <option>ค่าไฟ/น้ำ</option>
+          <option>ค่าแรง</option>
+          <option>ค่าบริการ</option>
+          <option>ภาษี</option>
+          <option>อุปกรณ์/ซ่อมบำรุง</option>
+          <option>อื่นๆ</option>
+        </select>
       </div>
-
-      <!-- ต้นทุน -->
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:13px;color:var(--text2);padding-left:8px;">− วัตถุดิบหน้าร้าน (Daily)</span>
-        <span style="font-family:'DM Mono',monospace;" id="pl-cogs-daily">฿0</span>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>วันที่</th><th>สาขา</th><th>รายการ</th><th>หมวด</th><th>เลขบิล</th><th>จำนวน</th><th>กำหนดจ่าย</th><th>สถานะ</th><th>วันที่ชำระ</th><th></th></tr></thead>
+          <tbody id="adm-tbody"></tbody>
+        </table>
+        <div id="adm-empty" class="empty-state" style="display:none;"><div class="icon">📋</div><p>ไม่มีข้อมูล</p></div>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:13px;color:var(--text2);padding-left:8px;">− วางบิลวัตถุดิบ (Payable Paid)</span>
-        <span style="font-family:'DM Mono',monospace;" id="pl-cogs-payable">฿0</span>
-      </div>
-      <div id="pl-unpaid-row" style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:13px;color:var(--yellow);padding-left:8px;">⚠ วางบิลค้างชำระ (ไม่นับในต้นทุน)</span>
-        <span style="font-family:'DM Mono',monospace;color:var(--yellow);" id="pl-unpaid">฿0</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:13px;color:var(--text2);padding-left:8px;">− ค่าใช้จ่ายร้าน (StdExp+Extra)</span>
-        <span style="font-family:'DM Mono',monospace;" id="pl-shop">฿0</span>
-      </div>
-
-      <!-- กำไรขั้นต้น -->
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 8px;background:rgba(61,139,94,.09);border-radius:6px;margin:8px 0;">
-        <span style="font-size:14px;font-weight:700;color:var(--green);">กำไรขั้นต้น</span>
-        <span style="font-family:'DM Mono',monospace;font-weight:700;font-size:15px;" id="pl-gp">฿0</span>
-      </div>
-
-      <!-- ค่าใช้จ่ายคงที่ -->
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:13px;color:var(--text2);padding-left:8px;">− ค่าเช่า + น้ำไฟ + ภาษี</span>
-        <span style="font-family:'DM Mono',monospace;" id="pl-rent">฿0</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:13px;color:var(--text2);padding-left:8px;">− เงินเดือนพนักงาน</span>
-        <span style="font-family:'DM Mono',monospace;" id="pl-salary">฿0</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:13px;color:var(--text2);padding-left:8px;">− บัญชีร้าน (AcctExp)</span>
-        <span style="font-family:'DM Mono',monospace;" id="pl-acct">฿0</span>
-      </div>
-
-      <!-- กำไรสุทธิ -->
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0 4px;border-top:2px solid var(--accent);margin-top:6px;">
-        <span style="font-size:15px;font-weight:700;color:var(--accent2);">กำไร / ขาดทุนสุทธิ</span>
-        <span style="font-family:'DM Mono',monospace;font-weight:700;font-size:20px;" id="pl-net">฿0</span>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px;gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="exportAdminCSV()">⬇ Export CSV</button>
       </div>
     </div>
 
-    <!-- แจ้งเตือน -->
-    <div id="kpi-alerts" style="margin-bottom:12px;"></div>
-
-    <!-- Break-even -->
-    <div class="grid-4">
-      <div class="stat-box">
-        <div class="stat-label">Break-even / วัน</div>
-        <div class="stat-value" id="kpi-be" style="color:var(--yellow);">฿0</div>
-      </div>
-      <div class="stat-box" id="kpi-actual-box">
-        <div class="stat-label">ยอดจริง / วัน</div>
-        <div class="stat-value" id="kpi-actual">฿0</div>
-        <div id="kpi-bep-status" style="font-size:11px;margin-top:4px;"></div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Gross Margin</div>
-        <div class="stat-value" id="kpi-gm">0%</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Net Margin</div>
-        <div class="stat-value" id="kpi-nm">0%</div>
+    <div class="card">
+      <div class="card-title">ยอด Line Man บัญชีคุณซัน (ทุกเดือน)</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>เดือน</th><th>สาขา</th><th>ยอดรับ</th><th>หมายเหตุ</th></tr></thead>
+          <tbody id="adm-lineman-tbody"></tbody>
+        </table>
+        <div id="adm-lineman-empty" class="empty-state" style="display:none;padding:20px;"><p>ยังไม่มีข้อมูล</p></div>
       </div>
     </div>
 
-    <!-- สัดส่วนต้นทุน -->
-    <div style="margin-top:14px;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">สัดส่วนต่อรายได้</div>
-      <div id="kpi-bars"></div>
+    <div class="card" style="border-color:rgba(184,64,64,.3);">
+      <div class="card-title" style="color:var(--red);">⚠ Danger Zone</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-danger btn-sm" onclick="adminClearPaid()">ลบรายการที่ชำระแล้วทั้งหมด</button>
+        <button class="btn btn-danger btn-sm" onclick="adminClearAll()">ล้างข้อมูลวางบิลทั้งหมด</button>
+      </div>
     </div>
-
-  </div><!-- end kpi-stats -->
-</div><!-- end KPI card -->
   </div>
 </div>
 
@@ -1065,7 +910,6 @@ tr:hover td{background:var(--bg3);}
 
 <script>
 var pFilter = 'all';
-function cd(val) { var s = String(val||''); return s.indexOf('T') >= 0 ? s.split('T')[0] : s; }
 var pBranchFilter = 'all';
 
 function filterPBranch(type) {
@@ -1134,7 +978,6 @@ document.addEventListener('DOMContentLoaded', function() {
   var initBranch = document.getElementById('d-branch').value;
   var accEl = document.getElementById('d-account');
   if (accEl) accEl.value = BRANCH_ACCOUNTS[initBranch] || '';
-  // init acctexp
   var aeDateEl = document.getElementById('ae-date');
   if (aeDateEl) aeDateEl.value = today;
   var aeFilterEl = document.getElementById('ae-filter-month');
@@ -1166,7 +1009,6 @@ function onBranchChange() {
   var branch = document.getElementById('d-branch').value;
   var accEl  = document.getElementById('d-account');
   if (accEl) accEl.value = BRANCH_ACCOUNTS[branch] || '';
-  // แสดง/ซ่อน card น้ำแข็งวางบิลเฉพาะโลตัส
   var lotusIceCard = document.getElementById('lotus-ice-card');
   if (lotusIceCard) lotusIceCard.style.display = branch === 'lotus' ? 'block' : 'none';
   calcSales();
@@ -1190,30 +1032,28 @@ function n(id) {
   return el ? (parseFloat(el.value) || 0) : 0;
 }
 
-// ✅ แก้: calcSales ไม่คำนวณ Total Sales จาก QR+Lineman+Cash แล้ว
-// Total Sales กรอกเองได้ — QR/Lineman/Cash เป็นแค่การแยกช่องทาง
 function calcSales() {
   var bt = n('d-subtotal') - n('d-discount') + n('d-rounding');
   document.getElementById('d-before-tax').value = bt.toFixed(2);
 
   var totalSales = n('d-total-sales');
 
-  // รวมค่าใช้จ่ายหน้าร้าน = shopExp + รายการเพิ่มเติมอื่นๆ
   var shopExp = n('d-shop-exp');
+  // extra expenses = แค่บันทึกรายละเอียด ไม่บวกเพิ่มใน Pay In
   var extraTotal = 0;
   document.querySelectorAll('#extra-expenses .expense-row').forEach(function(row) {
     var ins = row.querySelectorAll('input');
     extraTotal += parseFloat(ins[1] ? ins[1].value : 0) || 0;
   });
-  var totalExp = shopExp + extraTotal;
 
-  var pi = n('d-cash') - totalExp;
+  // Pay In คำนวณจาก shopExp เท่านั้น (extra คือรายละเอียดของ shopExp ไม่นับซ้ำ)
+  var pi = n('d-cash') - shopExp;
   document.getElementById('d-diff').value = '0.00';
   document.getElementById('d-payin').value = pi.toFixed(2);
 
   var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
   document.getElementById('sum-total').textContent  = fmt(totalSales);
-  document.getElementById('sum-exp').textContent    = fmt(totalExp);
+  document.getElementById('sum-exp').textContent    = fmt(shopExp);
   document.getElementById('sum-payin').textContent  = fmt(pi);
   calcDrinks();
 }
@@ -1223,18 +1063,6 @@ function calcDrinks() {
   var drinks = total - n('d-snacks') - n('d-promo');
   var el = document.getElementById('d-drinks');
   if (el) el.value = drinks > 0 ? drinks.toFixed(2) : '0.00';
-}
-
-function addAccExpRow() {
-  var id = Date.now();
-  var c  = document.getElementById('account-expenses');
-  var d  = document.createElement('div');
-  d.className = 'expense-row';
-  d.id = 'ae-' + id;
-  d.innerHTML = '<div><label>รายการ</label><input type="text" placeholder="เช่น ค่าซ่อมเครื่อง..."></div>'
-    + '<div><label>จำนวน (฿)</label><input type="number" placeholder="0.00" step="0.01"></div>'
-    + '<button class="rm-btn" onclick="document.getElementById(\'ae-' + id + '\').remove()">×</button>';
-  c.appendChild(d);
 }
 
 function addExpRow(name, amount) {
@@ -1266,7 +1094,6 @@ function getStdExpenses() {
   var ids = branch === 'lotus' ? STD_EXP_LOTUS : STD_EXP_PASSIONE;
   var obj = {};
   ids.forEach(function(id) { obj[id] = n(id); });
-  // โลตัส: ดึงค่าน้ำแข็งวางบิลมาใส่ใน e-ice (ไม่นับเป็น shopExp)
   if (branch === 'lotus') {
     obj['e-ice'] = n('d-ice-bill');
   }
@@ -1342,7 +1169,6 @@ function clearDaily() {
   document.getElementById('d-date').value = new Date().toISOString().split('T')[0];
   var br = document.getElementById('d-branch').value;
   document.getElementById('d-account').value = BRANCH_ACCOUNTS[br] || '';
-  // แสดง/ซ่อน card น้ำแข็งวางบิล
   var lotusIceCard = document.getElementById('lotus-ice-card');
   if (lotusIceCard) lotusIceCard.style.display = br === 'lotus' ? 'block' : 'none';
 }
@@ -1365,9 +1191,9 @@ function addFixedPayable(type) {
     desc: names[type], cat: 'วัตถุดิบ/สินค้า',
     amount: amount, due: due,
     indate: indate, billno: billno,
-    note: note, paid: false, paidDate: null, payments: []
+    note: note, paid: false, paidDate: null
   });
-  savePay(branch); renderPayables();
+  savePay(); renderPayables();
 
   document.getElementById('pf-' + type + '-amount').value = '';
   document.getElementById('pf-' + type + '-indate').value = '';
@@ -1389,10 +1215,9 @@ function addPayable() {
     amount: amount, due: document.getElementById('p-due').value,
     indate: '', billno: '',
     note: document.getElementById('p-note').value,
-    paid: false, paidDate: null, payments: []
+    paid: false, paidDate: null
   });
-  var newBranch = document.getElementById('p-branch').value;
-  savePay(newBranch); renderPayables();
+  savePay(); renderPayables();
   document.getElementById('p-desc').value = '';
   document.getElementById('p-amount').value = '';
   document.getElementById('p-note').value = '';
@@ -1403,64 +1228,35 @@ function togglePaid(id) {
   var item = payables.find(function(p) { return p.id === id; });
   if (!item) return;
   if (!item.paid) {
-    addPartialPayment(id);
-  } else {
-    if (!confirm('ยกเลิกการชำระทั้งหมดของรายการนี้?')) return;
-    item.paid = false;
-    item.paidDate = null;
-    item.payments = [];
-    savePay(item.branch); renderPayables();
-  }
-}
-
-function addPartialPayment(id) {
-  var item = payables.find(function(p) { return p.id === id; });
-  if (!item) return;
-  if (!item.payments) item.payments = [];
-  var paid = item.payments.reduce(function(s, p) { return s + p.amount; }, 0);
-  var remaining = item.amount - paid;
-  var defaultDate = new Date().toISOString().split('T')[0];
-  var dateStr = prompt('วันที่จ่าย (YYYY-MM-DD):', defaultDate);
-  if (!dateStr) return;
-  var amountStr = prompt('จำนวนที่จ่าย (คงค้าง ฿' + remaining.toLocaleString('th-TH', {minimumFractionDigits:2}) + '):', remaining);
-  if (!amountStr) return;
-  var amount = parseFloat(amountStr);
-  if (!amount || amount <= 0) { toast('จำนวนไม่ถูกต้อง', 'error'); return; }
-  if (amount > remaining + 0.01) { toast('จำนวนเกินยอดคงค้าง', 'error'); return; }
-  item.payments.push({ date: dateStr, amount: amount });
-  var totalPaid = item.payments.reduce(function(s, p) { return s + p.amount; }, 0);
-  if (Math.abs(totalPaid - item.amount) < 0.01) {
+    var defaultDate = new Date().toISOString().split('T')[0];
+    var paidDate = prompt('กรอกวันที่ชำระจริง (YYYY-MM-DD):', defaultDate);
+    if (!paidDate) return;
     item.paid = true;
-    item.paidDate = dateStr;
-  }
-  savePay(item.branch); renderPayables();
-  toast('บันทึกการชำระแล้ว ✓', 'success');
-}
-
-function delPayablePayment(id, idx) {
-  var item = payables.find(function(p) { return p.id === id; });
-  if (!item || !item.payments) return;
-  if (!confirm('ลบรายการชำระนี้?')) return;
-  item.payments.splice(idx, 1);
-  var totalPaid = item.payments.reduce(function(s, p) { return s + p.amount; }, 0);
-  if (totalPaid < item.amount - 0.01) {
+    item.paidDate = paidDate;
+  } else {
+    if (!confirm('ยกเลิกการชำระรายการนี้?')) return;
     item.paid = false;
     item.paidDate = null;
   }
-  savePay(item.branch); renderPayables();
+  savePay(); renderPayables();
 }
 
 function delPayable(id) {
   if (!confirm('ลบรายการนี้?')) return;
   payables = payables.filter(function(p) { return p.id !== id; });
-  savePay(item.branch); renderPayables();
+  savePay(); renderPayables();
 }
 
-async function savePay(branch) {
+async function savePay() {
+  // dedup ก่อน save — เก็บรายการล่าสุดของแต่ละ id
+  var seen = {};
+  payables = payables.filter(function(p) {
+    if (seen[p.id]) return false;
+    seen[p.id] = true;
+    return true;
+  });
   localStorage.setItem('ct_payables', JSON.stringify(payables));
-  var syncBranch = branch || cfg.branch || 'passione';
-  var items = payables.filter(function(px) { return px.branch === syncBranch; });
-  await syncToSheets('payable', syncBranch, BRANCH_NAMES[syncBranch], items);
+  await syncPayable();
 }
 
 function filterP(f) {
@@ -1485,13 +1281,20 @@ function renderPayables() {
   if (pFilter === 'unpaid') list = list.filter(function(p) { return !p.paid; });
   if (pBranchFilter !== 'all') list = list.filter(function(p) { return p.branch === pBranchFilter; });
 
-  // กรองเดือน — ใช้ indate หรือ date
   if (filterMonth) {
+    var fixedCatsFilter = ['ค่าเช่า','ค่าไฟ/น้ำ','ภาษี','ค่าบริการ'];
     list = list.filter(function(p) {
       var d = p.indate || p.date || '';
       var due = p.due || '';
       var paid = p.paidDate || '';
-      return d.startsWith(filterMonth) || due.startsWith(filterMonth) || paid.startsWith(filterMonth);
+      var isFixed = fixedCatsFilter.indexOf(p.cat) >= 0;
+      if (isFixed) {
+        // ค่าเช่า/ไฟ/ภาษี — นับตามวันที่วางบิลเท่านั้น
+        return d.startsWith(filterMonth) || due.startsWith(filterMonth);
+      } else {
+        // วัตถุดิบ/อื่นๆ — นับตามวันที่วางบิล หรือวันที่จ่ายจริง
+        return d.startsWith(filterMonth) || due.startsWith(filterMonth) || paid.startsWith(filterMonth);
+      }
     });
   }
 
@@ -1513,48 +1316,22 @@ function renderPayables() {
     var overdue = !item.paid && item.due && item.due < today;
     var branchName = BRANCH_NAMES[item.branch] || item.branch;
     var displayDate = item.indate || item.date || '-';
-    var payments = item.payments || [];
-    var totalPaid = payments.reduce(function(s, p) { return s + p.amount; }, 0);
-    var remaining = item.amount - totalPaid;
-    var fmt2 = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
-
-    // แสดงประวัติการจ่าย
-    var paymentsHtml = '';
-    if (payments.length) {
-      paymentsHtml = '<div style="margin-top:4px;">';
-      payments.forEach(function(p, idx) {
-        paymentsHtml += '<div style="font-size:10px;color:var(--green);display:flex;gap:6px;align-items:center;">'
-          + '✓ ' + cd(p.date) + ' ' + fmt2(p.amount)
-          + ' <span style="cursor:pointer;color:var(--red);font-size:9px;" onclick="delPayablePayment(' + item.id + ',' + idx + ')">✕</span>'
-          + '</div>';
-      });
-      paymentsHtml += '</div>';
-    }
-
-    // ปุ่มสถานะ
-    var statusHtml = '';
-    if (item.paid) {
-      statusHtml = '<span class="p-tag paid">✓ ชำระครบ</span>';
-    } else if (totalPaid > 0) {
-      statusHtml = '<span class="p-tag" style="background:#fff3cd;color:#856404;border:1px solid #ffc107;cursor:pointer;" onclick="addPartialPayment(' + item.id + ')">◑ จ่ายบางส่วน</span>'
-        + '<div style="font-size:10px;color:var(--red);margin-top:2px;">คงค้าง ' + fmt2(remaining) + '</div>';
-    } else {
-      statusHtml = '<span class="p-tag unpaid" onclick="togglePaid(' + item.id + ')">● ค้างชำระ</span>';
-    }
-
     var tr = document.createElement('tr');
     tr.innerHTML =
       '<td class="mono">' + displayDate + '</td>'
       + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
       + '<td><div style="font-size:13px;">' + item.desc + '</div>'
-        + (item.note ? '<div style="font-size:11px;color:var(--text3);">' + item.note + '</div>' : '')
-        + paymentsHtml + '</td>'
+        + (item.note ? '<div style="font-size:11px;color:var(--text3);">' + item.note + '</div>' : '') + '</td>'
       + '<td class="mono">' + (item.billno || '-') + '</td>'
       + '<td class="mono">' + (item.indate || '-') + '</td>'
-      + '<td class="mono" style="font-weight:500;">' + fmt2(item.amount) + '</td>'
+      + '<td class="mono" style="font-weight:500;">' + fmt(item.amount) + '</td>'
       + '<td class="mono" style="' + (overdue ? 'color:var(--red);font-weight:600;' : '') + '">'
         + (item.due || '-') + (overdue ? ' ⚠' : '') + '</td>'
-      + '<td>' + statusHtml + '</td>'
+      + '<td>'
+        + '<span class="p-tag ' + (item.paid ? 'paid' : 'unpaid') + '" onclick="togglePaid(' + item.id + ')">'
+          + (item.paid ? '✓ ชำระแล้ว' : '● ค้างชำระ') + '</span>'
+        + (item.paid && item.paidDate ? '<div style="font-size:10px;color:var(--text3);margin-top:2px;">' + item.paidDate + '</div>' : '')
+        + '</td>'
       + '<td><button class="btn btn-danger btn-sm" onclick="delPayable(' + item.id + ')">ลบ</button></td>';
     tbody.appendChild(tr);
   });
@@ -1597,11 +1374,16 @@ async function syncPayable(showToast) {
   }
 }
 
-async function syncSalary() {
+async function syncSalary(showToast) {
   if (!cfg.gsUrl) return;
-  var branch = cfg.branch || 'passione';
-  await syncToSheets('salary', branch, BRANCH_NAMES[branch],
-    salaries.filter(function(s) { return s.branch === branch; }));
+  var branches = ['passione', 'lotus'];
+  for (var b = 0; b < branches.length; b++) {
+    var branch = branches[b];
+    var items = salaries.filter(function(s) { return s.branch === branch; });
+    if (!items.length) continue;
+    await syncToSheets('salary', branch, BRANCH_NAMES[branch], items);
+  }
+  if (showToast) toast('ซิงค์เงินเดือนขึ้น Sheets แล้ว ✓', 'success');
 }
 
 async function syncLoan() {
@@ -1620,7 +1402,6 @@ async function loadSummary() {
     var res  = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branchKey) + '&month=' + month);
     var data = await res.json();
 
-    // อัปเดต localStorage จาก Sheets
     if (data.payableRows && data.payableRows.length) {
       function cleanDate(val) {
         var s = String(val||'');
@@ -1628,8 +1409,6 @@ async function loadSummary() {
         return s;
       }
       var sheetsPayables = data.payableRows.map(function(r) {
-        var payments = [];
-        try { payments = JSON.parse(String(r[12]||'[]')); } catch(e) {}
         return {
           id: r[9] || Date.now(),
           date: cleanDate(r[0]),
@@ -1642,12 +1421,14 @@ async function loadSummary() {
           paidDate: cleanDate(r[7]),
           note: String(r[8]||''),
           billno: String(r[10]||''),
-          indate: cleanDate(r[11]),
-          payments: payments
+          indate: cleanDate(r[11])
         };
       });
       var otherBranchPayables = payables.filter(function(px) { return px.branch !== branchKey; });
-      payables = otherBranchPayables.concat(sheetsPayables);
+      // dedup: ถ้า id ซ้ำกันให้เอา Sheets เป็นหลัก
+      var sheetsIds = {};
+      sheetsPayables.forEach(function(p) { sheetsIds[p.id] = true; });
+      payables = otherBranchPayables.filter(function(px) { return !sheetsIds[px.id]; }).concat(sheetsPayables);
       localStorage.setItem('ct_payables', JSON.stringify(payables));
       renderPayables();
     } else if (data.payableRows && data.payableRows.length === 0) {
@@ -1659,17 +1440,19 @@ async function loadSummary() {
     if (data.salaryRows) {
       if (data.salaryRows.length) {
         var sheetsSalaries = data.salaryRows.map(function(r) {
-          var payments = [];
-          try { payments = JSON.parse(String(r[7]||'[]')); } catch(e) {}
+          function cleanSalDate(v) {
+            var s = String(v||'');
+            if (s.indexOf('T') >= 0) s = s.split('T')[0];
+            return s;
+          }
           return {
             id: r[6] || Date.now(),
-            date: String(r[0]||''),
+            date: cleanSalDate(r[0]),
             branch: branchKey,
             name: String(r[2]||''),
-            month: String(r[3]||''),
+            month: cleanSalDate(r[3]).slice(0,7),
             amount: parseFloat(r[4])||0,
-            note: String(r[5]||''),
-            payments: payments
+            note: String(r[5]||'')
           };
         });
         var otherBranchSalaries = salaries.filter(function(s) { return s.branch !== branchKey; });
@@ -1697,19 +1480,17 @@ async function loadSummary() {
             date: String(r[6]||'')
           };
         });
-        // เก็บข้อมูลสาขาอื่นไว้
         var otherBranchLoans = loans.filter(function(l) { return l.branch !== branchKey; });
         loans = otherBranchLoans.concat(sheetsLoans);
         localStorage.setItem('ct_loans', JSON.stringify(loans));
       } else {
-        // Sheets ว่าง — เคลียร์เฉพาะสาขานี้
         loans = loans.filter(function(l) { return l.branch !== branchKey; });
         localStorage.setItem('ct_loans', JSON.stringify(loans));
       }
       renderLoans();
     }
 
-    renderSummary(data.rows || [], data.acctExpRows || []);
+    renderSummary(data.rows || [], data.acctExpRows || [], branchKey);
     loadLinemanSun();
   } catch(err) { toast('ดึงข้อมูลไม่สำเร็จ: ' + err.message, 'error'); }
   finally { txt.textContent = 'ดึงข้อมูล'; }
@@ -1718,7 +1499,6 @@ async function loadSummary() {
 function onPmBranchChange() {
   var branch = document.getElementById('pm-branch').value;
   document.getElementById('pm-aircond-row').style.display = branch === 'lotus' ? 'block' : 'none';
-  // เปลี่ยนเฉพาะ label ภาษีที่ดิน ตามสาขา
   var taxLandLabel = document.getElementById('pm-tax-land-label');
   if (taxLandLabel) {
     taxLandLabel.textContent = branch === 'lotus' ? 'ค่าแอร์ส่วนกลาง (฿)' : 'ภาษีสิ่งปลูกสร้างและที่ดิน (฿)';
@@ -1762,7 +1542,7 @@ function addMonthlyExpenses() {
   });
 
   if (added === 0) { toast('กรุณากรอกยอดอย่างน้อย 1 รายการ', 'error'); return; }
-  savePay(item.branch); renderPayables();
+  savePay(); renderPayables();
   toast('เพิ่ม ' + added + ' รายการแล้ว ✓', 'success');
 }
 
@@ -1809,19 +1589,30 @@ function switchSTab(tab) {
   document.getElementById('stab-year').style.color       = tab === 'year'  ? '#fff' : 'var(--text2)';
 }
 
-function renderSummary(rows, acctExpRows) {
+function renderSummary(rows, acctExpRows, branchKey) {
   acctExpRows = acctExpRows || [];
+  branchKey = branchKey || (document.getElementById('s-branch') ? document.getElementById('s-branch').value : (cfg.branch || 'passione'));
   var empty = document.getElementById('s-empty');
   var stats = document.getElementById('s-stats');
   var tbody = document.getElementById('s-tbody');
   tbody.innerHTML = '';
-  if (!rows.length) { empty.style.display='block'; stats.style.display='none'; toast('ไม่พบข้อมูล','error'); return; }
+  if (!rows.length) {
+    empty.style.display='block';
+    stats.style.display='none';
+    toast('ไม่พบข้อมูล','error');
+    // ล้างข้อมูลวางบิลที่ค้างจากสาขาก่อนหน้า
+    var listEl = document.getElementById('ss-unpaid-list');
+    if (listEl) listEl.innerHTML = '<div class="empty-state" style="padding:16px;"><p>ไม่มีรายการค้างชำระในเดือนนี้ ✓</p></div>';
+    var unpaidTot = document.getElementById('ss-unpaid-total');
+    if (unpaidTot) unpaidTot.textContent = '฿0';
+    return;
+  }
   empty.style.display='none'; stats.style.display='block';
 
   var tSales=0, tExp=0, tStdExp=0, tExtraExp=0, tPayIn=0, tQr=0, tLineman=0, tCash=0;
   var tCftd=0,tIce=0,tMeji=0,tJinda=0,tSugar=0,tSoda=0,tYogurt=0,tBakery=0,tLime=0,tCoconut=0;
   var maxQr=0, maxQrDate='-', maxSale=0, maxSaleDate='-';
-  var branchKey = document.getElementById('s-branch') ? document.getElementById('s-branch').value : (cfg.branch || 'passione');
+  var extraDetailLines = [];
   var fmt  = function(v) { return '฿'+(parseFloat(v)||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
   var fmtS = fmt;
   var p    = function(r,i) { return parseFloat(r[i])||0; };
@@ -1834,19 +1625,30 @@ function renderSummary(rows, acctExpRows) {
   var isLotus = branchKey === 'lotus';
   rows.forEach(function(r) {
     var sales=p(r,3), qr=p(r,7), lineman=p(r,9), cash=p(r,10), exp=p(r,14), pi=p(r,16);
-    var extraExp=p(r,30); // ExtraExpTotal column
-    var iceAmt=p(r,20);   // Ice column
+    var extraExp=p(r,30);
+    var iceAmt=p(r,20);
     tSales+=sales; tPayIn+=pi;
     tQr+=qr; tLineman+=lineman; tCash+=cash;
     tExtraExp+=extraExp;
-    // โลตัส: หักน้ำแข็งออกจาก shopExp เพราะน้ำแข็งโลตัสนับเป็นวางบิล ไม่ใช่ค่าใช้จ่ายหน้าร้าน
-    tExp += (exp + extraExp) - (isLotus ? iceAmt : 0);
+    tExp += exp;  // ShopExp รวม extra อยู่แล้ว ไม่บวกซ้ำ
     tCftd  +=p(r,19); tIce   +=iceAmt;
     tMeji  +=p(r,21); tJinda +=p(r,22);
     tSugar +=p(r,23); tSoda  +=p(r,24);
     tYogurt+=p(r,25); tBakery+=p(r,26);
     tLime  +=p(r,27); tCoconut+=p(r,28);
-    if (qr>maxQr)      { maxQr=qr;    maxQrDate=toCleanDate(r[0]); }
+    var extraDetail = String(r[31]||'');
+    if (extraDetail && extraExp > 0) {
+      var rowDate = toCleanDate(r[0]);
+      extraDetail.split(' | ').forEach(function(item) {
+        if (!item.trim()) return;
+        var parts = item.split(':');
+        var name = parts[0] || '';
+        var amt = parseFloat(parts[1]) || 0;
+        if (name && amt > 0) {
+          extraDetailLines.push(rowDate + ' — ' + name + ': ฿' + amt.toLocaleString('th-TH', {minimumFractionDigits:2}));
+        }
+      });
+    }
     if (sales>maxSale) { maxSale=sales; maxSaleDate=toCleanDate(r[0]); }
     var tr=document.createElement('tr');
     var rowDate = String(r[0]||'');
@@ -1855,7 +1657,6 @@ function renderSummary(rows, acctExpRows) {
     tbody.appendChild(tr);
   });
 
-  // ── แถวรวมด้านล่างตาราง
   var tSubTotal = 0, tDiscount = 0, tNetSales = 0;
   rows.forEach(function(r) {
     tSubTotal += p(r,3);
@@ -1876,10 +1677,8 @@ function renderSummary(rows, acctExpRows) {
   if (stCash)     stCash.textContent     = fmt(tCash);
   if (stExp)      stExp.textContent      = fmt(tExp);
   if (stPayin)    stPayin.textContent    = fmt(tPayIn);
-  // stdExp = วัตถุดิบหลักเท่านั้น (ไม่รวม extra)
-  tStdExp = tExp - tExtraExp;
+  tStdExp = tExp;  // ShopExp คือยอดรวมจริง
 
-  // ── คำนวณยอดบัญชีร้าน (acctExpRows จาก Sheets)
   var tAcctExp = 0;
   var tLoanRepay = 0;
   var acctExpMap = {};
@@ -1899,18 +1698,20 @@ function renderSummary(rows, acctExpRows) {
   var lsKey  = 'ct_lineman_sun_' + branch + '_' + month;
   var lsData = localStorage.getItem(lsKey);
   var tLinemanSun = lsData ? (parseFloat(JSON.parse(lsData).amount)||0) : 0;
-  // รายรับจริง = QR + Pay In + Line Man ที่โอนเข้าบัญชีคุณซัน
   var tIncome = tQr + tPayIn + tLinemanSun;
 
-  var fixedCats = ['ค่าเช่า','ค่าไฟ/น้ำ','ภาษี']; // หมวดที่นับตามวันที่วางบิล
+  // ค่าใช้จ่ายประจำเดือน (ค่าเช่า/ไฟ/ภาษี/แอร์/บริการ) — นับตามวันที่วางบิลเสมอ
+  var fixedCats = ['ค่าเช่า','ค่าไฟ/น้ำ','ภาษี','ค่าบริการ'];
   var monthPayables = payables.filter(function(px) {
-    var matchBranch = !branch || px.branch === branch || px.branch === BRANCH_NAMES[branch];
+    var pxBranch = px.branch;
+    // normalize: ถ้าเก็บเป็นชื่อไทย ให้แปลงเป็น key ก่อน
+    if (pxBranch === 'แพชชั่นระยอง') pxBranch = 'passione';
+    if (pxBranch === 'โลตัสระยอง') pxBranch = 'lotus';
+    var matchBranch = pxBranch === branch;
     var isFixedCat = fixedCats.indexOf(px.cat) >= 0;
     if (isFixedCat) {
-      // ค่าเช่า/ไฟ/ภาษี — นับตาม date (วันที่วางบิล) ของเดือนนั้นเท่านั้น
       return matchBranch && px.date && px.date.startsWith(month);
     } else {
-      // วัตถุดิบอื่นๆ — ค้างชำระนับตาม date/due, ชำระแล้วนับตาม paidDate
       var inMonthUnpaid = !px.paid && (
         (px.date && px.date.startsWith(month)) ||
         (px.due && px.due.startsWith(month))
@@ -1920,38 +1721,21 @@ function renderSummary(rows, acctExpRows) {
     }
   });
 
-  // tPayablePaid = วัตถุดิบที่ชำระแล้ว (รวม partial payments ด้วย)
   var tPayablePaid=0, tPayableUnpaid=0;
   monthPayables.forEach(function(px) {
     var isFixedCat = fixedCats.indexOf(px.cat) >= 0;
     if (isFixedCat) {
       tPayableUnpaid += px.paid ? 0 : px.amount;
     } else {
-      // นับ partial payments ที่จ่ายในเดือนนั้น
-      var payments = px.payments || [];
-      payments.forEach(function(p) {
-        if (p.date && p.date.startsWith(month)) {
-          tPayablePaid += p.amount;
-        }
-      });
-      // ถ้าไม่มี payments[] ใช้ paid/paidDate เดิม
-      if (!payments.length) {
-        if (px.paid && px.paidDate && px.paidDate.startsWith(month)) {
-          tPayablePaid += px.amount;
-        } else if (!px.paid) {
-          tPayableUnpaid += px.amount;
-        }
-      } else {
-        // คำนวณยอดคงค้าง
-        var totalPaid = payments.reduce(function(s, p) { return s + p.amount; }, 0);
-        var remaining = px.amount - totalPaid;
-        if (remaining > 0.01) tPayableUnpaid += remaining;
+      if (px.paid && px.paidDate && px.paidDate.startsWith(month)) {
+        tPayablePaid += px.amount;
+      } else if (!px.paid) {
+        tPayableUnpaid += px.amount;
       }
     }
   });
   var tPayableAll = tPayablePaid + tPayableUnpaid;
 
-  // คำนวณ tOtherPayable = ค่าเช่า/ไฟ/ภาษี ทั้งหมดของเดือนนั้น (ทั้งจ่ายแล้วและยังไม่จ่าย)
   var tCftdPayable=0, tJindaPayable=0, tIcePayable=0;
   var tCftdPaid=0, tJindaPaid=0, tIcePaid=0;
   var tCftdUnpaid=0, tJindaUnpaid=0, tIceUnpaid=0;
@@ -1960,7 +1744,6 @@ function renderSummary(rows, acctExpRows) {
     var isPaid = px.paid && px.paidDate && px.paidDate.startsWith(month);
     var isFixedCat = fixedCats.indexOf(px.cat) >= 0;
     if (isFixedCat) {
-      // ค่าเช่า/ไฟ/ภาษี — นับทั้งหมดใน tOtherPayable
       tOtherPayable += px.amount;
     } else if (px.desc.indexOf('CFTD') >= 0) {
       tCftdPayable += px.amount; tRawPayable += px.amount;
@@ -1974,10 +1757,8 @@ function renderSummary(rows, acctExpRows) {
     }
   });
 
-  // รายจ่ายรวมทั้งหมด — ไม่รวมค่าใช้จ่ายหน้าร้าน
   var tSalary = getSalaryTotal(branch, month);
   var tExpAll  = tPayablePaid + tOtherPayable + tAcctExp + tSalary;
-  // กำไร/ขาดทุน = รายรับ − รายจ่ายรวม
   var profit   = tIncome - tExpAll;
 
   var unpaidItems = monthPayables.filter(function(px) { return !px.paid; });
@@ -2028,15 +1809,14 @@ function renderSummary(rows, acctExpRows) {
   var noteUnpaid = document.getElementById('ss-note-unpaid');
   if (noteUnpaid) noteUnpaid.textContent = fmtS(tPayableUnpaid);
 
-  // ค่าใช้จ่ายอื่นๆ (ค่าเช่า ค่าน้ำไฟ ภาษี) — แสดงทุกรายการ ไม่กรองตาม paidDate
   var otherCats = ['ค่าเช่า','ค่าไฟ/น้ำ','ค่าบริการ','ภาษี','อุปกรณ์/ซ่อมบำรุง','ค่าแรง','อื่นๆ'];
   var otherMap = {};
-  var otherPaidMap = {}; // เก็บสถานะ paid
+  var otherPaidMap = {};
   monthPayables.forEach(function(px) {
     if (otherCats.indexOf(px.cat) >= 0) {
       if (!otherMap[px.desc]) { otherMap[px.desc] = 0; otherPaidMap[px.desc] = true; }
       otherMap[px.desc] += px.amount;
-      if (!px.paid) otherPaidMap[px.desc] = false; // ถ้ามีรายการยังไม่จ่าย ถือว่ายังค้าง
+      if (!px.paid) otherPaidMap[px.desc] = false;
     }
   });
   var otherEl = document.getElementById('ss-other-expenses');
@@ -2057,7 +1837,6 @@ function renderSummary(rows, acctExpRows) {
     otherEl.innerHTML = '<div style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>';
   }
 
-  // ── แสดงรายการบัญชีร้าน
   var acctEl = document.getElementById('ss-acctexp-expenses');
   if (acctEl) {
     var acctKeys = Object.keys(acctExpMap);
@@ -2077,7 +1856,6 @@ function renderSummary(rows, acctExpRows) {
   var loanRepayEl = document.getElementById('ss-loan-repay');
   if (loanRepayEl) loanRepayEl.textContent = fmtS(tLoanRepay);
 
-  // ── ตารางรายการบัญชีร้านแยกรายการ
   var acctTbody = document.getElementById('ss-acctexp-tbody');
   var acctListEmpty = document.getElementById('ss-acctexp-list-empty');
   var acctListTotal = document.getElementById('ss-acctexp-list-total');
@@ -2087,10 +1865,10 @@ function renderSummary(rows, acctExpRows) {
       if (acctListEmpty) acctListEmpty.style.display = 'none';
       acctExpRows.forEach(function(r) {
         var date   = String(r[0] || '');
-        if (date.indexOf('T') >= 0) date = date.split('T')[0];
         var desc   = String(r[2] || '-');
         var cat    = String(r[3] || '-');
-        var amount = parseFloat(r[4]) || 0;        var tr = document.createElement('tr');
+        var amount = parseFloat(r[4]) || 0;
+        var tr = document.createElement('tr');
         tr.innerHTML =
           '<td class="mono">' + date + '</td>'
           + '<td style="font-size:13px;">' + desc + '</td>'
@@ -2104,7 +1882,11 @@ function renderSummary(rows, acctExpRows) {
     if (acctListTotal) acctListTotal.textContent = fmtS(tAcctExp);
   }
 
+  // ── ค่าใช้จ่ายหน้าร้าน: ซ่อนน้ำแข็งเมื่อเป็นโลตัส (น้ำแข็งโลตัสเป็นวางบิล ไม่ใช่หน้าร้าน)
   document.getElementById('ss-ice').textContent             = fmtS(tIce);
+  var iceShopExpBox = document.getElementById('ss-ice-shopexp-box');
+  if (iceShopExpBox) iceShopExpBox.style.display = isLotus ? 'none' : '';
+
   document.getElementById('ss-meji').textContent            = fmtS(tMeji);
   document.getElementById('ss-sugar').textContent           = fmtS(tSugar);
   document.getElementById('ss-soda').textContent            = fmtS(tSoda);
@@ -2113,21 +1895,18 @@ function renderSummary(rows, acctExpRows) {
   document.getElementById('ss-lime').textContent            = fmtS(tLime);
   document.getElementById('ss-coconut').textContent         = fmtS(tCoconut);
   document.getElementById('ss-extra').textContent = fmtS(tExtraExp);
-  // แสดงรายการย่อย extra expenses
-  var extraListEl = document.getElementById('ss-extra-list');
-  if (extraListEl) {
-    var extraItems = [];
-    rows.forEach(function(r) {
-      var detail = String(r[31]||'');
-      if (!detail) return;
-      detail.split(' | ').forEach(function(item) {
-        if (!item.trim()) return;
-        var parts = item.split(':');
-        extraItems.push((parts[0]||'') + ' ฿' + (parseFloat(parts[1])||0).toLocaleString('th-TH',{minimumFractionDigits:2}));
-      });
-    });
-    extraListEl.innerHTML = extraItems.length ? extraItems.join('<br>') : '-';
+  var extraToggle = document.getElementById('ss-extra-toggle');
+  var extraDetail = document.getElementById('ss-extra-detail');
+  var extraBtn = document.getElementById('ss-extra-btn');
+  if (extraToggle) {
+    if (extraDetailLines.length > 0) {
+      extraToggle.style.display = 'block';
+      if (extraDetail) extraDetail.innerHTML = extraDetailLines.join('<br>');
+    } else {
+      extraToggle.style.display = 'none';
+    }
   }
+
   var cftdEl = document.getElementById('ss-cftd');
   var cftdBox = document.getElementById('ss-cftd-box');
   if (cftdEl) {
@@ -2152,29 +1931,33 @@ function renderSummary(rows, acctExpRows) {
   }
   var iceEl = document.getElementById('ss-ice-payable');
   var iceBox = document.getElementById('ss-ice-box');
-  if (iceBox) {
-    if (branchKey === 'lotus') {
-      iceBox.style.display = '';
-      var iceDisplay = 0;
+  // น้ำแข็งวางบิล: แสดงเฉพาะโลตัส (แพชชั่นจ่ายสดหน้าร้าน ไม่ได้วางบิล)
+  if (iceBox) iceBox.style.display = isLotus ? '' : 'none';
+  if (iceEl) {
+    var iceDisplay = 0;
+    if (isLotus) {
       rows.forEach(function(r) { iceDisplay += parseFloat(r[20])||0; });
-      iceEl.textContent = fmtS(iceDisplay);
-      iceBox.style.borderLeft = tIceUnpaid > 0 ? '3px solid var(--red)' : (iceDisplay > 0 ? '3px solid var(--green)' : '');
-      iceEl.style.color = tIceUnpaid > 0 ? 'var(--red)' : '';
-      var icePaidEl = document.getElementById('ss-ice-paid');
-      var iceUnpaidEl = document.getElementById('ss-ice-unpaid');
-      if (icePaidEl) icePaidEl.textContent = fmtS(tIcePaid);
-      if (iceUnpaidEl) iceUnpaidEl.textContent = fmtS(tIceUnpaid);
-    } else {
-      // แพชชั่น — ซ่อนช่องน้ำแข็งวางบิล เพราะเป็นค่าใช้จ่ายหน้าร้านอยู่แล้ว
-      iceBox.style.display = 'none';
     }
+    iceEl.textContent = fmtS(iceDisplay);
+    if (iceBox) iceBox.style.borderLeft = tIceUnpaid > 0 ? '3px solid var(--red)' : (iceDisplay > 0 ? '3px solid var(--green)' : '');
+    iceEl.style.color = tIceUnpaid > 0 ? 'var(--red)' : '';
+    var icePaidEl = document.getElementById('ss-ice-paid');
+    var iceUnpaidEl = document.getElementById('ss-ice-unpaid');
+    if (icePaidEl) icePaidEl.textContent = fmtS(tIcePaid);
+    if (iceUnpaidEl) iceUnpaidEl.textContent = fmtS(tIceUnpaid);
   }
   document.getElementById('ss-payable-other').textContent   = fmtS(tOtherPayable);
+  // เปลี่ยน label ตามสาขา
+  var otherLabelEl = document.getElementById('ss-payable-other-label');
+  if (otherLabelEl) otherLabelEl.textContent = isLotus ? 'ค่าเช่า/ค่าน้ำไฟ/ค่าแอร์ส่วนกลาง' : 'ค่าเช่า/ค่าน้ำไฟ/ค่าภาษี';
   document.getElementById('ss-payable-unpaid-top').textContent = fmtS(tPayableUnpaid);
   document.getElementById('ss-qr').textContent              = maxQrDate+' ('+fmtS(maxQr)+')';
   document.getElementById('ss-maxsale').textContent         = maxSaleDate+' ('+fmtS(maxSale)+')';
   document.getElementById('ss-days').textContent            = rows.length+' วัน';
+
+  // ss-shopexp-box แสดงเสมอทุกสาขา (ซ่อนแค่น้ำแข็งผ่าน ss-ice-shopexp-box)
 }
+
 
 async function loadYearly() {
   if (!cfg.gsUrl) { toast('กรุณาตั้งค่า URL ก่อน','error'); return; }
@@ -2342,7 +2125,7 @@ function renderAdminPayables() {
     var branchName = BRANCH_NAMES[item.branch] || item.branch;
     var tr = document.createElement('tr');
     tr.innerHTML =
-      '<td class="mono">' + cd(item.date) + '</td>'
+      '<td class="mono">' + item.date + '</td>'
       + '<td style="font-size:12px;">' + branchName + '</td>'
       + '<td><div style="font-size:13px;">' + item.desc + '</div>'
         + (item.note ? '<div style="font-size:11px;color:var(--text3);">' + item.note + '</div>' : '') + '</td>'
@@ -2350,12 +2133,22 @@ function renderAdminPayables() {
       + '<td class="mono">' + (item.billno || '-') + '</td>'
       + '<td class="mono" style="font-weight:500;">' + fmt(item.amount) + '</td>'
       + '<td class="mono" style="' + (overdue ? 'color:var(--red);font-weight:600;' : '') + '">'
-        + cd(item.due || '-') + (overdue ? ' ⚠' : '') + '</td>'
+        + (item.due || '-') + (overdue ? ' ⚠' : '') + '</td>'
       + '<td><span class="p-tag ' + (item.paid ? 'paid' : 'unpaid') + '">'
         + (item.paid ? '✓ ชำระแล้ว' : '● ค้างชำระ') + '</span></td>'
-      + '<td class="mono">' + cd(item.paidDate || '-') + '</td>';
+      + '<td class="mono">' + (item.paidDate || '-') + '</td>'
+      + '<td><button class="btn btn-danger btn-sm" onclick="admDelPayable(' + item.id + ')">ลบ</button></td>';
     tbody.appendChild(tr);
   });
+}
+
+function admDelPayable(id) {
+  if (!confirm('ลบรายการนี้?')) return;
+  payables = payables.filter(function(p) { return p.id !== id; });
+  savePay();
+  renderAdminPanel();
+  renderPayables();
+  toast('ลบรายการแล้ว ✓', 'success');
 }
 
 function renderAdminLineman() {
@@ -2419,25 +2212,17 @@ function adminClearAll() {
 
 // ════ LOAN ════
 var loans = JSON.parse(localStorage.getItem('ct_loans') || '[]');
+var loanFilter = 'all';
 
-function restoreLostLoan() {
-  var lost = [{
-    id: Date.now(),
-    branch: 'passione',
-    date: '2026-05-05',
-    from: 'ยืมจ่ายค่าเช่ากับค่าสินค้า',
-    amount: 10202.07,
-    purpose: 'ค่าเช่ากับค่าน้ำไฟ=16006.45, ค่าสินค้าคอฟฟี่ทูเดย์=4950',
-    repayments: [
-      { date: '2026-05-08', amount: 2500 },
-      { date: '2026-05-11', amount: 5000 },
-      { date: '2026-05-15', amount: 2702.07 }
-    ]
-  }];
-  loans = loans.concat(lost);
-  saveLoans();
+function filterLoan(f) {
+  loanFilter = f;
+  ['all','passione','lotus'].forEach(function(k) {
+    var el = document.getElementById('lf-' + k);
+    if (!el) return;
+    el.style.borderColor = k === f ? 'var(--accent)' : '';
+    el.style.color       = k === f ? 'var(--accent)' : '';
+  });
   renderLoans();
-  toast('กู้คืนข้อมูลเงินยืมแล้ว ✓ กรุณา sync ขึ้น Sheets ด้วย', 'success');
 }
 
 function addLoan() {
@@ -2453,7 +2238,7 @@ function addLoan() {
     from: from,
     amount: amount,
     purpose: purpose,
-    repayments: [] // บันทึกการคืนแต่ละครั้ง
+    repayments: []
   });
   saveLoans();
   renderLoans();
@@ -2473,12 +2258,10 @@ function addRepayment(id) {
   var loan = loans.find(function(l) { return l.id === id; });
   if (!loan) return;
 
-  // บันทึกการคืนใน loan
   loan.repayments.push({ date: dateStr, amount: amount });
   saveLoans();
   renderLoans();
 
-  // สร้างรายการค่าใช้จ่ายบัญชีร้านอัตโนมัติ
   acctExps.unshift({
     id: Date.now(),
     branch: cfg.branch || 'passione',
@@ -2491,7 +2274,6 @@ function addRepayment(id) {
   saveAcctExp();
   renderAcctExp();
 
-  // sync ขึ้น Sheets อัตโนมัติ
   var branch = cfg.branch || 'passione';
   var branchName = BRANCH_NAMES[branch];
   var itemsToSync = acctExps.filter(function(x) { return x.branch === branch; });
@@ -2524,17 +2306,6 @@ function saveLoans() {
   syncLoan();
 }
 
-var loanBranchFilter = 'all';
-
-function filterLoan(type, val) {
-  loanBranchFilter = val;
-  ['all','passione','lotus'].forEach(function(t) {
-    var el = document.getElementById('lf-' + t);
-    if (el) el.style.cssText = t === val ? 'border-color:var(--accent);color:var(--accent);' : '';
-  });
-  renderLoans();
-}
-
 function renderLoans() {
   var tbody  = document.getElementById('loan-tbody');
   var empty  = document.getElementById('loan-empty');
@@ -2544,24 +2315,22 @@ function renderLoans() {
   var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
   var tAll = 0, tPaid = 0;
 
-  var filterMonth = document.getElementById('loan-filter-month') ? document.getElementById('loan-filter-month').value : '';
-  var list = loans;
-  if (loanBranchFilter !== 'all') list = list.filter(function(l) { return l.branch === loanBranchFilter; });
-  if (filterMonth) list = list.filter(function(l) { return l.date && l.date.startsWith(filterMonth); });
+  var list = loanFilter === 'all' ? loans : loans.filter(function(l) { return l.branch === loanFilter; });
 
   if (!list.length) { empty.style.display = 'block'; }
   else {
     empty.style.display = 'none';
     list.forEach(function(loan) {
-      var repaid  = (loan.repayments||[]).reduce(function(s, r) { return s + r.amount; }, 0);
+      var repaid  = loan.repayments.reduce(function(s, r) { return s + r.amount; }, 0);
       var remain  = loan.amount - repaid;
       var settled = remain <= 0;
       tAll  += loan.amount;
       tPaid += repaid;
-
+      var branchName = BRANCH_NAMES[loan.branch] || loan.branch || '-';
       var tr = document.createElement('tr');
       tr.innerHTML =
-        '<td class="mono">' + cd(loan.date) + '</td>'
+        '<td class="mono">' + loan.date + '</td>'
+        + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
         + '<td style="font-weight:500;">' + loan.from + '</td>'
         + '<td class="mono" style="color:var(--yellow);font-weight:500;">' + fmt(loan.amount) + '</td>'
         + '<td style="font-size:12px;color:var(--text2);">' + (loan.purpose || '-') + '</td>'
@@ -2573,12 +2342,12 @@ function renderLoans() {
         + '</td>';
       tbody.appendChild(tr);
 
-      if ((loan.repayments||[]).length) {
+      if (loan.repayments.length) {
         loan.repayments.forEach(function(r) {
           var trSub = document.createElement('tr');
           trSub.style.cssText = 'background:var(--green-t);';
           trSub.innerHTML =
-            '<td class="mono" style="font-size:11px;color:var(--text3);padding-left:24px;">↳ คืน ' + cd(r.date) + '</td>'
+            '<td class="mono" style="font-size:11px;color:var(--text3);padding-left:24px;">↳ คืน ' + r.date + '</td>'
             + '<td colspan="3" style="font-size:11px;color:var(--green);">คืนเงิน</td>'
             + '<td class="mono" style="font-size:11px;color:var(--green);">−' + fmt(r.amount) + '</td>'
             + '<td colspan="2"></td>';
@@ -2612,8 +2381,7 @@ function addSalary() {
     month: document.getElementById('sal-month').value,
     name: name,
     amount: amount,
-    note: document.getElementById('sal-note').value.trim(),
-    payments: [] // ประวัติการจ่ายแต่ละครั้ง
+    note: document.getElementById('sal-note').value.trim()
   });
   saveSalaries();
   renderSalaries();
@@ -2621,35 +2389,6 @@ function addSalary() {
   document.getElementById('sal-amount').value = '';
   document.getElementById('sal-note').value = '';
   toast('เพิ่มรายการเงินเดือนแล้ว ✓', 'success');
-}
-
-function addSalaryPayment(id) {
-  var item = salaries.find(function(s) { return s.id === id; });
-  if (!item) return;
-  if (!item.payments) item.payments = [];
-  var paid = item.payments.reduce(function(s, p) { return s + p.amount; }, 0);
-  var remaining = item.amount - paid;
-  var defaultDate = new Date().toISOString().split('T')[0];
-  var dateStr = prompt('วันที่จ่าย (YYYY-MM-DD):', defaultDate);
-  if (!dateStr) return;
-  var amountStr = prompt('จำนวนที่จ่าย (คงค้าง ฿' + remaining.toLocaleString('th-TH', {minimumFractionDigits:2}) + '):', remaining);
-  if (!amountStr) return;
-  var amount = parseFloat(amountStr);
-  if (!amount || amount <= 0) { toast('จำนวนไม่ถูกต้อง', 'error'); return; }
-  if (amount > remaining + 0.01) { toast('จำนวนเกินยอดคงค้าง', 'error'); return; }
-  item.payments.push({ date: dateStr, amount: amount });
-  saveSalaries();
-  renderSalaries();
-  toast('บันทึกการจ่ายเงินเดือนแล้ว ✓', 'success');
-}
-
-function delSalaryPayment(id, idx) {
-  var item = salaries.find(function(s) { return s.id === id; });
-  if (!item || !item.payments) return;
-  if (!confirm('ลบรายการจ่ายนี้?')) return;
-  item.payments.splice(idx, 1);
-  saveSalaries();
-  renderSalaries();
 }
 
 function delSalary(id) {
@@ -2695,43 +2434,14 @@ function renderSalaries() {
   empty.style.display = 'none';
   list.forEach(function(item) {
     var branchName = BRANCH_NAMES[item.branch] || item.branch;
-    var payments = item.payments || [];
-    var totalPaid = payments.reduce(function(s, p) { return s + p.amount; }, 0);
-    var remaining = item.amount - totalPaid;
-    var fmt2 = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
-
-    // ประวัติการจ่าย
-    var paymentsHtml = '';
-    if (payments.length) {
-      paymentsHtml = '<div style="margin-top:4px;">';
-      payments.forEach(function(p, idx) {
-        paymentsHtml += '<div style="font-size:10px;color:var(--green);display:flex;gap:6px;align-items:center;">'
-          + '✓ ' + cd(p.date) + ' ' + fmt2(p.amount)
-          + ' <span style="cursor:pointer;color:var(--red);font-size:9px;" onclick="delSalaryPayment(' + item.id + ',' + idx + ')">✕</span>'
-          + '</div>';
-      });
-      paymentsHtml += '</div>';
-    }
-
-    // สถานะ
-    var statusHtml = '';
-    if (Math.abs(remaining) < 0.01) {
-      statusHtml = '<span style="color:var(--green);font-size:12px;">✓ จ่ายครบ</span>';
-    } else if (totalPaid > 0) {
-      statusHtml = '<div style="font-size:11px;color:var(--red);">คงค้าง ' + fmt2(remaining) + '</div>'
-        + '<button class="btn btn-outline btn-sm" style="margin-top:4px;" onclick="addSalaryPayment(' + item.id + ')">+ จ่าย</button>';
-    } else {
-      statusHtml = '<button class="btn btn-outline btn-sm" onclick="addSalaryPayment(' + item.id + ')">+ จ่าย</button>';
-    }
-
     var tr = document.createElement('tr');
     tr.innerHTML =
-      '<td class="mono">' + cd(item.month || '-') + '</td>'
+      '<td class="mono">' + (item.date || '-') + '</td>'
       + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
       + '<td style="font-size:13px;font-weight:500;">' + item.name + '</td>'
-      + '<td class="mono" style="color:var(--blue);font-weight:500;">' + fmt2(item.amount) + '</td>'
-      + '<td>' + paymentsHtml + (item.note ? '<div style="font-size:11px;color:var(--text3);">' + item.note + '</div>' : '') + '</td>'
-      + '<td>' + statusHtml + '</td>'
+      + '<td class="mono">' + (item.month || '-') + '</td>'
+      + '<td class="mono" style="color:var(--blue);font-weight:500;">' + fmt(item.amount) + '</td>'
+      + '<td style="font-size:12px;color:var(--text3);">' + (item.note || '-') + '</td>'
       + '<td><button class="btn btn-danger btn-sm" onclick="delSalary(' + item.id + ')">ลบ</button></td>';
     tbody.appendChild(tr);
   });
@@ -2757,7 +2467,6 @@ async function loadDailyData() {
     var data = await res.json();
     var rows = data.rows || [];
 
-    // หาแถวที่ date ตรงกัน
     var row = null;
     var rowIdx = -1;
     for (var i = 0; i < rows.length; i++) {
@@ -2772,7 +2481,6 @@ async function loadDailyData() {
       return;
     }
 
-    // โหลดข้อมูลเข้าฟอร์ม
     fillDailyForm(row);
     isEditMode = true;
     editRowIndex = rowIdx;
@@ -2803,7 +2511,6 @@ function fillDailyForm(row) {
   document.getElementById('d-cash').value      = p(10) || '';
   document.getElementById('d-snacks').value    = p(12) || '';
   document.getElementById('d-promo').value     = p(13) || '';
-  // ShopExp ใน Sheets รวม extraExpTotal ไว้แล้ว ต้องหักออกเพื่อไม่นับซ้ำ
   var loadedExtraTotal = p(30);
   var loadedShopExp = p(14) - loadedExtraTotal;
   document.getElementById('d-shop-exp').value = loadedShopExp > 0 ? loadedShopExp.toFixed(2) : '';
@@ -2812,7 +2519,6 @@ function fillDailyForm(row) {
   document.getElementById('b-free').value      = p(33) || '';
   document.getElementById('b-coupon').value    = p(34) || '';
 
-  // โหลด std expenses
   var branch = document.getElementById('d-branch').value;
   var ids = branch === 'lotus' ? STD_EXP_LOTUS : STD_EXP_PASSIONE;
   var stdCols = { 'e-ice':20,'e-meji':21,'e-sugar':23,'e-soda':24,'e-yogurt':25,'e-bakery':26,'e-lime':27,'e-coconut':28 };
@@ -2820,13 +2526,11 @@ function fillDailyForm(row) {
     var el = document.getElementById(id);
     if (el && stdCols[id] !== undefined) el.value = p(stdCols[id]) || '';
   });
-  // โลตัส: โหลดค่าน้ำแข็งวางบิลจาก col Ice (20)
   if (branch === 'lotus') {
     var iceEl = document.getElementById('d-ice-bill');
     if (iceEl) iceEl.value = p(20) || '';
   }
 
-  // โหลด extra expenses (col 31 = ExtraDetail)
   var extraDetail = s(31);
   document.getElementById('extra-expenses').innerHTML = '';
   if (extraDetail) {
@@ -2928,7 +2632,7 @@ function renderAcctExp() {
     var branchName = BRANCH_NAMES[item.branch] || item.branch;
     var tr = document.createElement('tr');
     tr.innerHTML =
-      '<td class="mono">' + cd(item.date) + '</td>'
+      '<td class="mono">' + item.date + '</td>'
       + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
       + '<td style="font-size:13px;">' + item.desc + '</td>'
       + '<td><span class="badge badge-gray">' + item.cat + '</span></td>'
@@ -2949,6 +2653,15 @@ async function syncAcctExp() {
   toast('ซิงค์ ' + branchName + ' ขึ้น Sheets แล้ว ✓', 'success');
 }
 
+function toggleExtraDetail() {
+  var detail = document.getElementById('ss-extra-detail');
+  var btn = document.getElementById('ss-extra-btn');
+  if (!detail || !btn) return;
+  var isOpen = detail.style.display !== 'none';
+  detail.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? '▼ ดูรายละเอียด' : '▲ ซ่อน';
+}
+
 function toast(msg, type) {
   type = type || 'success';
   var wrap = document.getElementById('toast-wrap');
@@ -2958,6 +2671,8 @@ function toast(msg, type) {
   wrap.appendChild(t);
   setTimeout(function() { t.remove(); }, 3200);
 }
+
+
 </script>
 
 </body>

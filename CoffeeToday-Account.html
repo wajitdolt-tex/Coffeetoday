@@ -2512,8 +2512,7 @@ function fillDailyForm(row) {
   document.getElementById('d-snacks').value    = p(12) || '';
   document.getElementById('d-promo').value     = p(13) || '';
   var loadedExtraTotal = p(30);
-  var loadedShopExp = p(14) - loadedExtraTotal;
-  document.getElementById('d-shop-exp').value = loadedShopExp > 0 ? loadedShopExp.toFixed(2) : '';
+  document.getElementById('d-shop-exp').value = p(14) > 0 ? p(14).toFixed(2) : '';
   document.getElementById('d-note').value      = s(35);
   document.getElementById('b-void').value      = p(32) || '';
   document.getElementById('b-free').value      = p(33) || '';

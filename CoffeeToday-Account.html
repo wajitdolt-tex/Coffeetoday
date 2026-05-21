@@ -676,7 +676,7 @@ tr:hover td{background:var(--bg3);}
     </div>
     <div class="tbl-wrap">
       <table>
-        <thead><tr><th>วันที่จ่าย</th><th>สาขา</th><th>พนักงาน</th><th>เดือน</th><th>จำนวน</th><th>หมายเหตุ</th><th></th></tr></thead>
+        <thead><tr><th>วันที่จ่าย</th><th>สาขา</th><th>พนักงาน</th><th>เดือน</th><th>จำนวน</th><th>สถานะ</th><th>หมายเหตุ</th><th></th></tr></thead>
         <tbody id="sal-tbody"></tbody>
       </table>
       <div id="sal-empty" class="empty-state" style="display:none;"><div class="icon">👤</div><p>ยังไม่มีรายการ</p></div>
@@ -1233,10 +1233,39 @@ function togglePaid(id) {
     if (!paidDate) return;
     item.paid = true;
     item.paidDate = paidDate;
+    item.paidAmount = item.amount; // ชำระเต็มจำนวน
   } else {
     if (!confirm('ยกเลิกการชำระรายการนี้?')) return;
     item.paid = false;
     item.paidDate = null;
+    item.paidAmount = 0;
+    item.partialPayments = [];
+  }
+  savePay(); renderPayables();
+}
+
+function partialPay(id) {
+  var item = payables.find(function(p) { return p.id === id; });
+  if (!item) return;
+  if (!item.partialPayments) item.partialPayments = [];
+  var alreadyPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
+  var remaining = item.amount - alreadyPaid;
+  var amountStr = prompt('ชำระบางส่วน\nยอดทั้งหมด: ฿' + item.amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + '\nชำระแล้ว: ฿' + alreadyPaid.toLocaleString('th-TH', {minimumFractionDigits:2}) + '\nค้างอยู่: ฿' + remaining.toLocaleString('th-TH', {minimumFractionDigits:2}) + '\n\nกรอกจำนวนที่ชำระครั้งนี้ (฿):');
+  var amount = parseFloat(amountStr);
+  if (!amount || amount <= 0) return;
+  if (amount > remaining) { toast('จำนวนมากกว่ายอดค้าง', 'error'); return; }
+  var defaultDate = new Date().toISOString().split('T')[0];
+  var paidDate = prompt('วันที่ชำระ (YYYY-MM-DD):', defaultDate);
+  if (!paidDate) return;
+  item.partialPayments.push({ date: paidDate, amount: amount });
+  var totalPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
+  if (totalPaid >= item.amount) {
+    item.paid = true;
+    item.paidDate = paidDate;
+    item.paidAmount = item.amount;
+    toast('ชำระครบแล้ว ✓', 'success');
+  } else {
+    toast('บันทึกการชำระ ฿' + amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + ' แล้ว ✓', 'success');
   }
   savePay(); renderPayables();
 }
@@ -1316,6 +1345,10 @@ function renderPayables() {
     var overdue = !item.paid && item.due && item.due < today;
     var branchName = BRANCH_NAMES[item.branch] || item.branch;
     var displayDate = item.indate || item.date || '-';
+    var partials = item.partialPayments || [];
+    var totalPartial = partials.reduce(function(s, p) { return s + p.amount; }, 0);
+    var remaining = item.amount - totalPartial;
+    var isPartial = !item.paid && totalPartial > 0;
     var tr = document.createElement('tr');
     tr.innerHTML =
       '<td class="mono">' + displayDate + '</td>'
@@ -1324,13 +1357,18 @@ function renderPayables() {
         + (item.note ? '<div style="font-size:11px;color:var(--text3);">' + item.note + '</div>' : '') + '</td>'
       + '<td class="mono">' + (item.billno || '-') + '</td>'
       + '<td class="mono">' + (item.indate || '-') + '</td>'
-      + '<td class="mono" style="font-weight:500;">' + fmt(item.amount) + '</td>'
+      + '<td class="mono" style="font-weight:500;">'
+        + fmt(item.amount)
+        + (isPartial ? '<div style="font-size:10px;color:var(--red);">ค้าง: ' + fmt(remaining) + '</div>' : '')
+        + (isPartial ? '<div style="font-size:10px;color:var(--green);">จ่ายแล้ว: ' + fmt(totalPartial) + '</div>' : '')
+        + '</td>'
       + '<td class="mono" style="' + (overdue ? 'color:var(--red);font-weight:600;' : '') + '">'
         + (item.due || '-') + (overdue ? ' ⚠' : '') + '</td>'
       + '<td>'
-        + '<span class="p-tag ' + (item.paid ? 'paid' : 'unpaid') + '" onclick="togglePaid(' + item.id + ')">'
-          + (item.paid ? '✓ ชำระแล้ว' : '● ค้างชำระ') + '</span>'
+        + '<span class="p-tag ' + (item.paid ? 'paid' : (isPartial ? 'unpaid' : 'unpaid')) + '" onclick="togglePaid(' + item.id + ')">'
+          + (item.paid ? '✓ ชำระแล้ว' : (isPartial ? '◑ ชำระบางส่วน' : '● ค้างชำระ')) + '</span>'
         + (item.paid && item.paidDate ? '<div style="font-size:10px;color:var(--text3);margin-top:2px;">' + item.paidDate + '</div>' : '')
+        + (!item.paid ? '<div style="margin-top:4px;"><button class="btn btn-outline btn-sm" style="font-size:11px;padding:3px 8px;" onclick="partialPay(' + item.id + ')">+ ชำระบางส่วน</button></div>' : '')
         + '</td>'
       + '<td><button class="btn btn-danger btn-sm" onclick="delPayable(' + item.id + ')">ลบ</button></td>';
     tbody.appendChild(tr);
@@ -1491,6 +1529,20 @@ async function loadSummary() {
     }
 
     renderSummary(data.rows || [], data.acctExpRows || [], branchKey);
+    // โหลด lineman จาก Sheets ถ้ามี
+    if (data.linemanRows && data.linemanRows.length) {
+      data.linemanRows.forEach(function(r) {
+        var rowBranch = String(r[0]||'');
+        var rowMonth  = String(r[1]||'');
+        var rowAmount = String(r[2]||'');
+        var rowNote   = String(r[3]||'');
+        // normalize branch
+        if (rowBranch === 'แพชชั่นระยอง') rowBranch = 'passione';
+        if (rowBranch === 'โลตัสระยอง')   rowBranch = 'lotus';
+        var lsKey = 'ct_lineman_sun_' + rowBranch + '_' + rowMonth;
+        localStorage.setItem(lsKey, JSON.stringify({ amount: rowAmount, note: rowNote }));
+      });
+    }
     loadLinemanSun();
   } catch(err) { toast('ดึงข้อมูลไม่สำเร็จ: ' + err.message, 'error'); }
   finally { txt.textContent = 'ดึงข้อมูล'; }
@@ -1546,14 +1598,38 @@ function addMonthlyExpenses() {
   toast('เพิ่ม ' + added + ' รายการแล้ว ✓', 'success');
 }
 
-function saveLinemanSun() {
+async function saveLinemanSun() {
   var amount = document.getElementById('ss-lineman-sun').value;
   var note   = document.getElementById('ss-lineman-sun-note').value;
   var month  = document.getElementById('s-month').value;
   var branch = document.getElementById('s-branch').value;
   var key    = 'ct_lineman_sun_' + branch + '_' + month;
-  localStorage.setItem(key, JSON.stringify({ amount: amount, note: note }));
+  var data   = { amount: amount, note: note };
+  localStorage.setItem(key, JSON.stringify(data));
   var saved  = document.getElementById('ss-lineman-sun-saved');
+  saved.textContent = 'กำลังบันทึก...';
+  saved.style.color = 'var(--text3)';
+
+  // sync ขึ้น Sheets
+  if (cfg.gsUrl) {
+    try {
+      await fetch(cfg.gsUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'lineman',
+          branch: branch,
+          branchName: BRANCH_NAMES[branch],
+          month: month,
+          amount: parseFloat(amount) || 0,
+          note: note,
+          timestamp: new Date().toISOString()
+        })
+      });
+    } catch(e) { console.log('lineman sync error', e); }
+  }
+
   saved.textContent = 'บันทึกแล้ว ✓  ' + (note ? '(' + note + ')' : '');
   saved.style.color = 'var(--green)';
   toast('บันทึกยอด Line Man แล้ว ✓', 'success');
@@ -2391,6 +2467,31 @@ function addSalary() {
   toast('เพิ่มรายการเงินเดือนแล้ว ✓', 'success');
 }
 
+function partialPaySalary(id) {
+  var item = salaries.find(function(s) { return s.id === id; });
+  if (!item) return;
+  if (!item.partialPayments) item.partialPayments = [];
+  var alreadyPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
+  var remaining = item.amount - alreadyPaid;
+  var amountStr = prompt('ชำระเงินเดือน: ' + item.name + '\nยอดทั้งหมด: ฿' + item.amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + '\nจ่ายแล้ว: ฿' + alreadyPaid.toLocaleString('th-TH', {minimumFractionDigits:2}) + '\nค้างอยู่: ฿' + remaining.toLocaleString('th-TH', {minimumFractionDigits:2}) + '\n\nกรอกจำนวนที่จ่ายครั้งนี้ (฿):');
+  var amount = parseFloat(amountStr);
+  if (!amount || amount <= 0) return;
+  if (amount > remaining) { toast('จำนวนมากกว่ายอดค้าง', 'error'); return; }
+  var defaultDate = new Date().toISOString().split('T')[0];
+  var paidDate = prompt('วันที่จ่าย (YYYY-MM-DD):', defaultDate);
+  if (!paidDate) return;
+  item.partialPayments.push({ date: paidDate, amount: amount });
+  var totalPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
+  if (totalPaid >= item.amount) {
+    item.paid = true;
+    toast('จ่ายเงินเดือนครบแล้ว ✓', 'success');
+  } else {
+    toast('บันทึกการจ่าย ฿' + amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + ' แล้ว ✓', 'success');
+  }
+  saveSalaries();
+  renderSalaries();
+}
+
 function delSalary(id) {
   if (!confirm('ลบรายการนี้?')) return;
   salaries = salaries.filter(function(s) { return s.id !== id; });
@@ -2434,13 +2535,27 @@ function renderSalaries() {
   empty.style.display = 'none';
   list.forEach(function(item) {
     var branchName = BRANCH_NAMES[item.branch] || item.branch;
+    var partials = item.partialPayments || [];
+    var totalPartial = partials.reduce(function(s, p) { return s + p.amount; }, 0);
+    var remaining = item.amount - totalPartial;
+    var isPartial = totalPartial > 0 && remaining > 0;
+    var isPaid = item.paid || remaining <= 0;
     var tr = document.createElement('tr');
     tr.innerHTML =
       '<td class="mono">' + (item.date || '-') + '</td>'
       + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
       + '<td style="font-size:13px;font-weight:500;">' + item.name + '</td>'
       + '<td class="mono">' + (item.month || '-') + '</td>'
-      + '<td class="mono" style="color:var(--blue);font-weight:500;">' + fmt(item.amount) + '</td>'
+      + '<td class="mono" style="font-weight:500;">'
+        + '<span style="color:' + (isPaid ? 'var(--green)' : 'var(--blue)') + ';">' + fmt(item.amount) + '</span>'
+        + (isPartial ? '<div style="font-size:10px;color:var(--red);">ค้าง: ' + fmt(remaining) + '</div>' : '')
+        + (isPartial ? '<div style="font-size:10px;color:var(--green);">จ่ายแล้ว: ' + fmt(totalPartial) + '</div>' : '')
+        + '</td>'
+      + '<td>'
+        + '<span class="p-tag ' + (isPaid ? 'paid' : 'unpaid') + '">'
+          + (isPaid ? '✓ จ่ายครบ' : (isPartial ? '◑ จ่ายบางส่วน' : '● ยังไม่จ่าย')) + '</span>'
+        + (!isPaid ? '<div style="margin-top:4px;"><button class="btn btn-outline btn-sm" style="font-size:11px;padding:3px 8px;" onclick="partialPaySalary(' + item.id + ')">+ ชำระบางส่วน</button></div>' : '')
+        + '</td>'
       + '<td style="font-size:12px;color:var(--text3);">' + (item.note || '-') + '</td>'
       + '<td><button class="btn btn-danger btn-sm" onclick="delSalary(' + item.id + ')">ลบ</button></td>';
     tbody.appendChild(tr);

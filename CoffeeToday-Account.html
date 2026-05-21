@@ -1447,6 +1447,8 @@ async function loadSummary() {
         return s;
       }
       var sheetsPayables = data.payableRows.map(function(r) {
+        var partials = [];
+        try { partials = JSON.parse(String(r[12]||'[]')); } catch(e) {}
         return {
           id: r[9] || Date.now(),
           date: cleanDate(r[0]),
@@ -1459,7 +1461,8 @@ async function loadSummary() {
           paidDate: cleanDate(r[7]),
           note: String(r[8]||''),
           billno: String(r[10]||''),
-          indate: cleanDate(r[11])
+          indate: cleanDate(r[11]),
+          partialPayments: partials
         };
       });
       var otherBranchPayables = payables.filter(function(px) { return px.branch !== branchKey; });

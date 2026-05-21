@@ -1314,15 +1314,14 @@ function renderPayables() {
     var fixedCatsFilter = ['ค่าเช่า','ค่าไฟ/น้ำ','ภาษี','ค่าบริการ'];
     list = list.filter(function(p) {
       var d = p.indate || p.date || '';
-      var due = p.due || '';
-      var paid = p.paidDate || '';
       var isFixed = fixedCatsFilter.indexOf(p.cat) >= 0;
       if (isFixed) {
-        // ค่าเช่า/ไฟ/ภาษี — นับตามวันที่วางบิลเท่านั้น
-        return d.startsWith(filterMonth) || due.startsWith(filterMonth);
+        // ค่าเช่า/ไฟ/ภาษี/แอร์ — นับตามวันที่วางบิล
+        return d.startsWith(filterMonth);
       } else {
-        // วัตถุดิบ/อื่นๆ — นับตามวันที่วางบิล หรือวันที่จ่ายจริง
-        return d.startsWith(filterMonth) || due.startsWith(filterMonth) || paid.startsWith(filterMonth);
+        // วัตถุดิบ — แสดงตามวันที่วางบิลเสมอ
+        // ถ้าจ่ายแล้ว ยังแสดงในเดือนที่วางบิลด้วย (เพื่อดูว่าเดือนนั้นมีบิลอะไรบ้าง)
+        return d.startsWith(filterMonth);
       }
     });
   }
@@ -1793,14 +1792,12 @@ function renderSummary(rows, acctExpRows, branchKey) {
     var matchBranch = pxBranch === branch;
     var isFixedCat = fixedCats.indexOf(px.cat) >= 0;
     if (isFixedCat) {
+      // ค่าเช่า/ไฟ/ภาษี/แอร์ — แสดงตามวันที่วางบิล
       return matchBranch && px.date && px.date.startsWith(month);
     } else {
-      var inMonthUnpaid = !px.paid && (
-        (px.date && px.date.startsWith(month)) ||
-        (px.due && px.due.startsWith(month))
-      );
-      var inMonthPaid = px.paid && px.paidDate && px.paidDate.startsWith(month);
-      return matchBranch && (inMonthUnpaid || inMonthPaid);
+      // วัตถุดิบ — แสดงตามวันที่วางบิล (date/indate)
+      var d = px.indate || px.date || '';
+      return matchBranch && d.startsWith(month);
     }
   });
 

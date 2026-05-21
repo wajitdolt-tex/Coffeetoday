@@ -1483,6 +1483,8 @@ async function loadSummary() {
             if (s.indexOf('T') >= 0) s = s.split('T')[0];
             return s;
           }
+          var partials = [];
+          try { partials = JSON.parse(String(r[8]||'[]')); } catch(e) {}
           return {
             id: r[6] || Date.now(),
             date: cleanSalDate(r[0]),
@@ -1490,7 +1492,9 @@ async function loadSummary() {
             name: String(r[2]||''),
             month: cleanSalDate(r[3]).slice(0,7),
             amount: parseFloat(r[4])||0,
-            note: String(r[5]||'')
+            note: String(r[5]||''),
+            paid: String(r[7]||'') === 'Paid',
+            partialPayments: partials
           };
         });
         var otherBranchSalaries = salaries.filter(function(s) { return s.branch !== branchKey; });

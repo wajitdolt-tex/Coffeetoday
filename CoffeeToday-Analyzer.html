@@ -741,11 +741,12 @@ function bSrRec(){
     _pickerCb[wrId]=function(id,name,unit){srR[i].iId=id;srR[i].unit=unit||'';updSrCP();bSrRec();};
     return '<div class="ing-row">'
       +'<div class="sr-wrap" id="'+wrId+'">'
-      +'<div class="sr-box" onclick="openPicker(\''+wrId+'\',_pickerSr[\''+wrId+'\'],_pickerCb[\''+wrId+'\'])">'
-      +'<input type="text" placeholder="🔍 ค้นหาส่วนผสม..." value="'+selName+'" readonly>'
-      +'<span class="sr-arrow">▼</span></div>'
+      +'<div class="sr-box">'
+      +'<input type="text" placeholder="🔍 ค้นหาส่วนผสม..." value="'+selName+'"'
+      +' onfocus="openPicker(\''+wrId+'\',_pickerSr[\''+wrId+'\'],_pickerCb[\''+wrId+'\'])"'
+      +' oninput="var _d=document.getElementById(\''+wrId+'\').querySelector(\'.sr-drop\');_d.innerHTML=buildPickerOptions(_pickerSr[\''+wrId+'\'],this.value);_d.classList.add(\'open\')">'
+      +'<span class="sr-arrow" onclick="document.getElementById(\''+wrId+'\').querySelector(\'input\').focus()">▼</span></div>'
       +'<div class="sr-drop"></div></div>'
-      +'<input type="number" value="'+(r.qty||'')+'" placeholder="ปริมาณ" min="0" step="0.01" onchange="srR['+i+'].qty=parseFloat(this.value)||0;updSrCP()" style="text-align:center">'
       +'<select style="width:70px;padding:6px 4px;font-size:12px" onchange="srR['+i+'].unit=this.value;updSrCP()">'+uO.map(function(u){return '<option value="'+u+'"'+(du===u?' selected':'')+'>'+u+'</option>';}).join('')+'</select>'
       +'<button class="btn bd2" style="padding:4px 7px" onclick="rmSrRR('+i+')">×</button>'
       +'</div>';
@@ -810,19 +811,15 @@ function openPicker(wrId, availSr, onSelect){
   var wr=document.getElementById(wrId);if(!wr)return;
   var drop=wr.querySelector('.sr-drop');
   var inp=wr.querySelector('input');
-  drop.innerHTML=buildPickerOptions(availSr,'');
+  drop.innerHTML=buildPickerOptions(availSr,inp.value||'');
   drop.classList.add('open');
-  inp.focus();
   // bind option click
   drop.onclick=function(e){
     var opt=e.target.closest('.sr-opt');if(!opt)return;
     onSelect(opt.dataset.id, opt.dataset.name, opt.dataset.unit);
     drop.classList.remove('open');
     inp.value=opt.dataset.name;
-  };
-  // search filter
-  inp.oninput=function(){
-    drop.innerHTML=buildPickerOptions(availSr,inp.value);
+    inp.blur();
   };
   // close on outside click
   setTimeout(function(){
@@ -834,9 +831,11 @@ function openPicker(wrId, availSr, onSelect){
 
 function makePicker(wrId, selectedId, selectedName, availSr, onSelect){
   return '<div class="sr-wrap" id="'+wrId+'">'
-    +'<div class="sr-box" onclick="openPicker(\''+wrId+'\',_pickerSr[\''+wrId+'\'],_pickerCb[\''+wrId+'\'])">'
-    +'<input type="text" placeholder="🔍 ค้นหาส่วนผสม..." value="'+(selectedName||'')+'" readonly>'
-    +'<span class="sr-arrow">▼</span>'
+    +'<div class="sr-box">'
+    +'<input type="text" placeholder="🔍 ค้นหาส่วนผสม..." value="'+(selectedName||'')+'"'
+    +' onfocus="openPicker(\''+wrId+'\',_pickerSr[\''+wrId+'\'],_pickerCb[\''+wrId+'\'])"'
+    +' oninput="var _d=document.getElementById(\''+wrId+'\').querySelector(\'.sr-drop\');_d.innerHTML=buildPickerOptions(_pickerSr[\''+wrId+'\'],this.value);_d.classList.add(\'open\')">'
+    +'<span class="sr-arrow" onclick="document.getElementById(\''+wrId+'\').querySelector(\'input\').focus()">▼</span>'
     +'</div>'
     +'<div class="sr-drop"></div>'
     +'</div>';
@@ -891,9 +890,11 @@ function bRec(){
     _pickerCb[wrId]=function(id,name,unit){rR[i].iId=id;rR[i].unit=unit||'';updCP();bRec();};
     return '<div class="ing-row">'
       +'<div class="sr-wrap" id="'+wrId+'">'
-      +'<div class="sr-box" onclick="openPicker(\''+wrId+'\',_pickerSr[\''+wrId+'\'],_pickerCb[\''+wrId+'\'])">'
-      +'<input type="text" placeholder="🔍 ค้นหาส่วนผสม..." value="'+selName+'" readonly>'
-      +'<span class="sr-arrow">▼</span></div>'
+      +'<div class="sr-box">'
+      +'<input type="text" placeholder="🔍 ค้นหาส่วนผสม..." value="'+selName+'"'
+      +' onfocus="openPicker(\''+wrId+'\',_pickerSr[\''+wrId+'\'],_pickerCb[\''+wrId+'\'])"'
+      +' oninput="var _d=document.getElementById(\''+wrId+'\').querySelector(\'.sr-drop\');_d.innerHTML=buildPickerOptions(_pickerSr[\''+wrId+'\'],this.value);_d.classList.add(\'open\')">'
+      +'<span class="sr-arrow" onclick="document.getElementById(\''+wrId+'\').querySelector(\'input\').focus()">▼</span></div>'
       +'<div class="sr-drop"></div></div>'
       +'<input type="number" value="'+(r.qty||'')+'" placeholder="ปริมาณ" min="0" step="0.1" onchange="rR['+i+'].qty=parseFloat(this.value)||0;updCP()" style="text-align:center">'
       +'<select style="width:70px;padding:6px 4px;font-size:12px" onchange="rR['+i+'].unit=this.value;updCP()">'+uO.map(function(u){return '<option value="'+u+'"'+(du===u?' selected':'')+'>'+u+'</option>';}).join('')+'</select>'

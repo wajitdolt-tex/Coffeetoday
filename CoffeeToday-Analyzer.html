@@ -327,7 +327,7 @@ canvas{display:block;width:100%;border-radius:8px;}
     <div id="h-err" style="display:none;background:var(--rbg);border:1px solid #f0c8c4;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--rd);margin-bottom:10px"></div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="h-round-btns"></div>
     <div class="tw"><table><thead><tr>
-      <th>วัตถุดิบ</th><th>สาขา</th><th>รอบ</th><th>วันที่</th><th>สั่งจริง</th><th>ยอดรวมใบ (฿)</th>
+      <th>วัตถุดิบ</th><th>สาขา</th><th>รอบ</th><th>วันที่</th><th>สั่งจริง</th><th>ยอดรายการ (฿)</th>
     </tr></thead><tbody id="h-hist-tb"><tr><td colspan="6"><div class="emp">ยังไม่มีประวัติ</div></td></tr></tbody></table></div>
   </div>
 </div>
@@ -1185,26 +1185,37 @@ function renderHistTable(filter){
   if(!rows.length){tb.innerHTML='<tr><td colspan="6"><div class="emp">ยังไม่มีประวัติ</div></td></tr>';return;}
   var sorted=rows.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));});
   tb.innerHTML=sorted.map(function(r){
-    // แสดงสาขา: ถ้าไม่มีให้ขึ้น "ไม่ระบุ"
+    // สาขา
     var branchText=r.branch&&r.branch!==''?r.branch:'ไม่ระบุ';
     var branchColor=r.branch==='แพชชั่น'?'var(--ac)':r.branch==='โลตัส'?'var(--gn)':'var(--t3)';
     var branchBadge='<span class="pill" style="font-size:10px;color:'+branchColor+'">'+branchText+'</span>';
-    // แปลงวันที่ ISO → วันที่ไทย
+    // วันที่ — ป้องกัน double-convert ปี พ.ศ.
     var dateDisp=r.date;
     try{
-      var d=new Date(r.date);
-      if(!isNaN(d.getTime())){
-        dateDisp=d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});
+      var ds=String(r.date).trim();
+      // ถ้าเป็น ISO format (มี T หรือ Z) → แปลงเป็น วัน/เดือน/ปีไทย โดยไม่บวก 543 ซ้ำ
+      if(ds.indexOf('T')>=0||ds.indexOf('Z')>=0){
+        var d=new Date(ds);
+        if(!isNaN(d.getTime())){
+          var day=d.getDate();
+          var mo=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][d.getMonth()];
+          var yr=d.getFullYear()+543; // ค.ศ. → พ.ศ.
+          dateDisp=day+' '+mo+' '+yr;
+        }
       }
+      // ถ้าเป็น string วันที่ไทยอยู่แล้ว เช่น "22/5/2569" หรือ "22 พ.ค. 2569" → ใช้ตรง
     }catch(e){}
-    var vatDisp=r.totalInclVat>0?fB(r.totalInclVat):'—';
+    // ยอดของรายการนี้ = ราคาวัตถุดิบ × จำนวนที่สั่ง (ถ้าไม่มีราคาให้ใช้ totalInclVat/จำนวนรายการทั้งหมดในใบนั้น)
+    var ing=ings.find(function(x){return String(x.id)===String(r.ingId);});
+    var itemAmt=ing&&ing.price>0&&r.ordered>0?ing.price*r.ordered:0;
+    var amtDisp=itemAmt>0?fB(itemAmt):'—';
     return '<tr>'
       +'<td style="font-weight:600">'+r.ingName+'</td>'
       +'<td>'+branchBadge+'</td>'
       +'<td><span class="pill" style="font-size:10px">'+r.roundLabel+'</span></td>'
       +'<td class="mn">'+dateDisp+'</td>'
       +'<td class="mn" style="font-weight:700;color:var(--br)">'+r.ordered+' '+r.packUnit+'</td>'
-      +'<td class="mn" style="color:var(--ac)">'+vatDisp+'</td>'
+      +'<td class="mn" style="color:var(--ac)">'+amtDisp+'</td>'
       +'</tr>';
   }).join('');
 }

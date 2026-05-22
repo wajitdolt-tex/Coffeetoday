@@ -222,7 +222,7 @@ canvas{display:block;width:100%;border-radius:8px;}
       <div class="fgrp" style="align-self:end"><button class="btn bp" style="width:100%" onclick="addIng()" id="b-ai">+ บันทึก</button></div>
     </div>
   </div>
-  <div class="card"><div class="ct">🧪 วัตถุดิบทั้งหมด <span style="font-size:10px;font-weight:400;color:var(--t3);text-transform:none">ลากแถว ⠿ เพื่อจัดลำดับ</span></div><div id="ing-by-cat"></div></div>
+  <div class="card"><div class="ct" style="cursor:pointer;user-select:none" onclick="toggleCard('ing-list-body',this)">🧪 วัตถุดิบทั้งหมด <span style="font-size:10px;font-weight:400;color:var(--t3);text-transform:none">ลากแถว ⠿ เพื่อจัดลำดับ</span><span style="margin-left:auto;font-size:12px;color:var(--t3);font-weight:400">▲ ซ่อน</span></div><div id="ing-list-body"><div id="ing-by-cat"></div></div></div>
 </div>
 
 <!-- ต้นทุนเมนู -->
@@ -248,10 +248,12 @@ canvas{display:block;width:100%;border-radius:8px;}
     <button class="btn bg2" style="width:100%;margin-top:6px;display:none" id="b-cancel-edit" onclick="cancelEditMenu()">✕ ยกเลิกการแก้ไข</button>
   </div>
   <div class="card">
-    <div class="ct">📋 รายการเมนูทั้งหมด <span class="pill">ใช้ร่วมกัน 2 สาขา</span></div>
+    <div class="ct" style="cursor:pointer;user-select:none" onclick="toggleCard('menu-list-body',this)">📋 รายการเมนูทั้งหมด <span class="pill">ใช้ร่วมกัน 2 สาขา</span><span style="margin-left:auto;font-size:12px;color:var(--t3);font-weight:400">▲ ซ่อน</span></div>
+    <div id="menu-list-body">
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="menu-cat-btns"></div>
     <div class="tw"><table><thead><tr><th></th><th>ชื่อเมนู</th><th>ราคาขาย</th><th>ต้นทุน/แก้ว</th><th>กำไร</th><th>Margin</th><th>สถานะ</th><th></th></tr></thead>
     <tbody id="m-tb"><tr><td colspan="8"><div class="emp">ยังไม่มีเมนู</div></td></tr></tbody></table></div>
+    </div>
   </div>
   <div class="card" style="border-color:rgba(200,134,10,.3);background:var(--abg)">
     <div class="ct">🧪 สูตรย่อย (Sub-recipe) <span class="pill">เพื่อใช้เป็นส่วนผสมในเมนู</span></div>
@@ -1280,6 +1282,18 @@ function renderTrendChart(){
 // ============================================================
 // TABS + INIT
 // ============================================================
+function toggleCard(bodyId, ctEl){
+  var body=document.getElementById(bodyId);
+  if(!body) return;
+  var btn=ctEl.querySelector('span:last-child');
+  if(body.style.display==='none'){
+    body.style.display='';
+    if(btn) btn.textContent='▲ ซ่อน';
+  } else {
+    body.style.display='none';
+    if(btn) btn.textContent='▼ แสดง';
+  }
+}
 function sTab(t,el){document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('active');});document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active');});document.getElementById('tab-'+t).classList.add('active');el.classList.add('active');if(t==='hist')loadHistory();}
 function rAll(){rIng();rMenus();uSt();rOrdCats();rOrd();bRec();bSrRec();rSubRecipes();}
 API=localStorage.getItem('ct_analysis_url')||'';

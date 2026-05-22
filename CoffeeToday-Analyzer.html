@@ -124,7 +124,7 @@ canvas{display:block;width:100%;border-radius:8px;}
         1. เลือก<strong>หมวดวัตถุดิบ</strong>ที่ต้องการสั่ง<br>
         2. กรอก <strong>คงเหลือ</strong> (สต็อกปัจจุบัน) และ <strong>ของเข้ารอบที่แล้ว</strong> (ยอดที่สั่งมาครั้งก่อน)<br>
         3. กด <strong>คำนวณ</strong> → ระบบแนะนำยอดสั่งรอบถัดไปอัตโนมัติ<br>
-        4. กด <strong>ใส่ใบสั่งซื้อ</strong> → ระบบบันทึกประวัติลง Sheets ให้วิเคราะห์แนวโน้มได้ใน Tab 📈<br>
+        4. กด <strong>ใส่ใบสั่งซื้อ</strong> → ระบบคำนวณและใส่ยอดสั่งให้อัตโนมัติ ปรับแก้ได้ก่อนกดพิมพ์<br>
         💾 ค่าที่กรอกจะถูกจำไว้อัตโนมัติ
       </div>
       <div style="margin-bottom:14px">
@@ -146,11 +146,10 @@ canvas{display:block;width:100%;border-radius:8px;}
         <th style="width:13%">ของเข้า<br><span style="font-weight:400;font-size:10px">รอบที่แล้ว</span></th>
         <th style="width:13%">ยืมสาขา<br><span style="font-weight:400;font-size:10px;color:var(--yl)">+เพิ่ม</span></th>
         <th style="width:11%;color:var(--gn)">สั่งแนะนำ</th>
-        <th style="width:10%;color:var(--ac)">สั่งจริง</th>
       </tr></thead><tbody id="plan-stock-tb"></tbody></table></div>
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
         <button class="btn bp" style="flex:1" onclick="calcStockOrder()">🧮 คำนวณ</button>
-        <button class="btn bg2" style="flex:1" onclick="applyPlanToOrder()">⬇️ ใส่ใบสั่งซื้อ + บันทึกประวัติ</button>
+        <button class="btn bg2" style="flex:1" onclick="applyPlanToOrder()">⬇️ ใส่ใบสั่งซื้อ</button>
       </div>
       <div id="plan-summary" style="display:none;margin-top:12px;background:var(--s2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--t2);line-height:1.8"></div>
     </div>
@@ -764,78 +763,39 @@ var PACK_UNITS=['ถุง','ขวด','ลัง','หีบ','กระป๋
 
 function renderPlanStockTable(){
   var tb=document.getElementById('plan-stock-tb'),pi=getPlanIngs();
-  if(!pi.length){tb.innerHTML='<tr><td colspan="7"><div class="emp">เลือกหมวดวัตถุดิบด้านบนก่อน</div></td></tr>';return;}
+  if(!pi.length){tb.innerHTML='<tr><td colspan="6"><div class="emp">เลือกหมวดวัตถุดิบด้านบนก่อน</div></td></tr>';return;}
   var dp=parseFloat(document.getElementById('plan-days-past').value)||15,dn=parseFloat(document.getElementById('plan-days-next').value)||15,buf=parseFloat(document.getElementById('plan-buffer').value)||0;
   tb.innerHTML=pi.map(function(i){
     var s=planStock[i.id]||{},pu=s.packUnit||defPU(i),cur=parseFloat(s.current)||0,last=parseFloat(s.lastIn)||0,bor=parseFloat(s.borrow)||0;
     var used=(last+bor)-cur,perDay=dp>0&&used>0?used/dp:0,sug=perDay>0?Math.ceil(perDay*dn*(1+buf)):0;
-    // สั่งจริง: ถ้ามีค่าใน planStock ใช้ค่านั้น ไม่งั้น default = suggest
-    var actual=s.actual!==undefined?s.actual:sug;
     var oc=function(f){return 'if(!planStock[\''+i.id+'\'])planStock[\''+i.id+'\']={}; planStock[\''+i.id+'\'].'+f+'='+(f==='packUnit'?'this.value':'parseFloat(this.value)||0')+';savePlanSettings();calcStockOrder()';};
-    var ocA='if(!planStock[\''+i.id+'\'])planStock[\''+i.id+'\']={}; planStock[\''+i.id+'\'].actual=parseFloat(this.value)||0;savePlanSettings()';
     return '<tr><td style="font-size:12px;font-weight:600;line-height:1.4">'+i.name+'</td>'
       +'<td><select style="width:100%;font-size:11px;padding:4px 2px" onchange="'+oc('packUnit')+'">'+PACK_UNITS.map(function(u){return '<option value="'+u+'"'+(pu===u?' selected':'')+'>'+u+'</option>';}).join('')+'</select></td>'
       +'<td><input type="number" value="'+(s.current||'')+'" placeholder="0" min="0" step="1" style="width:100%;font-family:\'Space Mono\',monospace;text-align:center;font-size:12px" onchange="'+oc('current')+'"></td>'
       +'<td><input type="number" value="'+(s.lastIn||'')+'" placeholder="0" min="0" step="1" style="width:100%;font-family:\'Space Mono\',monospace;text-align:center;font-size:12px" onchange="'+oc('lastIn')+'"></td>'
       +'<td><input type="number" value="'+(s.borrow||'')+'" placeholder="0" min="0" step="1" style="width:100%;font-family:\'Space Mono\',monospace;text-align:center;font-size:12px;color:var(--yl)" onchange="'+oc('borrow')+'"></td>'
       +'<td style="text-align:center;font-weight:700;font-size:13px;color:'+(sug>0?'var(--gn)':'var(--t3)')+'">'+(sug>0?sug+'<br><span style="font-size:10px;font-weight:400">'+pu+'</span>':'-')+'</td>'
-      // คอลัมน์ใหม่ "สั่งจริง" — edit inline
-      +'<td><input type="number" value="'+(s.actual!==undefined?s.actual:'')+'" placeholder="'+(sug||'')+'" min="0" step="1" style="width:60px;font-family:\'Space Mono\',monospace;text-align:center;font-size:12px;background:var(--abg);border-color:var(--ac2)" onchange="'+ocA+'"></td>'
       +'</tr>';
   }).join('');
 }
 
 function calcStockOrder(){savePlanSettings();renderPlanStockTable();var dp=parseFloat(document.getElementById('plan-days-past').value)||15,dn=parseFloat(document.getElementById('plan-days-next').value)||15,buf=parseFloat(document.getElementById('plan-buffer').value)||0,pi=getPlanIngs(),filled=pi.filter(function(i){return (planStock[i.id]||{}).lastIn>0;}).length,sumEl=document.getElementById('plan-summary');sumEl.style.display='block';sumEl.innerHTML='📋 กรอกข้อมูลแล้ว '+filled+'/'+pi.length+' รายการ | รอบที่แล้ว '+dp+' วัน → รอบถัดไป '+dn+' วัน | buffer '+Math.round(buf*100)+'%';}
 
-// FIX #2: applyPlanToOrder reset ordCat + บันทึกประวัติลง Sheets
+// applyPlanToOrder: ใส่ยอดแนะนำลงใบสั่งซื้อเท่านั้น ไม่บันทึกประวัติ (บันทึกตอนพิมพ์)
 function applyPlanToOrder(){
   var dp=parseFloat(document.getElementById('plan-days-past').value)||15,dn=parseFloat(document.getElementById('plan-days-next').value)||15,buf=parseFloat(document.getElementById('plan-buffer').value)||0;
-  var count=0,histRows=[];
-  var label=makeRoundLabel();
-  var dateStr=new Date().toLocaleDateString('th-TH');
+  var count=0;
   getPlanIngs().forEach(function(i){
     var s=planStock[i.id]||{};
     var cur=parseFloat(s.current)||0,last=parseFloat(s.lastIn)||0,bor=parseFloat(s.borrow)||0;
     var used=(last+bor)-cur;
     if(used<=0||!dp)return;
     var sug=Math.ceil((used/dp)*dn*(1+buf));
-    // สั่งจริง: ถ้า user กรอกไว้ใช้ค่านั้น ถ้าไม่มีใช้ suggest
-    var actual=s.actual!==undefined&&s.actual>0?s.actual:sug;
-    if(actual>0){ords[i.id]=actual;count++;}
-    // เตรียม row ประวัติ
-    if(last>0||actual>0){
-      histRows.push({
-        id:uid(),
-        date:dateStr,
-        roundLabel:label,
-        ingId:i.id,
-        ingName:i.name,
-        ingCat:i.cat||'อื่นๆ',
-        suggested:sug,
-        ordered:actual,
-        packUnit:s.packUnit||defPU(i),
-        stockBefore:cur,
-        lastIn:last,
-        usedTotal:used>0?used:0,
-        usedPerDay:dp>0&&used>0?parseFloat((used/dp).toFixed(2)):0,
-        days:dp
-      });
-    }
+    if(sug>0){ords[i.id]=sug;count++;}
   });
   if(!count){alert('ยังไม่มีข้อมูลเพียงพอ กรุณากรอกของเข้ารอบที่แล้วก่อนครับ');return;}
-  // บันทึกประวัติลง Sheets
-  if(API&&histRows.length){
-    sS('syn','กำลังบันทึกประวัติ '+histRows.length+' รายการ...');
-    (function saveHist(i){
-      if(i>=histRows.length){sS('ok','บันทึกประวัติครบ ✅');return;}
-      apiP({action:'upsert',sheet:'OrderHistory',data:histRows[i]}).then(function(){saveHist(i+1);}).catch(function(){saveHist(i+1);});
-    })(0);
-    // อัพเดต local cache
-    histRows.forEach(function(r){orderHistory.push(r);});
-  }
-  // FIX #2: reset ordCat ก่อน rOrd เพื่อให้เห็นครบ
   ordCat='ทั้งหมด';rOrdCats();rOrd();
-  alert('ใส่ยอดแนะนำ '+count+' รายการลงใบสั่งซื้อแล้ว ✅\nบันทึกประวัติรอบ "'+label+'" แล้ว\nตรวจสอบและปรับได้ในรายการด้านล่าง');
+  alert('ใส่ยอดแนะนำ '+count+' รายการลงใบสั่งซื้อแล้ว ✅\nตรวจสอบและปรับได้ก่อนพิมพ์');
 }
 
 function rOrdCats(){var seen={},catList=[];ings.forEach(function(i){var c=i.cat||'อื่นๆ';if(!seen[c]){seen[c]=1;catList.push(c);}});document.getElementById('ord-cats').innerHTML=['ทั้งหมด'].concat(catList).map(function(c){return '<button class="btn '+(c===ordCat?'bp':'bg2')+' bsm" onclick="setOrdCat(\''+c+'\')">'+c+'</button>';}).join('');}
@@ -844,7 +804,43 @@ function rOrd(){var fl=ordCat==='ทั้งหมด'?ings:ings.filter(functio
 function co(id,d){so(id,Math.max(0,(ords[id]||0)+d));}
 function so(id,qty){ords[id]=qty;rOrd();}
 function uOS(){var items=ings.filter(function(i){return ords[i.id]>0;}),tot=0,s=document.getElementById('o-sum');if(!items.length){s.innerHTML='<div class="emp">เลือกรายการ</div>';document.getElementById('o-exvat').textContent='฿0.00';document.getElementById('o-vat').textContent='฿0.00';document.getElementById('o-tot').textContent='฿0.00';return;}s.innerHTML=items.map(function(i){var q=ords[i.id],c=i.price*q;tot+=c;return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd)"><span style="font-size:13px;color:var(--t2)">'+i.name+' <span style="color:var(--ac);font-weight:700">×'+q+'</span></span><span style="font-family:\'Space Mono\',monospace;font-size:13px;font-weight:700">'+fB(c)+'</span></div>';}).join('');var vat=tot-exVat(tot);document.getElementById('o-exvat').textContent=fB(exVat(tot));document.getElementById('o-vat').textContent=fB(vat);document.getElementById('o-tot').textContent=fB(tot);}
-function printOrd(){var items=ings.filter(function(i){return ords[i.id]>0;});if(!items.length)return alert('กรุณาเลือกรายการก่อน');var tot=0,now=new Date().toLocaleString('th-TH'),rows=items.map(function(i){var q=ords[i.id],c=i.price*q;tot+=c;return '<tr><td>'+i.name+'</td><td>'+q+'</td><td>฿'+f(i.price)+'</td><td>฿'+f(exVat(i.price))+'</td><td>฿'+f(c)+'</td></tr>';}).join(''),exV=exVat(tot),vat=tot-exV,w=window.open('','_blank');w.document.write('<html><head><title>ใบสั่งซื้อ</title><style>body{font-family:sans-serif;padding:24px}table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #ccc;text-align:left}th{background:#f5efe6}.row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e2d5c3;font-size:14px}.tot{display:flex;justify-content:space-between;padding:10px 0;border-top:2px solid #5c3d2e;font-weight:bold;font-size:16px;color:#5c3d2e}.vt{color:#c8860a}</style></head><body><h2 style="color:#5c3d2e">☕ Coffee Today — ใบสั่งซื้อ</h2><p>'+now+'</p><br><table><tr><th>รายการ</th><th>จำนวน</th><th>ราคา/แพ็ค (incl.VAT)</th><th>ราคา (excl.VAT)</th><th>รวม</th></tr>'+rows+'</table><div style="max-width:320px;margin-top:16px;margin-left:auto"><div class="row"><span>ยอดรวมสินค้า</span><span>฿'+f(exV)+'</span></div><div class="row vt"><span>VAT 7%</span><span>฿'+f(vat)+'</span></div><div class="tot"><span>จำนวนเงินรวมทั้งสิ้น</span><span>฿'+f(tot)+'</span></div></div></body></html>');w.print();ords={};rOrd();}
+function printOrd(){
+  var items=ings.filter(function(i){return ords[i.id]>0;});
+  if(!items.length) return alert('กรุณาเลือกรายการก่อน');
+  var tot=0;
+  var now=new Date().toLocaleString('th-TH');
+  var dateStr=new Date().toLocaleDateString('th-TH');
+  var label=makeRoundLabel();
+  var rows=items.map(function(i){
+    var q=ords[i.id],c=i.price*q;tot+=c;
+    return '<tr><td>'+i.name+'</td><td>'+q+'</td><td>฿'+f(i.price)+'</td><td>฿'+f(exVat(i.price))+'</td><td>฿'+f(c)+'</td></tr>';
+  }).join('');
+  var exV=exVat(tot),vat=tot-exV;
+  // บันทึกประวัติจากใบสั่งซื้อจริง — ไม่ผูกกับ planStock
+  if(API){
+    sS('syn','กำลังบันทึกประวัติ...');
+    var histRows=items.map(function(i){
+      return {
+        id:uid(), date:dateStr, roundLabel:label,
+        ingId:i.id, ingName:i.name, ingCat:i.cat||'อื่นๆ',
+        suggested:0, ordered:ords[i.id],
+        packUnit:defPU(i), stockBefore:0, lastIn:0,
+        usedTotal:0, usedPerDay:0, days:0,
+        totalInclVat:tot
+      };
+    });
+    (function saveHist(i){
+      if(i>=histRows.length){sS('ok','บันทึกประวัติครบ ✅');return;}
+      apiP({action:'upsert',sheet:'OrderHistory',data:histRows[i]})
+        .then(function(){saveHist(i+1);}).catch(function(){saveHist(i+1);});
+    })(0);
+    histRows.forEach(function(r){orderHistory.push(r);});
+  }
+  var w=window.open('','_blank');
+  w.document.write('<html><head><title>ใบสั่งซื้อ</title><style>body{font-family:sans-serif;padding:24px}table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #ccc;text-align:left}th{background:#f5efe6}.row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e2d5c3;font-size:14px}.tot{display:flex;justify-content:space-between;padding:10px 0;border-top:2px solid #5c3d2e;font-weight:bold;font-size:16px;color:#5c3d2e}.vt{color:#c8860a}</style></head><body><h2 style="color:#5c3d2e">☕ Coffee Today — ใบสั่งซื้อ</h2><p>'+now+'</p><br><table><tr><th>รายการ</th><th>จำนวน</th><th>ราคา/แพ็ค (incl.VAT)</th><th>ราคา (excl.VAT)</th><th>รวม</th></tr>'+rows+'</table><div style="max-width:320px;margin-top:16px;margin-left:auto"><div class="row"><span>ยอดรวมสินค้า</span><span>฿'+f(exV)+'</span></div><div class="row vt"><span>VAT 7%</span><span>฿'+f(vat)+'</span></div><div class="tot"><span>จำนวนเงินรวมทั้งสิ้น</span><span>฿'+f(tot)+'</span></div></div></body></html>');
+  w.print();
+  ords={};rOrd();
+}
 
 // ============================================================
 // ORDER HISTORY

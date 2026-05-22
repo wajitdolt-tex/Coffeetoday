@@ -1189,21 +1189,26 @@ function renderHistTable(filter){
     var branchText=r.branch&&r.branch!==''?r.branch:'ไม่ระบุ';
     var branchColor=r.branch==='แพชชั่น'?'var(--ac)':r.branch==='โลตัส'?'var(--gn)':'var(--t3)';
     var branchBadge='<span class="pill" style="font-size:10px;color:'+branchColor+'">'+branchText+'</span>';
-    // วันที่ — ป้องกัน double-convert ปี พ.ศ.
+    // วันที่ — รองรับทั้ง ISO format และ string วันที่ไทย เช่น "22/5/2569"
     var dateDisp=r.date;
     try{
       var ds=String(r.date).trim();
-      // ถ้าเป็น ISO format (มี T หรือ Z) → แปลงเป็น วัน/เดือน/ปีไทย โดยไม่บวก 543 ซ้ำ
       if(ds.indexOf('T')>=0||ds.indexOf('Z')>=0){
+        // ISO format → แปลงเป็น พ.ศ. เอง (ไม่ใช้ toLocaleDateString เพราะจะบวก 543 ซ้ำ)
         var d=new Date(ds);
         if(!isNaN(d.getTime())){
-          var day=d.getDate();
-          var mo=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][d.getMonth()];
-          var yr=d.getFullYear()+543; // ค.ศ. → พ.ศ.
-          dateDisp=day+' '+mo+' '+yr;
+          var mo2=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][d.getMonth()];
+          dateDisp=d.getDate()+' '+mo2+' '+(d.getFullYear()+543);
+        }
+      } else if(ds.indexOf('/')>=0){
+        // string ไทย เช่น "22/5/2569" — ปีเป็น พ.ศ. อยู่แล้ว ไม่ต้องบวกอีก
+        var parts=ds.split('/');
+        if(parts.length===3){
+          var moNames=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+          var moIdx=parseInt(parts[1])-1;
+          dateDisp=parseInt(parts[0])+' '+(moNames[moIdx]||parts[1])+' '+parts[2];
         }
       }
-      // ถ้าเป็น string วันที่ไทยอยู่แล้ว เช่น "22/5/2569" หรือ "22 พ.ค. 2569" → ใช้ตรง
     }catch(e){}
     // ยอดของรายการนี้ = ราคาวัตถุดิบ × จำนวนที่สั่ง (ถ้าไม่มีราคาให้ใช้ totalInclVat/จำนวนรายการทั้งหมดในใบนั้น)
     var ing=ings.find(function(x){return String(x.id)===String(r.ingId);});

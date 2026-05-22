@@ -336,14 +336,11 @@ canvas{display:block;width:100%;border-radius:8px;}
 <div class="pg" id="tab-set">
   <div class="card">
     <div class="ct">⚙️ เชื่อมต่อ Google Apps Script</div>
-    <div class="info"><strong style="color:var(--br)">วิธีตั้งค่า:</strong><br>1. เปิดไฟล์ชีทระบบวิเคราะห์ → Extensions → Apps Script<br>2. วางโค้ด Script → Save → Deploy → New version<br>3. Copy URL → วางด้านล่าง → บันทึก → Init</div>
     <div class="fgrp" style="margin-bottom:10px"><label>Apps Script URL</label><input type="text" id="sc-url" placeholder="https://script.google.com/macros/s/xxxxx/exec" style="font-family:'Space Mono',monospace;font-size:12px"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn bp" onclick="saveUrl()">💾 บันทึก URL</button>
       <button class="btn bg2" onclick="testConn()">🔌 ทดสอบ</button>
       <button class="btn bg2" onclick="initSync()">🔄 Init + ซิงค์</button>
-      <button class="btn bac" onclick="forceSyncAll()" style="background:var(--gn)">⬆️ Force Sync วัตถุดิบ</button>
-      <button class="btn bac" onclick="forceSyncMenus()" style="background:var(--gn)">⬆️ Force Sync เมนู</button>
     </div>
     <div id="t-res" style="margin-top:10px"></div>
   </div>
@@ -1164,7 +1161,13 @@ function setHistBranch(b){
 }
 function getFilteredHistory(){
   if(!_activeBranch) return orderHistory;
-  return orderHistory.filter(function(r){return r.branch===_activeBranch;});
+  // ถ้ามีข้อมูลที่มี branch ตรงกัน → filter ปกติ
+  var withBranch=orderHistory.filter(function(r){return r.branch===_activeBranch;});
+  if(withBranch.length>0) return withBranch;
+  // ถ้าข้อมูลเก่าไม่มี branch field เลย → แสดงทั้งหมด
+  var hasBranchField=orderHistory.some(function(r){return r.branch&&r.branch!=='';});
+  if(!hasBranchField) return orderHistory;
+  return withBranch;
 }
 function filterHistTable(r){
   _histFilter=r;

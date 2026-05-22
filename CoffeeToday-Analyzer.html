@@ -80,13 +80,28 @@ tr:hover td{background:var(--s2);}
 .info{background:var(--s3);border-radius:10px;padding:13px;font-size:13px;line-height:1.8;color:var(--t2);margin-bottom:12px;}
 .pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:var(--s3);color:var(--b2c);border:1px solid var(--bd);}
 .cat-hdr{background:var(--s3);padding:8px 12px;border-radius:8px;font-weight:700;font-size:12px;color:var(--br);margin:10px 0 6px;text-transform:uppercase;letter-spacing:.5px;}
-.ing-row{display:grid;grid-template-columns:1fr 100px 80px 30px;gap:6px;align-items:center;margin-bottom:6px;}
+.ing-row{display:grid;grid-template-columns:1fr 100px 80px 30px;gap:6px;align-items:start;margin-bottom:6px;}
 .vat-note{font-size:11px;color:var(--t3);background:var(--s3);border-radius:6px;padding:3px 8px;margin-top:3px;display:inline-block;}
 .drag-row{cursor:grab;transition:background .15s;}
 .drag-row:active{cursor:grabbing;}
 .drag-row.dragging{opacity:.4;background:var(--s3)!important;}
 .drag-row.drag-over{border-top:2px solid var(--ac);}
 .drag-handle{color:var(--b2);font-size:20px;cursor:grab;padding:4px 10px;user-select:none;touch-action:none;display:inline-block;}
+/* searchable ingredient picker */
+.sr-wrap{position:relative;}
+.sr-box{display:flex;align-items:center;background:var(--s2);border:1.5px solid var(--bd);border-radius:8px;padding:0 10px;height:38px;cursor:pointer;gap:6px;transition:border-color .2s;}
+.sr-box:focus-within{border-color:var(--ac);box-shadow:0 0 0 3px rgba(200,134,10,.1);}
+.sr-box input{border:none;background:transparent;outline:none;font-family:'Prompt',sans-serif;font-size:13px;color:var(--tx);flex:1;min-width:0;cursor:pointer;}
+.sr-box input::placeholder{color:var(--t3);}
+.sr-arrow{color:var(--t3);font-size:10px;flex-shrink:0;}
+.sr-drop{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--sf);border:1.5px solid var(--ac);border-radius:10px;box-shadow:0 4px 16px rgba(92,61,46,.15);z-index:500;max-height:240px;overflow-y:auto;display:none;}
+.sr-drop.open{display:block;}
+.sr-grp{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;padding:7px 12px 3px;background:var(--s3);}
+.sr-opt{padding:8px 12px;font-size:13px;color:var(--tx);cursor:pointer;border-bottom:1px solid var(--bd);line-height:1.3;}
+.sr-opt:last-child{border-bottom:none;}
+.sr-opt:hover,.sr-opt.hov{background:var(--abg);color:var(--br);}
+.sr-opt .sr-sub{font-size:11px;color:var(--t3);margin-top:1px;}
+.sr-none{padding:12px;font-size:12px;color:var(--t3);text-align:center;}
 /* วิเคราะห์ */
 .trend-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;}
 .trend-over{background:#fdf0ee;color:var(--rd);border:1px solid #f0c8c4;}
@@ -704,36 +719,32 @@ function rIng(){
 // ============================================================
 function cpSR(sr){if(!sr.yield||sr.yield<=0)return 0;return (sr.recipe||[]).reduce(function(s,r){var ing=ings.find(function(x){return String(x.id)===String(r.iId);});if(!ing)return s;var qty=r.qty;if(r.unit==='oz'&&ing.unit==='ml')qty*=29.57;else if(r.unit==='oz'&&ing.unit==='g')qty*=28.35;return s+cpu(ing)*qty;},0)/sr.yield;}
 function bSrRec(){
-  // หา id ของสูตรย่อยที่กำลังแก้อยู่ (ถ้ามี) เพื่อป้องกัน circular
   var editingName=document.getElementById('sr-name').value.trim();
   var editingSr=subRecipes.find(function(x){return x.name===editingName;});
   var editingId=editingSr?editingSr.id:null;
-
-  // ฟังก์ชันตรวจ circular: sr B จะ circular ถ้า recipe ของ B มี id ของสูตรที่กำลังแก้อยู่
   function wouldCircle(srId){
-    if(srId===editingId) return true;
-    var sr=subRecipes.find(function(x){return x.id===srId;});
-    if(!sr) return false;
+    if(srId===editingId)return true;
+    var sr=subRecipes.find(function(x){return x.id===srId;});if(!sr)return false;
     var recipe=typeof sr.recipe==='string'?JSON.parse(sr.recipe||'[]'):(sr.recipe||[]);
     return recipe.some(function(r){return r.iId&&wouldCircle(r.iId);});
   }
-
   var uO=['g','ml','oz','ขวด','ชิ้น','ซอง','ถุง','แพ็ค'];
-  // filter sub-recipes ที่ใช้ได้ (ไม่ circular, ไม่ใช่ตัวเอง)
   var availableSr=subRecipes.filter(function(x){return !wouldCircle(x.id);});
 
   document.getElementById('sr-rec-ings').innerHTML=srR.map(function(r,i){
+    var wrId='pkr-sr-'+i;
+    var selName='';
+    if(r.iId){if(r.iId.startsWith('sr_')){var sr=subRecipes.find(function(x){return x.id===r.iId;});if(sr)selName=sr.name;}else{var ing=ings.find(function(x){return x.id==r.iId;});if(ing)selName=ing.name;}}
     var du='g';
-    if(r.iId){
-      if(r.iId.startsWith('sr_')){var sr2=subRecipes.find(function(x){return x.id===r.iId;});if(sr2)du=r.unit||sr2.yieldUnit;}
-      else{var ing2=ings.find(function(x){return x.id==r.iId;});if(ing2)du=r.unit||ing2.unit;}
-    }
+    if(r.iId){if(r.iId.startsWith('sr_')){var sr2=subRecipes.find(function(x){return x.id===r.iId;});if(sr2)du=r.unit||sr2.yieldUnit;}else{var i2=ings.find(function(x){return x.id==r.iId;});if(i2)du=r.unit||i2.unit;}}
+    _pickerSr[wrId]=availableSr;
+    _pickerCb[wrId]=function(id,name,unit){srR[i].iId=id;srR[i].unit=unit||'';updSrCP();bSrRec();};
     return '<div class="ing-row">'
-      +'<select onchange="srR['+i+'].iId=this.value;srR['+i+'].unit=\'\';bSrRec();">'
-      +'<option value="">— เลือก —</option>'
-      +(availableSr.length?'<optgroup label="🧪 สูตรย่อย">'+availableSr.map(function(x){return '<option value="'+x.id+'"'+(r.iId===x.id?' selected':'')+'>'+x.name+' ('+fB(cpSR(x))+'/'+x.yieldUnit+')</option>';}).join('')+'</optgroup>':'')
-      +'<optgroup label="🌿 วัตถุดิบ">'+ings.map(function(x){return '<option value="'+x.id+'"'+(r.iId==x.id?' selected':'')+'>'+x.name+' ('+fB(cpu(x))+'/'+x.unit+')</option>';}).join('')+'</optgroup>'
-      +'</select>'
+      +'<div class="sr-wrap" id="'+wrId+'">'
+      +'<div class="sr-box" onclick="openPicker(\''+wrId+'\',_pickerSr[\''+wrId+'\'],_pickerCb[\''+wrId+'\'])">'
+      +'<input type="text" placeholder="🔍 ค้นหาส่วนผสม..." value="'+selName+'" readonly>'
+      +'<span class="sr-arrow">▼</span></div>'
+      +'<div class="sr-drop"></div></div>'
       +'<input type="number" value="'+(r.qty||'')+'" placeholder="ปริมาณ" min="0" step="0.01" onchange="srR['+i+'].qty=parseFloat(this.value)||0;updSrCP()" style="text-align:center">'
       +'<select style="width:70px;padding:6px 4px;font-size:12px" onchange="srR['+i+'].unit=this.value;updSrCP()">'+uO.map(function(u){return '<option value="'+u+'"'+(du===u?' selected':'')+'>'+u+'</option>';}).join('')+'</select>'
       +'<button class="btn bd2" style="padding:4px 7px" onclick="rmSrRR('+i+')">×</button>'
@@ -773,10 +784,122 @@ function addSubRecipe(){
 }
 function delSubRecipe(id){if(!confirm('ลบสูตรย่อยนี้?'))return;subRecipes=subRecipes.filter(function(s){return s.id!==id;});if(API)apiP({action:'delete',sheet:'SubRecipes',data:{id:id}}).catch(function(){});rAll();}
 function rSubRecipes(){var el=document.getElementById('sr-list');if(!subRecipes.length){el.innerHTML='';return;}el.innerHTML='<div class="divhr"></div><div class="slb">สูตรย่อยทั้งหมด</div>'+subRecipes.map(function(sr){var recipe=(typeof sr.recipe==='string'?JSON.parse(sr.recipe):sr.recipe)||[];var rs=recipe.map(function(r){var ing=ings.find(function(x){return String(x.id)===String(r.iId);});return ing?ing.name+' '+r.qty+(r.unit||ing.unit):'';}).filter(Boolean).join(', ');return '<div style="background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-weight:700;color:var(--br)">🧪 '+sr.name+'</span><div style="display:flex;align-items:center;gap:8px"><span style="font-family:\'Space Mono\',monospace;font-weight:700;color:var(--ac);font-size:13px">'+fB(cpSR(sr))+'/'+sr.yieldUnit+'</span><button class="btn bd2 bsm" onclick="delSubRecipe(\''+sr.id+'\')">ลบ</button></div></div><div style="font-size:11px;color:var(--t3)">ทำได้ '+sr.yield+' '+sr.yieldUnit+' | ต้นทุนรวม '+fB(cpSR(sr)*sr.yield)+'</div><div style="font-size:11px;color:var(--t3);margin-top:2px">'+rs+'</div></div>';}).join('');}
+// ============================================================
+// SEARCHABLE INGREDIENT PICKER
+// ============================================================
+function buildPickerOptions(availSr, filterText){
+  var q=(filterText||'').toLowerCase().trim();
+  var html='';
+  // สูตรย่อย
+  var srs=availSr.filter(function(x){return !q||x.name.toLowerCase().indexOf(q)>=0;});
+  if(srs.length){
+    html+='<div class="sr-grp">🧪 สูตรย่อย</div>';
+    html+=srs.map(function(x){return '<div class="sr-opt" data-id="'+x.id+'" data-name="'+x.name+'" data-unit="'+x.yieldUnit+'"><div>'+x.name+'</div><div class="sr-sub">'+fB(cpSR(x))+'/'+x.yieldUnit+'</div></div>';}).join('');
+  }
+  // วัตถุดิบ
+  var ingF=ings.filter(function(x){return !q||x.name.toLowerCase().indexOf(q)>=0||((x.cat||'').toLowerCase().indexOf(q)>=0);});
+  if(ingF.length){
+    html+='<div class="sr-grp">🌿 วัตถุดิบ</div>';
+    html+=ingF.map(function(x){return '<div class="sr-opt" data-id="'+x.id+'" data-name="'+x.name+'" data-unit="'+x.unit+'"><div>'+x.name+'</div><div class="sr-sub">'+fB(cpu(x))+'/'+x.unit+'</div></div>';}).join('');
+  }
+  if(!srs.length&&!ingF.length) html='<div class="sr-none">ไม่พบ "'+filterText+'"</div>';
+  return html;
+}
+
+function openPicker(wrId, availSr, onSelect){
+  var wr=document.getElementById(wrId);if(!wr)return;
+  var drop=wr.querySelector('.sr-drop');
+  var inp=wr.querySelector('input');
+  drop.innerHTML=buildPickerOptions(availSr,'');
+  drop.classList.add('open');
+  inp.focus();
+  // bind option click
+  drop.onclick=function(e){
+    var opt=e.target.closest('.sr-opt');if(!opt)return;
+    onSelect(opt.dataset.id, opt.dataset.name, opt.dataset.unit);
+    drop.classList.remove('open');
+    inp.value=opt.dataset.name;
+  };
+  // search filter
+  inp.oninput=function(){
+    drop.innerHTML=buildPickerOptions(availSr,inp.value);
+  };
+  // close on outside click
+  setTimeout(function(){
+    document.addEventListener('click',function handler(e){
+      if(!wr.contains(e.target)){drop.classList.remove('open');document.removeEventListener('click',handler);}
+    });
+  },0);
+}
+
+function makePicker(wrId, selectedId, selectedName, availSr, onSelect){
+  return '<div class="sr-wrap" id="'+wrId+'">'
+    +'<div class="sr-box" onclick="openPicker(\''+wrId+'\',_pickerSr[\''+wrId+'\'],_pickerCb[\''+wrId+'\'])">'
+    +'<input type="text" placeholder="🔍 ค้นหาส่วนผสม..." value="'+(selectedName||'')+'" readonly>'
+    +'<span class="sr-arrow">▼</span>'
+    +'</div>'
+    +'<div class="sr-drop"></div>'
+    +'</div>';
+}
+// global maps สำหรับ callback (ต้องไม่ใช้ closure ใน inline onclick)
+var _pickerSr={}, _pickerCb={};
+
+function buildPickerRow(r, i, availSr, onChangeFn, uO){
+  var wrId='pkr-'+i+'-'+Date.now();
+  var selName='';
+  if(r.iId){
+    if(r.iId.startsWith('sr_')){var sr=subRecipes.find(function(x){return x.id===r.iId;});if(sr)selName=sr.name;}
+    else{var ing=ings.find(function(x){return x.id==r.iId;});if(ing)selName=ing.name;}
+  }
+  var du=r.unit||'g';
+  if(r.iId){
+    if(r.iId.startsWith('sr_')){var sr2=subRecipes.find(function(x){return x.id===r.iId;});if(sr2)du=r.unit||sr2.yieldUnit;}
+    else{var i2=ings.find(function(x){return x.id==r.iId;});if(i2)du=r.unit||i2.unit;}
+  }
+  _pickerSr[wrId]=availSr;
+  _pickerCb[wrId]=function(id,name,unit){onChangeFn(i,id,unit);};
+  return '<div class="ing-row">'
+    +makePicker(wrId,r.iId,selName,availSr,null)
+    +'<input type="number" value="'+(r.qty||'')+'" placeholder="ปริมาณ" min="0" step="0.1" onchange="'+onChangeFn.name+'Qty('+i+',parseFloat(this.value)||0)" style="text-align:center;margin-top:0">'
+    +'<select style="width:70px;padding:6px 4px;font-size:12px" onchange="'+onChangeFn.name+'Unit('+i+',this.value)">'+uO.map(function(u){return '<option value="'+u+'"'+(du===u?' selected':'')+'>'+u+'</option>';}).join('')+'</select>'
+    +'<button class="btn bd2" style="padding:4px 7px;margin-top:1px" onclick="'+onChangeFn.name+'Rm('+i+')">×</button>'
+    +'</div>';
+}
+
+// helpers สำหรับ rR (เมนู)
+function rRChange(i,id,unit){rR[i].iId=id;rR[i].unit=unit||'';updCP();bRec();}
+function rRChangeQty(i,v){rR[i].qty=v;updCP();}
+function rRChangeUnit(i,v){rR[i].unit=v;updCP();}
+function rRChangeRm(i){rmRR(i);}
+
+// helpers สำหรับ srR (สูตรย่อย)
+function srRChange(i,id,unit){srR[i].iId=id;srR[i].unit=unit||'';updSrCP();bSrRec();}
+function srRChangeQty(i,v){srR[i].qty=v;updSrCP();}
+function srRChangeUnit(i,v){srR[i].unit=v;updSrCP();}
+function srRChangeRm(i){rmSrRR(i);}
+
 function bRec(){
   var uO=['g','ml','oz','ขวด','ชิ้น','ใบ','ซอง','ถุง','แพ็ค','หน่วย'];
-  document.getElementById('rec-ings').innerHTML=rR.map(function(r,i){var du=r.unit||'g';if(r.iId){if(r.iId.startsWith('sr_')){var sr=subRecipes.find(function(x){return x.id===r.iId;});if(sr)du=r.unit||sr.yieldUnit;}else{var i2=ings.find(function(x){return x.id==r.iId;});if(i2)du=r.unit||i2.unit;}}
-  return '<div class="ing-row"><select onchange="rR['+i+'].iId=this.value;rR['+i+'].unit=\'\';updCP();bRec();"><option value="">— เลือกส่วนผสม —</option>'+(subRecipes.length?'<optgroup label="🧪 สูตรย่อย">'+subRecipes.map(function(sr){return '<option value="'+sr.id+'"'+(r.iId===sr.id?' selected':'')+'>'+sr.name+' ('+fB(cpSR(sr))+'/'+sr.yieldUnit+')</option>';}).join('')+'</optgroup>':'')+'<optgroup label="🌿 วัตถุดิบ">'+ings.map(function(x){return '<option value="'+x.id+'"'+(r.iId==x.id?' selected':'')+'>'+x.name+' ('+fB(cpu(x))+'/'+x.unit+')</option>';}).join('')+'</optgroup></select><input type="number" value="'+(r.qty||'')+'" placeholder="ปริมาณ" min="0" step="0.1" onchange="rR['+i+'].qty=parseFloat(this.value)||0;updCP()" style="text-align:center"><select style="width:70px;padding:6px 4px;font-size:12px" onchange="rR['+i+'].unit=this.value;updCP()">'+uO.map(function(u){return '<option value="'+u+'"'+(du===u?' selected':'')+'>'+u+'</option>';}).join('')+'</select><button class="btn bd2" style="padding:4px 7px" onclick="rmRR('+i+')">×</button></div>';}).join('');
+  var availSr=subRecipes;
+  document.getElementById('rec-ings').innerHTML=rR.map(function(r,i){
+    var wrId='pkr-r-'+i;
+    var selName='';
+    if(r.iId){if(r.iId.startsWith('sr_')){var sr=subRecipes.find(function(x){return x.id===r.iId;});if(sr)selName=sr.name;}else{var ing=ings.find(function(x){return x.id==r.iId;});if(ing)selName=ing.name;}}
+    var du=r.unit||'g';
+    if(r.iId){if(r.iId.startsWith('sr_')){var sr2=subRecipes.find(function(x){return x.id===r.iId;});if(sr2)du=r.unit||sr2.yieldUnit;}else{var i2=ings.find(function(x){return x.id==r.iId;});if(i2)du=r.unit||i2.unit;}}
+    _pickerSr[wrId]=availSr;
+    _pickerCb[wrId]=function(id,name,unit){rR[i].iId=id;rR[i].unit=unit||'';updCP();bRec();};
+    return '<div class="ing-row">'
+      +'<div class="sr-wrap" id="'+wrId+'">'
+      +'<div class="sr-box" onclick="openPicker(\''+wrId+'\',_pickerSr[\''+wrId+'\'],_pickerCb[\''+wrId+'\'])">'
+      +'<input type="text" placeholder="🔍 ค้นหาส่วนผสม..." value="'+selName+'" readonly>'
+      +'<span class="sr-arrow">▼</span></div>'
+      +'<div class="sr-drop"></div></div>'
+      +'<input type="number" value="'+(r.qty||'')+'" placeholder="ปริมาณ" min="0" step="0.1" onchange="rR['+i+'].qty=parseFloat(this.value)||0;updCP()" style="text-align:center">'
+      +'<select style="width:70px;padding:6px 4px;font-size:12px" onchange="rR['+i+'].unit=this.value;updCP()">'+uO.map(function(u){return '<option value="'+u+'"'+(du===u?' selected':'')+'>'+u+'</option>';}).join('')+'</select>'
+      +'<button class="btn bd2" style="padding:4px 7px" onclick="rmRR('+i+')">×</button>'
+      +'</div>';
+  }).join('');
   updCP();
 }
 function addIR(){rR.push({iId:'',qty:0,unit:'g'});bRec();}

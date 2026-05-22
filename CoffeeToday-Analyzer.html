@@ -100,7 +100,14 @@ canvas{display:block;width:100%;border-radius:8px;}
 <div class="lov" id="lov"><div class="lob"><div class="sp"></div><div style="color:var(--br);font-weight:600" id="lt">กำลังโหลด...</div></div></div>
 <header>
   <div class="logo"><span style="font-size:22px">☕</span><div><div>Coffee Today</div><span class="lsub">สั่งซื้อ & ต้นทุน · ระยอง</span></div></div>
-  <div class="hr"><div class="sync"><div class="dot" id="dot"></div><span id="stxt">ยังไม่ได้เชื่อมต่อ</span></div></div>
+  <div class="hr">
+    <!-- selector สาขา -->
+    <div style="display:flex;gap:5px">
+      <button id="br-pas" onclick="setBranch('แพชชั่น')" style="padding:5px 11px;border-radius:20px;border:1.5px solid #c8a882;background:transparent;color:#fff8e8;font-family:'Prompt',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s">แพชชั่น</button>
+      <button id="br-lot" onclick="setBranch('โลตัส')" style="padding:5px 11px;border-radius:20px;border:1.5px solid #c8a882;background:transparent;color:#fff8e8;font-family:'Prompt',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s">โลตัส</button>
+    </div>
+    <div class="sync"><div class="dot" id="dot"></div><span id="stxt">ยังไม่ได้เชื่อมต่อ</span></div>
+  </div>
 </header>
 <div class="tabs">
   <div class="tab active" onclick="sTab('ord',this)">📦 สั่งสินค้า</div>
@@ -817,9 +824,8 @@ function printOrd(){
   var items=ings.filter(function(i){return ords[i.id]>0;});
   if(!items.length) return alert('กรุณาเลือกรายการก่อน');
 
-  // เลือกสาขาก่อนบันทึก
-  var branch=confirm('สาขาที่สั่ง:\nกด OK = แพชชั่น\nกด Cancel = โลตัส')
-    ? 'แพชชั่น' : 'โลตัส';
+  // ใช้สาขาที่เลือกไว้ใน header
+  var branch=_activeBranch||'ไม่ระบุ';
 
   var tot=0;
   var now=new Date().toLocaleString('th-TH');
@@ -955,9 +961,22 @@ function renderHistoryUI(){
   if(iSel.value)renderTrendChart();
 }
 
-var _histBranch='';
-function setHistBranch(b){
+// สาขา active (ใช้ร่วมกันทั้ง header + วิเคราะห์)
+var _activeBranch='แพชชั่น';
+function setBranch(b){
+  _activeBranch=b;
   _histBranch=b;
+  // header buttons
+  var pas=document.getElementById('br-pas'),lot=document.getElementById('br-lot');
+  if(pas){pas.style.background=b==='แพชชั่น'?'#c8860a':'transparent';pas.style.borderColor=b==='แพชชั่น'?'#c8860a':'#c8a882';pas.style.color='#fff8e8';}
+  if(lot){lot.style.background=b==='โลตัส'?'#c8860a':'transparent';lot.style.borderColor=b==='โลตัส'?'#c8860a':'#c8a882';lot.style.color='#fff8e8';}
+}
+function initBranchUI(){ setBranch(_activeBranch); }
+
+var _histBranch='แพชชั่น';
+function setHistBranch(b){
+  _histBranch=b;_activeBranch=b;
+  setBranch(b);
   ['hb-all','hb-pas','hb-lot'].forEach(function(id){
     var el=document.getElementById(id);
     if(el)el.className='btn bsm '+(
@@ -967,8 +986,8 @@ function setHistBranch(b){
   renderHistoryUI();
 }
 function getFilteredHistory(){
-  if(!_histBranch) return orderHistory;
-  return orderHistory.filter(function(r){return r.branch===_histBranch;});
+  if(!_activeBranch) return orderHistory;
+  return orderHistory.filter(function(r){return r.branch===_activeBranch;});
 }
 function filterHistTable(r){
   _histFilter=r;
@@ -1090,6 +1109,8 @@ function sTab(t,el){document.querySelectorAll('.pg').forEach(function(p){p.class
 function rAll(){rIng();rMenus();uSt();rOrdCats();rOrd();bRec();bSrRec();rSubRecipes();}
 API=localStorage.getItem('ct_analysis_url')||'';
 if(API){document.getElementById('sc-url').value=API;loadMeta();}else loadDefaultIngs();
+// init branch UI หลัง DOM พร้อม
+setTimeout(initBranchUI,0);
 
 </script>
 </body>

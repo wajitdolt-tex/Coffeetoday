@@ -1185,13 +1185,24 @@ function renderHistTable(filter){
   if(!rows.length){tb.innerHTML='<tr><td colspan="6"><div class="emp">ยังไม่มีประวัติ</div></td></tr>';return;}
   var sorted=rows.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));});
   tb.innerHTML=sorted.map(function(r){
-    var branchBadge=r.branch?'<span class="pill" style="font-size:10px">'+r.branch+'</span>':'—';
+    // แสดงสาขา: ถ้าไม่มีให้ขึ้น "ไม่ระบุ"
+    var branchText=r.branch&&r.branch!==''?r.branch:'ไม่ระบุ';
+    var branchColor=r.branch==='แพชชั่น'?'var(--ac)':r.branch==='โลตัส'?'var(--gn)':'var(--t3)';
+    var branchBadge='<span class="pill" style="font-size:10px;color:'+branchColor+'">'+branchText+'</span>';
+    // แปลงวันที่ ISO → วันที่ไทย
+    var dateDisp=r.date;
+    try{
+      var d=new Date(r.date);
+      if(!isNaN(d.getTime())){
+        dateDisp=d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});
+      }
+    }catch(e){}
     var vatDisp=r.totalInclVat>0?fB(r.totalInclVat):'—';
     return '<tr>'
       +'<td style="font-weight:600">'+r.ingName+'</td>'
       +'<td>'+branchBadge+'</td>'
       +'<td><span class="pill" style="font-size:10px">'+r.roundLabel+'</span></td>'
-      +'<td class="mn">'+r.date+'</td>'
+      +'<td class="mn">'+dateDisp+'</td>'
       +'<td class="mn" style="font-weight:700;color:var(--br)">'+r.ordered+' '+r.packUnit+'</td>'
       +'<td class="mn" style="color:var(--ac)">'+vatDisp+'</td>'
       +'</tr>';

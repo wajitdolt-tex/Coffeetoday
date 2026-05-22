@@ -257,6 +257,14 @@ canvas{display:block;width:100%;border-radius:8px;}
 
 <!-- วิเคราะห์ประวัติ -->
 <div class="pg" id="tab-hist">
+  <!-- filter สาขา -->
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+    <span style="font-size:12px;font-weight:600;color:var(--t2)">สาขา:</span>
+    <button class="btn bp bsm" id="hb-all"   onclick="setHistBranch('')">ทั้งหมด</button>
+    <button class="btn bg2 bsm" id="hb-pas"  onclick="setHistBranch('แพชชั่น')">☕ แพชชั่น</button>
+    <button class="btn bg2 bsm" id="hb-lot"  onclick="setHistBranch('โลตัส')">🏪 โลตัส</button>
+  </div>
+
   <div class="sg">
     <div class="st"><div class="sl">📦 รอบที่บันทึก</div><div class="sv a" id="h-rounds">0</div></div>
     <div class="st"><div class="sl">🧪 รายการติดตาม</div><div class="sv" id="h-items">0</div></div>
@@ -267,7 +275,7 @@ canvas{display:block;width:100%;border-radius:8px;}
   <!-- เทียบรอบ -->
   <div class="card">
     <div class="ct">🔄 เทียบรอบนี้ vs รอบที่แล้ว
-      <div style="display:flex;gap:6px;align-items:center">
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
         <select id="h-round-a" style="width:130px;font-size:11px;padding:4px 6px" onchange="renderCompare()"><option value="">— รอบที่แล้ว —</option></select>
         <span style="font-size:11px;color:var(--t3)">vs</span>
         <select id="h-round-b" style="width:130px;font-size:11px;padding:4px 6px" onchange="renderCompare()"><option value="">— รอบนี้ —</option></select>
@@ -292,10 +300,11 @@ canvas{display:block;width:100%;border-radius:8px;}
     <div class="ct">📋 ประวัติการสั่งซื้อทั้งหมด
       <button class="btn bg2 bsm" onclick="loadHistory()">🔄 รีเฟรช</button>
     </div>
+    <div id="h-err" style="display:none;background:var(--rbg);border:1px solid #f0c8c4;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--rd);margin-bottom:10px"></div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="h-round-btns"></div>
     <div class="tw"><table><thead><tr>
-      <th>วัตถุดิบ</th><th>รอบ</th><th>วันที่</th><th>สั่งแนะนำ</th><th>สั่งจริง</th><th>คงเหลือก่อนสั่ง</th><th>ใช้/วัน</th>
-    </tr></thead><tbody id="h-hist-tb"><tr><td colspan="7"><div class="emp">ยังไม่มีประวัติ</div></td></tr></tbody></table></div>
+      <th>วัตถุดิบ</th><th>สาขา</th><th>รอบ</th><th>วันที่</th><th>สั่งจริง</th><th>ยอดรวมใบ (฿)</th>
+    </tr></thead><tbody id="h-hist-tb"><tr><td colspan="6"><div class="emp">ยังไม่มีประวัติ</div></td></tr></tbody></table></div>
   </div>
 </div>
 
@@ -807,22 +816,30 @@ function uOS(){var items=ings.filter(function(i){return ords[i.id]>0;}),tot=0,s=
 function printOrd(){
   var items=ings.filter(function(i){return ords[i.id]>0;});
   if(!items.length) return alert('กรุณาเลือกรายการก่อน');
+
+  // เลือกสาขาก่อนบันทึก
+  var branch=confirm('สาขาที่สั่ง:\nกด OK = แพชชั่น\nกด Cancel = โลตัส')
+    ? 'แพชชั่น' : 'โลตัส';
+
   var tot=0;
   var now=new Date().toLocaleString('th-TH');
   var dateStr=new Date().toLocaleDateString('th-TH');
   var label=makeRoundLabel();
+
   var rows=items.map(function(i){
     var q=ords[i.id],c=i.price*q;tot+=c;
     return '<tr><td>'+i.name+'</td><td>'+q+'</td><td>฿'+f(i.price)+'</td><td>฿'+f(exVat(i.price))+'</td><td>฿'+f(c)+'</td></tr>';
   }).join('');
   var exV=exVat(tot),vat=tot-exV;
-  // บันทึกประวัติจากใบสั่งซื้อจริง — ไม่ผูกกับ planStock
+
+  // บันทึกประวัติพร้อม branch
   if(API){
     sS('syn','กำลังบันทึกประวัติ...');
     var histRows=items.map(function(i){
       return {
         id:uid(), date:dateStr, roundLabel:label,
         ingId:i.id, ingName:i.name, ingCat:i.cat||'อื่นๆ',
+        branch:branch,
         suggested:0, ordered:ords[i.id],
         packUnit:defPU(i), stockBefore:0, lastIn:0,
         usedTotal:0, usedPerDay:0, days:0,
@@ -830,14 +847,30 @@ function printOrd(){
       };
     });
     (function saveHist(i){
-      if(i>=histRows.length){sS('ok','บันทึกประวัติครบ ✅');return;}
+      if(i>=histRows.length){sS('ok','บันทึก ['+branch+'] ครบ ✅');return;}
       apiP({action:'upsert',sheet:'OrderHistory',data:histRows[i]})
         .then(function(){saveHist(i+1);}).catch(function(){saveHist(i+1);});
     })(0);
     histRows.forEach(function(r){orderHistory.push(r);});
   }
+
   var w=window.open('','_blank');
-  w.document.write('<html><head><title>ใบสั่งซื้อ</title><style>body{font-family:sans-serif;padding:24px}table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #ccc;text-align:left}th{background:#f5efe6}.row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e2d5c3;font-size:14px}.tot{display:flex;justify-content:space-between;padding:10px 0;border-top:2px solid #5c3d2e;font-weight:bold;font-size:16px;color:#5c3d2e}.vt{color:#c8860a}</style></head><body><h2 style="color:#5c3d2e">☕ Coffee Today — ใบสั่งซื้อ</h2><p>'+now+'</p><br><table><tr><th>รายการ</th><th>จำนวน</th><th>ราคา/แพ็ค (incl.VAT)</th><th>ราคา (excl.VAT)</th><th>รวม</th></tr>'+rows+'</table><div style="max-width:320px;margin-top:16px;margin-left:auto"><div class="row"><span>ยอดรวมสินค้า</span><span>฿'+f(exV)+'</span></div><div class="row vt"><span>VAT 7%</span><span>฿'+f(vat)+'</span></div><div class="tot"><span>จำนวนเงินรวมทั้งสิ้น</span><span>฿'+f(tot)+'</span></div></div></body></html>');
+  w.document.write('<html><head><title>ใบสั่งซื้อ</title>'
+    +'<style>body{font-family:sans-serif;padding:24px}table{width:100%;border-collapse:collapse}'
+    +'th,td{padding:8px;border:1px solid #ccc;text-align:left}th{background:#f5efe6}'
+    +'.row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e2d5c3;font-size:14px}'
+    +'.tot{display:flex;justify-content:space-between;padding:10px 0;border-top:2px solid #5c3d2e;font-weight:bold;font-size:16px;color:#5c3d2e}'
+    +'.vt{color:#c8860a}'
+    +'</style></head><body>'
+    +'<h2 style="color:#5c3d2e">☕ Coffee Today — ใบสั่งซื้อ</h2>'
+    +'<p>'+now+' &nbsp;|&nbsp; สาขา: <strong>'+branch+'</strong></p><br>'
+    +'<table><tr><th>รายการ</th><th>จำนวน</th><th>ราคา/แพ็ค (incl.VAT)</th><th>ราคา (excl.VAT)</th><th>รวม</th></tr>'
+    +rows+'</table>'
+    +'<div style="max-width:320px;margin-top:16px;margin-left:auto">'
+    +'<div class="row"><span>ยอดรวมสินค้า</span><span>฿'+f(exV)+'</span></div>'
+    +'<div class="row vt"><span>VAT 7%</span><span>฿'+f(vat)+'</span></div>'
+    +'<div class="tot"><span>จำนวนเงินรวมทั้งสิ้น</span><span>฿'+f(tot)+'</span></div>'
+    +'</div></body></html>');
   w.print();
   ords={};rOrd();
 }
@@ -846,26 +879,47 @@ function printOrd(){
 // ORDER HISTORY
 // ============================================================
 function loadHistory(){
+  var errEl=document.getElementById('h-err');
+  if(errEl){errEl.style.display='none';errEl.textContent='';}
   if(!API){renderHistoryUI();return;}
   sS('syn','โหลดประวัติ...');
   apiG({action:'read',sheet:'OrderHistory'}).then(function(d){
-    orderHistory=(d.rows||[]).map(function(r){return Object.assign({},r,{ordered:parseFloat(r.ordered)||0,suggested:parseFloat(r.suggested)||0,stockBefore:parseFloat(r.stockBefore)||0,usedPerDay:parseFloat(r.usedPerDay)||0,days:parseFloat(r.days)||15});});
+    orderHistory=(d.rows||[]).map(function(r){
+      return Object.assign({},r,{
+        ordered:parseFloat(r.ordered)||0,
+        suggested:parseFloat(r.suggested)||0,
+        stockBefore:parseFloat(r.stockBefore)||0,
+        usedPerDay:parseFloat(r.usedPerDay)||0,
+        days:parseFloat(r.days)||15,
+        totalInclVat:parseFloat(r.totalInclVat)||0,
+        branch:r.branch||''
+      });
+    });
     orderHistory.sort(function(a,b){return String(a.date).localeCompare(String(b.date));});
-    sS('ok','โหลดประวัติแล้ว');renderHistoryUI();
-  }).catch(function(e){sS('err','โหลดประวัติไม่ได้');renderHistoryUI();});
+    sS('ok','โหลดประวัติแล้ว');
+    renderHistoryUI();
+  }).catch(function(e){
+    sS('err','โหลดประวัติไม่ได้');
+    if(errEl){errEl.style.display='block';errEl.textContent='⚠️ โหลดประวัติไม่ได้: '+e.message+' — กรุณากด Init ใน ตั้งค่า แล้วลองใหม่';}
+    renderHistoryUI();
+  });
 }
 
-function getRounds(){var seen={},rounds=[];orderHistory.forEach(function(r){if(!seen[r.roundLabel]){seen[r.roundLabel]=1;rounds.push(r.roundLabel);}});return rounds;}
+function getRounds(){
+  var src=getFilteredHistory(),seen={},rounds=[];
+  src.forEach(function(r){if(!seen[r.roundLabel]){seen[r.roundLabel]=1;rounds.push(r.roundLabel);}});
+  return rounds;
+}
 
 function renderHistoryUI(){
+  var src=getFilteredHistory();
   var rounds=getRounds();
-  // summary stats
   document.getElementById('h-rounds').textContent=rounds.length;
-  var ingIds={};orderHistory.forEach(function(r){ingIds[r.ingId]=1;});
+  var ingIds={};src.forEach(function(r){ingIds[r.ingId]=1;});
   document.getElementById('h-items').textContent=Object.keys(ingIds).length;
-  // หา over/under บ่อยสุด
+  // หา over/under บ่อยสุด (suggested=0 หมายถึงมาจากพิมพ์โดยตรง ข้ามไป)
   var overCount={},underCount={};
-  orderHistory.forEach(function(r){
+  src.forEach(function(r){
     if(!r.suggested||r.suggested<=0)return;
     var ratio=r.ordered/r.suggested;
     if(ratio>1.3){overCount[r.ingName]=(overCount[r.ingName]||0)+1;}
@@ -886,31 +940,62 @@ function renderHistoryUI(){
   if(rounds.length>=2){selA.value=prevA||rounds[rounds.length-2];selB.value=prevB||rounds[rounds.length-1];}
   // round filter btns
   var rb=document.getElementById('h-round-btns');
-  rb.innerHTML=['ทั้งหมด'].concat(rounds).map(function(r){return '<button class="btn bsm bg2" style="font-size:11px" onclick="filterHistTable(\''+r+'\')">'+r+'</button>';}).join('');
+  rb.innerHTML=['ทั้งหมด'].concat(rounds).map(function(r){
+    return '<button class="btn bsm bg2" style="font-size:11px" onclick="filterHistTable(\''+r+'\')">'+r+'</button>';
+  }).join('');
   // ingredient selector for trend chart
   var iSel=document.getElementById('h-ing-sel');
   var prevIng=iSel.value;
-  var ingNames={};orderHistory.forEach(function(r){ingNames[r.ingId]=r.ingName;});
-  iSel.innerHTML='<option value="">— เลือกวัตถุดิบ —</option>'+Object.keys(ingNames).map(function(id){return '<option value="'+id+'"'+(prevIng===id?' selected':'')+'>'+ingNames[id]+'</option>';}).join('');
+  var ingNames={};src.forEach(function(r){ingNames[r.ingId]=r.ingName;});
+  iSel.innerHTML='<option value="">— เลือกวัตถุดิบ —</option>'+Object.keys(ingNames).map(function(id){
+    return '<option value="'+id+'"'+(prevIng===id?' selected':'')+'>'+ingNames[id]+'</option>';
+  }).join('');
   renderHistTable('ทั้งหมด');
   renderCompare();
   if(iSel.value)renderTrendChart();
 }
 
-var _histFilter='ทั้งหมด';
-function filterHistTable(r){_histFilter=r;document.querySelectorAll('#h-round-btns button').forEach(function(b){b.classList.toggle('bp',b.textContent===r);b.classList.toggle('bg2',b.textContent!==r);});renderHistTable(r);}
+var _histBranch='';
+function setHistBranch(b){
+  _histBranch=b;
+  ['hb-all','hb-pas','hb-lot'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)el.className='btn bsm '+(
+      (b===''&&id==='hb-all')||(b==='แพชชั่น'&&id==='hb-pas')||(b==='โลตัส'&&id==='hb-lot')
+      ?'bp':'bg2');
+  });
+  renderHistoryUI();
+}
+function getFilteredHistory(){
+  if(!_histBranch) return orderHistory;
+  return orderHistory.filter(function(r){return r.branch===_histBranch;});
+}
+function filterHistTable(r){
+  _histFilter=r;
+  document.querySelectorAll('#h-round-btns button').forEach(function(b){
+    b.classList.toggle('bp',b.textContent===r);
+    b.classList.toggle('bg2',b.textContent!==r);
+  });
+  renderHistTable(r);
+}
 
 function renderHistTable(filter){
   var tb=document.getElementById('h-hist-tb');
-  var rows=filter==='ทั้งหมด'?orderHistory:orderHistory.filter(function(r){return r.roundLabel===filter;});
-  if(!rows.length){tb.innerHTML='<tr><td colspan="7"><div class="emp">ยังไม่มีประวัติ</div></td></tr>';return;}
-  // เรียงจากใหม่ไปเก่า
+  var src=getFilteredHistory();
+  var rows=filter==='ทั้งหมด'?src:src.filter(function(r){return r.roundLabel===filter;});
+  if(!rows.length){tb.innerHTML='<tr><td colspan="6"><div class="emp">ยังไม่มีประวัติ</div></td></tr>';return;}
   var sorted=rows.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));});
   tb.innerHTML=sorted.map(function(r){
-    var ratio=r.suggested>0?r.ordered/r.suggested:1;
-    var badge='';
-    if(r.suggested>0){if(ratio>1.3)badge='<span class="trend-badge trend-over">⬆️ เกิน</span>';else if(ratio<0.7)badge='<span class="trend-badge trend-under">⬇️ น้อย</span>';else badge='<span class="trend-badge trend-ok">✓ ตรง</span>';}
-    return '<tr><td style="font-weight:600">'+r.ingName+'</td><td><span class="pill">'+r.roundLabel+'</span></td><td class="mn">'+r.date+'</td><td class="mn">'+r.suggested+'</td><td class="mn" style="font-weight:700;color:var(--br)">'+r.ordered+' '+r.packUnit+'</td><td class="mn">'+r.stockBefore+'</td><td class="mn">'+r.usedPerDay+'/วัน</td></tr>';
+    var branchBadge=r.branch?'<span class="pill" style="font-size:10px">'+r.branch+'</span>':'—';
+    var vatDisp=r.totalInclVat>0?fB(r.totalInclVat):'—';
+    return '<tr>'
+      +'<td style="font-weight:600">'+r.ingName+'</td>'
+      +'<td>'+branchBadge+'</td>'
+      +'<td><span class="pill" style="font-size:10px">'+r.roundLabel+'</span></td>'
+      +'<td class="mn">'+r.date+'</td>'
+      +'<td class="mn" style="font-weight:700;color:var(--br)">'+r.ordered+' '+r.packUnit+'</td>'
+      +'<td class="mn" style="color:var(--ac)">'+vatDisp+'</td>'
+      +'</tr>';
   }).join('');
 }
 
@@ -918,9 +1003,10 @@ function renderCompare(){
   var a=document.getElementById('h-round-a').value,b=document.getElementById('h-round-b').value;
   var tb=document.getElementById('h-cmp-tb');
   if(!a||!b){tb.innerHTML='<tr><td colspan="6"><div class="emp">เลือกสองรอบเพื่อเทียบ</div></td></tr>';return;}
+  var src=getFilteredHistory();
   var rowsA={},rowsB={};
-  orderHistory.filter(function(r){return r.roundLabel===a;}).forEach(function(r){rowsA[r.ingId]=r;});
-  orderHistory.filter(function(r){return r.roundLabel===b;}).forEach(function(r){rowsB[r.ingId]=r;});
+  src.filter(function(r){return r.roundLabel===a;}).forEach(function(r){rowsA[r.ingId]=r;});
+  src.filter(function(r){return r.roundLabel===b;}).forEach(function(r){rowsB[r.ingId]=r;});
   var allIds=Object.keys(Object.assign({},rowsA,rowsB));
   if(!allIds.length){tb.innerHTML='<tr><td colspan="6"><div class="emp">ไม่มีข้อมูลในรอบที่เลือก</div></td></tr>';return;}
   tb.innerHTML=allIds.map(function(id){
@@ -928,13 +1014,14 @@ function renderCompare(){
     var oa=ra?ra.ordered:0,ob=rb?rb.ordered:0;
     var diff=ob-oa,pct=oa>0?(diff/oa*100).toFixed(0):'—';
     var arrow=diff>0?'⬆️ +'+diff:diff<0?'⬇️ '+diff:'—';
-    var upd=rb?rb.usedPerDay:'—';
-    var ratio=ra&&ra.suggested>0?ob/ra.suggested:1;
-    var badge='';
-    if(ra&&ra.suggested>0){if(ratio>1.3)badge='<span class="trend-badge trend-over">เกิน '+(ratio*100-100).toFixed(0)+'%</span>';else if(ratio<0.7)badge='<span class="trend-badge trend-under">น้อยกว่าแนะนำ</span>';else badge='<span class="trend-badge trend-ok">✓ ตรง</span>';}
-    var ingName=(ra||rb).ingName;
-    var pu=(rb||ra).packUnit||'';
-    return '<tr><td style="font-weight:600">'+ingName+'</td><td class="mn">'+(oa?oa+' '+pu:'—')+'</td><td class="mn" style="font-weight:700;color:var(--br)">'+(ob?ob+' '+pu:'—')+'</td><td class="mn" style="color:'+(diff>0?'var(--rd)':diff<0?'var(--gn)':'var(--t3)')+'">'+arrow+(pct!=='—'?' ('+pct+'%)':'')+'</td><td class="mn">'+upd+'</td><td>'+badge+'</td></tr>';
+    var ingName=(ra||rb).ingName,pu=(rb||ra).packUnit||'';
+    return '<tr><td style="font-weight:600">'+ingName+'</td>'
+      +'<td class="mn">'+(oa?oa+' '+pu:'—')+'</td>'
+      +'<td class="mn" style="font-weight:700;color:var(--br)">'+(ob?ob+' '+pu:'—')+'</td>'
+      +'<td class="mn" style="color:'+(diff>0?'var(--rd)':diff<0?'var(--gn)':'var(--t3)')+'">'+arrow+(pct!=='—'?' ('+pct+'%)':'')+'</td>'
+      +'<td class="mn">—</td>'
+      +'<td></td>'
+      +'</tr>';
   }).join('');
 }
 

@@ -1003,7 +1003,10 @@ function printOrd(){
 
   var tot=0;
   var now=new Date().toLocaleString('th-TH');
-  var dateStr=new Date().toLocaleDateString('th-TH');
+  // บันทึก dateStr แบบ text ที่ Sheets ไม่ auto-convert เป็น Date object
+  var _nd=new Date();
+  var _moTH=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  var dateStr=_nd.getDate()+' '+_moTH[_nd.getMonth()]+' '+(_nd.getFullYear()+543);
   var label=makeRoundLabel();
 
   var rows=items.map(function(i){
@@ -1189,22 +1192,24 @@ function renderHistTable(filter){
     var branchText=r.branch&&r.branch!==''?r.branch:'ไม่ระบุ';
     var branchColor=r.branch==='แพชชั่น'?'var(--ac)':r.branch==='โลตัส'?'var(--gn)':'var(--t3)';
     var branchBadge='<span class="pill" style="font-size:10px;color:'+branchColor+'">'+branchText+'</span>';
-    // วันที่ — รองรับทั้ง ISO format และ string วันที่ไทย เช่น "22/5/2569"
+    // วันที่ — รองรับทั้ง ISO format และ string วันที่ไทย
     var dateDisp=r.date;
     try{
       var ds=String(r.date).trim();
+      var moNames=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
       if(ds.indexOf('T')>=0||ds.indexOf('Z')>=0){
-        // ISO format → แปลงเป็น พ.ศ. เอง (ไม่ใช้ toLocaleDateString เพราะจะบวก 543 ซ้ำ)
+        // ISO format — ปีที่ได้อาจเป็น ค.ศ. หรือ พ.ศ. ขึ้นอยู่กับที่ Sheets เก็บ
         var d=new Date(ds);
         if(!isNaN(d.getTime())){
-          var mo2=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][d.getMonth()];
-          dateDisp=d.getDate()+' '+mo2+' '+(d.getFullYear()+543);
+          var yr=d.getFullYear();
+          // ถ้าปี > 2500 = Sheets เก็บเป็น พ.ศ. อยู่แล้ว ไม่บวก 543
+          if(yr<=2100) yr=yr+543;
+          dateDisp=d.getDate()+' '+moNames[d.getMonth()]+' '+yr;
         }
       } else if(ds.indexOf('/')>=0){
-        // string ไทย เช่น "22/5/2569" — ปีเป็น พ.ศ. อยู่แล้ว ไม่ต้องบวกอีก
+        // string เช่น "22/5/2569" — พ.ศ. อยู่แล้ว ใช้ตรง
         var parts=ds.split('/');
         if(parts.length===3){
-          var moNames=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
           var moIdx=parseInt(parts[1])-1;
           dateDisp=parseInt(parts[0])+' '+(moNames[moIdx]||parts[1])+' '+parts[2];
         }

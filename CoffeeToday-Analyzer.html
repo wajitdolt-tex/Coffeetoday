@@ -39,13 +39,10 @@ input:focus,select:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(200,13
 input[type=number]{font-family:'Space Mono',monospace;}
 .btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-family:'Prompt',sans-serif;font-size:13px;font-weight:600;transition:all .18s;display:inline-flex;align-items:center;justify-content:center;gap:5px;}
 .btn:disabled{opacity:.5;cursor:not-allowed;}
-.bp{background:var(--br);color:#fff8e8;}
-.bp:hover:not(:disabled){background:var(--b2c);}
+.bp{background:var(--br);color:#fff8e8;}.bp:hover:not(:disabled){background:var(--b2c);}
 .bac{background:var(--ac);color:white;}
-.bd2{background:var(--rbg);border:1px solid #e8c4c0;color:var(--rd);}
-.bd2:hover{background:var(--rd);color:white;}
-.bg2{background:var(--s2);border:1.5px dashed var(--b2);color:var(--t2);}
-.bg2:hover{border-color:var(--ac);color:var(--ac);}
+.bd2{background:var(--rbg);border:1px solid #e8c4c0;color:var(--rd);}.bd2:hover{background:var(--rd);color:white;}
+.bg2{background:var(--s2);border:1.5px dashed var(--b2);color:var(--t2);}.bg2:hover{border-color:var(--ac);color:var(--ac);}
 .bsm{padding:4px 9px;font-size:11px;}
 .tw{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;}
@@ -85,104 +82,91 @@ tr:hover td{background:var(--s2);}
 .cat-hdr{background:var(--s3);padding:8px 12px;border-radius:8px;font-weight:700;font-size:12px;color:var(--br);margin:10px 0 6px;text-transform:uppercase;letter-spacing:.5px;}
 .ing-row{display:grid;grid-template-columns:1fr 100px 80px 30px;gap:6px;align-items:center;margin-bottom:6px;}
 .vat-note{font-size:11px;color:var(--t3);background:var(--s3);border-radius:6px;padding:3px 8px;margin-top:3px;display:inline-block;}
-/* Drag-to-sort */
 .drag-row{cursor:grab;transition:background .15s;}
 .drag-row:active{cursor:grabbing;}
 .drag-row.dragging{opacity:.4;background:var(--s3)!important;}
 .drag-row.drag-over{border-top:2px solid var(--ac);}
 .drag-handle{color:var(--b2);font-size:20px;cursor:grab;padding:4px 10px;user-select:none;touch-action:none;display:inline-block;}
+/* วิเคราะห์ */
+.trend-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;}
+.trend-over{background:#fdf0ee;color:var(--rd);border:1px solid #f0c8c4;}
+.trend-under{background:#edf7f1;color:var(--gn);border:1px solid #b8e0cc;}
+.trend-ok{background:var(--ybg);color:var(--yl);border:1px solid #e8d888;}
+canvas{display:block;width:100%;border-radius:8px;}
+.hist-row-sel{background:var(--abg)!important;}
 </style>
 </head>
 <body>
 <div class="lov" id="lov"><div class="lob"><div class="sp"></div><div style="color:var(--br);font-weight:600" id="lt">กำลังโหลด...</div></div></div>
 <header>
   <div class="logo"><span style="font-size:22px">☕</span><div><div>Coffee Today</div><span class="lsub">สั่งซื้อ & ต้นทุน · ระยอง</span></div></div>
-  <div class="hr">
-    <div class="sync"><div class="dot" id="dot"></div><span id="stxt">ยังไม่ได้เชื่อมต่อ</span></div>
-  </div>
+  <div class="hr"><div class="sync"><div class="dot" id="dot"></div><span id="stxt">ยังไม่ได้เชื่อมต่อ</span></div></div>
 </header>
 <div class="tabs">
   <div class="tab active" onclick="sTab('ord',this)">📦 สั่งสินค้า</div>
   <div class="tab" onclick="sTab('ing',this)">🧪 วัตถุดิบ</div>
   <div class="tab" onclick="sTab('cost',this)">✏️ ต้นทุนเมนู</div>
+  <div class="tab" onclick="sTab('hist',this)">📈 วิเคราะห์</div>
   <div class="tab" onclick="sTab('set',this)">⚙️ ตั้งค่า</div>
 </div>
 <div class="main">
 
-<!-- ต้นทุนเมนู -->
-<div class="pg" id="tab-cost">
-  <div class="sg">
-    <div class="st"><div class="sl">☕ เมนูทั้งหมด</div><div class="sv a" id="s-tm">0</div></div>
-    <div class="st hl"><div class="sl">📈 Margin เฉลี่ย</div><div class="sv" id="s-am">—</div></div>
-    <div class="st"><div class="sl">⭐ Margin สูงสุด</div><div class="sv g" id="s-bm">—</div><div class="ss" id="s-bn">—</div></div>
-    <div class="st"><div class="sl">⚠️ Margin ต่ำสุด</div><div class="sv r" id="s-wm">—</div><div class="ss" id="s-wn">—</div></div>
-  </div>
-
-  <!-- เมนู -->
-  <div class="card">
-    <div class="ct">✏️ เพิ่ม / แก้ไขเมนู</div>
-    <div class="fgrp" style="margin-bottom:12px">
-      <label>ชื่อเมนู</label>
-      <input type="text" id="nm-name" placeholder="เช่น ทูเดย์เย็น 22oz">
+<!-- สั่งสินค้า -->
+<div class="pg active" id="tab-ord">
+  <div class="card" style="border-color:rgba(46,125,82,.3);background:var(--gbg)">
+    <div class="ct" style="cursor:pointer" onclick="togglePlan()">
+      📊 วางแผนสั่งสินค้า
+      <span id="plan-toggle-btn" style="font-size:12px;color:var(--t3);font-weight:400">▼ แสดง</span>
     </div>
-    <div class="fgrp" style="margin-bottom:12px">
-      <label>ราคาขาย (บาท)</label>
-      <input type="number" id="nm-price" placeholder="55" min="0">
-    </div>
-    <div class="slb">ส่วนผสม (วัตถุดิบ + สูตรย่อย)</div>
-    <div id="rec-ings"></div>
-    <button class="btn bg2" style="width:100%;margin:8px 0 14px" onclick="addIR()">+ เพิ่มส่วนผสม</button>
-    <div style="background:var(--abg);border:1px solid var(--ac2);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:13px;color:var(--t2)">ต้นทุนรวมโดยประมาณ</span>
-      <span style="font-family:'Space Mono',monospace;font-weight:700;font-size:16px;color:var(--ac)" id="cost-preview">฿0.00</span>
-    </div>
-    <button class="btn bp" style="width:100%" onclick="addMenu()" id="b-am">+ บันทึกเมนู</button>
-    <button class="btn bg2" style="width:100%;margin-top:6px;display:none" id="b-cancel-edit" onclick="cancelEditMenu()">✕ ยกเลิกการแก้ไข</button>
-  </div>
-
-  <div class="card">
-    <div class="ct">📋 รายการเมนูทั้งหมด <span class="pill">ใช้ร่วมกัน 2 สาขา</span></div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="menu-cat-btns"></div>
-    <div class="tw"><table><thead><tr><th></th><th>ชื่อเมนู</th><th>ราคาขาย</th><th>ต้นทุน/แก้ว</th><th>กำไร</th><th>Margin</th><th>สถานะ</th><th></th></tr></thead>
-    <tbody id="m-tb"><tr><td colspan="8"><div class="emp">ยังไม่มีเมนู</div></td></tr></tbody></table></div>
-  </div>
-
-  <!-- สูตรย่อย -->
-  <div class="card" style="border-color:rgba(200,134,10,.3);background:var(--abg)">
-    <div class="ct">🧪 สูตรย่อย (Sub-recipe) <span class="pill">เพื่อใช้เป็นส่วนผสมในเมนู</span></div>
-    <div class="fgrp" style="margin-bottom:10px">
-      <label>ชื่อสูตรย่อย</label>
-      <input type="text" id="sr-name" placeholder="เช่น น้ำคาปู, วิปครีม">
-    </div>
-    <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
-      <div class="fgrp" style="flex:1;min-width:100px">
-        <label>ทำได้กี่หน่วย</label>
-        <input type="number" id="sr-yield" placeholder="เช่น 12" min="0.01" step="0.01" oninput="updSrCP()">
+    <div id="plan-panel" style="display:none">
+      <div style="font-size:12px;color:var(--t2);margin-bottom:12px;background:var(--s3);border-radius:8px;padding:10px 12px;line-height:1.8">
+        📌 <strong>วิธีใช้:</strong><br>
+        1. เลือก<strong>หมวดวัตถุดิบ</strong>ที่ต้องการสั่ง<br>
+        2. กรอก <strong>คงเหลือ</strong> (สต็อกปัจจุบัน) และ <strong>ของเข้ารอบที่แล้ว</strong> (ยอดที่สั่งมาครั้งก่อน)<br>
+        3. กด <strong>คำนวณ</strong> → ระบบแนะนำยอดสั่งรอบถัดไปอัตโนมัติ<br>
+        4. กด <strong>ใส่ใบสั่งซื้อ</strong> → ระบบบันทึกประวัติลง Sheets ให้วิเคราะห์แนวโน้มได้ใน Tab 📈<br>
+        💾 ค่าที่กรอกจะถูกจำไว้อัตโนมัติ
       </div>
-      <div class="fgrp" style="width:100px">
-        <label>หน่วย</label>
-        <select id="sr-yield-unit" onchange="updSrCP()">
-          <option value="oz">oz</option>
-          <option value="ml">ml</option>
-          <option value="g">g</option>
-          <option value="กระป๋อง">กระป๋อง</option>
-          <option value="ชิ้น">ชิ้น</option>
-          <option value="แก้ว">แก้ว</option>
-        </select>
+      <div style="margin-bottom:14px">
+        <label style="font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:6px">เลือกหมวดวัตถุดิบที่ต้องการสั่ง</label>
+        <div id="plan-cat-btns" style="display:flex;flex-wrap:wrap;gap:6px"></div>
       </div>
-    </div>
-    <div class="slb">วัตถุดิบในสูตรย่อย</div>
-    <div id="sr-rec-ings"></div>
-    <button class="btn bg2" style="width:100%;margin:8px 0 10px" onclick="addSrIR()">+ เพิ่มวัตถุดิบ</button>
-    <div style="background:var(--sf);border:1px solid var(--ac2);border-radius:8px;padding:10px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:13px;color:var(--t2)">ต้นทุนรวมสูตรย่อย</span>
-      <div style="text-align:right">
-        <div style="font-family:'Space Mono',monospace;font-weight:700;font-size:15px;color:var(--ac)" id="sr-cost-total">฿0.00</div>
-        <div style="font-size:11px;color:var(--t3)" id="sr-cost-unit">฿0.00 / oz</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+        <div><label style="font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:3px">รอบที่ผ่านมา (วัน)</label><input type="number" id="plan-days-past" value="15" min="1" max="60" style="width:80px;font-family:'Space Mono',monospace" onchange="savePlanSettings()"></div>
+        <div><label style="font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:3px">รอบถัดไป (วัน)</label><input type="number" id="plan-days-next" value="15" min="1" max="60" style="width:80px;font-family:'Space Mono',monospace" onchange="savePlanSettings()"></div>
+        <div><label style="font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:3px">Buffer เผื่อสำรอง</label>
+          <select id="plan-buffer" style="width:80px;" onchange="savePlanSettings();calcStockOrder()">
+            <option value="0">0%</option><option value="0.1" selected>10%</option><option value="0.2">20%</option><option value="0.3">30%</option>
+          </select>
+        </div>
       </div>
+      <div class="tw"><table><thead><tr>
+        <th style="width:26%">วัตถุดิบ</th><th style="width:14%">หน่วยสั่ง</th>
+        <th style="width:13%">คงเหลือ</th>
+        <th style="width:13%">ของเข้า<br><span style="font-weight:400;font-size:10px">รอบที่แล้ว</span></th>
+        <th style="width:13%">ยืมสาขา<br><span style="font-weight:400;font-size:10px;color:var(--yl)">+เพิ่ม</span></th>
+        <th style="width:11%;color:var(--gn)">สั่งแนะนำ</th>
+        <th style="width:10%;color:var(--ac)">สั่งจริง</th>
+      </tr></thead><tbody id="plan-stock-tb"></tbody></table></div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn bp" style="flex:1" onclick="calcStockOrder()">🧮 คำนวณ</button>
+        <button class="btn bg2" style="flex:1" onclick="applyPlanToOrder()">⬇️ ใส่ใบสั่งซื้อ + บันทึกประวัติ</button>
+      </div>
+      <div id="plan-summary" style="display:none;margin-top:12px;background:var(--s2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--t2);line-height:1.8"></div>
     </div>
-    <button class="btn bp" style="width:100%" onclick="addSubRecipe()" id="b-asr">+ บันทึกสูตรย่อย</button>
-    <div id="sr-list" style="margin-top:14px"></div>
+  </div>
+  <div class="card"><div class="ct">📦 เลือกหมวดหมู่</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px" id="ord-cats"></div></div>
+  <div class="tc">
+    <div class="card"><div class="ct">📦 รายการสั่งซื้อ</div><div class="scr" id="o-list"><div class="emp">ยังไม่มีวัตถุดิบ</div></div></div>
+    <div class="card">
+      <div class="ct">🧾 สรุปใบสั่งซื้อ</div>
+      <div id="o-sum"><div class="emp">เลือกรายการ</div></div>
+      <div class="divhr"></div>
+      <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bd)"><span style="font-size:13px;color:var(--t2)">ยอดสินค้า (excl. VAT)</span><span style="font-family:'Space Mono',monospace;font-size:13px;" id="o-exvat">฿0.00</span></div>
+      <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bd)"><span style="font-size:13px;color:var(--t2)">VAT 7%</span><span style="font-family:'Space Mono',monospace;font-size:13px;color:var(--ac)" id="o-vat">฿0.00</span></div>
+      <div style="display:flex;justify-content:space-between;padding-top:12px;border-top:2px solid var(--br);margin-top:4px"><span style="font-weight:700;font-size:14px;color:var(--br)">ยอดรวมทั้งสิ้น (incl. VAT)</span><span style="font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--ac)" id="o-tot">฿0.00</span></div>
+      <button class="btn bp" style="width:100%;margin-top:12px" onclick="printOrd()">🖨️ พิมพ์ใบสั่งซื้อ</button>
+    </div>
   </div>
 </div>
 
@@ -197,148 +181,122 @@ tr:hover td{background:var(--s2);}
       <div class="fgrp"><label>ชื่อวัตถุดิบ</label><input type="text" id="i-name" placeholder="เช่น เมล็ดกาแฟ TD-1"></div>
       <div class="fgrp"><label>หมวดหมู่</label>
         <select id="i-cat">
-          <option value="กาแฟ">กาแฟ</option>
-          <option value="ชา/โกโก้">ชา/โกโก้</option>
-          <option value="น้ำตาล/ไซรัป">น้ำตาล/ไซรัป</option>
-          <option value="บรรจุภัณฑ์">บรรจุภัณฑ์</option>
-          <option value="วัตถุดิบรอง">วัตถุดิบรอง</option>
-          <option value="นม/ครีม">นม/ครีม</option>
-          <option value="ทำความสะอาด/สิ้นเปลือง">ทำความสะอาด/สิ้นเปลือง</option>
-          <option value="อื่นๆ">อื่นๆ</option>
+          <option value="กาแฟ">กาแฟ</option><option value="ชา/โกโก้">ชา/โกโก้</option>
+          <option value="น้ำตาล/ไซรัป">น้ำตาล/ไซรัป</option><option value="บรรจุภัณฑ์">บรรจุภัณฑ์</option>
+          <option value="วัตถุดิบรอง">วัตถุดิบรอง</option><option value="นม/ครีม">นม/ครีม</option>
+          <option value="ทำความสะอาด/สิ้นเปลือง">ทำความสะอาด/สิ้นเปลือง</option><option value="อื่นๆ">อื่นๆ</option>
         </select>
       </div>
-      <div class="fgrp">
-        <label>ราคาตามบิล (บาท)</label>
-        <input type="number" id="i-price" placeholder="160.50" min="0" step="0.01" oninput="previewVat()">
-        <div id="i-price-preview" class="vat-note" style="display:none"></div>
-      </div>
+      <div class="fgrp"><label>ราคาตามบิล (บาท)</label><input type="number" id="i-price" placeholder="160.50" min="0" step="0.01" oninput="previewVat()"><div id="i-price-preview" class="vat-note" style="display:none"></div></div>
       <div class="fgrp"><label>ปริมาณต่อแพ็ค</label><input type="number" id="i-qty" placeholder="250" min="0" step="0.01"></div>
       <div class="fgrp"><label>หน่วย</label>
         <select id="i-unit">
-          <option value="g">กรัม (g)</option>
-          <option value="ml">มิลลิลิตร (ml)</option>
-          <option value="ขวด">ขวด</option>
-          <option value="ลัง">ลัง</option>
-          <option value="หีบ">หีบ</option>
-          <option value="ชิ้น">ชิ้น</option>
-          <option value="ใบ">ใบ</option>
-          <option value="แผ่น">แผ่น</option>
-          <option value="กระป๋อง">กระป๋อง</option>
-          <option value="ถุง">ถุง</option>
-          <option value="ซอง">ซอง</option>
-          <option value="เส้น">เส้น</option>
-          <option value="อัน">อัน</option>
-          <option value="ม้วน">ม้วน</option>
-          <option value="เล่ม">เล่ม</option>
-          <option value="ดวง">ดวง</option>
+          <option value="g">กรัม (g)</option><option value="ml">มิลลิลิตร (ml)</option><option value="ขวด">ขวด</option>
+          <option value="ลัง">ลัง</option><option value="หีบ">หีบ</option><option value="ชิ้น">ชิ้น</option>
+          <option value="ใบ">ใบ</option><option value="แผ่น">แผ่น</option><option value="กระป๋อง">กระป๋อง</option>
+          <option value="ถุง">ถุง</option><option value="ซอง">ซอง</option><option value="เส้น">เส้น</option>
+          <option value="อัน">อัน</option><option value="ม้วน">ม้วน</option><option value="เล่ม">เล่ม</option><option value="ดวง">ดวง</option>
         </select>
       </div>
-      <div class="fgrp" style="align-self:end">
-        <button class="btn bp" style="width:100%" onclick="addIng()" id="b-ai">+ บันทึก</button>
-      </div>
+      <div class="fgrp" style="align-self:end"><button class="btn bp" style="width:100%" onclick="addIng()" id="b-ai">+ บันทึก</button></div>
     </div>
   </div>
+  <div class="card"><div class="ct">🧪 วัตถุดิบทั้งหมด <span style="font-size:10px;font-weight:400;color:var(--t3);text-transform:none">ลากแถว ⠿ เพื่อจัดลำดับ</span></div><div id="ing-by-cat"></div></div>
+</div>
 
+<!-- ต้นทุนเมนู -->
+<div class="pg" id="tab-cost">
+  <div class="sg">
+    <div class="st"><div class="sl">☕ เมนูทั้งหมด</div><div class="sv a" id="s-tm">0</div></div>
+    <div class="st hl"><div class="sl">📈 Margin เฉลี่ย</div><div class="sv" id="s-am">—</div></div>
+    <div class="st"><div class="sl">⭐ Margin สูงสุด</div><div class="sv g" id="s-bm">—</div><div class="ss" id="s-bn">—</div></div>
+    <div class="st"><div class="sl">⚠️ Margin ต่ำสุด</div><div class="sv r" id="s-wm">—</div><div class="ss" id="s-wn">—</div></div>
+  </div>
   <div class="card">
-    <div class="ct">🧪 วัตถุดิบทั้งหมด <span style="font-size:10px;font-weight:400;color:var(--t3);text-transform:none">ลากแถว ⠿ เพื่อจัดลำดับ</span></div>
-    <div id="ing-by-cat"></div>
+    <div class="ct">✏️ เพิ่ม / แก้ไขเมนู</div>
+    <div class="fgrp" style="margin-bottom:12px"><label>ชื่อเมนู</label><input type="text" id="nm-name" placeholder="เช่น ทูเดย์เย็น 22oz"></div>
+    <div class="fgrp" style="margin-bottom:12px"><label>ราคาขาย (บาท)</label><input type="number" id="nm-price" placeholder="55" min="0"></div>
+    <div class="slb">ส่วนผสม (วัตถุดิบ + สูตรย่อย)</div>
+    <div id="rec-ings"></div>
+    <button class="btn bg2" style="width:100%;margin:8px 0 14px" onclick="addIR()">+ เพิ่มส่วนผสม</button>
+    <div style="background:var(--abg);border:1px solid var(--ac2);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px;color:var(--t2)">ต้นทุนรวมโดยประมาณ</span>
+      <span style="font-family:'Space Mono',monospace;font-weight:700;font-size:16px;color:var(--ac)" id="cost-preview">฿0.00</span>
+    </div>
+    <button class="btn bp" style="width:100%" onclick="addMenu()" id="b-am">+ บันทึกเมนู</button>
+    <button class="btn bg2" style="width:100%;margin-top:6px;display:none" id="b-cancel-edit" onclick="cancelEditMenu()">✕ ยกเลิกการแก้ไข</button>
+  </div>
+  <div class="card">
+    <div class="ct">📋 รายการเมนูทั้งหมด <span class="pill">ใช้ร่วมกัน 2 สาขา</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="menu-cat-btns"></div>
+    <div class="tw"><table><thead><tr><th></th><th>ชื่อเมนู</th><th>ราคาขาย</th><th>ต้นทุน/แก้ว</th><th>กำไร</th><th>Margin</th><th>สถานะ</th><th></th></tr></thead>
+    <tbody id="m-tb"><tr><td colspan="8"><div class="emp">ยังไม่มีเมนู</div></td></tr></tbody></table></div>
+  </div>
+  <div class="card" style="border-color:rgba(200,134,10,.3);background:var(--abg)">
+    <div class="ct">🧪 สูตรย่อย (Sub-recipe) <span class="pill">เพื่อใช้เป็นส่วนผสมในเมนู</span></div>
+    <div class="fgrp" style="margin-bottom:10px"><label>ชื่อสูตรย่อย</label><input type="text" id="sr-name" placeholder="เช่น น้ำคาปู, วิปครีม"></div>
+    <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+      <div class="fgrp" style="flex:1;min-width:100px"><label>ทำได้กี่หน่วย</label><input type="number" id="sr-yield" placeholder="เช่น 12" min="0.01" step="0.01" oninput="updSrCP()"></div>
+      <div class="fgrp" style="width:100px"><label>หน่วย</label>
+        <select id="sr-yield-unit" onchange="updSrCP()">
+          <option value="oz">oz</option><option value="ml">ml</option><option value="g">g</option>
+          <option value="กระป๋อง">กระป๋อง</option><option value="ชิ้น">ชิ้น</option><option value="แก้ว">แก้ว</option>
+        </select>
+      </div>
+    </div>
+    <div class="slb">วัตถุดิบในสูตรย่อย</div>
+    <div id="sr-rec-ings"></div>
+    <button class="btn bg2" style="width:100%;margin:8px 0 10px" onclick="addSrIR()">+ เพิ่มวัตถุดิบ</button>
+    <div style="background:var(--sf);border:1px solid var(--ac2);border-radius:8px;padding:10px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px;color:var(--t2)">ต้นทุนรวมสูตรย่อย</span>
+      <div style="text-align:right"><div style="font-family:'Space Mono',monospace;font-weight:700;font-size:15px;color:var(--ac)" id="sr-cost-total">฿0.00</div><div style="font-size:11px;color:var(--t3)" id="sr-cost-unit">฿0.00 / oz</div></div>
+    </div>
+    <button class="btn bp" style="width:100%" onclick="addSubRecipe()" id="b-asr">+ บันทึกสูตรย่อย</button>
+    <div id="sr-list" style="margin-top:14px"></div>
   </div>
 </div>
 
-<!-- สั่งสินค้า -->
-<div class="pg active" id="tab-ord">
-
-  <!-- วางแผนสั่งสินค้า -->
-  <div class="card" style="border-color:rgba(46,125,82,.3);background:var(--gbg)">
-    <div class="ct" style="cursor:pointer" onclick="togglePlan()">
-      📊 วางแผนสั่งสินค้า
-      <span id="plan-toggle-btn" style="font-size:12px;color:var(--t3);font-weight:400">▼ แสดง</span>
-    </div>
-    <div id="plan-panel" style="display:none">
-      <div style="font-size:12px;color:var(--t2);margin-bottom:12px;background:var(--s3);border-radius:8px;padding:10px 12px;line-height:1.8">
-        📌 <strong>วิธีใช้:</strong> เลือกเมนูที่ขาย กรอกสต็อกคงเหลือและของที่เข้ารอบที่แล้ว ระบบจะแนะนำยอดสั่งรอบถัดไป<br>
-        💾 ระบบจำค่าที่กรอกไว้ให้อัตโนมัติ
-      </div>
-
-      <!-- เลือกหมวดวัตถุดิบ -->
-      <div style="margin-bottom:14px">
-        <label style="font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:6px">แสดงหมวดวัตถุดิบ</label>
-        <div id="plan-cat-btns" style="display:flex;flex-wrap:wrap;gap:6px"></div>
-      </div>
-
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
-        <div>
-          <label style="font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:3px">รอบที่ผ่านมา (วัน)</label>
-          <input type="number" id="plan-days-past" value="15" min="1" max="60" style="width:80px;font-family:'Space Mono',monospace" onchange="savePlanSettings()">
-        </div>
-        <div>
-          <label style="font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:3px">รอบถัดไป (วัน)</label>
-          <input type="number" id="plan-days-next" value="15" min="1" max="60" style="width:80px;font-family:'Space Mono',monospace" onchange="savePlanSettings()">
-        </div>
-        <div>
-          <label style="font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:3px">Buffer เผื่อสำรอง</label>
-          <select id="plan-buffer" style="width:80px;" onchange="savePlanSettings();calcStockOrder()">
-            <option value="0">0%</option>
-            <option value="0.1" selected>10%</option>
-            <option value="0.2">20%</option>
-            <option value="0.3">30%</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- ตารางกรอกสต็อก -->
-      <div class="tw">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:26%">วัตถุดิบ</th>
-              <th style="width:14%">หน่วยสั่ง</th>
-              <th style="width:15%">คงเหลือ</th>
-              <th style="width:15%">ของเข้า<br><span style="font-weight:400;font-size:10px">รอบที่แล้ว</span></th>
-              <th style="width:15%">ยืมสาขา<br><span style="font-weight:400;font-size:10px;color:var(--yl)">+เพิ่ม</span></th>
-              <th style="width:15%;color:var(--gn)">สั่งแนะนำ</th>
-            </tr>
-          </thead>
-          <tbody id="plan-stock-tb"></tbody>
-        </table>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-        <button class="btn bp" style="flex:1" onclick="calcStockOrder()">🧮 คำนวณ</button>
-        <button class="btn bg2" style="flex:1" onclick="applyPlanToOrder()">⬇️ ใส่ใบสั่งซื้อ</button>
-      </div>
-
-      <div id="plan-summary" style="display:none;margin-top:12px;background:var(--s2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--t2);line-height:1.8"></div>
-    </div>
+<!-- วิเคราะห์ประวัติ -->
+<div class="pg" id="tab-hist">
+  <div class="sg">
+    <div class="st"><div class="sl">📦 รอบที่บันทึก</div><div class="sv a" id="h-rounds">0</div></div>
+    <div class="st"><div class="sl">🧪 รายการติดตาม</div><div class="sv" id="h-items">0</div></div>
+    <div class="st hl"><div class="sl">⬆️ สั่งเกินบ่อยสุด</div><div class="sv r" id="h-over">—</div><div class="ss" id="h-over-n">—</div></div>
+    <div class="st"><div class="sl">⬇️ สั่งน้อยบ่อยสุด</div><div class="sv g" id="h-under">—</div><div class="ss" id="h-under-n">—</div></div>
   </div>
 
+  <!-- เทียบรอบ -->
   <div class="card">
-    <div class="ct">📦 เลือกหมวดหมู่</div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px" id="ord-cats"></div>
+    <div class="ct">🔄 เทียบรอบนี้ vs รอบที่แล้ว
+      <div style="display:flex;gap:6px;align-items:center">
+        <select id="h-round-a" style="width:130px;font-size:11px;padding:4px 6px" onchange="renderCompare()"><option value="">— รอบที่แล้ว —</option></select>
+        <span style="font-size:11px;color:var(--t3)">vs</span>
+        <select id="h-round-b" style="width:130px;font-size:11px;padding:4px 6px" onchange="renderCompare()"><option value="">— รอบนี้ —</option></select>
+      </div>
+    </div>
+    <div class="tw"><table><thead><tr>
+      <th>วัตถุดิบ</th><th>รอบที่แล้ว</th><th>รอบนี้</th><th>เปลี่ยน</th><th>ใช้จริง/วัน</th><th>สถานะ</th>
+    </tr></thead><tbody id="h-cmp-tb"><tr><td colspan="6"><div class="emp">เลือกสองรอบเพื่อเทียบ</div></td></tr></tbody></table></div>
   </div>
-  <div class="tc">
-    <div class="card">
-      <div class="ct">📦 รายการสั่งซื้อ</div>
-      <div class="scr" id="o-list"><div class="emp">ยังไม่มีวัตถุดิบ</div></div>
+
+  <!-- กราฟแนวโน้ม -->
+  <div class="card">
+    <div class="ct">📉 กราฟแนวโน้มหลายรอบ
+      <select id="h-ing-sel" style="width:200px;font-size:11px;padding:4px 6px" onchange="renderTrendChart()"><option value="">— เลือกวัตถุดิบ —</option></select>
     </div>
-    <div class="card">
-      <div class="ct">🧾 สรุปใบสั่งซื้อ</div>
-      <div id="o-sum"><div class="emp">เลือกรายการ</div></div>
-      <div class="divhr"></div>
-      <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bd)">
-        <span style="font-size:13px;color:var(--t2)">ยอดสินค้า (excl. VAT)</span>
-        <span style="font-family:'Space Mono',monospace;font-size:13px;" id="o-exvat">฿0.00</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bd)">
-        <span style="font-size:13px;color:var(--t2)">VAT 7%</span>
-        <span style="font-family:'Space Mono',monospace;font-size:13px;color:var(--ac)" id="o-vat">฿0.00</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding-top:12px;border-top:2px solid var(--br);margin-top:4px">
-        <span style="font-weight:700;font-size:14px;color:var(--br)">ยอดรวมทั้งสิ้น (incl. VAT)</span>
-        <span style="font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--ac)" id="o-tot">฿0.00</span>
-      </div>
-      <button class="btn bp" style="width:100%;margin-top:12px" onclick="printOrd()">🖨️ พิมพ์ใบสั่งซื้อ</button>
+    <canvas id="trend-canvas" height="220" style="max-height:220px"></canvas>
+    <div id="trend-empty" class="emp" style="display:none">ยังไม่มีข้อมูลเพียงพอ (ต้องมีอย่างน้อย 2 รอบ)</div>
+  </div>
+
+  <!-- ตารางประวัติทั้งหมด -->
+  <div class="card">
+    <div class="ct">📋 ประวัติการสั่งซื้อทั้งหมด
+      <button class="btn bg2 bsm" onclick="loadHistory()">🔄 รีเฟรช</button>
     </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="h-round-btns"></div>
+    <div class="tw"><table><thead><tr>
+      <th>วัตถุดิบ</th><th>รอบ</th><th>วันที่</th><th>สั่งแนะนำ</th><th>สั่งจริง</th><th>คงเหลือก่อนสั่ง</th><th>ใช้/วัน</th>
+    </tr></thead><tbody id="h-hist-tb"><tr><td colspan="7"><div class="emp">ยังไม่มีประวัติ</div></td></tr></tbody></table></div>
   </div>
 </div>
 
@@ -346,1510 +304,710 @@ tr:hover td{background:var(--s2);}
 <div class="pg" id="tab-set">
   <div class="card">
     <div class="ct">⚙️ เชื่อมต่อ Google Apps Script</div>
-    <div class="info">
-      <strong style="color:var(--br)">วิธีตั้งค่า:</strong><br>
-      1. เปิดไฟล์ชีทระบบวิเคราะห์ → Extensions → Apps Script<br>
-      2. วางโค้ด Script → Save → Deploy → New version<br>
-      3. Copy URL → วางด้านล่าง → บันทึก → Init
-    </div>
-    <div class="fgrp" style="margin-bottom:10px">
-      <label>Apps Script URL</label>
-      <input type="text" id="sc-url" placeholder="https://script.google.com/macros/s/xxxxx/exec" style="font-family:'Space Mono',monospace;font-size:12px">
-    </div>
+    <div class="info"><strong style="color:var(--br)">วิธีตั้งค่า:</strong><br>1. เปิดไฟล์ชีทระบบวิเคราะห์ → Extensions → Apps Script<br>2. วางโค้ด Script → Save → Deploy → New version<br>3. Copy URL → วางด้านล่าง → บันทึก → Init</div>
+    <div class="fgrp" style="margin-bottom:10px"><label>Apps Script URL</label><input type="text" id="sc-url" placeholder="https://script.google.com/macros/s/xxxxx/exec" style="font-family:'Space Mono',monospace;font-size:12px"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn bp" onclick="saveUrl()">💾 บันทึก URL</button>
       <button class="btn bg2" onclick="testConn()">🔌 ทดสอบ</button>
       <button class="btn bg2" onclick="initSync()">🔄 Init + ซิงค์</button>
-      <button class="btn bac" onclick="forceSyncAll()" style="background:var(--gn);">⬆️ Force Sync วัตถุดิบ</button>
-      <button class="btn bac" onclick="forceSyncMenus()" style="background:var(--gn);">⬆️ Force Sync เมนู</button>
+      <button class="btn bac" onclick="forceSyncAll()" style="background:var(--gn)">⬆️ Force Sync วัตถุดิบ</button>
+      <button class="btn bac" onclick="forceSyncMenus()" style="background:var(--gn)">⬆️ Force Sync เมนู</button>
     </div>
     <div id="t-res" style="margin-top:10px"></div>
   </div>
-  <div class="card">
-    <div class="ct">🔄 รีเฟรชข้อมูล</div>
-    <button class="btn bp" onclick="loadMeta()">🔄 โหลดวัตถุดิบ + เมนูจาก Sheets</button>
-    <div id="ls" style="margin-top:8px;font-size:12px;color:var(--t3)"></div>
-  </div>
-  <div class="card">
-    <div class="ct">🗄️ ข้อมูลปัจจุบัน</div>
-    <div style="font-size:13px;color:var(--t2);line-height:2">
-      วัตถุดิบ: <strong id="info-ings">0</strong> รายการ &nbsp;|&nbsp;
-      เมนู: <strong id="info-menus">0</strong> รายการ &nbsp;|&nbsp;
-      <span id="info-src" style="color:var(--t3)">default</span>
-    </div>
-  </div>
+  <div class="card"><div class="ct">🔄 รีเฟรชข้อมูล</div><button class="btn bp" onclick="loadMeta()">🔄 โหลดวัตถุดิบ + เมนูจาก Sheets</button><div id="ls" style="margin-top:8px;font-size:12px;color:var(--t3)"></div></div>
+  <div class="card"><div class="ct">🗄️ ข้อมูลปัจจุบัน</div><div style="font-size:13px;color:var(--t2);line-height:2">วัตถุดิบ: <strong id="info-ings">0</strong> รายการ &nbsp;|&nbsp; เมนู: <strong id="info-menus">0</strong> รายการ &nbsp;|&nbsp; <span id="info-src" style="color:var(--t3)">default</span></div></div>
 </div>
 </div>
 
 <script>
 'use strict';
-// ============================================================
-// STATE
-// ============================================================
-var API = '';
-var ings = [];
-var menus = [];
-var subRecipes = [];
+var API='';
+var ings=[];
+var menus=[];
+var subRecipes=[];
+var orderHistory=[];
 
-// เมนูทั้งหมดจาก Coffee Today Menu v2
-var DEFAULT_MENUS = [
-  // ── HOT COFFEE ร้อน ──
-  {id:'m01',name:'ทูเดย์ร้อน 8oz',       price:40,  recipe:[], order:0},
-  {id:'m02',name:'ทูเดย์ร้อน 12oz',      price:50,  recipe:[], order:1},
-  {id:'m03',name:'เอสปูชิโนร้อน 8oz',    price:40,  recipe:[], order:2},
-  {id:'m04',name:'เอสปูชิโนร้อน 12oz',   price:50,  recipe:[], order:3},
-  {id:'m05',name:'อเมริกาโนร้อน 8oz',    price:40,  recipe:[], order:4},
-  {id:'m06',name:'อเมริกาโนร้อน 12oz',   price:50,  recipe:[], order:5},
-  {id:'m07',name:'อเมริกาโนน้ำผึ้งร้อน 8oz', price:40, recipe:[], order:6},
-  {id:'m08',name:'อเมริกาโนน้ำผึ้งร้อน 12oz',price:50, recipe:[], order:7},
-  {id:'m09',name:'เอสเปรสโซร้อน 8oz',    price:50,  recipe:[], order:8},
-  {id:'m10',name:'เอสเปรสโซร้อน 12oz',   price:60,  recipe:[], order:9},
-  {id:'m11',name:'คาปูชิโนร้อน 8oz',     price:50,  recipe:[], order:10},
-  {id:'m12',name:'คาปูชิโนร้อน 12oz',    price:60,  recipe:[], order:11},
-  {id:'m13',name:'ลาเต้ร้อน 8oz',        price:50,  recipe:[], order:12},
-  {id:'m14',name:'ลาเต้ร้อน 12oz',       price:55,  recipe:[], order:13},
-  {id:'m15',name:'คาราเมลมัคคิอาโตร้อน 8oz', price:60, recipe:[], order:14},
-  {id:'m16',name:'คาราเมลมัคคิอาโตร้อน 12oz',price:65, recipe:[], order:15},
-  {id:'m17',name:'มอคคาร้อน 8oz',        price:50,  recipe:[], order:16},
-  {id:'m18',name:'มอคคาร้อน 12oz',       price:55,  recipe:[], order:17},
-  // ── ICED กาแฟเย็น ──
-  {id:'m19',name:'ทูเดย์เย็น 22oz',              price:55, recipe:[], order:18},
-  {id:'m20',name:'ทูเดย์ปั่น 16oz',              price:60, recipe:[], order:19},
-  {id:'m21',name:'ทูเดย์ปั่น 22oz',              price:65, recipe:[], order:20},
-  {id:'m22',name:'เอสปูชิโนเย็น 22oz',           price:55, recipe:[], order:21},
-  {id:'m23',name:'เอสปูชิโนปั่น 16oz',           price:60, recipe:[], order:22},
-  {id:'m24',name:'เอสปูชิโนปั่น 22oz',           price:65, recipe:[], order:23},
-  {id:'m25',name:'เอสเปรสโซเย็น 22oz',           price:55, recipe:[], order:24},
-  {id:'m26',name:'เอสเปรสโซปั่น 16oz',           price:60, recipe:[], order:25},
-  {id:'m27',name:'เอสเปรสโซปั่น 22oz',           price:65, recipe:[], order:26},
-  {id:'m28',name:'มอคคาเย็น 22oz',               price:65, recipe:[], order:27},
-  {id:'m29',name:'มอคคาปั่น 16oz',               price:70, recipe:[], order:28},
-  {id:'m30',name:'มอคคาปั่น 22oz',               price:75, recipe:[], order:29},
-  {id:'m31',name:'คาปูชิโนเย็น 22oz',            price:60, recipe:[], order:30},
-  {id:'m32',name:'คาปูชิโนปั่น 16oz',            price:70, recipe:[], order:31},
-  {id:'m33',name:'คาปูชิโนปั่น 22oz',            price:75, recipe:[], order:32},
-  {id:'m34',name:'คาราเมลมัคคิอาโตเย็น 22oz',   price:65, recipe:[], order:33},
-  {id:'m35',name:'คาราเมลมัคคิอาโตปั่น 16oz',   price:70, recipe:[], order:34},
-  {id:'m36',name:'คาราเมลมัคคิอาโตปั่น 22oz',   price:75, recipe:[], order:35},
-  {id:'m37',name:'ลาเต้เย็น 22oz',              price:60, recipe:[], order:36},
-  {id:'m38',name:'ลาเต้ปั่น 16oz',              price:65, recipe:[], order:37},
-  {id:'m39',name:'ลาเต้ปั่น 22oz',              price:70, recipe:[], order:38},
-  {id:'m40',name:'อเมริกาโนเย็น 22oz',           price:55, recipe:[], order:39},
-  {id:'m41',name:'อเมริกาโนน้ำผึ้งเย็น 22oz',   price:65, recipe:[], order:40},
-  {id:'m42',name:'กาแฟลิ้นจี่โซดาเย็น',         price:65, recipe:[], order:41},
-  {id:'m43',name:'กาแฟส้ม',                      price:65, recipe:[], order:42},
-  {id:'m44',name:'กาแฟยูซุเย็น',                price:65, recipe:[], order:43},
-  {id:'m45',name:'กาแฟมะพร้าว',                 price:60, recipe:[], order:44},
-  // ── TEA ชาร้อน ──
-  {id:'m46',name:'ชาเขียวธรรมชาติร้อน',  price:60, recipe:[], order:45},
-  {id:'m47',name:'ชาไทยร้อน',            price:70, recipe:[], order:46},
-  {id:'m48',name:'ชาไทยดำร้อน',          price:65, recipe:[], order:47},
-  {id:'m49',name:'ชาเขียวนมร้อน',        price:75, recipe:[], order:48},
-  {id:'m50',name:'ชามัทฉะลาเต้ร้อน',    price:85, recipe:[], order:49},
-  {id:'m51',name:'ชาซีลอนร้อน',          price:75, recipe:[], order:50},
-  // ── TEA ชาเย็น ──
-  {id:'m52',name:'ชาไทยเย็น',            price:70, recipe:[], order:51},
-  {id:'m53',name:'ชาไทยดำเย็น',          price:65, recipe:[], order:52},
-  {id:'m54',name:'ชาเขียวนมเย็น',        price:70, recipe:[], order:53},
-  {id:'m55',name:'Matcha Green Tea',      price:95, recipe:[], order:54},
-  {id:'m56',name:'ชาเขียวธรรมชาติเย็น', price:60, recipe:[], order:55},
-  {id:'m57',name:'ชามะนาว',              price:65, recipe:[], order:56},
-  {id:'m58',name:'ชาแอปเปิ้ล',           price:65, recipe:[], order:57},
-  {id:'m59',name:'ชาพีช',               price:65, recipe:[], order:58},
-  {id:'m60',name:'ชามะนาวน้ำผึ้ง',       price:85, recipe:[], order:59},
-  {id:'m61',name:'ชาพีทลิ้นจี่ซากุระ',   price:85, recipe:[], order:60},
-  {id:'m62',name:'Orange Thai Tea',      price:80, recipe:[], order:61},
-  {id:'m63',name:'ชาธรรมชาติยูซุเย็น',  price:85, recipe:[], order:62},
-  {id:'m64',name:'ชาซีลอนเย็น',          price:85, recipe:[], order:63},
-  {id:'m65',name:'เพียวมัทฉะ',           price:80, recipe:[], order:64},
-  {id:'m66',name:'มัทฉะยูซุ',            price:95, recipe:[], order:65},
-  {id:'m67',name:'ครีมมัทฉะมะพร้าว',    price:95, recipe:[], order:66},
-  {id:'m68',name:'Twining สตรอเบอร์รี่ แอนด์แมงโกเย็น', price:75, recipe:[], order:67},
-  {id:'m69',name:'Twining โฟเรดฟรุตเย็น',   price:75, recipe:[], order:68},
-  {id:'m70',name:'Twining เปปเปอร์มินท์เย็น',price:75, recipe:[], order:69},
-  {id:'m71',name:'Twining คาโมมายล์เย็น',   price:75, recipe:[], order:70},
-  {id:'m72',name:'Twining เอิร์ลเกรย์เย็น', price:75, recipe:[], order:71},
-  {id:'m73',name:'Twining อิงลิชเบรกฟาสต์เย็น',price:75,recipe:[],order:72},
-  // ── TEA ชาปั่น ──
-  {id:'m74',name:'ชาไทยปั่น',            price:75,  recipe:[], order:73},
-  {id:'m75',name:'ชาเขียวนมปั่น',        price:75,  recipe:[], order:74},
-  {id:'m76',name:'ชามัทฉะลาเต้ปั่น',    price:105, recipe:[], order:75},
-  {id:'m77',name:'ชามะนาวปั่น',          price:75,  recipe:[], order:76},
-  {id:'m78',name:'ชาแอปเปิ้ลปั่น',       price:75,  recipe:[], order:77},
-  {id:'m79',name:'ชาพีชปั่น',            price:75,  recipe:[], order:78},
-  // ── MILK / CHOC / COCO ──
-  {id:'m80',name:'คาราเมลนมสดร้อน',      price:75, recipe:[], order:79},
-  {id:'m81',name:'นมสดร้อน',             price:65, recipe:[], order:80},
-  {id:'m82',name:'ช็อคโกแลตร้อน',        price:85, recipe:[], order:81},
-  {id:'m83',name:'โกโก้ร้อน',            price:85, recipe:[], order:82},
-  {id:'m84',name:'โกโก้เย็น',            price:85, recipe:[], order:83},
-  {id:'m85',name:'ช็อคโกแลตเย็น',        price:85, recipe:[], order:84},
-  {id:'m86',name:'คาราเมลนมสดเย็น',      price:75, recipe:[], order:85},
-  {id:'m87',name:'นมสดเย็น',             price:65, recipe:[], order:86},
-  {id:'m88',name:'นมสดบราวน์ชูการ์เย็น', price:85, recipe:[], order:87},
-  {id:'m89',name:'Chocolate Orange',     price:80, recipe:[], order:88},
-  {id:'m90',name:'ช็อคโกซีลอนเย็น',     price:85, recipe:[], order:89},
-  {id:'m91',name:'ชาซีลอนบราวน์ชูการ์เย็น',price:85,recipe:[],order:90},
-  {id:'m92',name:'โกโก้ปั่น',            price:90, recipe:[], order:91},
-  {id:'m93',name:'ช็อคโกแลตปั่น',        price:90, recipe:[], order:92},
-  {id:'m94',name:'คาราเมลนมสดปั่น',      price:85, recipe:[], order:93},
-  {id:'m95',name:'นมสดปั่น',             price:75, recipe:[], order:94},
-  // ── SMOOTHIE & FRUIT ──
-  {id:'m96', name:'ทับทิมเบอร์รี่โซดา',   price:75, recipe:[], order:95},
-  {id:'m97', name:'สตรอเบอร์รี่เย็น',    price:70, recipe:[], order:96},
-  {id:'m98', name:'ยูซุเย็น',            price:75, recipe:[], order:97},
-  {id:'m99', name:'บูลเบอร์รี่เย็น',     price:70, recipe:[], order:98},
-  {id:'m100',name:'ลิ้นจี่เย็น',         price:70, recipe:[], order:99},
-  {id:'m101',name:'ลิ้นจี่มิ้นท์',       price:85, recipe:[], order:100},
-  {id:'m102',name:'ชาซีลอนสตรอเบอร์รี่เย็น',price:80,recipe:[],order:101},
-  {id:'m103',name:'ยูซุน้ำผึ้งเย็น',     price:85, recipe:[], order:102},
-  {id:'m104',name:'Sunday Just The Chilling Time',price:75,recipe:[],order:103},
-  {id:'m105',name:'Monday Good Morning', price:75, recipe:[], order:104},
-  {id:'m106',name:'Tuesday Pink Lady',   price:75, recipe:[], order:105},
-  {id:'m107',name:'Wednesday In The Garden',price:75,recipe:[],order:106},
-  {id:'m108',name:'Thursday Happy Sunrise',price:75,recipe:[],order:107},
-  {id:'m109',name:'Friday On The Beach', price:75, recipe:[], order:108},
-  {id:'m110',name:'Saturday Go To The Galaxy',price:75,recipe:[],order:109},
-  {id:'m111',name:'Mango Today Frappe',  price:75, recipe:[], order:110},
-  {id:'m112',name:'โยเกิร์ตสมูทตี้',    price:75, recipe:[], order:111},
-  {id:'m113',name:'สตรอเบอร์รี่สมูทตี้',price:75, recipe:[], order:112},
-  {id:'m114',name:'บลูเบอร์รี่สมูทตี้', price:75, recipe:[], order:113},
-  {id:'m115',name:'ยูซุปั่น',            price:80, recipe:[], order:114},
-  // ── TOPPINGS ──
-  {id:'m116',name:'เพิ่มบุกบราวน์ชูการ์',price:20, recipe:[], order:115},
-  {id:'m117',name:'เพิ่มน้ำผึ้ง',        price:15, recipe:[], order:116},
-  {id:'m118',name:'บุกซากุระคริสตัล',    price:20, recipe:[], order:117},
-  {id:'m119',name:'เพิ่มน้ำมะนาว',       price:12, recipe:[], order:118},
-  // ── FOOD / ขนม ──
-  {id:'m120',name:'ขนมปังปิ้ง เนย+นม',   price:45, recipe:[], order:119},
-  {id:'m121',name:'ขนมปังปิ้ง เนย+น้ำตาล',price:45,recipe:[],order:120},
-  {id:'m122',name:'ขนมปังปิ้ง ช็อคโกแลต',price:50, recipe:[], order:121},
-  {id:'m123',name:'ขนมปังปิ้ง แยมสตรอเบอร์รี่',price:55,recipe:[],order:122},
-  {id:'m124',name:'ขนมปังปิ้ง แยมส้ม',   price:55, recipe:[], order:123},
-  {id:'m125',name:'Caramel Waffle Today', price:55, recipe:[], order:124},
-  {id:'m126',name:'แครกเกอร์ดาร์กช็อค', price:69, recipe:[], order:125},
-  {id:'m127',name:'กล้วยเคี้ยวหนึบ',    price:65, recipe:[], order:126},
-  {id:'m128',name:'น้ำดื่ม Coffee Today', price:15, recipe:[], order:127},
+var DEFAULT_MENUS=[
+  {id:'m01',name:'ทูเดย์ร้อน 8oz',price:40,recipe:[],order:0},{id:'m02',name:'ทูเดย์ร้อน 12oz',price:50,recipe:[],order:1},
+  {id:'m03',name:'เอสปูชิโนร้อน 8oz',price:40,recipe:[],order:2},{id:'m04',name:'เอสปูชิโนร้อน 12oz',price:50,recipe:[],order:3},
+  {id:'m05',name:'อเมริกาโนร้อน 8oz',price:40,recipe:[],order:4},{id:'m06',name:'อเมริกาโนร้อน 12oz',price:50,recipe:[],order:5},
+  {id:'m07',name:'อเมริกาโนน้ำผึ้งร้อน 8oz',price:40,recipe:[],order:6},{id:'m08',name:'อเมริกาโนน้ำผึ้งร้อน 12oz',price:50,recipe:[],order:7},
+  {id:'m09',name:'เอสเปรสโซร้อน 8oz',price:50,recipe:[],order:8},{id:'m10',name:'เอสเปรสโซร้อน 12oz',price:60,recipe:[],order:9},
+  {id:'m11',name:'คาปูชิโนร้อน 8oz',price:50,recipe:[],order:10},{id:'m12',name:'คาปูชิโนร้อน 12oz',price:60,recipe:[],order:11},
+  {id:'m13',name:'ลาเต้ร้อน 8oz',price:50,recipe:[],order:12},{id:'m14',name:'ลาเต้ร้อน 12oz',price:55,recipe:[],order:13},
+  {id:'m15',name:'คาราเมลมัคคิอาโตร้อน 8oz',price:60,recipe:[],order:14},{id:'m16',name:'คาราเมลมัคคิอาโตร้อน 12oz',price:65,recipe:[],order:15},
+  {id:'m17',name:'มอคคาร้อน 8oz',price:50,recipe:[],order:16},{id:'m18',name:'มอคคาร้อน 12oz',price:55,recipe:[],order:17},
+  {id:'m19',name:'ทูเดย์เย็น 22oz',price:55,recipe:[],order:18},{id:'m20',name:'ทูเดย์ปั่น 16oz',price:60,recipe:[],order:19},
+  {id:'m21',name:'ทูเดย์ปั่น 22oz',price:65,recipe:[],order:20},{id:'m22',name:'เอสปูชิโนเย็น 22oz',price:55,recipe:[],order:21},
+  {id:'m23',name:'เอสปูชิโนปั่น 16oz',price:60,recipe:[],order:22},{id:'m24',name:'เอสปูชิโนปั่น 22oz',price:65,recipe:[],order:23},
+  {id:'m25',name:'เอสเปรสโซเย็น 22oz',price:55,recipe:[],order:24},{id:'m26',name:'เอสเปรสโซปั่น 16oz',price:60,recipe:[],order:25},
+  {id:'m27',name:'เอสเปรสโซปั่น 22oz',price:65,recipe:[],order:26},{id:'m28',name:'มอคคาเย็น 22oz',price:65,recipe:[],order:27},
+  {id:'m29',name:'มอคคาปั่น 16oz',price:70,recipe:[],order:28},{id:'m30',name:'มอคคาปั่น 22oz',price:75,recipe:[],order:29},
+  {id:'m31',name:'คาปูชิโนเย็น 22oz',price:60,recipe:[],order:30},{id:'m32',name:'คาปูชิโนปั่น 16oz',price:70,recipe:[],order:31},
+  {id:'m33',name:'คาปูชิโนปั่น 22oz',price:75,recipe:[],order:32},{id:'m34',name:'คาราเมลมัคคิอาโตเย็น 22oz',price:65,recipe:[],order:33},
+  {id:'m35',name:'คาราเมลมัคคิอาโตปั่น 16oz',price:70,recipe:[],order:34},{id:'m36',name:'คาราเมลมัคคิอาโตปั่น 22oz',price:75,recipe:[],order:35},
+  {id:'m37',name:'ลาเต้เย็น 22oz',price:60,recipe:[],order:36},{id:'m38',name:'ลาเต้ปั่น 16oz',price:65,recipe:[],order:37},
+  {id:'m39',name:'ลาเต้ปั่น 22oz',price:70,recipe:[],order:38},{id:'m40',name:'อเมริกาโนเย็น 22oz',price:55,recipe:[],order:39},
+  {id:'m41',name:'อเมริกาโนน้ำผึ้งเย็น 22oz',price:65,recipe:[],order:40},{id:'m42',name:'กาแฟลิ้นจี่โซดาเย็น',price:65,recipe:[],order:41},
+  {id:'m43',name:'กาแฟส้ม',price:65,recipe:[],order:42},{id:'m44',name:'กาแฟยูซุเย็น',price:65,recipe:[],order:43},
+  {id:'m45',name:'กาแฟมะพร้าว',price:60,recipe:[],order:44},{id:'m46',name:'ชาเขียวธรรมชาติร้อน',price:60,recipe:[],order:45},
+  {id:'m47',name:'ชาไทยร้อน',price:70,recipe:[],order:46},{id:'m48',name:'ชาไทยดำร้อน',price:65,recipe:[],order:47},
+  {id:'m49',name:'ชาเขียวนมร้อน',price:75,recipe:[],order:48},{id:'m50',name:'ชามัทฉะลาเต้ร้อน',price:85,recipe:[],order:49},
+  {id:'m51',name:'ชาซีลอนร้อน',price:75,recipe:[],order:50},{id:'m52',name:'ชาไทยเย็น',price:70,recipe:[],order:51},
+  {id:'m53',name:'ชาไทยดำเย็น',price:65,recipe:[],order:52},{id:'m54',name:'ชาเขียวนมเย็น',price:70,recipe:[],order:53},
+  {id:'m55',name:'Matcha Green Tea',price:95,recipe:[],order:54},{id:'m56',name:'ชาเขียวธรรมชาติเย็น',price:60,recipe:[],order:55},
+  {id:'m57',name:'ชามะนาว',price:65,recipe:[],order:56},{id:'m58',name:'ชาแอปเปิ้ล',price:65,recipe:[],order:57},
+  {id:'m59',name:'ชาพีช',price:65,recipe:[],order:58},{id:'m60',name:'ชามะนาวน้ำผึ้ง',price:85,recipe:[],order:59},
+  {id:'m61',name:'ชาพีทลิ้นจี่ซากุระ',price:85,recipe:[],order:60},{id:'m62',name:'Orange Thai Tea',price:80,recipe:[],order:61},
+  {id:'m63',name:'ชาธรรมชาติยูซุเย็น',price:85,recipe:[],order:62},{id:'m64',name:'ชาซีลอนเย็น',price:85,recipe:[],order:63},
+  {id:'m65',name:'เพียวมัทฉะ',price:80,recipe:[],order:64},{id:'m66',name:'มัทฉะยูซุ',price:95,recipe:[],order:65},
+  {id:'m67',name:'ครีมมัทฉะมะพร้าว',price:95,recipe:[],order:66},
+  {id:'m68',name:'Twining สตรอเบอร์รี่ แอนด์แมงโกเย็น',price:75,recipe:[],order:67},
+  {id:'m69',name:'Twining โฟเรดฟรุตเย็น',price:75,recipe:[],order:68},{id:'m70',name:'Twining เปปเปอร์มินท์เย็น',price:75,recipe:[],order:69},
+  {id:'m71',name:'Twining คาโมมายล์เย็น',price:75,recipe:[],order:70},{id:'m72',name:'Twining เอิร์ลเกรย์เย็น',price:75,recipe:[],order:71},
+  {id:'m73',name:'Twining อิงลิชเบรกฟาสต์เย็น',price:75,recipe:[],order:72},{id:'m74',name:'ชาไทยปั่น',price:75,recipe:[],order:73},
+  {id:'m75',name:'ชาเขียวนมปั่น',price:75,recipe:[],order:74},{id:'m76',name:'ชามัทฉะลาเต้ปั่น',price:105,recipe:[],order:75},
+  {id:'m77',name:'ชามะนาวปั่น',price:75,recipe:[],order:76},{id:'m78',name:'ชาแอปเปิ้ลปั่น',price:75,recipe:[],order:77},
+  {id:'m79',name:'ชาพีชปั่น',price:75,recipe:[],order:78},{id:'m80',name:'คาราเมลนมสดร้อน',price:75,recipe:[],order:79},
+  {id:'m81',name:'นมสดร้อน',price:65,recipe:[],order:80},{id:'m82',name:'ช็อคโกแลตร้อน',price:85,recipe:[],order:81},
+  {id:'m83',name:'โกโก้ร้อน',price:85,recipe:[],order:82},{id:'m84',name:'โกโก้เย็น',price:85,recipe:[],order:83},
+  {id:'m85',name:'ช็อคโกแลตเย็น',price:85,recipe:[],order:84},{id:'m86',name:'คาราเมลนมสดเย็น',price:75,recipe:[],order:85},
+  {id:'m87',name:'นมสดเย็น',price:65,recipe:[],order:86},{id:'m88',name:'นมสดบราวน์ชูการ์เย็น',price:85,recipe:[],order:87},
+  {id:'m89',name:'Chocolate Orange',price:80,recipe:[],order:88},{id:'m90',name:'ช็อคโกซีลอนเย็น',price:85,recipe:[],order:89},
+  {id:'m91',name:'ชาซีลอนบราวน์ชูการ์เย็น',price:85,recipe:[],order:90},{id:'m92',name:'โกโก้ปั่น',price:90,recipe:[],order:91},
+  {id:'m93',name:'ช็อคโกแลตปั่น',price:90,recipe:[],order:92},{id:'m94',name:'คาราเมลนมสดปั่น',price:85,recipe:[],order:93},
+  {id:'m95',name:'นมสดปั่น',price:75,recipe:[],order:94},{id:'m96',name:'ทับทิมเบอร์รี่โซดา',price:75,recipe:[],order:95},
+  {id:'m97',name:'สตรอเบอร์รี่เย็น',price:70,recipe:[],order:96},{id:'m98',name:'ยูซุเย็น',price:75,recipe:[],order:97},
+  {id:'m99',name:'บูลเบอร์รี่เย็น',price:70,recipe:[],order:98},{id:'m100',name:'ลิ้นจี่เย็น',price:70,recipe:[],order:99},
+  {id:'m101',name:'ลิ้นจี่มิ้นท์',price:85,recipe:[],order:100},{id:'m102',name:'ชาซีลอนสตรอเบอร์รี่เย็น',price:80,recipe:[],order:101},
+  {id:'m103',name:'ยูซุน้ำผึ้งเย็น',price:85,recipe:[],order:102},{id:'m104',name:'Sunday Just The Chilling Time',price:75,recipe:[],order:103},
+  {id:'m105',name:'Monday Good Morning',price:75,recipe:[],order:104},{id:'m106',name:'Tuesday Pink Lady',price:75,recipe:[],order:105},
+  {id:'m107',name:'Wednesday In The Garden',price:75,recipe:[],order:106},{id:'m108',name:'Thursday Happy Sunrise',price:75,recipe:[],order:107},
+  {id:'m109',name:'Friday On The Beach',price:75,recipe:[],order:108},{id:'m110',name:'Saturday Go To The Galaxy',price:75,recipe:[],order:109},
+  {id:'m111',name:'Mango Today Frappe',price:75,recipe:[],order:110},{id:'m112',name:'โยเกิร์ตสมูทตี้',price:75,recipe:[],order:111},
+  {id:'m113',name:'สตรอเบอร์รี่สมูทตี้',price:75,recipe:[],order:112},{id:'m114',name:'บลูเบอร์รี่สมูทตี้',price:75,recipe:[],order:113},
+  {id:'m115',name:'ยูซุปั่น',price:80,recipe:[],order:114},{id:'m116',name:'เพิ่มบุกบราวน์ชูการ์',price:20,recipe:[],order:115},
+  {id:'m117',name:'เพิ่มน้ำผึ้ง',price:15,recipe:[],order:116},{id:'m118',name:'บุกซากุระคริสตัล',price:20,recipe:[],order:117},
+  {id:'m119',name:'เพิ่มน้ำมะนาว',price:12,recipe:[],order:118},{id:'m120',name:'ขนมปังปิ้ง เนย+นม',price:45,recipe:[],order:119},
+  {id:'m121',name:'ขนมปังปิ้ง เนย+น้ำตาล',price:45,recipe:[],order:120},{id:'m122',name:'ขนมปังปิ้ง ช็อคโกแลต',price:50,recipe:[],order:121},
+  {id:'m123',name:'ขนมปังปิ้ง แยมสตรอเบอร์รี่',price:55,recipe:[],order:122},{id:'m124',name:'ขนมปังปิ้ง แยมส้ม',price:55,recipe:[],order:123},
+  {id:'m125',name:'Caramel Waffle Today',price:55,recipe:[],order:124},{id:'m126',name:'แครกเกอร์ดาร์กช็อค',price:69,recipe:[],order:125},
+  {id:'m127',name:'กล้วยเคี้ยวหนึบ',price:65,recipe:[],order:126},{id:'m128',name:'น้ำดื่ม Coffee Today',price:15,recipe:[],order:127},
 ];
-var ords = {};
-var ordCat = 'ทั้งหมด';
-var rR = [{iId:'', qty:0, unit:'g'}];
-var srR = [{iId:'', qty:0, unit:'g'}];
-var dragSrc = null;
-var dragMSrc = null;
-
-// ลำดับหมวดหมู่ที่ต้องการ
-var CAT_ORDER = ['กาแฟ','ชา/โกโก้','น้ำตาล/ไซรัป','บรรจุภัณฑ์','วัตถุดิบรอง','นม/ครีม','ทำความสะอาด/สิ้นเปลือง','อื่นๆ'];
-
-// วัตถุดิบ default พร้อม order field (0-based)
-var DEFAULT_INGS = [
-  // ── กาแฟ (0-3)
-  {id:'d1',  name:'กาแฟ TD-1 (250g)',           cat:'กาแฟ',              price:0, qty:250,  unit:'g',    order:0},
-  {id:'d2',  name:'กาแฟ TD-2 (250g)',           cat:'กาแฟ',              price:0, qty:250,  unit:'g',    order:1},
-  {id:'d3',  name:'กาแฟ TD-3 (250g)',           cat:'กาแฟ',              price:0, qty:250,  unit:'g',    order:2},
-  {id:'d4',  name:'กาแฟ TD-4 (250g)',           cat:'กาแฟ',              price:0, qty:250,  unit:'g',    order:3},
-  // ── ชา / โกโก้ (4-13)
-  {id:'d5',  name:'ชาไทย (500g)',               cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g',    order:4},
-  {id:'d6',  name:'ชาเขียวนม (250g)',           cat:'ชา/โกโก้',          price:0, qty:250,  unit:'g',    order:5},
-  {id:'d7',  name:'ชาเขียวธรรมชาติ (200g)',     cat:'ชา/โกโก้',          price:0, qty:200,  unit:'g',    order:6},
-  {id:'d8',  name:'ชามะนาว (500g)',             cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g',    order:7},
-  {id:'d9',  name:'ชาแอปเปิ้ล (500g)',          cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g',    order:8},
-  {id:'d10', name:'ชาพีท (500g)',               cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g',    order:9},
-  {id:'d11', name:'ชาจีน',                      cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g',    order:10},
-  {id:'d12', name:'ช็อคผงโคเลตต์',             cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g',    order:11},
-  {id:'d13', name:'ชาเขียวมัทฉะ',              cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g',    order:12},
-  {id:'d14', name:'ผงโกโก้',                   cat:'ชา/โกโก้',          price:0, qty:500,  unit:'g',    order:13},
-  // ── ไซรัป (14-22)
-  {id:'d15', name:'ไซรัปมอคค่า/ขวด',           cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:14},
-  {id:'d16', name:'ไซรัปสตอร์เบอร์รี่',         cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:15},
-  {id:'d17', name:'ไซรัปบูลเบอรี่',            cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:16},
-  {id:'d18', name:'ไซรัปมะม่วง',               cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:17},
-  {id:'d19', name:'ไซรัปน้ำผึ้ง',              cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:18},
-  {id:'d20', name:'ไซรัปเมเปิ้ล',              cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:19},
-  {id:'d21', name:'ไซรัปคาราเมล',              cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:20},
-  {id:'d22', name:'ไซรัปคาราเมลมัคคิอาโต',     cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:21},
-  {id:'d23', name:'ไซรัปทับทิมเบอรี่',         cat:'น้ำตาล/ไซรัป',      price:0, qty:1,    unit:'ขวด',  order:22},
-  // ── บรรจุภัณฑ์ (23-46)
-  {id:'d30', name:'ถ้วย 8 oz. (20ใบ/แถว)',      cat:'บรรจุภัณฑ์',        price:0, qty:20,   unit:'ใบ',   order:23},
-  {id:'d31', name:'ถ้วย 16 oz. (50ใบ/แถว)',     cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:24},
-  {id:'d32', name:'ถ้วย 22 oz. (25ใบ/แถว)',     cat:'บรรจุภัณฑ์',        price:0, qty:25,   unit:'ใบ',   order:25},
-  {id:'d33', name:'ถ้วย Big Cup (25ใบ/แถว)',    cat:'บรรจุภัณฑ์',        price:0, qty:25,   unit:'ใบ',   order:26},
-  {id:'d34', name:'ฝา 8 oz. (50ใบ/แถว)',        cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:27},
-  {id:'d35', name:'ฝาเรียบดำ (50ใบ/แถว)',       cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:28},
-  {id:'d36', name:'ฝาโดม (50ใบ/แถว)',           cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:29},
-  {id:'d37', name:'ฝา Big Cup (50ใบ/แถว)',       cat:'บรรจุภัณฑ์',        price:0, qty:50,   unit:'ใบ',   order:30},
-  {id:'d38', name:'หลอดงอหุ้ม (100 เส้น/ห่อ)',  cat:'บรรจุภัณฑ์',        price:0, qty:100,  unit:'เส้น', order:31},
-  {id:'d39', name:'หลอดช้อน (100 เส้น/ห่อ)',    cat:'บรรจุภัณฑ์',        price:0, qty:100,  unit:'เส้น', order:32},
-  {id:'d40', name:'หลอดชาไข่มุก',              cat:'บรรจุภัณฑ์',        price:0, qty:100,  unit:'เส้น', order:33},
-  {id:'d41', name:'ถุงรีฟิล (ถุง TakeHome)',    cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ถุง',  order:34},
-  {id:'d42', name:'แท่งคนกาแฟ (250 อัน)',       cat:'บรรจุภัณฑ์',        price:0, qty:250,  unit:'อัน',  order:35},
-  {id:'d43', name:'ดอกวิปครีม',                cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ชิ้น', order:36},
-  {id:'d44', name:'ขวดบีบนม (ใหญ่)',           cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ขวด',  order:37},
-  {id:'d45', name:'ขวดบีบนม (เล็ก)',           cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ขวด',  order:38},
-  {id:'d46', name:'ขวดคาราเมล (เหลือง)',        cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ขวด',  order:39},
-  {id:'d47', name:'ขวดช็อค (แดง)',             cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ขวด',  order:40},
-  {id:'d48', name:'สติกเกอร์ติดขวด (10ดวง)',   cat:'บรรจุภัณฑ์',        price:0, qty:10,   unit:'ดวง',  order:41},
-  {id:'d49', name:'ถ้วยกาแฟเซรามิก 2.0 oz.',   cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ใบ',   order:42},
-  {id:'d50', name:'ถุงหิ้ว TH/T',              cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ถุง',  order:43},
-  {id:'d51', name:'ถุง TH เล็ก',              cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ถุง',  order:44},
-  {id:'d52', name:'ถุง TH ใหญ่',              cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ถุง',  order:45},
-  {id:'d53', name:'ถุง TH คู่',               cat:'บรรจุภัณฑ์',        price:0, qty:1,    unit:'ถุง',  order:46},
-  // ── นม / ครีม (47-52)
-  {id:'d24', name:'นมจืด (เมจิ) ขวดใหญ่',      cat:'นม/ครีม',           price:0, qty:2000, unit:'ml',   order:47},
-  {id:'d25', name:'นมจืด (Pack)',               cat:'นม/ครีม',           price:0, qty:1000, unit:'ml',   order:48},
-  {id:'d26', name:'นมข้นหวาน (Pack)',           cat:'นม/ครีม',           price:0, qty:1,    unit:'กระป๋อง',order:49},
-  {id:'d27', name:'ครีมซอง (100 ซอง)',          cat:'นม/ครีม',           price:0, qty:100,  unit:'ซอง',  order:50},
-  {id:'d28', name:'ครีมเทียม (ถุง)',            cat:'นม/ครีม',           price:0, qty:1000, unit:'g',    order:51},
-  {id:'d29', name:'น้ำตาลซอง (100 ซอง)',        cat:'นม/ครีม',           price:0, qty:100,  unit:'ซอง',  order:52},
-  // ── ทำความสะอาด / สิ้นเปลือง (53-63)
-  {id:'d54', name:'กระดาษความร้อนเล็ก (5ม้วน)', cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:5,   unit:'ม้วน', order:67},
-  {id:'d55', name:'กระดาษความร้อนใหญ่ (5ม้วน)', cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:5,   unit:'ม้วน', order:68},
-  {id:'d56', name:'สมุดบิลเงินสด',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'เล่ม', order:69},
-  {id:'d57', name:'ถุงมือทำอาหาร',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ถุง',  order:70},
-  {id:'d58', name:'ถุงขยะ 28*36',               cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ถุง',  order:71},
-  {id:'d59', name:'ถุงขยะ 30*40',               cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ถุง',  order:72},
-  {id:'d60', name:'น้ำยาเช็ดโต๊ะ',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ขวด',  order:73},
-  {id:'d61', name:'น้ำยาเช็ดพื้น',              cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ขวด',  order:74},
-  {id:'d62', name:'น้ำยาล้างจาน',               cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ขวด',  order:75},
-  {id:'d63', name:'น้ำยาบ่อดัก',                cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:1,   unit:'ขวด',  order:76},
-  {id:'d64', name:'ผงล้างเครื่อง (113g)',        cat:'ทำความสะอาด/สิ้นเปลือง', price:0, qty:113, unit:'g',    order:77},
-  // ── วัตถุดิบรอง (64-77)
-  {id:'d65', name:'ช็อคเหลว',                   cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'ขวด',  order:53},
-  {id:'d66', name:'คาราเมล (Topping)',           cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'ขวด',  order:54},
-  {id:'d67', name:'น้ำกีวี',                    cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'ขวด',  order:55},
-  {id:'d68', name:'ก๊าซวิปครีม (10ดอก/กก.)',    cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'กระป๋อง',order:56},
-  {id:'d69', name:'สตรอเบอร์รี่แช่แข็ง (1000g)',cat:'วัตถุดิบรอง', price:0, qty:1000, unit:'g',    order:57},
-  {id:'d70', name:'น้ำตาลทราย',                 cat:'วัตถุดิบรอง', price:0, qty:1000, unit:'g',    order:58},
-  {id:'d71', name:'น้ำตาลทรายแดง',              cat:'วัตถุดิบรอง', price:0, qty:1000, unit:'g',    order:59},
-  {id:'d72', name:'เนยเหลือง',                  cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'ขวด',  order:60},
-  {id:'d73', name:'แป้งแพนเค้ก (500g)',          cat:'วัตถุดิบรอง', price:0, qty:500,  unit:'g',    order:61},
-  {id:'d74', name:'แยมส้ม',                     cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'ขวด',  order:62},
-  {id:'d75', name:'แยมสตรอเบอร์รี่',            cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'ขวด',  order:63},
-  {id:'d76', name:'คาราเมลวาฟเฟิล',             cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'ขวด',  order:64},
-  {id:'d77', name:'วิปครีมผง',                  cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'ถุง',  order:65},
-  {id:'d78', name:'โซดา (ขวด)',                 cat:'วัตถุดิบรอง', price:0, qty:1,    unit:'ขวด',  order:66},
+var ords={};
+var ordCat='ทั้งหมด';
+var rR=[{iId:'',qty:0,unit:'g'}];
+var srR=[{iId:'',qty:0,unit:'g'}];
+// FIX #4: แยก touch drag state ingredient / menu
+var dragSrc=null, dragMSrc=null;
+var _touchDragIngEl=null, _touchDragIngId=null;
+var _touchDragMenuEl=null, _touchDragMenuId=null;
+var _touchClone=null;
+var CAT_ORDER=['กาแฟ','ชา/โกโก้','น้ำตาล/ไซรัป','บรรจุภัณฑ์','วัตถุดิบรอง','นม/ครีม','ทำความสะอาด/สิ้นเปลือง','อื่นๆ'];
+var DEFAULT_INGS=[
+  {id:'d1',name:'กาแฟ TD-1 (250g)',cat:'กาแฟ',price:0,qty:250,unit:'g',order:0},
+  {id:'d2',name:'กาแฟ TD-2 (250g)',cat:'กาแฟ',price:0,qty:250,unit:'g',order:1},
+  {id:'d3',name:'กาแฟ TD-3 (250g)',cat:'กาแฟ',price:0,qty:250,unit:'g',order:2},
+  {id:'d4',name:'กาแฟ TD-4 (250g)',cat:'กาแฟ',price:0,qty:250,unit:'g',order:3},
+  {id:'d5',name:'ชาไทย (500g)',cat:'ชา/โกโก้',price:0,qty:500,unit:'g',order:4},
+  {id:'d6',name:'ชาเขียวนม (250g)',cat:'ชา/โกโก้',price:0,qty:250,unit:'g',order:5},
+  {id:'d7',name:'ชาเขียวธรรมชาติ (200g)',cat:'ชา/โกโก้',price:0,qty:200,unit:'g',order:6},
+  {id:'d8',name:'ชามะนาว (500g)',cat:'ชา/โกโก้',price:0,qty:500,unit:'g',order:7},
+  {id:'d9',name:'ชาแอปเปิ้ล (500g)',cat:'ชา/โกโก้',price:0,qty:500,unit:'g',order:8},
+  {id:'d10',name:'ชาพีท (500g)',cat:'ชา/โกโก้',price:0,qty:500,unit:'g',order:9},
+  {id:'d11',name:'ชาจีน',cat:'ชา/โกโก้',price:0,qty:500,unit:'g',order:10},
+  {id:'d12',name:'ช็อคผงโคเลตต์',cat:'ชา/โกโก้',price:0,qty:500,unit:'g',order:11},
+  {id:'d13',name:'ชาเขียวมัทฉะ',cat:'ชา/โกโก้',price:0,qty:500,unit:'g',order:12},
+  {id:'d14',name:'ผงโกโก้',cat:'ชา/โกโก้',price:0,qty:500,unit:'g',order:13},
+  {id:'d15',name:'ไซรัปมอคค่า/ขวด',cat:'น้ำตาล/ไซรัป',price:0,qty:1,unit:'ขวด',order:14},
+  {id:'d16',name:'ไซรัปสตอร์เบอร์รี่',cat:'น้ำตาล/ไซรัป',price:0,qty:1,unit:'ขวด',order:15},
+  {id:'d17',name:'ไซรัปบูลเบอรี่',cat:'น้ำตาล/ไซรัป',price:0,qty:1,unit:'ขวด',order:16},
+  {id:'d18',name:'ไซรัปมะม่วง',cat:'น้ำตาล/ไซรัป',price:0,qty:1,unit:'ขวด',order:17},
+  {id:'d19',name:'ไซรัปน้ำผึ้ง',cat:'น้ำตาล/ไซรัป',price:0,qty:1,unit:'ขวด',order:18},
+  {id:'d20',name:'ไซรัปเมเปิ้ล',cat:'น้ำตาล/ไซรัป',price:0,qty:1,unit:'ขวด',order:19},
+  {id:'d21',name:'ไซรัปคาราเมล',cat:'น้ำตาล/ไซรัป',price:0,qty:1,unit:'ขวด',order:20},
+  {id:'d22',name:'ไซรัปคาราเมลมัคคิอาโต',cat:'น้ำตาล/ไซรัป',price:0,qty:1,unit:'ขวด',order:21},
+  {id:'d23',name:'ไซรัปทับทิมเบอรี่',cat:'น้ำตาล/ไซรัป',price:0,qty:1,unit:'ขวด',order:22},
+  {id:'d30',name:'ถ้วย 8 oz. (20ใบ/แถว)',cat:'บรรจุภัณฑ์',price:0,qty:20,unit:'ใบ',order:23},
+  {id:'d31',name:'ถ้วย 16 oz. (50ใบ/แถว)',cat:'บรรจุภัณฑ์',price:0,qty:50,unit:'ใบ',order:24},
+  {id:'d32',name:'ถ้วย 22 oz. (25ใบ/แถว)',cat:'บรรจุภัณฑ์',price:0,qty:25,unit:'ใบ',order:25},
+  {id:'d33',name:'ถ้วย Big Cup (25ใบ/แถว)',cat:'บรรจุภัณฑ์',price:0,qty:25,unit:'ใบ',order:26},
+  {id:'d34',name:'ฝา 8 oz. (50ใบ/แถว)',cat:'บรรจุภัณฑ์',price:0,qty:50,unit:'ใบ',order:27},
+  {id:'d35',name:'ฝาเรียบดำ (50ใบ/แถว)',cat:'บรรจุภัณฑ์',price:0,qty:50,unit:'ใบ',order:28},
+  {id:'d36',name:'ฝาโดม (50ใบ/แถว)',cat:'บรรจุภัณฑ์',price:0,qty:50,unit:'ใบ',order:29},
+  {id:'d37',name:'ฝา Big Cup (50ใบ/แถว)',cat:'บรรจุภัณฑ์',price:0,qty:50,unit:'ใบ',order:30},
+  {id:'d38',name:'หลอดงอหุ้ม (100 เส้น/ห่อ)',cat:'บรรจุภัณฑ์',price:0,qty:100,unit:'เส้น',order:31},
+  {id:'d39',name:'หลอดช้อน (100 เส้น/ห่อ)',cat:'บรรจุภัณฑ์',price:0,qty:100,unit:'เส้น',order:32},
+  {id:'d40',name:'หลอดชาไข่มุก',cat:'บรรจุภัณฑ์',price:0,qty:100,unit:'เส้น',order:33},
+  {id:'d41',name:'ถุงรีฟิล (ถุง TakeHome)',cat:'บรรจุภัณฑ์',price:0,qty:1,unit:'ถุง',order:34},
+  {id:'d42',name:'แท่งคนกาแฟ (250 อัน)',cat:'บรรจุภัณฑ์',price:0,qty:250,unit:'อัน',order:35},
+  {id:'d43',name:'ดอกวิปครีม',cat:'บรรจุภัณฑ์',price:0,qty:1,unit:'ชิ้น',order:36},
+  {id:'d44',name:'ขวดบีบนม (ใหญ่)',cat:'บรรจุภัณฑ์',price:0,qty:1,unit:'ขวด',order:37},
+  {id:'d45',name:'ขวดบีบนม (เล็ก)',cat:'บรรจุภัณฑ์',price:0,qty:1,unit:'ขวด',order:38},
+  {id:'d46',name:'ขวดคาราเมล (เหลือง)',cat:'บรรจุภัณฑ์',price:0,qty:1,unit:'ขวด',order:39},
+  {id:'d47',name:'ขวดช็อค (แดง)',cat:'บรรจุภัณฑ์',price:0,qty:1,unit:'ขวด',order:40},
+  {id:'d48',name:'สติกเกอร์ติดขวด (10ดวง)',cat:'บรรจุภัณฑ์',price:0,qty:10,unit:'ดวง',order:41},
+  {id:'d49',name:'ถ้วยกาแฟเซรามิก 2.0 oz.',cat:'บรรจุภัณฑ์',price:0,qty:1,unit:'ใบ',order:42},
+  {id:'d50',name:'ถุงหิ้ว TH/T',cat:'บรรจุภัณฑ์',price:0,qty:1,unit:'ถุง',order:43},
+  {id:'d51',name:'ถุง TH เล็ก',cat:'บรรจุภัณฑ์',price:0,qty:1,unit:'ถุง',order:44},
+  {id:'d52',name:'ถุง TH ใหญ่',cat:'บรรจุภัณฑ์',price:0,qty:1,unit:'ถุง',order:45},
+  {id:'d53',name:'ถุง TH คู่',cat:'บรรจุภัณฑ์',price:0,qty:1,unit:'ถุง',order:46},
+  {id:'d24',name:'นมจืด (เมจิ) ขวดใหญ่',cat:'นม/ครีม',price:0,qty:2000,unit:'ml',order:47},
+  {id:'d25',name:'นมจืด (Pack)',cat:'นม/ครีม',price:0,qty:1000,unit:'ml',order:48},
+  {id:'d26',name:'นมข้นหวาน (Pack)',cat:'นม/ครีม',price:0,qty:1,unit:'กระป๋อง',order:49},
+  {id:'d27',name:'ครีมซอง (100 ซอง)',cat:'นม/ครีม',price:0,qty:100,unit:'ซอง',order:50},
+  {id:'d28',name:'ครีมเทียม (ถุง)',cat:'นม/ครีม',price:0,qty:1000,unit:'g',order:51},
+  {id:'d29',name:'น้ำตาลซอง (100 ซอง)',cat:'นม/ครีม',price:0,qty:100,unit:'ซอง',order:52},
+  {id:'d65',name:'ช็อคเหลว',cat:'วัตถุดิบรอง',price:0,qty:1,unit:'ขวด',order:53},
+  {id:'d66',name:'คาราเมล (Topping)',cat:'วัตถุดิบรอง',price:0,qty:1,unit:'ขวด',order:54},
+  {id:'d67',name:'น้ำกีวี',cat:'วัตถุดิบรอง',price:0,qty:1,unit:'ขวด',order:55},
+  {id:'d68',name:'ก๊าซวิปครีม (10ดอก/กก.)',cat:'วัตถุดิบรอง',price:0,qty:1,unit:'กระป๋อง',order:56},
+  {id:'d69',name:'สตรอเบอร์รี่แช่แข็ง (1000g)',cat:'วัตถุดิบรอง',price:0,qty:1000,unit:'g',order:57},
+  {id:'d70',name:'น้ำตาลทราย',cat:'วัตถุดิบรอง',price:0,qty:1000,unit:'g',order:58},
+  {id:'d71',name:'น้ำตาลทรายแดง',cat:'วัตถุดิบรอง',price:0,qty:1000,unit:'g',order:59},
+  {id:'d72',name:'เนยเหลือง',cat:'วัตถุดิบรอง',price:0,qty:1,unit:'ขวด',order:60},
+  {id:'d73',name:'แป้งแพนเค้ก (500g)',cat:'วัตถุดิบรอง',price:0,qty:500,unit:'g',order:61},
+  {id:'d74',name:'แยมส้ม',cat:'วัตถุดิบรอง',price:0,qty:1,unit:'ขวด',order:62},
+  {id:'d75',name:'แยมสตรอเบอร์รี่',cat:'วัตถุดิบรอง',price:0,qty:1,unit:'ขวด',order:63},
+  {id:'d76',name:'คาราเมลวาฟเฟิล',cat:'วัตถุดิบรอง',price:0,qty:1,unit:'ขวด',order:64},
+  {id:'d77',name:'วิปครีมผง',cat:'วัตถุดิบรอง',price:0,qty:1,unit:'ถุง',order:65},
+  {id:'d78',name:'โซดา (ขวด)',cat:'วัตถุดิบรอง',price:0,qty:1,unit:'ขวด',order:66},
+  {id:'d54',name:'กระดาษความร้อนเล็ก (5ม้วน)',cat:'ทำความสะอาด/สิ้นเปลือง',price:0,qty:5,unit:'ม้วน',order:67},
+  {id:'d55',name:'กระดาษความร้อนใหญ่ (5ม้วน)',cat:'ทำความสะอาด/สิ้นเปลือง',price:0,qty:5,unit:'ม้วน',order:68},
+  {id:'d56',name:'สมุดบิลเงินสด',cat:'ทำความสะอาด/สิ้นเปลือง',price:0,qty:1,unit:'เล่ม',order:69},
+  {id:'d57',name:'ถุงมือทำอาหาร',cat:'ทำความสะอาด/สิ้นเปลือง',price:0,qty:1,unit:'ถุง',order:70},
+  {id:'d58',name:'ถุงขยะ 28*36',cat:'ทำความสะอาด/สิ้นเปลือง',price:0,qty:1,unit:'ถุง',order:71},
+  {id:'d59',name:'ถุงขยะ 30*40',cat:'ทำความสะอาด/สิ้นเปลือง',price:0,qty:1,unit:'ถุง',order:72},
+  {id:'d60',name:'น้ำยาเช็ดโต๊ะ',cat:'ทำความสะอาด/สิ้นเปลือง',price:0,qty:1,unit:'ขวด',order:73},
+  {id:'d61',name:'น้ำยาเช็ดพื้น',cat:'ทำความสะอาด/สิ้นเปลือง',price:0,qty:1,unit:'ขวด',order:74},
+  {id:'d62',name:'น้ำยาล้างจาน',cat:'ทำความสะอาด/สิ้นเปลือง',price:0,qty:1,unit:'ขวด',order:75},
+  {id:'d63',name:'น้ำยาบ่อดัก',cat:'ทำความสะอาด/สิ้นเปลือง',price:0,qty:1,unit:'ขวด',order:76},
+  {id:'d64',name:'ผงล้างเครื่อง (113g)',cat:'ทำความสะอาด/สิ้นเปลือง',price:0,qty:113,unit:'g',order:77},
 ];
 
 // ============================================================
 // UTILS
 // ============================================================
-function f(n){ return parseFloat(n||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
-function fB(n){ return '฿'+f(n); }
-function uid(){ return 'id_'+Date.now()+'_'+Math.random().toString(36).slice(2,6); }
-function cpu(i){ return i.qty>0 ? i.price/i.qty : 0; }
-function exVat(p){ return p/1.07; }
+function f(n){return parseFloat(n||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+function fB(n){return '฿'+f(n);}
+function uid(){return 'id_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);}
+function cpu(i){return i.qty>0?i.price/i.qty:0;}
+function exVat(p){return p/1.07;}
 function cc(m){
   return (m.recipe||[]).reduce(function(s,r){
     if(!r.iId||!r.qty) return s;
-    if(r.iId.startsWith('sr_')){
-      var sr=subRecipes.find(function(x){return x.id===r.iId;});
-      return s+(sr?cpSR(sr)*r.qty:0);
-    }
-    var ing=ings.find(function(x){ return String(x.id)===String(r.iId); });
+    if(r.iId.startsWith('sr_')){var sr=subRecipes.find(function(x){return x.id===r.iId;});return s+(sr?cpSR(sr)*r.qty:0);}
+    var ing=ings.find(function(x){return String(x.id)===String(r.iId);});
     if(!ing) return s;
     var qty=r.qty;
-    if(r.unit==='oz'&&ing.unit==='ml') qty=qty*29.57;
-    else if(r.unit==='oz'&&ing.unit==='g') qty=qty*28.35;
+    if(r.unit==='oz'&&ing.unit==='ml') qty*=29.57;
+    else if(r.unit==='oz'&&ing.unit==='g') qty*=28.35;
     return s+cpu(ing)*qty;
-  }, 0);
+  },0);
 }
-function mc(m){ if(m>=60) return 'var(--gn)'; if(m>=45) return 'var(--yl)'; return 'var(--rd)'; }
+function mc(m){if(m>=60)return 'var(--gn)';if(m>=45)return 'var(--yl)';return 'var(--rd)';}
 function bdg(m){
-  if(m>=60) return '<span class="bdg bg3">ดีมาก</span>';
-  if(m>=45) return '<span class="bdg by3">ปานกลาง</span>';
+  if(m>=60)return '<span class="bdg bg3">ดีมาก</span>';
+  if(m>=45)return '<span class="bdg by3">ปานกลาง</span>';
   return '<span class="bdg br3">น่าเป็นห่วง</span>';
 }
-function fmt(n){ return parseFloat(n||0)%1===0 ? parseInt(n) : parseFloat(n).toFixed(1); }
-function sL(t){ document.getElementById('lt').textContent=t||'กำลังโหลด...'; document.getElementById('lov').classList.add('show'); }
-function hL(){ document.getElementById('lov').classList.remove('show'); }
-function sS(s,t){
-  var d=document.getElementById('dot'), tx=document.getElementById('stxt');
-  d.className='dot'+(s==='syn'?' syn':s==='err'?' err':'');
-  tx.textContent=t;
-}
-
-function previewVat(){
-  var p=parseFloat(document.getElementById('i-price').value)||0;
-  var el=document.getElementById('i-price-preview');
-  if(p>0){ el.style.display='inline-block'; el.textContent='excl. VAT: ฿'+f(exVat(p))+' | VAT: ฿'+f(p-exVat(p)); }
-  else el.style.display='none';
+function fmt(n){return parseFloat(n||0)%1===0?parseInt(n):parseFloat(n).toFixed(1);}
+function sL(t){document.getElementById('lt').textContent=t||'กำลังโหลด...';document.getElementById('lov').classList.add('show');}
+function hL(){document.getElementById('lov').classList.remove('show');}
+function sS(s,t){var d=document.getElementById('dot'),tx=document.getElementById('stxt');d.className='dot'+(s==='syn'?' syn':s==='err'?' err':'');tx.textContent=t;}
+function previewVat(){var p=parseFloat(document.getElementById('i-price').value)||0,el=document.getElementById('i-price-preview');if(p>0){el.style.display='inline-block';el.textContent='excl. VAT: ฿'+f(exVat(p))+' | VAT: ฿'+f(p-exVat(p));}else el.style.display='none';}
+// สร้าง roundLabel จากวันที่
+function makeRoundLabel(){
+  var d=new Date();
+  var day=d.getDate();
+  var mo=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][d.getMonth()];
+  var period=day<=15?'1-15':'16-'+new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+  return 'รอบ '+period+' '+mo+' '+(d.getFullYear()+543);
 }
 
 // ============================================================
 // API
 // ============================================================
 function apiG(params){
-  if(!API) return Promise.reject(new Error('ยังไม่ได้ตั้งค่า URL'));
-  return fetch(API+'?'+new URLSearchParams(params))
-    .then(function(r){ return r.json(); })
-    .then(function(d){ if(d.status==='error') throw new Error(d.message||'API error'); return d; });
+  if(!API)return Promise.reject(new Error('ยังไม่ได้ตั้งค่า URL'));
+  return fetch(API+'?'+new URLSearchParams(params)).then(function(r){return r.json();}).then(function(d){if(d.status==='error')throw new Error(d.message);return d;});
 }
 function apiP(body){
-  if(!API) return Promise.reject(new Error('ยังไม่ได้ตั้งค่า URL'));
-  return fetch(API, {method:'POST', body:JSON.stringify(body)})
-    .then(function(r){ return r.json(); })
-    .then(function(d){ if(d.status==='error') throw new Error(d.message||'API error'); return d; });
+  if(!API)return Promise.reject(new Error('ยังไม่ได้ตั้งค่า URL'));
+  return fetch(API,{method:'POST',body:JSON.stringify(body)}).then(function(r){return r.json();}).then(function(d){if(d.status==='error')throw new Error(d.message);return d;});
 }
 
 // ============================================================
 // SETTINGS
 // ============================================================
-function forceSyncAll(){
-  if(!API) return alert('กรุณาตั้งค่า URL ก่อน');
-  if(!confirm('จะ sync วัตถุดิบที่ขาดหายจาก Sheets\n(ราคาที่กรอกไว้จะไม่หาย)\nดำเนินการต่อ?')) return;
-  sL('กำลังโหลดข้อมูลจาก Sheets ก่อน sync...');
-  // โหลดจาก Sheets ก่อนเสมอ เพื่อรักษาราคาที่กรอกไว้
-  apiG({action:'read', sheet:'Ingredients'})
-    .then(function(iR){
-      var sheetRows=(iR.rows||[]).map(function(r){
-        return Object.assign({},r,{price:parseFloat(r.price)||0, qty:parseFloat(r.qty)||0});
-      });
-      var sheetMap={};
-      sheetRows.forEach(function(r){ sheetMap[r.id]=r; });
-
-      // sync เฉพาะรายการที่ไม่มีใน Sheets (ไม่แตะรายการที่มีอยู่แล้ว)
-      var toSync=DEFAULT_INGS.filter(function(d){ return !sheetMap[d.id]; });
-      if(!toSync.length){
-        hL();
-        sS('ok','ทุกรายการอยู่ใน Sheets ครบแล้ว ✅');
-        return;
-      }
-      var i=0;
-      sS('syn','กำลัง sync '+toSync.length+' รายการที่ขาด...');
-      (function next(){
-        if(i>=toSync.length){
-          sS('ok','Force sync ครบ '+toSync.length+' รายการ ✅');
-          hL(); loadMeta(); return;
-        }
-        var item=toSync[i];
-        sL('Force sync '+(i+1)+'/'+toSync.length+': '+item.name);
-        apiP({action:'upsert',sheet:'Ingredients',data:item})
-          .then(function(){ i++; next(); })
-          .catch(function(){ i++; next(); });
-      })();
-    })
-    .catch(function(e){ hL(); alert('โหลดไม่ได้: '+e.message); });
+function saveUrl(){var u=document.getElementById('sc-url').value.trim();if(!u)return alert('กรุณาใส่ URL');API=u;localStorage.setItem('ct_analysis_url',u);alert('บันทึกแล้ว ✅');}
+function testConn(){
+  var u=document.getElementById('sc-url').value.trim()||API;if(!u)return alert('กรุณาใส่ URL ก่อน');API=u;
+  var res=document.getElementById('t-res');res.innerHTML='<div style="color:var(--yl);font-size:13px">⏳ กำลังทดสอบ...</div>';
+  apiG({action:'read',sheet:'Ingredients'}).then(function(d){res.innerHTML='<div style="color:var(--gn);font-size:13px">✅ เชื่อมต่อสำเร็จ! Ingredients: '+(d.rows||[]).length+' รายการ</div>';sS('ok','เชื่อมต่อแล้ว');}).catch(function(e){res.innerHTML='<div style="color:var(--rd);font-size:13px">🚨 '+e.message+'</div>';sS('err','ผิดพลาด');});
 }
-
+function initSync(){
+  var u=document.getElementById('sc-url').value.trim()||API;if(!u)return alert('กรุณาใส่ URL ก่อน');
+  API=u;localStorage.setItem('ct_analysis_url',u);sL('กำลัง Init...');
+  apiP({action:'init'}).then(function(){hL();return loadMeta();}).then(function(){alert('Init + ซิงค์สำเร็จ ✅');}).catch(function(e){hL();alert('Error: '+e.message);});
+}
+function forceSyncAll(){
+  if(!API)return alert('กรุณาตั้งค่า URL ก่อน');
+  if(!confirm('จะ sync วัตถุดิบที่ขาดหายจาก Sheets\n(ราคาที่กรอกไว้จะไม่หาย)\nดำเนินการต่อ?'))return;
+  sL('กำลังโหลดข้อมูลจาก Sheets ก่อน sync...');
+  apiG({action:'read',sheet:'Ingredients'}).then(function(iR){
+    var sheetMap={};(iR.rows||[]).forEach(function(r){sheetMap[r.id]=r;});
+    var toSync=DEFAULT_INGS.filter(function(d){return !sheetMap[d.id];});
+    if(!toSync.length){hL();sS('ok','ทุกรายการอยู่ใน Sheets ครบแล้ว ✅');return;}
+    var i=0;sS('syn','sync '+toSync.length+' รายการ...');
+    (function next(){if(i>=toSync.length){sS('ok','Force sync ครบ ✅');hL();loadMeta();return;}sL('sync '+(i+1)+'/'+toSync.length);apiP({action:'upsert',sheet:'Ingredients',data:toSync[i]}).then(function(){i++;next();}).catch(function(){i++;next();});})();
+  }).catch(function(e){hL();alert('โหลดไม่ได้: '+e.message);});
+}
 function forceSyncMenus(){
-  if(!API) return alert('กรุณาตั้งค่า URL ก่อน');
-  if(!confirm('จะ sync เมนูที่ขาดใน Sheets ('+DEFAULT_MENUS.length+' เมนู)\nเมนูที่มีอยู่แล้วจะไม่ถูกแตะ\nดำเนินการต่อ?')) return;
+  if(!API)return alert('กรุณาตั้งค่า URL ก่อน');
+  if(!confirm('จะ sync เมนูที่ขาดใน Sheets\nดำเนินการต่อ?'))return;
   sL('กำลังโหลดเมนูจาก Sheets...');
   apiG({action:'read',sheet:'Menus'}).then(function(mR){
-    var sheetIds={};
-    (mR.rows||[]).forEach(function(r){ sheetIds[r.id]=true; });
-    var missing=DEFAULT_MENUS.filter(function(m){ return !sheetIds[m.id]; });
-    if(!missing.length){ hL(); sS('ok','เมนูครบแล้ว ✅'); return; }
-    var i=0;
-    sS('syn','กำลัง sync เมนู '+missing.length+' รายการ...');
-    (function next(){
-      if(i>=missing.length){ sS('ok','Sync เมนูครบ '+missing.length+' รายการ ✅'); hL(); loadMeta(); return; }
-      var d=Object.assign({},missing[i],{recipe:JSON.stringify([])});
-      sL('sync เมนู '+(i+1)+'/'+missing.length+': '+d.name);
-      apiP({action:'upsert',sheet:'Menus',data:d}).then(function(){i++;next();}).catch(function(){i++;next();});
-    })();
-  }).catch(function(e){ hL(); alert('โหลดไม่ได้: '+e.message); });
-}
-
-function saveUrl(){
-  var u=document.getElementById('sc-url').value.trim();
-  if(!u) return alert('กรุณาใส่ URL');
-  API=u; localStorage.setItem('ct_analysis_url',u);
-  alert('บันทึกแล้ว ✅');
-}
-
-function testConn(){
-  var u=document.getElementById('sc-url').value.trim()||API;
-  if(!u) return alert('กรุณาใส่ URL ก่อน');
-  API=u;
-  var res=document.getElementById('t-res');
-  res.innerHTML='<div style="color:var(--yl);font-size:13px">⏳ กำลังทดสอบ...</div>';
-  apiG({action:'read', sheet:'Ingredients'})
-    .then(function(d){
-      res.innerHTML='<div style="color:var(--gn);font-size:13px">✅ เชื่อมต่อสำเร็จ! Ingredients: '+(d.rows||[]).length+' รายการ</div>';
-      sS('ok','เชื่อมต่อแล้ว');
-    })
-    .catch(function(e){
-      res.innerHTML='<div style="color:var(--rd);font-size:13px">🚨 '+e.message+'</div>';
-      sS('err','ผิดพลาด');
-    });
-}
-
-function initSync(){
-  var u=document.getElementById('sc-url').value.trim()||API;
-  if(!u) return alert('กรุณาใส่ URL ก่อน');
-  API=u; localStorage.setItem('ct_analysis_url',u);
-  sL('กำลัง Init...');
-  apiP({action:'init'})
-    .then(function(){ hL(); return loadMeta(); })
-    .then(function(){ alert('Init + ซิงค์สำเร็จ ✅'); })
-    .catch(function(e){ hL(); alert('Error: '+e.message); });
+    var ids={};(mR.rows||[]).forEach(function(r){ids[r.id]=true;});
+    var missing=DEFAULT_MENUS.filter(function(m){return !ids[m.id];});
+    if(!missing.length){hL();sS('ok','เมนูครบแล้ว ✅');return;}
+    var i=0;sS('syn','sync เมนู '+missing.length+'...');
+    (function next(){if(i>=missing.length){sS('ok','Sync เมนูครบ ✅');hL();loadMeta();return;}var d=Object.assign({},missing[i],{recipe:JSON.stringify([])});sL('sync '+(i+1)+'/'+missing.length);apiP({action:'upsert',sheet:'Menus',data:d}).then(function(){i++;next();}).catch(function(){i++;next();});})();
+  }).catch(function(e){hL();alert('โหลดไม่ได้: '+e.message);});
 }
 
 // ============================================================
 // LOAD META
 // ============================================================
+function sortIngs(){
+  var defaultOrderMap={};DEFAULT_INGS.forEach(function(d,idx){defaultOrderMap[d.id]=d.order!==undefined?d.order:idx;});
+  ings.sort(function(a,b){
+    var ca=CAT_ORDER.indexOf(a.cat||'อื่นๆ'),cb=CAT_ORDER.indexOf(b.cat||'อื่นๆ');
+    if(ca<0)ca=99;if(cb<0)cb=99;if(ca!==cb)return ca-cb;
+    var oa=parseFloat(a.order),ob=parseFloat(b.order),hOa=!isNaN(oa)&&oa>=0,hOb=!isNaN(ob)&&ob>=0;
+    if(hOa&&hOb)return oa-ob;
+    return (defaultOrderMap[a.id]!==undefined?defaultOrderMap[a.id]:999)-(defaultOrderMap[b.id]!==undefined?defaultOrderMap[b.id]:999);
+  });
+}
 function loadMeta(){
-  if(!API){ loadDefaultIngs(); return Promise.resolve(); }
-  sS('syn','กำลังโหลด...'); sL('กำลังดึงข้อมูล...');
+  if(!API){loadDefaultIngs();return Promise.resolve();}
+  sS('syn','กำลังโหลด...');sL('กำลังดึงข้อมูล...');
   return Promise.all([
-    apiG({action:'read', sheet:'Ingredients'}),
-    apiG({action:'read', sheet:'Menus'}),
-    apiG({action:'read', sheet:'SubRecipes'}).catch(function(){ return {rows:[]}; })
-  ]).then(function(results){
-    var iR=results[0], mR=results[1], srRes=results[2];
-    var si=(iR.rows||[]).map(function(r){
-      return Object.assign({},r,{price:parseFloat(r.price)||0, qty:parseFloat(r.qty)||0});
-    });
-
-    // merge: ถ้า DEFAULT_INGS มี id ที่ไม่อยู่ใน Sheets → เพิ่มเข้าไปและ sync ทีละตัว
-    var sheetIds={};
-    si.forEach(function(r){ sheetIds[r.id]=true; });
-    var missing=DEFAULT_INGS.filter(function(d){ return !sheetIds[d.id]; });
-    if(missing.length){
-      sS('syn','กำลัง sync วัตถุดิบที่ขาด '+missing.length+' รายการ...');
-      missing.forEach(function(item){ si.push(item); });
-      // sync ทีละตัว ป้องกัน timeout
-      if(API){
-        (function syncMissing(i){
-          if(i>=missing.length){ sS('ok','sync ครบแล้ว'); return; }
-          sL('sync วัตถุดิบ '+(i+1)+'/'+missing.length+'...');
-          apiP({action:'upsert',sheet:'Ingredients',data:missing[i]})
-            .then(function(){ syncMissing(i+1); })
-            .catch(function(){ syncMissing(i+1); });
-        })(0);
-      }
-    }
-
-    ings = si.length ? si : DEFAULT_INGS.slice();
-    // สร้าง map จาก DEFAULT_INGS เพื่อใช้เป็น fallback order
-    var defaultOrderMap={};
-    DEFAULT_INGS.forEach(function(d,idx){ defaultOrderMap[d.id]=d.order!==undefined?d.order:idx; });
-
-    // sort: หมวดหมู่ตาม CAT_ORDER ก่อน → แล้วค่อย order ภายในหมวด
-    ings.sort(function(a,b){
-      var ca=CAT_ORDER.indexOf(a.cat||'อื่นๆ');
-      var cb=CAT_ORDER.indexOf(b.cat||'อื่นๆ');
-      if(ca<0) ca=99; if(cb<0) cb=99;
-      if(ca!==cb) return ca-cb;
-      // ภายในหมวดเดียวกัน ใช้ order field ถ้ามี ไม่งั้นใช้ DEFAULT position
-      var oa=parseFloat(a.order);
-      var ob=parseFloat(b.order);
-      var hasOa=!isNaN(oa)&&oa>0;
-      var hasOb=!isNaN(ob)&&ob>0;
-      if(hasOa&&hasOb) return oa-ob;
-      // fallback ใช้ position ใน DEFAULT_INGS
-      var da=defaultOrderMap[a.id]!==undefined?defaultOrderMap[a.id]:999;
-      var db=defaultOrderMap[b.id]!==undefined?defaultOrderMap[b.id]:999;
-      return da-db;
-    });
-    // sync order ที่ถูกต้องขึ้น Sheets เฉพาะรายการที่ order เปลี่ยน (ไม่ส่งทีเดียว 64 requests)
+    apiG({action:'read',sheet:'Ingredients'}),
+    apiG({action:'read',sheet:'Menus'}),
+    apiG({action:'read',sheet:'SubRecipes'}).catch(function(){return {rows:[]};})
+  ]).then(function(res){
+    var iR=res[0],mR=res[1],srRes=res[2];
+    var si=(iR.rows||[]).map(function(r){return Object.assign({},r,{price:parseFloat(r.price)||0,qty:parseFloat(r.qty)||0});});
+    var sheetIds={};si.forEach(function(r){sheetIds[r.id]=true;});
+    var missing=DEFAULT_INGS.filter(function(d){return !sheetIds[d.id];});
+    if(missing.length){missing.forEach(function(i){si.push(i);});if(API){(function sm(i){if(i>=missing.length)return;apiP({action:'upsert',sheet:'Ingredients',data:missing[i]}).then(function(){sm(i+1);}).catch(function(){sm(i+1);});})(0);}}
+    ings=si.length?si:DEFAULT_INGS.slice();
+    sortIngs();
+    // FIX #1: sync order เฉพาะรายการที่เปลี่ยนจริง
     if(API){
-      var toSync=[];
-      ings.forEach(function(ing,idx){ if(parseFloat(ing.order)!==idx){ ing.order=idx; toSync.push(ing); } });
-      // ส่งทีละ 1 เพื่อป้องกัน race condition
-      (function syncNext(i){
-        if(i>=toSync.length) return;
-        apiP({action:'upsert',sheet:'Ingredients',data:toSync[i]})
-          .then(function(){ syncNext(i+1); })
-          .catch(function(){ syncNext(i+1); });
-      })(0);
-    }
-    menus=(mR.rows||[]).map(function(r){
-      return Object.assign({},r,{
-        price:parseFloat(r.price)||0,
-        recipe:typeof r.recipe==='string'?JSON.parse(r.recipe||'[]'):(r.recipe||[])
-      });
-    });
-    // merge DEFAULT_MENUS — sync เฉพาะที่ขาด
-    var sheetMenuIds={};
-    menus.forEach(function(m){ sheetMenuIds[m.id]=true; });
-    var missingMenus=DEFAULT_MENUS.filter(function(m){ return !sheetMenuIds[m.id]; });
-    if(missingMenus.length){
-      missingMenus.forEach(function(m){ menus.push(Object.assign({},m)); });
-      menus.sort(function(a,b){ return (parseFloat(a.order)||999)-(parseFloat(b.order)||999); });
-      if(API){
-        (function syncM(i){
-          if(i>=missingMenus.length) return;
-          var d=Object.assign({},missingMenus[i],{recipe:JSON.stringify([])});
-          apiP({action:'upsert',sheet:'Menus',data:d}).then(function(){syncM(i+1);}).catch(function(){syncM(i+1);});
-        })(0);
-      }
-    }
-    subRecipes=(srRes.rows||[]).map(function(r){
-      return Object.assign({},r,{
-        yield:parseFloat(r.yield)||1,
-        recipe:typeof r.recipe==='string'?JSON.parse(r.recipe||'[]'):(r.recipe||[])
-      });
-    });
-    rAll();
-    updInfoBar('Google Sheets ('+ings.length+' รายการ)');
+      var toSO=[];ings.forEach(function(ing,idx){var c=parseFloat(ing.order);if(isNaN(c)||c!==idx){ing.order=idx;toSO.push(ing);}});
+      if(toSO.length)(function so(i){if(i>=toSO.length)return;apiP({action:'upsert',sheet:'Ingredients',data:toSO[i]}).then(function(){so(i+1);}).catch(function(){so(i+1);});})(0);
+    }else{ings.forEach(function(ing,idx){ing.order=idx;});}
+    menus=(mR.rows||[]).map(function(r){return Object.assign({},r,{price:parseFloat(r.price)||0,recipe:typeof r.recipe==='string'?JSON.parse(r.recipe||'[]'):(r.recipe||[])});});
+    var smi={};menus.forEach(function(m){smi[m.id]=true;});
+    var mm=DEFAULT_MENUS.filter(function(m){return !smi[m.id];});
+    if(mm.length){mm.forEach(function(m){menus.push(Object.assign({},m));});menus.sort(function(a,b){return (parseFloat(a.order)||999)-(parseFloat(b.order)||999);});if(API)(function sm(i){if(i>=mm.length)return;var d=Object.assign({},mm[i],{recipe:JSON.stringify([])});apiP({action:'upsert',sheet:'Menus',data:d}).then(function(){sm(i+1);}).catch(function(){sm(i+1);});})(0);}
+    subRecipes=(srRes.rows||[]).map(function(r){return Object.assign({},r,{yield:parseFloat(r.yield)||1,recipe:typeof r.recipe==='string'?JSON.parse(r.recipe||'[]'):(r.recipe||[])});});
+    rAll();updInfoBar('Google Sheets ('+ings.length+' รายการ)');
     sS('ok','โหลดแล้ว '+new Date().toLocaleTimeString('th-TH'));
     document.getElementById('ls').textContent='โหลดล่าสุด: '+new Date().toLocaleString('th-TH');
-  }).catch(function(e){
-    sS('err','โหลดไม่ได้: '+e.message);
-    // ใช้ default เสมอถ้า Sheets ดึงไม่ได้
-    ings=DEFAULT_INGS.slice(); menus=[];
-    rAll(); updInfoBar('default (API error)');
-    document.getElementById('ls').textContent='⚠️ ดึงข้อมูลไม่ได้: '+e.message;
-  }).then(function(){ hL(); });
+  }).catch(function(e){sS('err','โหลดไม่ได้: '+e.message);ings=DEFAULT_INGS.slice();menus=[];rAll();updInfoBar('default (API error)');}).then(function(){hL();});
 }
-
-function loadDefaultIngs(){
-  ings=DEFAULT_INGS.slice();
-  ings.sort(function(a,b){
-    var ca=CAT_ORDER.indexOf(a.cat||'อื่นๆ');
-    var cb=CAT_ORDER.indexOf(b.cat||'อื่นๆ');
-    if(ca<0) ca=99; if(cb<0) cb=99;
-    if(ca!==cb) return ca-cb;
-    return (a.order||0)-(b.order||0);
-  });
-  menus=[];
-  rAll(); updInfoBar('default (ไม่มี API)');
-}
-
-function updInfoBar(src){
-  var a=document.getElementById('info-ings');
-  var b=document.getElementById('info-menus');
-  var c=document.getElementById('info-src');
-  if(a) a.textContent=ings.length;
-  if(b) b.textContent=menus.length;
-  if(c) c.textContent=src;
-}
+function loadDefaultIngs(){ings=DEFAULT_INGS.slice();sortIngs();menus=[];rAll();updInfoBar('default (ไม่มี API)');}
+function updInfoBar(src){var a=document.getElementById('info-ings'),b=document.getElementById('info-menus'),c=document.getElementById('info-src');if(a)a.textContent=ings.length;if(b)b.textContent=menus.length;if(c)c.textContent=src;}
 
 // ============================================================
 // INGREDIENTS
 // ============================================================
 function addIng(){
-  var name  = document.getElementById('i-name').value.trim();
-  var cat   = document.getElementById('i-cat').value;
-  var price = parseFloat(document.getElementById('i-price').value);
-  var qty   = parseFloat(document.getElementById('i-qty').value);
-  var unit  = document.getElementById('i-unit').value;
-  if(!name||isNaN(price)||isNaN(qty)||qty<=0) return alert('กรุณากรอกข้อมูลให้ครบ');
-
-  // กำหนด order ให้รายการใหม่อยู่ท้ายหมวดนั้น
-  var catMax = -1;
-  ings.forEach(function(i){ if(i.cat===cat) catMax=Math.max(catMax, parseFloat(i.order)||0); });
-  var newOrder = catMax >= 0 ? catMax + 1 : ings.length;
-
-  var item={id:uid(), name:name, cat:cat, price:price, qty:qty, unit:unit, order:newOrder};
-  var b=document.getElementById('b-ai'); b.disabled=true; b.textContent='⏳...';
-
-  var clearForm = function(){
-    ['i-name','i-price','i-qty'].forEach(function(id){ document.getElementById(id).value=''; });
-    document.getElementById('i-price-preview').style.display='none';
-    b.disabled=false; b.textContent='+ บันทึก';
-  };
-
-  if(API){
-    apiP({action:'upsert', sheet:'Ingredients', data:item})
-      .then(function(){
-        sS('syn','กำลัง sync...');
-        return apiG({action:'read', sheet:'Ingredients'});
-      })
-      .then(function(iR){
-        var si=(iR.rows||[]).map(function(r){
-          return Object.assign({},r,{price:parseFloat(r.price)||0, qty:parseFloat(r.qty)||0});
-        });
-        if(si.length){
-          ings=si;
-          // sort ตามหมวดหมู่ + order
-          var defaultOrderMap={};
-          DEFAULT_INGS.forEach(function(d){ defaultOrderMap[d.id]=d.order||0; });
-          ings.sort(function(a,b){
-            var ca=CAT_ORDER.indexOf(a.cat||'อื่นๆ'); if(ca<0) ca=99;
-            var cb=CAT_ORDER.indexOf(b.cat||'อื่นๆ'); if(cb<0) cb=99;
-            if(ca!==cb) return ca-cb;
-            return (parseFloat(a.order)||0)-(parseFloat(b.order)||0);
-          });
-        }
-        sS('ok','เพิ่มแล้ว');
-        clearForm(); rAll(); updInfoBar('Google Sheets');
-      })
-      .catch(function(e){
-        alert('บันทึกไม่ได้: '+e.message);
-        sS('err','ผิดพลาด');
-        clearForm();
-      });
-  } else {
-    ings.push(item);
-    ings.sort(function(a,b){
-      var ca=CAT_ORDER.indexOf(a.cat||'อื่นๆ'); if(ca<0) ca=99;
-      var cb=CAT_ORDER.indexOf(b.cat||'อื่นๆ'); if(cb<0) cb=99;
-      if(ca!==cb) return ca-cb;
-      return (parseFloat(a.order)||0)-(parseFloat(b.order)||0);
-    });
-    clearForm(); rAll(); updInfoBar('local');
-  }
+  var name=document.getElementById('i-name').value.trim(),cat=document.getElementById('i-cat').value,
+      price=parseFloat(document.getElementById('i-price').value),qty=parseFloat(document.getElementById('i-qty').value),
+      unit=document.getElementById('i-unit').value;
+  if(!name||isNaN(price)||isNaN(qty)||qty<=0)return alert('กรุณากรอกข้อมูลให้ครบ');
+  var catMax=-1;ings.forEach(function(i){if(i.cat===cat)catMax=Math.max(catMax,parseFloat(i.order)||0);});
+  var item={id:uid(),name:name,cat:cat,price:price,qty:qty,unit:unit,order:catMax>=0?catMax+1:ings.length};
+  var b=document.getElementById('b-ai');b.disabled=true;b.textContent='⏳...';
+  var clr=function(){['i-name','i-price','i-qty'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('i-price-preview').style.display='none';b.disabled=false;b.textContent='+ บันทึก';};
+  if(API){apiP({action:'upsert',sheet:'Ingredients',data:item}).then(function(){sS('syn','sync...');return apiG({action:'read',sheet:'Ingredients'});}).then(function(iR){var si=(iR.rows||[]).map(function(r){return Object.assign({},r,{price:parseFloat(r.price)||0,qty:parseFloat(r.qty)||0});});if(si.length){ings=si;sortIngs();}sS('ok','เพิ่มแล้ว');clr();rAll();updInfoBar('Google Sheets');}).catch(function(e){alert('บันทึกไม่ได้: '+e.message);sS('err','ผิดพลาด');clr();});}
+  else{ings.push(item);sortIngs();clr();rAll();updInfoBar('local');}
 }
-
-function delIng(id){
-  if(!confirm('ลบวัตถุดิบนี้?')) return;
-  var del = function(){
-    ings=ings.filter(function(i){ return i.id!==id; });
-    rAll(); updInfoBar(API?'Google Sheets':'local');
-  };
-  if(API){
-    apiP({action:'delete', sheet:'Ingredients', data:{id:id}})
-      .then(del).catch(function(e){ alert(e.message); });
-  } else { del(); }
-}
-
+function delIng(id){if(!confirm('ลบวัตถุดิบนี้?'))return;var del=function(){ings=ings.filter(function(i){return i.id!==id;});rAll();};if(API)apiP({action:'delete',sheet:'Ingredients',data:{id:id}}).then(del).catch(function(e){alert(e.message);});else del();}
 function editIng(id){
-  var ing=ings.find(function(i){ return i.id===id; });
-  if(!ing) return;
-  var nn=prompt('ชื่อวัตถุดิบ:', ing.name);
-  if(nn===null) return;
-  var np=parseFloat(prompt('ราคาตามบิล รวม VAT (บาท):', ing.price));
-  if(isNaN(np)) return;
-  var nq=parseFloat(prompt('ปริมาณต่อแพ็ค (หน่วยย่อย เช่น 750 ml, 250 g):', ing.qty));
-  if(isNaN(nq)||nq<=0) return;
-  var units='g, ml, ขวด, ลัง, หีบ, ชิ้น, ใบ, แผ่น, กระป๋อง, ถุง, ซอง, เส้น, อัน, ม้วน, เล่ม, ดวง';
-  var nu=prompt('หน่วยย่อย (เช่น ml, g):\n('+units+')', ing.unit);
-  if(nu===null) return;
-  var npu=prompt('หน่วยบรรจุ/หน่วยเต็ม (เช่น ขวด, ถุง)\nเว้นว่างถ้าไม่ต้องการแสดงแยก:', ing.packUnit||'');
-  if(npu===null) return;
-  ing.name=nn.trim()||ing.name;
-  ing.price=np; ing.qty=nq;
-  ing.unit=nu.trim()||ing.unit;
-  ing.packUnit=npu.trim();
-  if(API){
-    apiP({action:'upsert',sheet:'Ingredients',data:ing})
-      .then(function(){ rAll(); sS('ok','อัพเดตแล้ว'); })
-      .catch(function(e){ alert(e.message); });
-  } else { rAll(); }
+  var ing=ings.find(function(i){return i.id===id;});if(!ing)return;
+  var nn=prompt('ชื่อ:',ing.name);if(nn===null)return;
+  var np=parseFloat(prompt('ราคาบิล (incl.VAT):',ing.price));if(isNaN(np))return;
+  var nq=parseFloat(prompt('ปริมาณ/แพ็ค:',ing.qty));if(isNaN(nq)||nq<=0)return;
+  var nu=prompt('หน่วย:',ing.unit);if(nu===null)return;
+  var npu=prompt('หน่วยบรรจุ (เว้นว่างถ้าไม่ต้องการ):',ing.packUnit||'');if(npu===null)return;
+  ing.name=nn.trim()||ing.name;ing.price=np;ing.qty=nq;ing.unit=nu.trim()||ing.unit;ing.packUnit=npu.trim();
+  if(API)apiP({action:'upsert',sheet:'Ingredients',data:ing}).then(function(){rAll();sS('ok','อัพเดตแล้ว');}).catch(function(e){alert(e.message);});else rAll();
 }
 
 // ============================================================
-// DRAG-TO-SORT (รองรับทั้ง mouse และ touch/iPad)
+// DRAG-TO-SORT
 // ============================================================
-var _touchDragEl = null;
-var _touchDragId = null;
-var _touchClone  = null;
-
-function dSt(e,id){
-  dragSrc=id;
-  e.currentTarget.classList.add('dragging');
+// FIX #3: _doSwap ใช้ String() ให้ครบ
+function _doSwap(fromId,toId,arr,onSave){
+  var fs=String(fromId),ts=String(toId);if(!fs||!ts||fs===ts)return;
+  var fi=arr.findIndex(function(x){return String(x.id)===fs;}),ti=arr.findIndex(function(x){return String(x.id)===ts;});
+  if(fi<0||ti<0)return;
+  var item=arr.splice(fi,1)[0];arr.splice(ti,0,item);
+  arr.forEach(function(x,idx){x.order=idx;});
+  if(onSave)arr.forEach(onSave);
 }
-function dOv(e){
-  e.preventDefault();
-  document.querySelectorAll('.drag-over').forEach(function(el){ el.classList.remove('drag-over'); });
-  e.currentTarget.classList.add('drag-over');
-}
-function dDp(e,toId){
-  e.preventDefault();
-  _doSwap(dragSrc, toId, ings, function(ing,idx){ ing.order=idx; if(API) apiP({action:'upsert',sheet:'Ingredients',data:ing}).catch(function(){}); });
-  rAll();
-}
-function dEd(e){
-  e.currentTarget.classList.remove('dragging');
-  document.querySelectorAll('.drag-over').forEach(function(el){ el.classList.remove('drag-over'); });
-}
-
-// touch handlers สำหรับ iPad — ทำงานเฉพาะเมื่อกดที่ ⠿ handle เท่านั้น
-function tSt(e,id){
-  if(!e.target.classList.contains('drag-handle')) return;
-  e.preventDefault();
-  _touchDragId=id;
-  _touchDragEl=e.currentTarget;
-  _touchDragEl.classList.add('dragging');
-  var t=e.touches[0];
-  _touchClone=document.createElement('div');
-  _touchClone.textContent='⠿ '+(_touchDragEl.querySelector('td:nth-child(2)')||{}).textContent;
-  _touchClone.style.cssText='position:fixed;opacity:.9;pointer-events:none;z-index:9999;background:var(--s3);border:1.5px solid var(--ac);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--br);box-shadow:0 4px 16px rgba(0,0,0,.18);';
-  _touchClone.style.left=(t.clientX-20)+'px';
-  _touchClone.style.top=(t.clientY-30)+'px';
-  document.body.appendChild(_touchClone);
-}
-function tMv(e){
-  if(!_touchDragId) return;
-  e.preventDefault();
-  var t=e.touches[0];
-  if(_touchClone){ _touchClone.style.left=(t.clientX-20)+'px'; _touchClone.style.top=(t.clientY-30)+'px'; }
-  if(_touchClone) _touchClone.style.display='none';
-  var el=document.elementFromPoint(t.clientX,t.clientY);
-  if(_touchClone) _touchClone.style.display='';
-  var row=el ? el.closest('tr[data-id]') : null;
-  document.querySelectorAll('.drag-over').forEach(function(x){ x.classList.remove('drag-over'); });
-  if(row) row.classList.add('drag-over');
-}
-function tEd(e){
-  if(!_touchDragId) return;
-  if(_touchClone){ _touchClone.remove(); _touchClone=null; }
-  if(_touchDragEl){ _touchDragEl.classList.remove('dragging'); }
-  var t=e.changedTouches[0];
-  var el=document.elementFromPoint(t.clientX,t.clientY);
-  var row=el ? el.closest('tr[data-id]') : null;
-  document.querySelectorAll('.drag-over').forEach(function(x){ x.classList.remove('drag-over'); });
-  if(row && row.dataset.id && row.dataset.id!==_touchDragId){
-    _doSwap(_touchDragId, row.dataset.id, ings, function(ing,idx){
-      ing.order=idx;
-      if(API) apiP({action:'upsert',sheet:'Ingredients',data:ing}).catch(function(){});
-    });
-    rAll();
-  }
-  _touchDragId=null; _touchDragEl=null;
-}
-
-// touch สำหรับ menu — เฉพาะ handle เท่านั้น
-function tmSt(e,id){
-  if(!e.target.classList.contains('drag-handle')) return;
-  e.preventDefault();
-  dragMSrc=id;
-  _touchDragEl=e.currentTarget;
-  _touchDragEl.classList.add('dragging');
-  var t=e.touches[0];
-  _touchClone=document.createElement('div');
-  _touchClone.textContent='⠿ '+(_touchDragEl.querySelector('td:nth-child(2)')||{}).textContent;
-  _touchClone.style.cssText='position:fixed;opacity:.9;pointer-events:none;z-index:9999;background:var(--s3);border:1.5px solid var(--ac);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--br);box-shadow:0 4px 16px rgba(0,0,0,.18);';
-  _touchClone.style.left=(t.clientX-20)+'px';
-  _touchClone.style.top=(t.clientY-30)+'px';
-  document.body.appendChild(_touchClone);
-}
-function tmMv(e){
-  if(!dragMSrc) return;
-  e.preventDefault();
-  var t=e.touches[0];
-  if(_touchClone){ _touchClone.style.left=(t.clientX-20)+'px'; _touchClone.style.top=(t.clientY-30)+'px'; }
-  if(_touchClone) _touchClone.style.display='none';
-  var el=document.elementFromPoint(t.clientX,t.clientY);
-  if(_touchClone) _touchClone.style.display='';
-  var row=el ? el.closest('tr[data-mid]') : null;
-  document.querySelectorAll('.drag-over').forEach(function(x){ x.classList.remove('drag-over'); });
-  if(row) row.classList.add('drag-over');
-}
-function tmEd(e){
-  if(!dragMSrc) return;
-  if(_touchClone){ _touchClone.remove(); _touchClone=null; }
-  if(_touchDragEl){ _touchDragEl.classList.remove('dragging'); }
-  var t=e.changedTouches[0];
-  var el=document.elementFromPoint(t.clientX,t.clientY);
-  var row=el ? el.closest('tr[data-mid]') : null;
-  document.querySelectorAll('.drag-over').forEach(function(x){ x.classList.remove('drag-over'); });
-  if(row && row.dataset.mid && row.dataset.mid!==dragMSrc){
-    _doSwap(dragMSrc, row.dataset.mid, menus, function(m,idx){
-      if(API){ var d=Object.assign({},m,{order:idx,recipe:JSON.stringify(m.recipe)}); apiP({action:'upsert',sheet:'Menus',data:d}).catch(function(){}); }
-    });
-    rAll();
-  }
-  dragMSrc=null; _touchDragEl=null;
-}
-
-function _doSwap(fromId, toId, arr, onSave){
-  if(!fromId||!toId||fromId===toId) return;
-  var fi=arr.findIndex(function(x){ return String(x.id)===String(fromId); });
-  var ti=arr.findIndex(function(x){ return String(x.id)===String(toId); });
-  if(fi<0||ti<0) return;
-  var item=arr.splice(fi,1)[0]; arr.splice(ti,0,item);
-  // อัพเดต order field ทุกตัวให้ตรงกับลำดับใหม่
-  arr.forEach(function(x,idx){ x.order=idx; });
-  if(onSave) arr.forEach(onSave);
-}
+function dSt(e,id){dragSrc=id;e.currentTarget.classList.add('dragging');}
+function dOv(e){e.preventDefault();document.querySelectorAll('.drag-over').forEach(function(el){el.classList.remove('drag-over');});e.currentTarget.classList.add('drag-over');}
+function dDp(e,toId){e.preventDefault();_doSwap(String(dragSrc),String(toId),ings,function(ing,idx){ing.order=idx;if(API)apiP({action:'upsert',sheet:'Ingredients',data:ing}).catch(function(){});});rAll();}
+function dEd(e){e.currentTarget.classList.remove('dragging');document.querySelectorAll('.drag-over').forEach(function(el){el.classList.remove('drag-over');});}
+function tSt(e,id){if(!e.target.classList.contains('drag-handle'))return;e.preventDefault();_touchDragIngId=id;_touchDragIngEl=e.currentTarget;_touchDragIngEl.classList.add('dragging');var t=e.touches[0];_touchClone=document.createElement('div');_touchClone.textContent='⠿ '+(_touchDragIngEl.querySelector('td:nth-child(2)')||{}).textContent;_touchClone.style.cssText='position:fixed;opacity:.9;pointer-events:none;z-index:9999;background:var(--s3);border:1.5px solid var(--ac);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--br);';_touchClone.style.left=(t.clientX-20)+'px';_touchClone.style.top=(t.clientY-30)+'px';document.body.appendChild(_touchClone);}
+function tMv(e){if(!_touchDragIngId)return;e.preventDefault();var t=e.touches[0];if(_touchClone){_touchClone.style.left=(t.clientX-20)+'px';_touchClone.style.top=(t.clientY-30)+'px';_touchClone.style.display='none';}var el=document.elementFromPoint(t.clientX,t.clientY);if(_touchClone)_touchClone.style.display='';var row=el?el.closest('tr[data-id]'):null;document.querySelectorAll('.drag-over').forEach(function(x){x.classList.remove('drag-over');});if(row)row.classList.add('drag-over');}
+function tEd(e){if(!_touchDragIngId)return;if(_touchClone){_touchClone.remove();_touchClone=null;}if(_touchDragIngEl)_touchDragIngEl.classList.remove('dragging');var t=e.changedTouches[0],el=document.elementFromPoint(t.clientX,t.clientY),row=el?el.closest('tr[data-id]'):null;document.querySelectorAll('.drag-over').forEach(function(x){x.classList.remove('drag-over');});if(row&&row.dataset.id&&row.dataset.id!==_touchDragIngId){_doSwap(String(_touchDragIngId),String(row.dataset.id),ings,function(ing,idx){ing.order=idx;if(API)apiP({action:'upsert',sheet:'Ingredients',data:ing}).catch(function(){});});rAll();}_touchDragIngId=null;_touchDragIngEl=null;}
+function tmSt(e,id){if(!e.target.classList.contains('drag-handle'))return;e.preventDefault();_touchDragMenuId=id;_touchDragMenuEl=e.currentTarget;_touchDragMenuEl.classList.add('dragging');var t=e.touches[0];_touchClone=document.createElement('div');_touchClone.textContent='⠿ '+(_touchDragMenuEl.querySelector('td:nth-child(2)')||{}).textContent;_touchClone.style.cssText='position:fixed;opacity:.9;pointer-events:none;z-index:9999;background:var(--s3);border:1.5px solid var(--ac);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--br);';_touchClone.style.left=(t.clientX-20)+'px';_touchClone.style.top=(t.clientY-30)+'px';document.body.appendChild(_touchClone);}
+function tmMv(e){if(!_touchDragMenuId)return;e.preventDefault();var t=e.touches[0];if(_touchClone){_touchClone.style.left=(t.clientX-20)+'px';_touchClone.style.top=(t.clientY-30)+'px';_touchClone.style.display='none';}var el=document.elementFromPoint(t.clientX,t.clientY);if(_touchClone)_touchClone.style.display='';var row=el?el.closest('tr[data-mid]'):null;document.querySelectorAll('.drag-over').forEach(function(x){x.classList.remove('drag-over');});if(row)row.classList.add('drag-over');}
+function tmEd(e){if(!_touchDragMenuId)return;if(_touchClone){_touchClone.remove();_touchClone=null;}if(_touchDragMenuEl)_touchDragMenuEl.classList.remove('dragging');var t=e.changedTouches[0],el=document.elementFromPoint(t.clientX,t.clientY),row=el?el.closest('tr[data-mid]'):null;document.querySelectorAll('.drag-over').forEach(function(x){x.classList.remove('drag-over');});if(row&&row.dataset.mid&&row.dataset.mid!==_touchDragMenuId){_doSwap(String(_touchDragMenuId),String(row.dataset.mid),menus,function(m,idx){if(API){var d=Object.assign({},m,{order:idx,recipe:JSON.stringify(m.recipe)});apiP({action:'upsert',sheet:'Menus',data:d}).catch(function(){});}});rAll();}_touchDragMenuId=null;_touchDragMenuEl=null;}
 
 function rIng(){
-  var seen={}, cats=[];
-  ings.forEach(function(i){ var c=i.cat||'อื่นๆ'; if(!seen[c]){ seen[c]=1; cats.push(c); } });
+  var seen={},cats=[];ings.forEach(function(i){var c=i.cat||'อื่นๆ';if(!seen[c]){seen[c]=1;cats.push(c);}});
   var container=document.getElementById('ing-by-cat');
-  if(!ings.length){ container.innerHTML='<div class="emp">ยังไม่มีวัตถุดิบ</div>'; return; }
+  if(!ings.length){container.innerHTML='<div class="emp">ยังไม่มีวัตถุดิบ</div>';return;}
   container.innerHTML=cats.map(function(cat){
-    var ci=ings.filter(function(i){ return (i.cat||'อื่นๆ')===cat; });
-    return '<div class="cat-hdr">'+cat+'</div>'
-      +'<div class="tw"><table style="table-layout:fixed;width:100%"><thead><tr>'
-      +'<th style="width:28px"></th>'
-      +'<th style="width:32%">ชื่อ</th>'
-      +'<th style="width:19%">ราคาบิล</th>'
-      +'<th style="width:16%">ปริมาณ</th>'
-      +'<th style="width:18%">ต้นทุน/หน่วย</th>'
-      +'<th style="width:21%"></th>'
-      +'</tr></thead>'
-      +'<tbody>'+ci.map(function(i){
-        // ราคาบิล: ถ้ามี packUnit แสดง ฿X/packUnit ถ้าไม่มีแสดง ฿X ปกติ
-        var priceDisp = i.packUnit ? fB(i.price)+'<span style="font-size:10px;color:var(--t3)">'+'/'+i.packUnit+'</span>' : fB(i.price);
-        // ปริมาณ: qty + unit (หน่วยย่อย)
-        var qtyDisp = fmt(i.qty)+' '+i.unit;
-        // ต้นทุน/หน่วย: price/qty per unit (หน่วยย่อย)
-        var cpuDisp = fB(cpu(i))+'/'+i.unit;
-        return '<tr class="drag-row" draggable="true" data-id="'+i.id+'"'
-          +' ondragstart="dSt(event,\''+i.id+'\')"'
-          +' ondragover="dOv(event)"'
-          +' ondrop="dDp(event,\''+i.id+'\')"'
-          +' ondragend="dEd(event)"'
-          +' ontouchstart="tSt(event,\''+i.id+'\')"'
-          +' ontouchmove="tMv(event)"'
-          +' ontouchend="tEd(event)">'
-          +'<td><span class="drag-handle">⠿</span></td>'
-          +'<td style="font-weight:600;word-break:break-word">'+i.name+'</td>'
-          +'<td class="mn">'+priceDisp+'</td>'
-          +'<td class="mn">'+qtyDisp+'</td>'
-          +'<td class="mn" style="color:var(--ac);font-weight:700">'+cpuDisp+'</td>'
-          +'<td style="white-space:nowrap;text-align:right;padding-right:6px">'
-          +'<button class="btn bg2 bsm" onclick="editIng(\''+i.id+'\')">✏️</button> '
-          +'<button class="btn bd2 bsm" onclick="delIng(\''+i.id+'\')">ลบ</button>'
-          +'</td></tr>';
-      }).join('')+'</tbody></table></div>';
+    var ci=ings.filter(function(i){return (i.cat||'อื่นๆ')===cat;});
+    return '<div class="cat-hdr">'+cat+'</div><div class="tw"><table style="table-layout:fixed;width:100%"><thead><tr><th style="width:28px"></th><th style="width:32%">ชื่อ</th><th style="width:19%">ราคาบิล</th><th style="width:16%">ปริมาณ</th><th style="width:18%">ต้นทุน/หน่วย</th><th style="width:21%"></th></tr></thead><tbody>'
+      +ci.map(function(i){var pd=i.packUnit?fB(i.price)+'/'+i.packUnit:fB(i.price);return '<tr class="drag-row" draggable="true" data-id="'+i.id+'" ondragstart="dSt(event,\''+i.id+'\')" ondragover="dOv(event)" ondrop="dDp(event,\''+i.id+'\')" ondragend="dEd(event)" ontouchstart="tSt(event,\''+i.id+'\')" ontouchmove="tMv(event)" ontouchend="tEd(event)"><td><span class="drag-handle">⠿</span></td><td style="font-weight:600;word-break:break-word">'+i.name+'</td><td class="mn">'+pd+'</td><td class="mn">'+fmt(i.qty)+' '+i.unit+'</td><td class="mn" style="color:var(--ac);font-weight:700">'+fB(cpu(i))+'/'+i.unit+'</td><td style="white-space:nowrap;text-align:right;padding-right:6px"><button class="btn bg2 bsm" onclick="editIng(\''+i.id+'\')">✏️</button> <button class="btn bd2 bsm" onclick="delIng(\''+i.id+'\')">ลบ</button></td></tr>';}).join('')+'</tbody></table></div>';
   }).join('');
 }
 
 // ============================================================
 // SUB-RECIPE
 // ============================================================
-function cpSR(sr){
-  if(!sr.yield||sr.yield<=0) return 0;
-  var total=(sr.recipe||[]).reduce(function(s,r){
-    var ing=ings.find(function(x){ return String(x.id)===String(r.iId); });
-    if(!ing) return s;
-    var qty=r.qty;
-    if(r.unit==='oz'&&ing.unit==='ml') qty=qty*29.57;
-    else if(r.unit==='oz'&&ing.unit==='g') qty=qty*28.35;
-    return s+cpu(ing)*qty;
-  },0);
-  return total/sr.yield;
-}
-
+function cpSR(sr){if(!sr.yield||sr.yield<=0)return 0;return (sr.recipe||[]).reduce(function(s,r){var ing=ings.find(function(x){return String(x.id)===String(r.iId);});if(!ing)return s;var qty=r.qty;if(r.unit==='oz'&&ing.unit==='ml')qty*=29.57;else if(r.unit==='oz'&&ing.unit==='g')qty*=28.35;return s+cpu(ing)*qty;},0)/sr.yield;}
 function bSrRec(){
-  var unitOpts=['g','ml','oz','ขวด','ชิ้น','ซอง','ถุง','แพ็ค'];
-  document.getElementById('sr-rec-ings').innerHTML=srR.map(function(r,i){
-    var defUnit=r.unit||(r.iId?((ings.find(function(x){return x.id==r.iId;})||{}).unit||'g'):'g');
-    return '<div class="ing-row">'
-      +'<select onchange="srR['+i+'].iId=this.value;updSrCP()">'
-      +'<option value="">— เลือกวัตถุดิบ —</option>'
-      +ings.map(function(x){
-        return '<option value="'+x.id+'"'+(r.iId==x.id?' selected':'')+'>'+x.name+' ('+fB(cpu(x))+'/'+x.unit+')</option>';
-      }).join('')+'</select>'
-      +'<input type="number" value="'+(r.qty||'')+'" placeholder="ปริมาณ" min="0" step="0.01"'
-      +' onchange="srR['+i+'].qty=parseFloat(this.value)||0;updSrCP()" style="text-align:center">'
-      +'<select style="width:70px;padding:6px 4px;font-size:12px;" onchange="srR['+i+'].unit=this.value;updSrCP()">'
-      +unitOpts.map(function(u){return '<option value="'+u+'"'+(defUnit===u?' selected':'')+'>'+u+'</option>';}).join('')
-      +'</select>'
-      +'<button class="btn bd2" style="padding:4px 7px" onclick="rmSrRR('+i+')">×</button>'
-      +'</div>';
-  }).join('');
+  var uO=['g','ml','oz','ขวด','ชิ้น','ซอง','ถุง','แพ็ค'];
+  document.getElementById('sr-rec-ings').innerHTML=srR.map(function(r,i){var du=r.unit||(r.iId?((ings.find(function(x){return x.id==r.iId;})||{}).unit||'g'):'g');return '<div class="ing-row"><select onchange="srR['+i+'].iId=this.value;updSrCP()"><option value="">— เลือก —</option>'+ings.map(function(x){return '<option value="'+x.id+'"'+(r.iId==x.id?' selected':'')+'>'+x.name+' ('+fB(cpu(x))+'/'+x.unit+')</option>';}).join('')+'</select><input type="number" value="'+(r.qty||'')+'" placeholder="ปริมาณ" min="0" step="0.01" onchange="srR['+i+'].qty=parseFloat(this.value)||0;updSrCP()" style="text-align:center"><select style="width:70px;padding:6px 4px;font-size:12px" onchange="srR['+i+'].unit=this.value;updSrCP()">'+uO.map(function(u){return '<option value="'+u+'"'+(du===u?' selected':'')+'>'+u+'</option>';}).join('')+'</select><button class="btn bd2" style="padding:4px 7px" onclick="rmSrRR('+i+')">×</button></div>';}).join('');
   updSrCP();
 }
-function addSrIR(){ srR.push({iId:'',qty:0,unit:'g'}); bSrRec(); }
-function rmSrRR(i){ srR.splice(i,1); if(!srR.length) srR=[{iId:'',qty:0,unit:'g'}]; bSrRec(); }
-function updSrCP(){
-  var yld=parseFloat(document.getElementById('sr-yield').value)||0;
-  var yUnit=document.getElementById('sr-yield-unit').value;
-  var total=srR.reduce(function(s,r){
-    var ing=ings.find(function(x){return String(x.id)===String(r.iId);});
-    if(!ing||!r.qty) return s;
-    var qty=r.qty;
-    if(r.unit==='oz'&&ing.unit==='ml') qty=qty*29.57;
-    else if(r.unit==='oz'&&ing.unit==='g') qty=qty*28.35;
-    return s+cpu(ing)*qty;
-  },0);
-  document.getElementById('sr-cost-total').textContent=fB(total);
-  document.getElementById('sr-cost-unit').textContent=yld>0?fB(total/yld)+' / '+yUnit:'กรอกจำนวนที่ทำได้';
-}
-
+function addSrIR(){srR.push({iId:'',qty:0,unit:'g'});bSrRec();}
+function rmSrRR(i){srR.splice(i,1);if(!srR.length)srR=[{iId:'',qty:0,unit:'g'}];bSrRec();}
+function updSrCP(){var y=parseFloat(document.getElementById('sr-yield').value)||0,yu=document.getElementById('sr-yield-unit').value,tot=srR.reduce(function(s,r){var ing=ings.find(function(x){return String(x.id)===String(r.iId);});if(!ing||!r.qty)return s;var q=r.qty;if(r.unit==='oz'&&ing.unit==='ml')q*=29.57;else if(r.unit==='oz'&&ing.unit==='g')q*=28.35;return s+cpu(ing)*q;},0);document.getElementById('sr-cost-total').textContent=fB(tot);document.getElementById('sr-cost-unit').textContent=y>0?fB(tot/y)+' / '+yu:'กรอกจำนวนที่ทำได้';}
 function addSubRecipe(){
-  var name=document.getElementById('sr-name').value.trim();
-  var yld=parseFloat(document.getElementById('sr-yield').value);
-  var yUnit=document.getElementById('sr-yield-unit').value;
-  if(!name||isNaN(yld)||yld<=0) return alert('กรุณากรอกชื่อและจำนวนที่ทำได้');
-  var recipe=srR.filter(function(r){return r.iId&&r.qty>0;});
-  if(!recipe.length) return alert('กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 รายการ');
-  var item={id:'sr_'+uid(), name:name, yield:yld, yieldUnit:yUnit, recipe:JSON.stringify(recipe)};
-  var b=document.getElementById('b-asr'); b.disabled=true; b.textContent='⏳...';
-  var doAdd=function(){
-    subRecipes.push(Object.assign({},item,{recipe:recipe}));
-    document.getElementById('sr-name').value='';
-    document.getElementById('sr-yield').value='';
-    srR=[{iId:'',qty:0,unit:'g'}];
-    rAll(); sS('ok','บันทึกสูตรย่อยแล้ว');
-    b.disabled=false; b.textContent='+ บันทึกสูตรย่อย';
-  };
-  if(API){
-    apiP({action:'upsert',sheet:'SubRecipes',data:item}).then(doAdd).catch(function(e){alert(e.message);b.disabled=false;b.textContent='+ บันทึกสูตรย่อย';});
-  } else { doAdd(); }
+  var name=document.getElementById('sr-name').value.trim(),yld=parseFloat(document.getElementById('sr-yield').value),yUnit=document.getElementById('sr-yield-unit').value;
+  if(!name||isNaN(yld)||yld<=0)return alert('กรุณากรอกชื่อและจำนวนที่ทำได้');
+  var recipe=srR.filter(function(r){return r.iId&&r.qty>0;});if(!recipe.length)return alert('กรุณาเพิ่มวัตถุดิบ');
+  var item={id:'sr_'+uid(),name:name,yield:yld,yieldUnit:yUnit,recipe:JSON.stringify(recipe)};
+  var b=document.getElementById('b-asr');b.disabled=true;b.textContent='⏳...';
+  var doAdd=function(){subRecipes.push(Object.assign({},item,{recipe:recipe}));document.getElementById('sr-name').value='';document.getElementById('sr-yield').value='';srR=[{iId:'',qty:0,unit:'g'}];rAll();sS('ok','บันทึกสูตรย่อยแล้ว');b.disabled=false;b.textContent='+ บันทึกสูตรย่อย';};
+  if(API)apiP({action:'upsert',sheet:'SubRecipes',data:item}).then(doAdd).catch(function(e){alert(e.message);b.disabled=false;b.textContent='+ บันทึกสูตรย่อย';});else doAdd();
 }
-
-function delSubRecipe(id){
-  if(!confirm('ลบสูตรย่อยนี้?')) return;
-  subRecipes=subRecipes.filter(function(s){return s.id!==id;});
-  if(API) apiP({action:'delete',sheet:'SubRecipes',data:{id:id}}).catch(function(){});
-  rAll();
-}
-
-function rSubRecipes(){
-  var el=document.getElementById('sr-list');
-  if(!subRecipes.length){ el.innerHTML=''; return; }
-  el.innerHTML='<div class="divhr"></div><div class="slb">สูตรย่อยทั้งหมด</div>'
-    +subRecipes.map(function(sr){
-      var costPer=cpSR(sr);
-      var recipe=(typeof sr.recipe==='string'?JSON.parse(sr.recipe):sr.recipe)||[];
-      var rs=recipe.map(function(r){
-        var ing=ings.find(function(x){return String(x.id)===String(r.iId);});
-        return ing?ing.name+' '+r.qty+(r.unit||ing.unit):'';
-      }).filter(Boolean).join(', ');
-      return '<div style="background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;margin-bottom:8px;">'
-        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
-        +'<span style="font-weight:700;color:var(--br)">🧪 '+sr.name+'</span>'
-        +'<div style="display:flex;align-items:center;gap:8px">'
-        +'<span style="font-family:\'Space Mono\',monospace;font-weight:700;color:var(--ac);font-size:13px">'+fB(costPer)+'/'+sr.yieldUnit+'</span>'
-        +'<button class="btn bd2 bsm" onclick="delSubRecipe(\''+sr.id+'\')">ลบ</button>'
-        +'</div></div>'
-        +'<div style="font-size:11px;color:var(--t3)">ทำได้ '+sr.yield+' '+sr.yieldUnit+' | ต้นทุนรวม '+fB(cpSR(sr)*sr.yield)+'</div>'
-        +'<div style="font-size:11px;color:var(--t3);margin-top:2px">'+rs+'</div>'
-        +'</div>';
-    }).join('');
-}
+function delSubRecipe(id){if(!confirm('ลบสูตรย่อยนี้?'))return;subRecipes=subRecipes.filter(function(s){return s.id!==id;});if(API)apiP({action:'delete',sheet:'SubRecipes',data:{id:id}}).catch(function(){});rAll();}
+function rSubRecipes(){var el=document.getElementById('sr-list');if(!subRecipes.length){el.innerHTML='';return;}el.innerHTML='<div class="divhr"></div><div class="slb">สูตรย่อยทั้งหมด</div>'+subRecipes.map(function(sr){var recipe=(typeof sr.recipe==='string'?JSON.parse(sr.recipe):sr.recipe)||[];var rs=recipe.map(function(r){var ing=ings.find(function(x){return String(x.id)===String(r.iId);});return ing?ing.name+' '+r.qty+(r.unit||ing.unit):'';}).filter(Boolean).join(', ');return '<div style="background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:12px 14px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-weight:700;color:var(--br)">🧪 '+sr.name+'</span><div style="display:flex;align-items:center;gap:8px"><span style="font-family:\'Space Mono\',monospace;font-weight:700;color:var(--ac);font-size:13px">'+fB(cpSR(sr))+'/'+sr.yieldUnit+'</span><button class="btn bd2 bsm" onclick="delSubRecipe(\''+sr.id+'\')">ลบ</button></div></div><div style="font-size:11px;color:var(--t3)">ทำได้ '+sr.yield+' '+sr.yieldUnit+' | ต้นทุนรวม '+fB(cpSR(sr)*sr.yield)+'</div><div style="font-size:11px;color:var(--t3);margin-top:2px">'+rs+'</div></div>';}).join('');}
 function bRec(){
-  var unitOptions=['g','ml','oz','ขวด','ชิ้น','ใบ','ซอง','ถุง','แพ็ค','หน่วย'];
-  document.getElementById('rec-ings').innerHTML=rR.map(function(r,i){
-    var defUnit=r.unit||'g';
-    if(r.iId){
-      if(r.iId.startsWith('sr_')){
-        var sr=subRecipes.find(function(x){return x.id===r.iId;});
-        if(sr) defUnit=r.unit||sr.yieldUnit;
-      } else {
-        var ing2=ings.find(function(x){return x.id==r.iId;});
-        if(ing2) defUnit=r.unit||ing2.unit;
-      }
-    }
-    return '<div class="ing-row">'
-      +'<select onchange="rR['+i+'].iId=this.value;rR['+i+'].unit=\'\';updCP();bRec();">'
-      +'<option value="">— เลือกส่วนผสม —</option>'
-      +(subRecipes.length?'<optgroup label="🧪 สูตรย่อย">'
-        +subRecipes.map(function(sr){
-          return '<option value="'+sr.id+'"'+(r.iId===sr.id?' selected':'')+'>'+sr.name+' ('+fB(cpSR(sr))+'/'+sr.yieldUnit+')</option>';
-        }).join('')+'</optgroup>':'')
-      +'<optgroup label="🌿 วัตถุดิบ">'
-      +ings.map(function(x){
-        return '<option value="'+x.id+'"'+(r.iId==x.id?' selected':'')+'>'+x.name+' ('+fB(cpu(x))+'/'+x.unit+')</option>';
-      }).join('')+'</optgroup>'
-      +'</select>'
-      +'<input type="number" value="'+(r.qty||'')+'" placeholder="ปริมาณ" min="0" step="0.1"'
-      +' onchange="rR['+i+'].qty=parseFloat(this.value)||0;updCP()" style="text-align:center">'
-      +'<select style="width:70px;padding:6px 4px;font-size:12px;" onchange="rR['+i+'].unit=this.value;updCP()">'
-      +unitOptions.map(function(u){ return '<option value="'+u+'"'+(defUnit===u?' selected':'')+'>'+u+'</option>'; }).join('')
-      +'</select>'
-      +'<button class="btn bd2" style="padding:4px 7px" onclick="rmRR('+i+')">×</button>'
-      +'</div>';
-  }).join('');
+  var uO=['g','ml','oz','ขวด','ชิ้น','ใบ','ซอง','ถุง','แพ็ค','หน่วย'];
+  document.getElementById('rec-ings').innerHTML=rR.map(function(r,i){var du=r.unit||'g';if(r.iId){if(r.iId.startsWith('sr_')){var sr=subRecipes.find(function(x){return x.id===r.iId;});if(sr)du=r.unit||sr.yieldUnit;}else{var i2=ings.find(function(x){return x.id==r.iId;});if(i2)du=r.unit||i2.unit;}}
+  return '<div class="ing-row"><select onchange="rR['+i+'].iId=this.value;rR['+i+'].unit=\'\';updCP();bRec();"><option value="">— เลือกส่วนผสม —</option>'+(subRecipes.length?'<optgroup label="🧪 สูตรย่อย">'+subRecipes.map(function(sr){return '<option value="'+sr.id+'"'+(r.iId===sr.id?' selected':'')+'>'+sr.name+' ('+fB(cpSR(sr))+'/'+sr.yieldUnit+')</option>';}).join('')+'</optgroup>':'')+'<optgroup label="🌿 วัตถุดิบ">'+ings.map(function(x){return '<option value="'+x.id+'"'+(r.iId==x.id?' selected':'')+'>'+x.name+' ('+fB(cpu(x))+'/'+x.unit+')</option>';}).join('')+'</optgroup></select><input type="number" value="'+(r.qty||'')+'" placeholder="ปริมาณ" min="0" step="0.1" onchange="rR['+i+'].qty=parseFloat(this.value)||0;updCP()" style="text-align:center"><select style="width:70px;padding:6px 4px;font-size:12px" onchange="rR['+i+'].unit=this.value;updCP()">'+uO.map(function(u){return '<option value="'+u+'"'+(du===u?' selected':'')+'>'+u+'</option>';}).join('')+'</select><button class="btn bd2" style="padding:4px 7px" onclick="rmRR('+i+')">×</button></div>';}).join('');
   updCP();
 }
-function addIR(){ rR.push({iId:'',qty:0,unit:'g'}); bRec(); }
-function rmRR(i){ rR.splice(i,1); if(!rR.length) rR=[{iId:'',qty:0,unit:'g'}]; bRec(); }
-function updCP(){
-  var cost=rR.reduce(function(s,r){
-    if(!r.iId||!r.qty) return s;
-    if(r.iId.startsWith('sr_')){
-      // sub-recipe
-      var sr=subRecipes.find(function(x){return x.id===r.iId;});
-      return s+(sr?cpSR(sr)*r.qty:0);
-    }
-    var ing=ings.find(function(x){ return String(x.id)===String(r.iId); });
-    if(!ing) return s;
-    var qty=r.qty;
-    if(r.unit==='oz'&&ing.unit==='ml') qty=qty*29.57;
-    else if(r.unit==='oz'&&ing.unit==='g') qty=qty*28.35;
-    return s+cpu(ing)*qty;
-  },0);
-  document.getElementById('cost-preview').textContent=fB(cost);
-}
+function addIR(){rR.push({iId:'',qty:0,unit:'g'});bRec();}
+function rmRR(i){rR.splice(i,1);if(!rR.length)rR=[{iId:'',qty:0,unit:'g'}];bRec();}
+function updCP(){var cost=rR.reduce(function(s,r){if(!r.iId||!r.qty)return s;if(r.iId.startsWith('sr_')){var sr=subRecipes.find(function(x){return x.id===r.iId;});return s+(sr?cpSR(sr)*r.qty:0);}var ing=ings.find(function(x){return String(x.id)===String(r.iId);});if(!ing)return s;var q=r.qty;if(r.unit==='oz'&&ing.unit==='ml')q*=29.57;else if(r.unit==='oz'&&ing.unit==='g')q*=28.35;return s+cpu(ing)*q;},0);document.getElementById('cost-preview').textContent=fB(cost);}
 
 // ============================================================
 // MENUS
 // ============================================================
-var _editingMenuId = null;
-var _menuCatFilter = 'ทั้งหมด';
-
-// จัดหมวดเมนูจากชื่อ
-function getMenuCat(name){
-  var n=name||'';
-  if(n.match(/ร้อน|Hot/i))          return '☕ ร้อน';
-  if(n.match(/ปั่น|Frappe/i))       return '🥤 ปั่น';
-  if(n.match(/โซดา|Soda/i))         return '🫧 โซดา';
-  if(n.match(/สมูทตี้|Smoothie/i))  return '🍓 สมูทตี้';
-  if(n.match(/ชา|Tea|Matcha|Twining/i)) return '🍵 ชา';
-  if(n.match(/นม|Milk|โกโก้|ช็อค|Choc/i)) return '🥛 นม/โกโก้';
-  if(n.match(/เย็น|Iced/i))         return '🧊 เย็น';
-  if(n.match(/ขนมปัง|วาฟเฟิล|แครกเกอร์|กล้วย|น้ำดื่ม/i)) return '🍞 อาหาร/ของว่าง';
-  if(n.match(/เพิ่ม|บุก|Topping/i)) return '➕ Topping';
-  return '☕ เย็น';
-}
-
-function rMenuCatBtns(){
-  var cats=['ทั้งหมด'];
-  var seen={};
-  menus.forEach(function(m){
-    var c=getMenuCat(m.name);
-    if(!seen[c]){ seen[c]=1; cats.push(c); }
-  });
-  var el=document.getElementById('menu-cat-btns');
-  if(!el) return;
-  el.innerHTML=cats.map(function(c){
-    var active=_menuCatFilter===c;
-    return '<button class="btn bsm '+(active?'bp':'bg2')+'" onclick="setMenuCat(\''+c+'\')" style="font-size:11px">'+c+'</button>';
-  }).join('');
-}
-
-function setMenuCat(cat){
-  _menuCatFilter=cat;
-  rMenuCatBtns();
-  rMenus();
-}
-
-function editMenu(id){
-  var m=menus.find(function(x){ return x.id===id; });
-  if(!m) return;
-  _editingMenuId=id;
-  document.getElementById('nm-name').value=m.name;
-  document.getElementById('nm-price').value=m.price;
-  rR=(m.recipe&&m.recipe.length)
-    ? m.recipe.map(function(r){ return Object.assign({},r); })
-    : [{iId:'',qty:0,unit:'g'}];
-  // เปลี่ยนปุ่มและหัวข้อ
-  var btn=document.getElementById('b-am');
-  btn.textContent='💾 บันทึกการแก้ไข';
-  btn.style.background='var(--yl)';
-  btn.style.color='#000';
-  document.getElementById('b-cancel-edit').style.display='block';
-  // scroll ขึ้นไปที่ฟอร์ม
-  document.getElementById('nm-name').scrollIntoView({behavior:'smooth',block:'center'});
-  bRec();
-}
-
-function cancelEditMenu(){
-  _editingMenuId=null;
-  document.getElementById('nm-name').value='';
-  document.getElementById('nm-price').value='';
-  rR=[{iId:'',qty:0,unit:'g'}];
-  var btn=document.getElementById('b-am');
-  btn.textContent='+ บันทึกเมนู';
-  btn.style.background='';
-  btn.style.color='';
-  document.getElementById('b-cancel-edit').style.display='none';
-  bRec();
-}
-
+var _editingMenuId=null, _menuCatFilter='ทั้งหมด';
+function getMenuCat(n){n=n||'';if(n.match(/ร้อน|Hot/i))return '☕ ร้อน';if(n.match(/ปั่น|Frappe/i))return '🥤 ปั่น';if(n.match(/โซดา|Soda/i))return '🫧 โซดา';if(n.match(/สมูทตี้|Smoothie/i))return '🍓 สมูทตี้';if(n.match(/ชา|Tea|Matcha|Twining/i))return '🍵 ชา';if(n.match(/นม|Milk|โกโก้|ช็อค|Choc/i))return '🥛 นม/โกโก้';if(n.match(/เย็น|Iced/i))return '🧊 เย็น';if(n.match(/ขนมปัง|วาฟเฟิล|แครกเกอร์|กล้วย|น้ำดื่ม/i))return '🍞 อาหาร';if(n.match(/เพิ่ม|บุก|Topping/i))return '➕ Topping';return '☕ เย็น';}
+function rMenuCatBtns(){var cats=['ทั้งหมด'],seen={};menus.forEach(function(m){var c=getMenuCat(m.name);if(!seen[c]){seen[c]=1;cats.push(c);}});var el=document.getElementById('menu-cat-btns');if(!el)return;el.innerHTML=cats.map(function(c){return '<button class="btn bsm '+(_menuCatFilter===c?'bp':'bg2')+'" onclick="setMenuCat(\''+c+'\')" style="font-size:11px">'+c+'</button>';}).join('');}
+function setMenuCat(cat){_menuCatFilter=cat;rMenuCatBtns();rMenus();}
+function editMenu(id){var m=menus.find(function(x){return x.id===id;});if(!m)return;_editingMenuId=id;document.getElementById('nm-name').value=m.name;document.getElementById('nm-price').value=m.price;rR=(m.recipe&&m.recipe.length)?m.recipe.map(function(r){return Object.assign({},r);}):[{iId:'',qty:0,unit:'g'}];var btn=document.getElementById('b-am');btn.textContent='💾 บันทึกการแก้ไข';btn.style.background='var(--yl)';btn.style.color='#000';document.getElementById('b-cancel-edit').style.display='block';document.getElementById('nm-name').scrollIntoView({behavior:'smooth',block:'center'});bRec();}
+function cancelEditMenu(){_editingMenuId=null;document.getElementById('nm-name').value='';document.getElementById('nm-price').value='';rR=[{iId:'',qty:0,unit:'g'}];var btn=document.getElementById('b-am');btn.textContent='+ บันทึกเมนู';btn.style.background='';btn.style.color='';document.getElementById('b-cancel-edit').style.display='none';bRec();}
 function addMenu(){
-  var name=document.getElementById('nm-name').value.trim();
-  var price=parseFloat(document.getElementById('nm-price').value);
-  if(!name||isNaN(price)) return alert('กรุณากรอกชื่อเมนูและราคา');
-  var recipe=rR.filter(function(r){ return r.iId&&r.qty>0; });
-
-  var b=document.getElementById('b-am'); b.disabled=true; b.textContent='⏳...';
-
-  if(_editingMenuId){
-    // โหมดแก้ไข
-    var m=menus.find(function(x){ return x.id===_editingMenuId; });
-    if(!m){ b.disabled=false; return; }
-    m.name=name; m.price=price; m.recipe=recipe;
-    var item=Object.assign({},m,{recipe:JSON.stringify(recipe)});
-    var doSave=function(){
-      cancelEditMenu(); rAll(); sS('ok','อัพเดตเมนูแล้ว');
-      b.disabled=false; b.textContent='+ บันทึกเมนู';
-    };
-    if(API){
-      apiP({action:'upsert',sheet:'Menus',data:item}).then(doSave).catch(function(e){ alert(e.message); b.disabled=false; b.textContent='💾 บันทึกการแก้ไข'; });
-    } else { doSave(); }
-  } else {
-    // โหมดเพิ่มใหม่
-    if(!recipe.length) return alert('กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 รายการ');
-    var newItem={id:uid(), name:name, price:price, recipe:JSON.stringify(recipe)};
-    var doAdd=function(){
-      menus.push(Object.assign({},newItem,{recipe:recipe}));
-      document.getElementById('nm-name').value='';
-      document.getElementById('nm-price').value='';
-      rR=[{iId:'',qty:0,unit:'g'}]; rAll(); sS('ok','บันทึกแล้ว');
-      b.disabled=false; b.textContent='+ บันทึกเมนู';
-    };
-    if(API){
-      apiP({action:'upsert',sheet:'Menus',data:newItem}).then(doAdd).catch(function(e){ alert(e.message); b.disabled=false; b.textContent='+ บันทึกเมนู'; });
-    } else { doAdd(); }
-  }
+  var name=document.getElementById('nm-name').value.trim(),price=parseFloat(document.getElementById('nm-price').value);
+  if(!name||isNaN(price))return alert('กรุณากรอกชื่อเมนูและราคา');
+  var recipe=rR.filter(function(r){return r.iId&&r.qty>0;});
+  var b=document.getElementById('b-am');b.disabled=true;b.textContent='⏳...';
+  if(_editingMenuId){var m=menus.find(function(x){return x.id===_editingMenuId;});if(!m){b.disabled=false;return;}m.name=name;m.price=price;m.recipe=recipe;var item=Object.assign({},m,{recipe:JSON.stringify(recipe)});var doSave=function(){cancelEditMenu();rAll();sS('ok','อัพเดตเมนูแล้ว');b.disabled=false;b.textContent='+ บันทึกเมนู';};if(API)apiP({action:'upsert',sheet:'Menus',data:item}).then(doSave).catch(function(e){alert(e.message);b.disabled=false;b.textContent='💾 บันทึกการแก้ไข';});else doSave();}
+  else{if(!recipe.length)return alert('กรุณาเพิ่มวัตถุดิบ');var ni={id:uid(),name:name,price:price,recipe:JSON.stringify(recipe)};var doAdd=function(){menus.push(Object.assign({},ni,{recipe:recipe}));document.getElementById('nm-name').value='';document.getElementById('nm-price').value='';rR=[{iId:'',qty:0,unit:'g'}];rAll();sS('ok','บันทึกแล้ว');b.disabled=false;b.textContent='+ บันทึกเมนู';};if(API)apiP({action:'upsert',sheet:'Menus',data:ni}).then(doAdd).catch(function(e){alert(e.message);b.disabled=false;b.textContent='+ บันทึกเมนู';});else doAdd();}
 }
-
-function delMenu(id){
-  if(!confirm('ลบเมนูนี้?')) return;
-  var del=function(){
-    menus=menus.filter(function(m){ return m.id!==id; });
-    rAll(); updInfoBar(API?'Google Sheets':'local');
-  };
-  if(API){
-    apiP({action:'delete', sheet:'Menus', data:{id:id}}).then(del).catch(function(e){ alert(e.message); });
-  } else { del(); }
-}
-
-// Drag-to-sort Menus
-function dmSt(e,id){ dragMSrc=id; e.currentTarget.classList.add('dragging'); }
-function dmOv(e){
-  e.preventDefault();
-  document.querySelectorAll('.drag-over').forEach(function(el){ el.classList.remove('drag-over'); });
-  e.currentTarget.classList.add('drag-over');
-}
-function dmDp(e,toId){
-  e.preventDefault();
-  _doSwap(dragMSrc, toId, menus, function(m,idx){
-    if(API){ var d=Object.assign({},m,{order:idx,recipe:JSON.stringify(m.recipe)}); apiP({action:'upsert',sheet:'Menus',data:d}).catch(function(){}); }
-  });
-  rAll();
-}
-function dmEd(e){
-  e.currentTarget.classList.remove('dragging');
-  document.querySelectorAll('.drag-over').forEach(function(el){ el.classList.remove('drag-over'); });
-}
-
-function toggleMenuDetail(id){
-  var el=document.getElementById('mdet-'+id);
-  if(!el) return;
-  var btn=document.getElementById('mbtn-'+id);
-  if(el.style.display==='none'){ el.style.display=''; if(btn) btn.textContent='▲'; }
-  else { el.style.display='none'; if(btn) btn.textContent='▼'; }
-}
-
+function delMenu(id){if(!confirm('ลบเมนูนี้?'))return;var del=function(){menus=menus.filter(function(m){return m.id!==id;});rAll();};if(API)apiP({action:'delete',sheet:'Menus',data:{id:id}}).then(del).catch(function(e){alert(e.message);});else del();}
+function dmSt(e,id){dragMSrc=id;e.currentTarget.classList.add('dragging');}
+function dmOv(e){e.preventDefault();document.querySelectorAll('.drag-over').forEach(function(el){el.classList.remove('drag-over');});e.currentTarget.classList.add('drag-over');}
+function dmDp(e,toId){e.preventDefault();_doSwap(String(dragMSrc),String(toId),menus,function(m,idx){if(API){var d=Object.assign({},m,{order:idx,recipe:JSON.stringify(m.recipe)});apiP({action:'upsert',sheet:'Menus',data:d}).catch(function(){});}});rAll();}
+function dmEd(e){e.currentTarget.classList.remove('dragging');document.querySelectorAll('.drag-over').forEach(function(el){el.classList.remove('drag-over');});}
+function toggleMenuDetail(id){var el=document.getElementById('mdet-'+id);if(!el)return;var btn=document.getElementById('mbtn-'+id);if(el.style.display==='none'){el.style.display='';if(btn)btn.textContent='▲';}else{el.style.display='none';if(btn)btn.textContent='▼';}}
 function rMenus(){
-  rMenuCatBtns();
-  var tb=document.getElementById('m-tb');
-  if(!menus.length){ tb.innerHTML='<tr><td colspan="8"><div class="emp">ยังไม่มีเมนู</div></td></tr>'; return; }
-  var filtered=_menuCatFilter==='ทั้งหมด' ? menus : menus.filter(function(m){ return getMenuCat(m.name)===_menuCatFilter; });
-  if(!filtered.length){ tb.innerHTML='<tr><td colspan="8"><div class="emp">ไม่มีเมนูในหมวดนี้</div></td></tr>'; return; }
-  tb.innerHTML=filtered.map(function(m){
-    var cost=cc(m), profit=m.price-cost;
-    var margin=m.price>0 ? profit/m.price*100 : 0;
-    var color=mc(margin);
-    var rs=(m.recipe||[]).map(function(r){
-      if(r.iId && r.iId.startsWith('sr_')){
-        var sr=subRecipes.find(function(x){return x.id===r.iId;});
-        return sr?'🧪 '+sr.name+' '+r.qty+sr.yieldUnit:'';
-      }
-      var ing=ings.find(function(x){ return String(x.id)===String(r.iId); });
-      return ing?ing.name+' '+r.qty+(r.unit||ing.unit):'';
-    }).filter(Boolean).join(' · ');
-    return '<tr class="drag-row" draggable="true" data-mid="'+m.id+'"'
-      +' ondragstart="dmSt(event,\''+m.id+'\')"'
-      +' ondragover="dmOv(event)"'
-      +' ondrop="dmDp(event,\''+m.id+'\')"'
-      +' ondragend="dmEd(event)"'
-      +' ontouchstart="tmSt(event,\''+m.id+'\')"'
-      +' ontouchmove="tmMv(event)"'
-      +' ontouchend="tmEd(event)">'
-      +'<td><span class="drag-handle">⠿</span></td>'
-      +'<td>'
-      +'<div style="display:flex;align-items:center;gap:6px">'
-      +'<span style="font-weight:700;color:var(--br)">'+m.name+'</span>'
-      +'<button id="mbtn-'+m.id+'" onclick="toggleMenuDetail(\''+m.id+'\')" '
-      +'style="border:none;background:none;cursor:pointer;color:var(--t3);font-size:11px;padding:0 2px;">▼</button>'
-      +'</div>'
-      +'<div id="mdet-'+m.id+'" style="display:none;font-size:11px;color:var(--t3);margin-top:3px;line-height:1.7">'+rs+'</div>'
-      +'</td>'
-      +'<td class="mn" style="font-weight:700">'+fB(m.price)+'</td>'
-      +'<td class="mn" style="color:var(--b2c)">'+fB(cost)+'</td>'
-      +'<td class="mn" style="color:'+color+';font-weight:700">'+fB(profit)+'</td>'
-      +'<td><div class="mw"><div class="mb"><div class="mf" style="width:'+Math.min(margin,100)+'%;background:'+color+'"></div></div>'
-      +'<span class="mp" style="color:'+color+'">'+margin.toFixed(0)+'%</span></div></td>'
-      +'<td>'+bdg(margin)+'</td>'
-      +'<td><div style="display:flex;gap:4px">'
-      +'<button class="btn bg2 bsm" onclick="editMenu(\''+m.id+'\')">✏️</button>'
-      +'<button class="btn bd2 bsm" onclick="delMenu(\''+m.id+'\')">ลบ</button>'
-      +'</div></td>'
-      +'</tr>';
-  }).join('');
+  rMenuCatBtns();var tb=document.getElementById('m-tb');
+  if(!menus.length){tb.innerHTML='<tr><td colspan="8"><div class="emp">ยังไม่มีเมนู</div></td></tr>';return;}
+  var filtered=_menuCatFilter==='ทั้งหมด'?menus:menus.filter(function(m){return getMenuCat(m.name)===_menuCatFilter;});
+  if(!filtered.length){tb.innerHTML='<tr><td colspan="8"><div class="emp">ไม่มีเมนูในหมวดนี้</div></td></tr>';return;}
+  tb.innerHTML=filtered.map(function(m){var cost=cc(m),profit=m.price-cost,margin=m.price>0?profit/m.price*100:0,color=mc(margin);var rs=(m.recipe||[]).map(function(r){if(r.iId&&r.iId.startsWith('sr_')){var sr=subRecipes.find(function(x){return x.id===r.iId;});return sr?'🧪 '+sr.name+' '+r.qty+sr.yieldUnit:'';}var ing=ings.find(function(x){return String(x.id)===String(r.iId);});return ing?ing.name+' '+r.qty+(r.unit||ing.unit):'';}).filter(Boolean).join(' · ');return '<tr class="drag-row" draggable="true" data-mid="'+m.id+'" ondragstart="dmSt(event,\''+m.id+'\')" ondragover="dmOv(event)" ondrop="dmDp(event,\''+m.id+'\')" ondragend="dmEd(event)" ontouchstart="tmSt(event,\''+m.id+'\')" ontouchmove="tmMv(event)" ontouchend="tmEd(event)"><td><span class="drag-handle">⠿</span></td><td><div style="display:flex;align-items:center;gap:6px"><span style="font-weight:700;color:var(--br)">'+m.name+'</span><button id="mbtn-'+m.id+'" onclick="toggleMenuDetail(\''+m.id+'\')" style="border:none;background:none;cursor:pointer;color:var(--t3);font-size:11px;padding:0 2px">▼</button></div><div id="mdet-'+m.id+'" style="display:none;font-size:11px;color:var(--t3);margin-top:3px;line-height:1.7">'+rs+'</div></td><td class="mn" style="font-weight:700">'+fB(m.price)+'</td><td class="mn" style="color:var(--b2c)">'+fB(cost)+'</td><td class="mn" style="color:'+color+';font-weight:700">'+fB(profit)+'</td><td><div class="mw"><div class="mb"><div class="mf" style="width:'+Math.min(margin,100)+'%;background:'+color+'"></div></div><span class="mp" style="color:'+color+'">'+margin.toFixed(0)+'%</span></div></td><td>'+bdg(margin)+'</td><td><div style="display:flex;gap:4px"><button class="btn bg2 bsm" onclick="editMenu(\''+m.id+'\')">✏️</button><button class="btn bd2 bsm" onclick="delMenu(\''+m.id+'\')">ลบ</button></div></td></tr>';}).join('');
 }
-
-function uSt(){
-  document.getElementById('s-tm').textContent=menus.length;
-  var amEl=document.getElementById('s-am');
-  if(!menus.length){
-    amEl.textContent='—'; amEl.style.color='var(--br)';
-    ['s-bm','s-bn','s-wm','s-wn'].forEach(function(id){ document.getElementById(id).textContent='—'; });
-    return;
-  }
-  var mg=menus.map(function(m){ var c=cc(m); return {name:m.name, margin:m.price>0?(m.price-c)/m.price*100:0}; });
-  var avg=mg.reduce(function(a,b){ return a+b.margin; },0)/mg.length;
-  var best=mg.reduce(function(a,b){ return a.margin>b.margin?a:b; });
-  var worst=mg.reduce(function(a,b){ return a.margin<b.margin?a:b; });
-  amEl.textContent=avg.toFixed(1)+'%'; amEl.style.color=mc(avg);
-  document.getElementById('s-bm').textContent=best.margin.toFixed(0)+'%';
-  document.getElementById('s-bn').textContent=best.name;
-  document.getElementById('s-wm').textContent=worst.margin.toFixed(0)+'%';
-  document.getElementById('s-wn').textContent=worst.name;
-}
+function uSt(){var el=document.getElementById('s-tm');el.textContent=menus.length;var amEl=document.getElementById('s-am');if(!menus.length){amEl.textContent='—';amEl.style.color='var(--br)';['s-bm','s-bn','s-wm','s-wn'].forEach(function(id){document.getElementById(id).textContent='—';});return;}var mg=menus.map(function(m){var c=cc(m);return {name:m.name,margin:m.price>0?(m.price-c)/m.price*100:0};});var avg=mg.reduce(function(a,b){return a+b.margin;},0)/mg.length,best=mg.reduce(function(a,b){return a.margin>b.margin?a:b;}),worst=mg.reduce(function(a,b){return a.margin<b.margin?a:b;});amEl.textContent=avg.toFixed(1)+'%';amEl.style.color=mc(avg);document.getElementById('s-bm').textContent=best.margin.toFixed(0)+'%';document.getElementById('s-bn').textContent=best.name;document.getElementById('s-wm').textContent=worst.margin.toFixed(0)+'%';document.getElementById('s-wn').textContent=worst.name;}
 
 // ============================================================
-// ORDER PLANNING — คำนวณจากสต็อกจริง
-// สูตร: ใช้/วัน = (ของเข้ารอบที่แล้ว − คงเหลือ) ÷ วันในรอบที่แล้ว
-//        สั่งรอบถัดไป = ใช้/วัน × วันรอบถัดไป × (1 + buffer%)
+// ORDER PLANNING
 // ============================================================
-var planStock = {};   // ingId -> {current, lastIn, borrow, packUnit}
-var planCatSel = {};  // cat -> bool (default false)
-
-function togglePlan(){
-  var panel=document.getElementById('plan-panel');
-  var btn=document.getElementById('plan-toggle-btn');
-  if(panel.style.display==='none'){
-    panel.style.display='block';
-    btn.textContent='▲ ซ่อน';
-    loadPlanSettings();
-    renderPlanCatBtns();
-    renderPlanStockTable();
-  } else {
-    panel.style.display='none';
-    btn.textContent='▼ แสดง';
-  }
-}
-
-function renderPlanCatBtns(){
-  var el=document.getElementById('plan-cat-btns');
-  var seen={}, cats=[];
-  ings.forEach(function(i){ var c=i.cat||'อื่นๆ'; if(!seen[c]){ seen[c]=1; cats.push(c); } });
-  el.innerHTML=cats.map(function(cat){
-    var active=planCatSel[cat]===true;
-    return '<button class="btn bsm '+(active?'bp':'bg2')+'" onclick="togglePlanCat(\''+cat+'\')" style="font-size:12px">'+cat+'</button>';
-  }).join('');
-}
-
-function togglePlanCat(cat){
-  planCatSel[cat]=!planCatSel[cat];
-  savePlanSettings();
-  renderPlanCatBtns();
-  renderPlanStockTable();
-}
-
-function savePlanSettings(){
-  var s={
-    daysPast: document.getElementById('plan-days-past').value,
-    daysNext: document.getElementById('plan-days-next').value,
-    buffer:   document.getElementById('plan-buffer').value,
-    stock:    planStock,
-    catSel:   planCatSel
-  };
-  localStorage.setItem('ct_plan_settings', JSON.stringify(s));
-}
-
-function loadPlanSettings(){
-  var s=localStorage.getItem('ct_plan_settings');
-  if(!s) return;
-  try{
-    var d=JSON.parse(s);
-    if(d.daysPast) document.getElementById('plan-days-past').value=d.daysPast;
-    if(d.daysNext) document.getElementById('plan-days-next').value=d.daysNext;
-    if(d.buffer)   document.getElementById('plan-buffer').value=d.buffer;
-    if(d.stock)    planStock=d.stock;
-    if(d.catSel)   planCatSel=d.catSel;
-  }catch(e){}
-}
-
-function getPlanIngs(){
-  // แสดงวัตถุดิบในหมวดที่เลือก
-  var activeCats=Object.keys(planCatSel).filter(function(c){ return planCatSel[c]; });
-  if(!activeCats.length) return [];
-  return ings.filter(function(i){ return planCatSel[i.cat||'อื่นๆ']===true; });
-}
-
-function defaultPackUnit(i){
-  return (i.unit==='g'||i.unit==='ml') ? 'ถุง' : i.unit;
-}
-
+var planStock={}, planCatSel={};
+function togglePlan(){var p=document.getElementById('plan-panel'),b=document.getElementById('plan-toggle-btn');if(p.style.display==='none'){p.style.display='block';b.textContent='▲ ซ่อน';loadPlanSettings();renderPlanCatBtns();renderPlanStockTable();}else{p.style.display='none';b.textContent='▼ แสดง';}}
+function renderPlanCatBtns(){var el=document.getElementById('plan-cat-btns'),seen={},cats=[];ings.forEach(function(i){var c=i.cat||'อื่นๆ';if(!seen[c]){seen[c]=1;cats.push(c);}});el.innerHTML=cats.map(function(cat){return '<button class="btn bsm '+(planCatSel[cat]?'bp':'bg2')+'" onclick="togglePlanCat(\''+cat+'\')" style="font-size:12px">'+cat+'</button>';}).join('');}
+function togglePlanCat(cat){planCatSel[cat]=!planCatSel[cat];savePlanSettings();renderPlanCatBtns();renderPlanStockTable();}
+function savePlanSettings(){localStorage.setItem('ct_plan_settings',JSON.stringify({daysPast:document.getElementById('plan-days-past').value,daysNext:document.getElementById('plan-days-next').value,buffer:document.getElementById('plan-buffer').value,stock:planStock,catSel:planCatSel}));}
+function loadPlanSettings(){var s=localStorage.getItem('ct_plan_settings');if(!s)return;try{var d=JSON.parse(s);if(d.daysPast)document.getElementById('plan-days-past').value=d.daysPast;if(d.daysNext)document.getElementById('plan-days-next').value=d.daysNext;if(d.buffer)document.getElementById('plan-buffer').value=d.buffer;if(d.stock)planStock=d.stock;if(d.catSel)planCatSel=d.catSel;}catch(e){}}
+function getPlanIngs(){var ac=Object.keys(planCatSel).filter(function(c){return planCatSel[c];});if(!ac.length)return[];return ings.filter(function(i){return planCatSel[i.cat||'อื่นๆ']===true;});}
+function defPU(i){return(i.unit==='g'||i.unit==='ml')?'ถุง':i.unit;}
 var PACK_UNITS=['ถุง','ขวด','ลัง','หีบ','กระป๋อง','แพ็ค','ชิ้น','ใบ','ม้วน','อัน'];
 
 function renderPlanStockTable(){
-  var tb=document.getElementById('plan-stock-tb');
-  var planIngs=getPlanIngs();
-  if(!planIngs.length){
-    tb.innerHTML='<tr><td colspan="6"><div class="emp">เลือกหมวดวัตถุดิบด้านบนก่อน</div></td></tr>';
-    return;
-  }
-  var daysPast=parseFloat(document.getElementById('plan-days-past').value)||15;
-  var daysNext=parseFloat(document.getElementById('plan-days-next').value)||15;
-  var buffer=parseFloat(document.getElementById('plan-buffer').value)||0;
-
-  tb.innerHTML=planIngs.map(function(i){
-    var s=planStock[i.id]||{};
-    var packUnit=s.packUnit||defaultPackUnit(i);
-    var cur   =parseFloat(s.current)||0;
-    var last  =parseFloat(s.lastIn)||0;
-    var borrow=parseFloat(s.borrow)||0;
-    var used  =(last+borrow)-cur;
-    var perDay=daysPast>0&&used>0 ? used/daysPast : 0;
-    var suggest=perDay>0 ? Math.ceil(perDay*daysNext*(1+buffer)) : 0;
-    var sColor=suggest>0?'var(--gn)':'var(--t3)';
-
-    var unitSel=PACK_UNITS.map(function(u){
-      return '<option value="'+u+'"'+(packUnit===u?' selected':'')+'>'+u+'</option>';
-    }).join('');
-
-    var onChg=function(f){
-      return 'if(!planStock[\''+i.id+'\'])planStock[\''+i.id+'\']={}; planStock[\''+i.id+'\'].'+f+'='+
-        (f==='packUnit'?'this.value':'parseFloat(this.value)||0')+';savePlanSettings();calcStockOrder()';
-    };
-
-    return '<tr>'
-      +'<td style="font-size:12px;font-weight:600;line-height:1.4">'+i.name+'</td>'
-      // หน่วยสั่ง
-      +'<td><select style="width:100%;font-size:11px;padding:4px 2px" onchange="'+onChg('packUnit')+'">'+unitSel+'</select></td>'
-      // คงเหลือ
-      +'<td><input type="number" value="'+(s.current||'')+'" placeholder="0" min="0" step="1"'
-      +' style="width:100%;font-family:\'Space Mono\',monospace;text-align:center;font-size:12px"'
-      +' onchange="'+onChg('current')+'"></td>'
-      // ของเข้า
-      +'<td><input type="number" value="'+(s.lastIn||'')+'" placeholder="0" min="0" step="1"'
-      +' style="width:100%;font-family:\'Space Mono\',monospace;text-align:center;font-size:12px"'
-      +' onchange="'+onChg('lastIn')+'"></td>'
-      // ยืมสาขา
-      +'<td><input type="number" value="'+(s.borrow||'')+'" placeholder="0" min="0" step="1"'
-      +' style="width:100%;font-family:\'Space Mono\',monospace;text-align:center;font-size:12px;color:var(--yl)"'
-      +' onchange="'+onChg('borrow')+'"></td>'
-      // แนะนำสั่ง
-      +'<td style="text-align:center;font-weight:700;font-size:13px;color:'+sColor+'">'
-        +(suggest>0?suggest+'<br><span style="font-size:10px;font-weight:400">'+packUnit+'</span>':'-')
-      +'</td>'
+  var tb=document.getElementById('plan-stock-tb'),pi=getPlanIngs();
+  if(!pi.length){tb.innerHTML='<tr><td colspan="7"><div class="emp">เลือกหมวดวัตถุดิบด้านบนก่อน</div></td></tr>';return;}
+  var dp=parseFloat(document.getElementById('plan-days-past').value)||15,dn=parseFloat(document.getElementById('plan-days-next').value)||15,buf=parseFloat(document.getElementById('plan-buffer').value)||0;
+  tb.innerHTML=pi.map(function(i){
+    var s=planStock[i.id]||{},pu=s.packUnit||defPU(i),cur=parseFloat(s.current)||0,last=parseFloat(s.lastIn)||0,bor=parseFloat(s.borrow)||0;
+    var used=(last+bor)-cur,perDay=dp>0&&used>0?used/dp:0,sug=perDay>0?Math.ceil(perDay*dn*(1+buf)):0;
+    // สั่งจริง: ถ้ามีค่าใน planStock ใช้ค่านั้น ไม่งั้น default = suggest
+    var actual=s.actual!==undefined?s.actual:sug;
+    var oc=function(f){return 'if(!planStock[\''+i.id+'\'])planStock[\''+i.id+'\']={}; planStock[\''+i.id+'\'].'+f+'='+(f==='packUnit'?'this.value':'parseFloat(this.value)||0')+';savePlanSettings();calcStockOrder()';};
+    var ocA='if(!planStock[\''+i.id+'\'])planStock[\''+i.id+'\']={}; planStock[\''+i.id+'\'].actual=parseFloat(this.value)||0;savePlanSettings()';
+    return '<tr><td style="font-size:12px;font-weight:600;line-height:1.4">'+i.name+'</td>'
+      +'<td><select style="width:100%;font-size:11px;padding:4px 2px" onchange="'+oc('packUnit')+'">'+PACK_UNITS.map(function(u){return '<option value="'+u+'"'+(pu===u?' selected':'')+'>'+u+'</option>';}).join('')+'</select></td>'
+      +'<td><input type="number" value="'+(s.current||'')+'" placeholder="0" min="0" step="1" style="width:100%;font-family:\'Space Mono\',monospace;text-align:center;font-size:12px" onchange="'+oc('current')+'"></td>'
+      +'<td><input type="number" value="'+(s.lastIn||'')+'" placeholder="0" min="0" step="1" style="width:100%;font-family:\'Space Mono\',monospace;text-align:center;font-size:12px" onchange="'+oc('lastIn')+'"></td>'
+      +'<td><input type="number" value="'+(s.borrow||'')+'" placeholder="0" min="0" step="1" style="width:100%;font-family:\'Space Mono\',monospace;text-align:center;font-size:12px;color:var(--yl)" onchange="'+oc('borrow')+'"></td>'
+      +'<td style="text-align:center;font-weight:700;font-size:13px;color:'+(sug>0?'var(--gn)':'var(--t3)')+'">'+(sug>0?sug+'<br><span style="font-size:10px;font-weight:400">'+pu+'</span>':'-')+'</td>'
+      // คอลัมน์ใหม่ "สั่งจริง" — edit inline
+      +'<td><input type="number" value="'+(s.actual!==undefined?s.actual:'')+'" placeholder="'+(sug||'')+'" min="0" step="1" style="width:60px;font-family:\'Space Mono\',monospace;text-align:center;font-size:12px;background:var(--abg);border-color:var(--ac2)" onchange="'+ocA+'"></td>'
       +'</tr>';
   }).join('');
 }
 
-function calcStockOrder(){
-  savePlanSettings();
-  renderPlanStockTable();
-  var daysPast=parseFloat(document.getElementById('plan-days-past').value)||15;
-  var daysNext=parseFloat(document.getElementById('plan-days-next').value)||15;
-  var buffer=parseFloat(document.getElementById('plan-buffer').value)||0;
-  var planIngs=getPlanIngs();
-  var filled=planIngs.filter(function(i){ return (planStock[i.id]||{}).lastIn>0; }).length;
-  var sumEl=document.getElementById('plan-summary');
-  sumEl.style.display='block';
-  sumEl.innerHTML='📋 กรอกข้อมูลแล้ว '+filled+'/'+planIngs.length+' รายการ'
-    +' | รอบที่แล้ว '+daysPast+' วัน → รอบถัดไป '+daysNext+' วัน | buffer '+Math.round(buffer*100)+'%';
-}
+function calcStockOrder(){savePlanSettings();renderPlanStockTable();var dp=parseFloat(document.getElementById('plan-days-past').value)||15,dn=parseFloat(document.getElementById('plan-days-next').value)||15,buf=parseFloat(document.getElementById('plan-buffer').value)||0,pi=getPlanIngs(),filled=pi.filter(function(i){return (planStock[i.id]||{}).lastIn>0;}).length,sumEl=document.getElementById('plan-summary');sumEl.style.display='block';sumEl.innerHTML='📋 กรอกข้อมูลแล้ว '+filled+'/'+pi.length+' รายการ | รอบที่แล้ว '+dp+' วัน → รอบถัดไป '+dn+' วัน | buffer '+Math.round(buf*100)+'%';}
 
+// FIX #2: applyPlanToOrder reset ordCat + บันทึกประวัติลง Sheets
 function applyPlanToOrder(){
-  var daysPast=parseFloat(document.getElementById('plan-days-past').value)||15;
-  var daysNext=parseFloat(document.getElementById('plan-days-next').value)||15;
-  var buffer=parseFloat(document.getElementById('plan-buffer').value)||0;
-  var count=0;
+  var dp=parseFloat(document.getElementById('plan-days-past').value)||15,dn=parseFloat(document.getElementById('plan-days-next').value)||15,buf=parseFloat(document.getElementById('plan-buffer').value)||0;
+  var count=0,histRows=[];
+  var label=makeRoundLabel();
+  var dateStr=new Date().toLocaleDateString('th-TH');
   getPlanIngs().forEach(function(i){
     var s=planStock[i.id]||{};
-    var cur   =parseFloat(s.current)||0;
-    var last  =parseFloat(s.lastIn)||0;
-    var borrow=parseFloat(s.borrow)||0;
-    var used  =(last+borrow)-cur;
-    if(used<=0||!daysPast) return;
-    var suggest=Math.ceil((used/daysPast)*daysNext*(1+buffer));
-    if(suggest>0){ ords[i.id]=suggest; count++; }
+    var cur=parseFloat(s.current)||0,last=parseFloat(s.lastIn)||0,bor=parseFloat(s.borrow)||0;
+    var used=(last+bor)-cur;
+    if(used<=0||!dp)return;
+    var sug=Math.ceil((used/dp)*dn*(1+buf));
+    // สั่งจริง: ถ้า user กรอกไว้ใช้ค่านั้น ถ้าไม่มีใช้ suggest
+    var actual=s.actual!==undefined&&s.actual>0?s.actual:sug;
+    if(actual>0){ords[i.id]=actual;count++;}
+    // เตรียม row ประวัติ
+    if(last>0||actual>0){
+      histRows.push({
+        id:uid(),
+        date:dateStr,
+        roundLabel:label,
+        ingId:i.id,
+        ingName:i.name,
+        ingCat:i.cat||'อื่นๆ',
+        suggested:sug,
+        ordered:actual,
+        packUnit:s.packUnit||defPU(i),
+        stockBefore:cur,
+        lastIn:last,
+        usedTotal:used>0?used:0,
+        usedPerDay:dp>0&&used>0?parseFloat((used/dp).toFixed(2)):0,
+        days:dp
+      });
+    }
   });
-  if(!count){ alert('ยังไม่มีข้อมูลเพียงพอ กรุณากรอกของเข้ารอบที่แล้วก่อนครับ'); return; }
-  rOrd();
-  alert('ใส่ยอดแนะนำ '+count+' รายการลงใบสั่งซื้อแล้ว ✅\nตรวจสอบและปรับได้ในรายการด้านล่าง');
-}
-
-
-function rOrdCats(){
-  var seen={}, catList=[];
-  ings.forEach(function(i){ var c=i.cat||'อื่นๆ'; if(!seen[c]){ seen[c]=1; catList.push(c); } });
-  var cats=['ทั้งหมด'].concat(catList);
-  document.getElementById('ord-cats').innerHTML=cats.map(function(c){
-    return '<button class="btn '+(c===ordCat?'bp':'bg2')+' bsm" onclick="setOrdCat(\''+c+'\')">'+c+'</button>';
-  }).join('');
-}
-function setOrdCat(cat){ ordCat=cat; rOrdCats(); rOrd(); }
-
-function rOrd(){
-  var fl=ordCat==='ทั้งหมด' ? ings : ings.filter(function(i){ return (i.cat||'อื่นๆ')===ordCat; });
-  var list=document.getElementById('o-list');
-  if(!fl.length){ list.innerHTML='<div class="emp">ไม่มีวัตถุดิบ</div>'; uOS(); return; }
-  list.innerHTML=fl.map(function(i){
-    var qty=ords[i.id]||0, tot=i.price*qty;
-    return '<div class="oi">'
-      +'<div style="flex:1;min-width:0">'
-      +'<div style="font-weight:600">'+i.name+'</div>'
-      +(i.price>0 ? '<div style="color:var(--ac);font-size:12px;font-family:\'Space Mono\',monospace;font-weight:600">'+fB(i.price)+' / แพ็ค</div>' : '<div style="color:var(--t3);font-size:11px">ยังไม่ได้กรอกราคา</div>')
-      +'</div>'
-      +'<div class="qc" style="padding:2px 6px;">'
-      +'<button class="qb" onclick="co(\''+i.id+'\',-1)">−</button>'
-      +'<input class="qn" type="number" value="'+qty+'" min="0" onchange="so(\''+i.id+'\',parseInt(this.value)||0)" style="width:44px;">'
-      +'<button class="qb" onclick="co(\''+i.id+'\',1)">+</button>'
-      +'</div>'
-      +(qty>0 ? '<div style="color:var(--ac);font-family:\'Space Mono\',monospace;font-size:12px;font-weight:700;min-width:70px;text-align:right">'+fB(tot)+'</div>' : '<div style="min-width:70px"></div>')
-      +'</div>';
-  }).join('');
-  uOS();
-}
-function co(id,d){ so(id,Math.max(0,(ords[id]||0)+d)); }
-function so(id,qty){ ords[id]=qty; rOrd(); }
-
-function uOS(){
-  var items=ings.filter(function(i){ return ords[i.id]>0; });
-  var tot=0;
-  var s=document.getElementById('o-sum');
-  if(!items.length){
-    s.innerHTML='<div class="emp">เลือกรายการ</div>';
-    document.getElementById('o-exvat').textContent='฿0.00';
-    document.getElementById('o-vat').textContent='฿0.00';
-    document.getElementById('o-tot').textContent='฿0.00';
-    return;
+  if(!count){alert('ยังไม่มีข้อมูลเพียงพอ กรุณากรอกของเข้ารอบที่แล้วก่อนครับ');return;}
+  // บันทึกประวัติลง Sheets
+  if(API&&histRows.length){
+    sS('syn','กำลังบันทึกประวัติ '+histRows.length+' รายการ...');
+    (function saveHist(i){
+      if(i>=histRows.length){sS('ok','บันทึกประวัติครบ ✅');return;}
+      apiP({action:'upsert',sheet:'OrderHistory',data:histRows[i]}).then(function(){saveHist(i+1);}).catch(function(){saveHist(i+1);});
+    })(0);
+    // อัพเดต local cache
+    histRows.forEach(function(r){orderHistory.push(r);});
   }
-  s.innerHTML=items.map(function(i){
-    var q=ords[i.id], c=i.price*q; tot+=c;
-    return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd)">'
-      +'<span style="font-size:13px;color:var(--t2)">'+i.name+' <span style="color:var(--ac);font-weight:700">×'+q+'</span></span>'
-      +'<span style="font-family:\'Space Mono\',monospace;font-size:13px;font-weight:700">'+fB(c)+'</span>'
-      +'</div>';
+  // FIX #2: reset ordCat ก่อน rOrd เพื่อให้เห็นครบ
+  ordCat='ทั้งหมด';rOrdCats();rOrd();
+  alert('ใส่ยอดแนะนำ '+count+' รายการลงใบสั่งซื้อแล้ว ✅\nบันทึกประวัติรอบ "'+label+'" แล้ว\nตรวจสอบและปรับได้ในรายการด้านล่าง');
+}
+
+function rOrdCats(){var seen={},catList=[];ings.forEach(function(i){var c=i.cat||'อื่นๆ';if(!seen[c]){seen[c]=1;catList.push(c);}});document.getElementById('ord-cats').innerHTML=['ทั้งหมด'].concat(catList).map(function(c){return '<button class="btn '+(c===ordCat?'bp':'bg2')+' bsm" onclick="setOrdCat(\''+c+'\')">'+c+'</button>';}).join('');}
+function setOrdCat(cat){ordCat=cat;rOrdCats();rOrd();}
+function rOrd(){var fl=ordCat==='ทั้งหมด'?ings:ings.filter(function(i){return (i.cat||'อื่นๆ')===ordCat;});var list=document.getElementById('o-list');if(!fl.length){list.innerHTML='<div class="emp">ไม่มีวัตถุดิบ</div>';uOS();return;}list.innerHTML=fl.map(function(i){var qty=ords[i.id]||0,tot=i.price*qty;return '<div class="oi"><div style="flex:1;min-width:0"><div style="font-weight:600">'+i.name+'</div>'+(i.price>0?'<div style="color:var(--ac);font-size:12px;font-family:\'Space Mono\',monospace;font-weight:600">'+fB(i.price)+' / แพ็ค</div>':'<div style="color:var(--t3);font-size:11px">ยังไม่ได้กรอกราคา</div>')+'</div><div class="qc" style="padding:2px 6px"><button class="qb" onclick="co(\''+i.id+'\',-1)">−</button><input class="qn" type="number" value="'+qty+'" min="0" onchange="so(\''+i.id+'\',parseInt(this.value)||0)" style="width:44px"><button class="qb" onclick="co(\''+i.id+'\',1)">+</button></div>'+(qty>0?'<div style="color:var(--ac);font-family:\'Space Mono\',monospace;font-size:12px;font-weight:700;min-width:70px;text-align:right">'+fB(tot)+'</div>':'<div style="min-width:70px"></div>')+'</div>';}).join('');uOS();}
+function co(id,d){so(id,Math.max(0,(ords[id]||0)+d));}
+function so(id,qty){ords[id]=qty;rOrd();}
+function uOS(){var items=ings.filter(function(i){return ords[i.id]>0;}),tot=0,s=document.getElementById('o-sum');if(!items.length){s.innerHTML='<div class="emp">เลือกรายการ</div>';document.getElementById('o-exvat').textContent='฿0.00';document.getElementById('o-vat').textContent='฿0.00';document.getElementById('o-tot').textContent='฿0.00';return;}s.innerHTML=items.map(function(i){var q=ords[i.id],c=i.price*q;tot+=c;return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd)"><span style="font-size:13px;color:var(--t2)">'+i.name+' <span style="color:var(--ac);font-weight:700">×'+q+'</span></span><span style="font-family:\'Space Mono\',monospace;font-size:13px;font-weight:700">'+fB(c)+'</span></div>';}).join('');var vat=tot-exVat(tot);document.getElementById('o-exvat').textContent=fB(exVat(tot));document.getElementById('o-vat').textContent=fB(vat);document.getElementById('o-tot').textContent=fB(tot);}
+function printOrd(){var items=ings.filter(function(i){return ords[i.id]>0;});if(!items.length)return alert('กรุณาเลือกรายการก่อน');var tot=0,now=new Date().toLocaleString('th-TH'),rows=items.map(function(i){var q=ords[i.id],c=i.price*q;tot+=c;return '<tr><td>'+i.name+'</td><td>'+q+'</td><td>฿'+f(i.price)+'</td><td>฿'+f(exVat(i.price))+'</td><td>฿'+f(c)+'</td></tr>';}).join(''),exV=exVat(tot),vat=tot-exV,w=window.open('','_blank');w.document.write('<html><head><title>ใบสั่งซื้อ</title><style>body{font-family:sans-serif;padding:24px}table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #ccc;text-align:left}th{background:#f5efe6}.row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e2d5c3;font-size:14px}.tot{display:flex;justify-content:space-between;padding:10px 0;border-top:2px solid #5c3d2e;font-weight:bold;font-size:16px;color:#5c3d2e}.vt{color:#c8860a}</style></head><body><h2 style="color:#5c3d2e">☕ Coffee Today — ใบสั่งซื้อ</h2><p>'+now+'</p><br><table><tr><th>รายการ</th><th>จำนวน</th><th>ราคา/แพ็ค (incl.VAT)</th><th>ราคา (excl.VAT)</th><th>รวม</th></tr>'+rows+'</table><div style="max-width:320px;margin-top:16px;margin-left:auto"><div class="row"><span>ยอดรวมสินค้า</span><span>฿'+f(exV)+'</span></div><div class="row vt"><span>VAT 7%</span><span>฿'+f(vat)+'</span></div><div class="tot"><span>จำนวนเงินรวมทั้งสิ้น</span><span>฿'+f(tot)+'</span></div></div></body></html>');w.print();ords={};rOrd();}
+
+// ============================================================
+// ORDER HISTORY
+// ============================================================
+function loadHistory(){
+  if(!API){renderHistoryUI();return;}
+  sS('syn','โหลดประวัติ...');
+  apiG({action:'read',sheet:'OrderHistory'}).then(function(d){
+    orderHistory=(d.rows||[]).map(function(r){return Object.assign({},r,{ordered:parseFloat(r.ordered)||0,suggested:parseFloat(r.suggested)||0,stockBefore:parseFloat(r.stockBefore)||0,usedPerDay:parseFloat(r.usedPerDay)||0,days:parseFloat(r.days)||15});});
+    orderHistory.sort(function(a,b){return String(a.date).localeCompare(String(b.date));});
+    sS('ok','โหลดประวัติแล้ว');renderHistoryUI();
+  }).catch(function(e){sS('err','โหลดประวัติไม่ได้');renderHistoryUI();});
+}
+
+function getRounds(){var seen={},rounds=[];orderHistory.forEach(function(r){if(!seen[r.roundLabel]){seen[r.roundLabel]=1;rounds.push(r.roundLabel);}});return rounds;}
+
+function renderHistoryUI(){
+  var rounds=getRounds();
+  // summary stats
+  document.getElementById('h-rounds').textContent=rounds.length;
+  var ingIds={};orderHistory.forEach(function(r){ingIds[r.ingId]=1;});
+  document.getElementById('h-items').textContent=Object.keys(ingIds).length;
+  // หา over/under บ่อยสุด
+  var overCount={},underCount={};
+  orderHistory.forEach(function(r){
+    if(!r.suggested||r.suggested<=0)return;
+    var ratio=r.ordered/r.suggested;
+    if(ratio>1.3){overCount[r.ingName]=(overCount[r.ingName]||0)+1;}
+    else if(ratio<0.7){underCount[r.ingName]=(underCount[r.ingName]||0)+1;}
+  });
+  var overTop=Object.keys(overCount).sort(function(a,b){return overCount[b]-overCount[a];})[0];
+  var underTop=Object.keys(underCount).sort(function(a,b){return underCount[b]-underCount[a];})[0];
+  document.getElementById('h-over').textContent=overTop?overCount[overTop]+' ครั้ง':'—';
+  document.getElementById('h-over-n').textContent=overTop||'ยังไม่มีข้อมูล';
+  document.getElementById('h-under').textContent=underTop?underCount[underTop]+' ครั้ง':'—';
+  document.getElementById('h-under-n').textContent=underTop||'ยังไม่มีข้อมูล';
+  // dropdown rounds
+  var selA=document.getElementById('h-round-a'),selB=document.getElementById('h-round-b');
+  var prevA=selA.value,prevB=selB.value;
+  var opts=rounds.map(function(r){return '<option value="'+r+'">'+r+'</option>';}).join('');
+  selA.innerHTML='<option value="">— รอบที่แล้ว —</option>'+opts;
+  selB.innerHTML='<option value="">— รอบนี้ —</option>'+opts;
+  if(rounds.length>=2){selA.value=prevA||rounds[rounds.length-2];selB.value=prevB||rounds[rounds.length-1];}
+  // round filter btns
+  var rb=document.getElementById('h-round-btns');
+  rb.innerHTML=['ทั้งหมด'].concat(rounds).map(function(r){return '<button class="btn bsm bg2" style="font-size:11px" onclick="filterHistTable(\''+r+'\')">'+r+'</button>';}).join('');
+  // ingredient selector for trend chart
+  var iSel=document.getElementById('h-ing-sel');
+  var prevIng=iSel.value;
+  var ingNames={};orderHistory.forEach(function(r){ingNames[r.ingId]=r.ingName;});
+  iSel.innerHTML='<option value="">— เลือกวัตถุดิบ —</option>'+Object.keys(ingNames).map(function(id){return '<option value="'+id+'"'+(prevIng===id?' selected':'')+'>'+ingNames[id]+'</option>';}).join('');
+  renderHistTable('ทั้งหมด');
+  renderCompare();
+  if(iSel.value)renderTrendChart();
+}
+
+var _histFilter='ทั้งหมด';
+function filterHistTable(r){_histFilter=r;document.querySelectorAll('#h-round-btns button').forEach(function(b){b.classList.toggle('bp',b.textContent===r);b.classList.toggle('bg2',b.textContent!==r);});renderHistTable(r);}
+
+function renderHistTable(filter){
+  var tb=document.getElementById('h-hist-tb');
+  var rows=filter==='ทั้งหมด'?orderHistory:orderHistory.filter(function(r){return r.roundLabel===filter;});
+  if(!rows.length){tb.innerHTML='<tr><td colspan="7"><div class="emp">ยังไม่มีประวัติ</div></td></tr>';return;}
+  // เรียงจากใหม่ไปเก่า
+  var sorted=rows.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));});
+  tb.innerHTML=sorted.map(function(r){
+    var ratio=r.suggested>0?r.ordered/r.suggested:1;
+    var badge='';
+    if(r.suggested>0){if(ratio>1.3)badge='<span class="trend-badge trend-over">⬆️ เกิน</span>';else if(ratio<0.7)badge='<span class="trend-badge trend-under">⬇️ น้อย</span>';else badge='<span class="trend-badge trend-ok">✓ ตรง</span>';}
+    return '<tr><td style="font-weight:600">'+r.ingName+'</td><td><span class="pill">'+r.roundLabel+'</span></td><td class="mn">'+r.date+'</td><td class="mn">'+r.suggested+'</td><td class="mn" style="font-weight:700;color:var(--br)">'+r.ordered+' '+r.packUnit+'</td><td class="mn">'+r.stockBefore+'</td><td class="mn">'+r.usedPerDay+'/วัน</td></tr>';
   }).join('');
-  var vatAmt = tot - exVat(tot);
-  document.getElementById('o-exvat').textContent=fB(exVat(tot));
-  document.getElementById('o-vat').textContent=fB(vatAmt);
-  document.getElementById('o-tot').textContent=fB(tot);
 }
 
-function printOrd(){
-  var items=ings.filter(function(i){ return ords[i.id]>0; });
-  if(!items.length) return alert('กรุณาเลือกรายการก่อน');
-  var tot=0;
-  var now=new Date().toLocaleString('th-TH');
-  var rows=items.map(function(i){
-    var q=ords[i.id], c=i.price*q; tot+=c;
-    return '<tr><td>'+i.name+'</td><td>'+q+'</td><td>฿'+f(i.price)+'</td><td>฿'+f(exVat(i.price))+'</td><td>฿'+f(c)+'</td></tr>';
+function renderCompare(){
+  var a=document.getElementById('h-round-a').value,b=document.getElementById('h-round-b').value;
+  var tb=document.getElementById('h-cmp-tb');
+  if(!a||!b){tb.innerHTML='<tr><td colspan="6"><div class="emp">เลือกสองรอบเพื่อเทียบ</div></td></tr>';return;}
+  var rowsA={},rowsB={};
+  orderHistory.filter(function(r){return r.roundLabel===a;}).forEach(function(r){rowsA[r.ingId]=r;});
+  orderHistory.filter(function(r){return r.roundLabel===b;}).forEach(function(r){rowsB[r.ingId]=r;});
+  var allIds=Object.keys(Object.assign({},rowsA,rowsB));
+  if(!allIds.length){tb.innerHTML='<tr><td colspan="6"><div class="emp">ไม่มีข้อมูลในรอบที่เลือก</div></td></tr>';return;}
+  tb.innerHTML=allIds.map(function(id){
+    var ra=rowsA[id],rb=rowsB[id];
+    var oa=ra?ra.ordered:0,ob=rb?rb.ordered:0;
+    var diff=ob-oa,pct=oa>0?(diff/oa*100).toFixed(0):'—';
+    var arrow=diff>0?'⬆️ +'+diff:diff<0?'⬇️ '+diff:'—';
+    var upd=rb?rb.usedPerDay:'—';
+    var ratio=ra&&ra.suggested>0?ob/ra.suggested:1;
+    var badge='';
+    if(ra&&ra.suggested>0){if(ratio>1.3)badge='<span class="trend-badge trend-over">เกิน '+(ratio*100-100).toFixed(0)+'%</span>';else if(ratio<0.7)badge='<span class="trend-badge trend-under">น้อยกว่าแนะนำ</span>';else badge='<span class="trend-badge trend-ok">✓ ตรง</span>';}
+    var ingName=(ra||rb).ingName;
+    var pu=(rb||ra).packUnit||'';
+    return '<tr><td style="font-weight:600">'+ingName+'</td><td class="mn">'+(oa?oa+' '+pu:'—')+'</td><td class="mn" style="font-weight:700;color:var(--br)">'+(ob?ob+' '+pu:'—')+'</td><td class="mn" style="color:'+(diff>0?'var(--rd)':diff<0?'var(--gn)':'var(--t3)')+'">'+arrow+(pct!=='—'?' ('+pct+'%)':'')+'</td><td class="mn">'+upd+'</td><td>'+badge+'</td></tr>';
   }).join('');
-  var exVatTot = exVat(tot);
-  var vatAmt   = tot - exVatTot;
-  var w=window.open('','_blank');
-  w.document.write('<html><head><title>ใบสั่งซื้อ</title>'
-    +'<style>body{font-family:sans-serif;padding:24px}table{width:100%;border-collapse:collapse}'
-    +'th,td{padding:8px;border:1px solid #ccc;text-align:left}th{background:#f5efe6}'
-    +'.sub-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e2d5c3;font-size:14px;}'
-    +'.tot-row{display:flex;justify-content:space-between;padding:10px 0;border-top:2px solid #5c3d2e;margin-top:4px;font-weight:bold;font-size:16px;color:#5c3d2e;}'
-    +'.vat-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e2d5c3;font-size:14px;color:#c8860a;}'
-    +'</style>'
-    +'</head><body>'
-    +'<h2 style="color:#5c3d2e">☕ Coffee Today — ใบสั่งซื้อ</h2>'
-    +'<p>'+now+'</p><br>'
-    +'<table><tr><th>รายการ</th><th>จำนวน</th><th>ราคา/แพ็ค (incl.VAT)</th><th>ราคา (excl.VAT)</th><th>รวม</th></tr>'
-    +rows+'</table>'
-    +'<div style="max-width:320px;margin-top:16px;margin-left:auto;">'
-    +'<div class="sub-row"><span>ยอดรวมสินค้า</span><span>฿'+f(exVatTot)+'</span></div>'
-    +'<div class="vat-row"><span>VAT 7%</span><span>฿'+f(vatAmt)+'</span></div>'
-    +'<div class="tot-row"><span>จำนวนเงินรวมทั้งสิ้น</span><span>฿'+f(tot)+'</span></div>'
-    +'</div>'
-    +'</body></html>');
-  w.print(); ords={}; rOrd();
 }
 
 // ============================================================
-// TAB
+// TREND CHART (canvas — ไม่ใช้ library)
 // ============================================================
-function sTab(t,el){
-  document.querySelectorAll('.pg').forEach(function(p){ p.classList.remove('active'); });
-  document.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('active'); });
-  document.getElementById('tab-'+t).classList.add('active');
-  el.classList.add('active');
+function renderTrendChart(){
+  var ingId=document.getElementById('h-ing-sel').value;
+  var canvas=document.getElementById('trend-canvas');
+  var empty=document.getElementById('trend-empty');
+  if(!ingId){canvas.style.display='none';empty.style.display='block';return;}
+  // ดึงข้อมูลของ ingredient นี้ เรียงตามรอบ
+  var rows=orderHistory.filter(function(r){return r.ingId===ingId;});
+  // group by roundLabel เลือก row ล่าสุดของแต่ละรอบ
+  var roundMap={};
+  rows.forEach(function(r){if(!roundMap[r.roundLabel]||r.date>roundMap[r.roundLabel].date)roundMap[r.roundLabel]=r;});
+  var rounds=Object.keys(roundMap).sort(function(a,b){return String(roundMap[a].date).localeCompare(String(roundMap[b].date));});
+  if(rounds.length<2){canvas.style.display='none';empty.style.display='block';return;}
+  empty.style.display='none';canvas.style.display='block';
+  var W=canvas.parentElement.clientWidth-36||600,H=220;
+  canvas.width=W;canvas.height=H;
+  var ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  var sugVals=rounds.map(function(r){return roundMap[r].suggested||0;});
+  var ordVals=rounds.map(function(r){return roundMap[r].ordered||0;});
+  var allVals=sugVals.concat(ordVals);
+  var maxV=Math.max.apply(null,allVals)||1;
+  var pad={t:20,r:20,b:50,l:40};
+  var cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
+  var xStep=cW/(rounds.length-1);
+  function xp(i){return pad.l+i*xStep;}
+  function yp(v){return pad.t+cH*(1-v/maxV);}
+  // grid
+  ctx.strokeStyle='#e2d5c3';ctx.lineWidth=1;
+  for(var g=0;g<=4;g++){var yv=pad.t+cH*g/4;ctx.beginPath();ctx.moveTo(pad.l,yv);ctx.lineTo(W-pad.r,yv);ctx.stroke();ctx.fillStyle='#a07860';ctx.font='10px Space Mono,monospace';ctx.textAlign='right';ctx.fillText(Math.round(maxV*(1-g/4)),pad.l-4,yv+4);}
+  // แนะนำ line
+  ctx.beginPath();ctx.strokeStyle='#e6a020';ctx.lineWidth=2;ctx.setLineDash([5,3]);
+  rounds.forEach(function(r,i){if(i===0)ctx.moveTo(xp(i),yp(sugVals[i]));else ctx.lineTo(xp(i),yp(sugVals[i]));});ctx.stroke();ctx.setLineDash([]);
+  // สั่งจริง line
+  ctx.beginPath();ctx.strokeStyle='#5c3d2e';ctx.lineWidth=2.5;
+  rounds.forEach(function(r,i){if(i===0)ctx.moveTo(xp(i),yp(ordVals[i]));else ctx.lineTo(xp(i),yp(ordVals[i]));});ctx.stroke();
+  // dots + labels
+  rounds.forEach(function(r,i){
+    // suggest dot
+    ctx.beginPath();ctx.arc(xp(i),yp(sugVals[i]),4,0,Math.PI*2);ctx.fillStyle='#e6a020';ctx.fill();
+    // ordered dot
+    ctx.beginPath();ctx.arc(xp(i),yp(ordVals[i]),5,0,Math.PI*2);
+    var ratio=sugVals[i]>0?ordVals[i]/sugVals[i]:1;ctx.fillStyle=ratio>1.3?'#c0392b':ratio<0.7?'#2e7d52':'#5c3d2e';ctx.fill();
+    // value label
+    ctx.fillStyle='#2c1810';ctx.font='bold 11px Prompt,sans-serif';ctx.textAlign='center';
+    ctx.fillText(ordVals[i],xp(i),yp(ordVals[i])-9);
+    // x label
+    var short=r.replace('รอบ ','').replace(/ /g,'\n');ctx.fillStyle='#a07860';ctx.font='10px Prompt,sans-serif';ctx.fillText(r.replace('รอบ ',''),xp(i),H-pad.b+15);
+  });
+  // legend
+  ctx.fillStyle='#e6a020';ctx.fillRect(pad.l,H-18,20,3);
+  ctx.fillStyle='#a07860';ctx.font='11px Prompt,sans-serif';ctx.textAlign='left';ctx.fillText('แนะนำ',pad.l+24,H-14);
+  ctx.fillStyle='#5c3d2e';ctx.fillRect(pad.l+80,H-18,20,3);
+  ctx.fillText('สั่งจริง',pad.l+104,H-14);
 }
 
-function rAll(){ rIng(); rMenus(); uSt(); rOrdCats(); rOrd(); bRec(); bSrRec(); rSubRecipes(); }
+// ============================================================
+// TABS + INIT
+// ============================================================
+function sTab(t,el){document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('active');});document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active');});document.getElementById('tab-'+t).classList.add('active');el.classList.add('active');if(t==='hist')loadHistory();}
+function rAll(){rIng();rMenus();uSt();rOrdCats();rOrd();bRec();bSrRec();rSubRecipes();}
+API=localStorage.getItem('ct_analysis_url')||'';
+if(API){document.getElementById('sc-url').value=API;loadMeta();}else loadDefaultIngs();
 
-// ============================================================
-// INIT
-// ============================================================
-API = localStorage.getItem('ct_analysis_url')||'';
-if(API){
-  document.getElementById('sc-url').value=API;
-  loadMeta();
-} else {
-  loadDefaultIngs();
-}
 </script>
 </body>
 </html>

@@ -1801,16 +1801,41 @@ function renderSummary(rows, acctExpRows, branchKey) {
     }
   });
 
+  // ยอดที่จ่ายจริงในเดือนนี้ — ดูจาก paidDate ไม่ใช่วันที่วางบิล
   var tPayablePaid=0, tPayableUnpaid=0;
-  monthPayables.forEach(function(px) {
+  var branchPayables = payables.filter(function(px) {
+    var pxBranch = px.branch;
+    if (pxBranch === 'แพชชั่นระยอง') pxBranch = 'passione';
+    if (pxBranch === 'โลตัสระยอง') pxBranch = 'lotus';
+    return pxBranch === branch;
+  });
+  branchPayables.forEach(function(px) {
     var isFixedCat = fixedCats.indexOf(px.cat) >= 0;
     if (isFixedCat) {
-      tPayableUnpaid += px.paid ? 0 : px.amount;
-    } else {
-      if (px.paid && px.paidDate && px.paidDate.startsWith(month)) {
-        tPayablePaid += px.amount;
-      } else if (!px.paid) {
+      // fixedCat: ค้างชำระจากเดือนที่วางบิล
+      if (!px.paid && px.date && px.date.startsWith(month)) {
         tPayableUnpaid += px.amount;
+      }
+    } else {
+      // วัตถุดิบ: นับยอดที่จ่ายจริงในเดือนนี้
+      var partials = px.partialPayments || [];
+      var paidThisMonth = partials.filter(function(p) {
+        return p.date && p.date.startsWith(month);
+      }).reduce(function(s, p) { return s + p.amount; }, 0);
+      var totalPaid = partials.reduce(function(s, p) { return s + p.amount; }, 0);
+      // จ่ายครบผ่าน togglePaid
+      if (px.paid && px.paidDate && px.paidDate.startsWith(month) && partials.length === 0) {
+        tPayablePaid += px.amount;
+      } else {
+        tPayablePaid += paidThisMonth;
+        // จ่ายครบในเดือนนี้ (มี partial ก่อนหน้า)
+        if (px.paid && px.paidDate && px.paidDate.startsWith(month) && partials.length > 0) {
+          tPayablePaid += (px.amount - totalPaid);
+        }
+      }
+      // ยอดค้างของวัตถุดิบที่วางบิลในเดือนนี้แต่ยังไม่จ่าย
+      if (!px.paid && px.date && (px.indate || px.date || '').startsWith(month)) {
+        tPayableUnpaid += (px.amount - totalPaid);
       }
     }
   });
@@ -1821,19 +1846,27 @@ function renderSummary(rows, acctExpRows, branchKey) {
   var tCftdUnpaid=0, tJindaUnpaid=0, tIceUnpaid=0;
   var tRawPayable=0, tOtherPayable=0;
   monthPayables.forEach(function(px) {
-    var isPaid = px.paid && px.paidDate && px.paidDate.startsWith(month);
+    var partials = px.partialPayments || [];
+    var paidThisMonth = partials.filter(function(p) {
+      return p.date && p.date.startsWith(month);
+    }).reduce(function(s, p) { return s + p.amount; }, 0);
+    var totalPaid = partials.reduce(function(s, p) { return s + p.amount; }, 0);
+    // ถ้าจ่ายครบในเดือนนี้ผ่าน togglePaid (ไม่มี partial)
+    var fullPaidThisMonth = px.paid && px.paidDate && px.paidDate.startsWith(month) && partials.length === 0;
+    var effectivePaid = fullPaidThisMonth ? px.amount : paidThisMonth;
+    var effectiveUnpaid = px.paid ? 0 : (px.amount - totalPaid);
     var isFixedCat = fixedCats.indexOf(px.cat) >= 0;
     if (isFixedCat) {
       tOtherPayable += px.amount;
     } else if (px.desc.indexOf('CFTD') >= 0) {
       tCftdPayable += px.amount; tRawPayable += px.amount;
-      isPaid ? (tCftdPaid += px.amount) : (tCftdUnpaid += px.amount);
+      tCftdPaid += effectivePaid; tCftdUnpaid += effectiveUnpaid;
     } else if (px.desc.indexOf('นมจินดา') >= 0) {
       tJindaPayable += px.amount; tRawPayable += px.amount;
-      isPaid ? (tJindaPaid += px.amount) : (tJindaUnpaid += px.amount);
+      tJindaPaid += effectivePaid; tJindaUnpaid += effectiveUnpaid;
     } else if (px.desc.indexOf('น้ำแข็ง') >= 0 && px.cat === 'วัตถุดิบ/สินค้า') {
       tIcePayable += px.amount; tRawPayable += px.amount;
-      isPaid ? (tIcePaid += px.amount) : (tIceUnpaid += px.amount);
+      tIcePaid += effectivePaid; tIceUnpaid += effectiveUnpaid;
     }
   });
 

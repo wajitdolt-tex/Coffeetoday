@@ -1253,7 +1253,7 @@ function renderBillSummary(){
   }).join('');
 }
 
-
+function filterHistTable(r){
   _histFilter=r;
   document.querySelectorAll('#h-round-btns button').forEach(function(b){
     b.classList.toggle('bp',b.textContent===r);

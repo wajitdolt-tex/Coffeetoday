@@ -360,6 +360,13 @@ canvas{display:block;width:100%;border-radius:8px;}
 </div>
 
 <script>
+window.onerror=function(msg,src,line,col,err){
+  document.body.innerHTML='<div style="padding:20px;font-family:monospace;background:#fff;color:red;font-size:14px">'
+    +'<b>JS ERROR:</b><br>'
+    +msg+'<br>Line: '+line+' Col: '+col+'<br>'+(err&&err.stack?err.stack.replace(/\n/g,'<br>'):'')
+    +'</div>';
+  return true;
+};
 'use strict';
 var API='';
 var ings=[];
@@ -1151,6 +1158,7 @@ function renderHistoryUI(){
 
 // สาขา active (ใช้ร่วมกันทั้ง header + วิเคราะห์)
 var _activeBranch='แพชชั่น';
+var _histFilter='ทั้งหมด';
 function setBranch(b){
   _activeBranch=b;
   _histBranch=b;

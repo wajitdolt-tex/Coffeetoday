@@ -296,6 +296,16 @@ canvas{display:block;width:100%;border-radius:8px;}
     <div class="st"><div class="sl">⬇️ สั่งน้อยบ่อยสุด</div><div class="sv g" id="h-under">—</div><div class="ss" id="h-under-n">—</div></div>
   </div>
 
+  <!-- สรุปยอดรวมแต่ละรอบ -->
+  <div class="card">
+    <div class="ct" style="cursor:pointer;user-select:none" onclick="toggleCard('bill-sum-body',this)">🧾 สรุปยอดรวมแต่ละรอบ<span style="margin-left:auto;font-size:12px;color:var(--t3);font-weight:400">▲ ซ่อน</span></div>
+    <div id="bill-sum-body">
+      <div class="tw"><table><thead><tr>
+        <th>รอบ</th><th>วันที่</th><th>สาขา</th><th>จำนวนรายการ</th><th style="text-align:right">ยอดรวมบิล (incl.VAT)</th>
+      </tr></thead><tbody id="h-bill-tb"><tr><td colspan="5"><div class="emp">ยังไม่มีข้อมูล</div></td></tr></tbody></table></div>
+    </div>
+  </div>
+
   <!-- เทียบรอบ -->
   <div class="card">
     <div class="ct">🔄 เทียบรอบนี้ vs รอบที่แล้ว
@@ -1135,6 +1145,7 @@ function renderHistoryUI(){
   }).join('');
   renderHistTable('ทั้งหมด');
   renderCompare();
+  renderBillSummary();
   if(iSel.value)renderTrendChart();
 }
 
@@ -1173,6 +1184,68 @@ function getFilteredHistory(){
   return withBranch;
 }
 function filterHistTable(r){
+  _histFilter=r;
+  document.querySelectorAll('#h-round-btns button').forEach(function(b){
+    b.classList.toggle('bp',b.textContent===r);
+    b.classList.toggle('bg2',b.textContent!==r);
+  });
+  renderHistTable(r);
+}
+
+function renderBillSummary(){
+  var tb=document.getElementById('h-bill-tb');
+  if(!tb) return;
+  var src=getFilteredHistory();
+  if(!src.length){tb.innerHTML='<tr><td colspan="5"><div class="emp">ยังไม่มีข้อมูล</div></td></tr>';return;}
+  // group by roundLabel — เอา totalInclVat จาก row แรกของแต่ละรอบ (ทุก row ในรอบเดียวกันมีค่าเท่ากัน)
+  var roundMap={};
+  src.forEach(function(r){
+    var key=r.roundLabel;
+    if(!roundMap[key]){
+      roundMap[key]={label:key, date:r.date, branch:r.branch||'ไม่ระบุ', totalInclVat:parseFloat(r.totalInclVat)||0, count:0};
+    }
+    roundMap[key].count++;
+    // คำนวณยอดรายการจากราคาวัตถุดิบจริง × จำนวน แทน totalInclVat ที่ซ้ำกันทุก row
+  });
+
+  // คำนวณยอดรวมจริงจาก ราคา × จำนวน ต่อรอบ
+  src.forEach(function(r){
+    var ing=ings.find(function(x){return String(x.id)===String(r.ingId);});
+    if(ing&&ing.price>0&&r.ordered>0){
+      roundMap[r.roundLabel]._calcTotal=(roundMap[r.roundLabel]._calcTotal||0)+ing.price*r.ordered;
+    }
+  });
+
+  var rounds=Object.keys(roundMap).sort(function(a,b){
+    return String(roundMap[b].date).localeCompare(String(roundMap[a].date));
+  });
+
+  tb.innerHTML=rounds.map(function(key){
+    var row=roundMap[key];
+    // ใช้ยอดที่คำนวณจากราคาจริงก่อน ถ้าไม่มีใช้ totalInclVat จากชีท
+    var total=row._calcTotal>0?row._calcTotal:row.totalInclVat;
+    var totalDisp=total>0?'<strong style="color:var(--br)">'+fB(total)+'</strong>':'—';
+    var branchColor=row.branch==='แพชชั่น'?'var(--ac)':row.branch==='โลตัส'?'var(--gn)':'var(--t3)';
+    // แปลงวันที่
+    var dateDisp=row.date;
+    try{
+      var ds=String(row.date).trim();
+      var moN=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+      if(ds.indexOf('T')>=0||ds.indexOf('Z')>=0){
+        var d=new Date(ds);if(!isNaN(d.getTime())){var yr=d.getFullYear();if(yr<=2100)yr+=543;dateDisp=d.getDate()+' '+moN[d.getMonth()]+' '+yr;}
+      } else if(ds.indexOf('/')>=0){var p=ds.split('/');if(p.length===3)dateDisp=parseInt(p[0])+' '+(moN[parseInt(p[1])-1]||p[1])+' '+p[2];}
+    }catch(e){}
+    return '<tr>'
+      +'<td><span class="pill" style="font-size:10px">'+row.label+'</span></td>'
+      +'<td class="mn">'+dateDisp+'</td>'
+      +'<td><span class="pill" style="font-size:10px;color:'+branchColor+'">'+row.branch+'</span></td>'
+      +'<td class="mn" style="text-align:center">'+row.count+' รายการ</td>'
+      +'<td class="mn" style="text-align:right;font-size:14px">'+totalDisp+'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+
   _histFilter=r;
   document.querySelectorAll('#h-round-btns button').forEach(function(b){
     b.classList.toggle('bp',b.textContent===r);

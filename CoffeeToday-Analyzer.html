@@ -115,14 +115,7 @@ canvas{display:block;width:100%;border-radius:8px;}
 <div class="lov" id="lov"><div class="lob"><div class="sp"></div><div style="color:var(--br);font-weight:600" id="lt">กำลังโหลด...</div></div></div>
 <header>
   <div class="logo"><span style="font-size:22px">☕</span><div><div>Coffee Today</div><span class="lsub">สั่งซื้อ & ต้นทุน · ระยอง</span></div></div>
-  <div class="hr">
-    <!-- selector สาขา -->
-    <div style="display:flex;gap:5px">
-      <button id="br-pas" onclick="setBranch('แพชชั่น')" style="padding:5px 11px;border-radius:20px;border:1.5px solid #c8a882;background:transparent;color:#fff8e8;font-family:'Prompt',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s">แพชชั่น</button>
-      <button id="br-lot" onclick="setBranch('โลตัส')" style="padding:5px 11px;border-radius:20px;border:1.5px solid #c8a882;background:transparent;color:#fff8e8;font-family:'Prompt',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s">โลตัส</button>
-    </div>
-    <div class="sync"><div class="dot" id="dot"></div><span id="stxt">ยังไม่ได้เชื่อมต่อ</span></div>
-  </div>
+  <div class="hr"><div class="sync"><div class="dot" id="dot"></div><span id="stxt">ยังไม่ได้เชื่อมต่อ</span></div></div>
 </header>
 <div class="tabs">
   <div class="tab active" onclick="sTab('ord',this)">📦 สั่งสินค้า</div>
@@ -135,6 +128,14 @@ canvas{display:block;width:100%;border-radius:8px;}
 
 <!-- สั่งสินค้า -->
 <div class="pg active" id="tab-ord">
+  <!-- เลือกสาขา -->
+  <div class="card" style="padding:12px 16px;margin-bottom:10px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:12px;font-weight:600;color:var(--t2)">สาขาที่สั่ง:</span>
+      <button id="br-pas" onclick="setBranch('แพชชั่น')" class="btn bsm" style="border-radius:20px;min-width:80px">แพชชั่น</button>
+      <button id="br-lot" onclick="setBranch('โลตัส')" class="btn bsm bg2" style="border-radius:20px;min-width:80px">โลตัส</button>
+    </div>
+  </div>
   <div class="card" style="border-color:rgba(46,125,82,.3);background:var(--gbg)">
     <div class="ct" style="cursor:pointer" onclick="togglePlan()">
       📊 วางแผนสั่งสินค้า
@@ -1162,10 +1163,9 @@ var _histFilter='ทั้งหมด';
 function setBranch(b){
   _activeBranch=b;
   _histBranch=b;
-  // header buttons
   var pas=document.getElementById('br-pas'),lot=document.getElementById('br-lot');
-  if(pas){pas.style.background=b==='แพชชั่น'?'#c8860a':'transparent';pas.style.borderColor=b==='แพชชั่น'?'#c8860a':'#c8a882';pas.style.color='#fff8e8';}
-  if(lot){lot.style.background=b==='โลตัส'?'#c8860a':'transparent';lot.style.borderColor=b==='โลตัส'?'#c8860a':'#c8a882';lot.style.color='#fff8e8';}
+  if(pas){pas.className='btn bsm'+(b==='แพชชั่น'?' bp':' bg2');pas.style.borderRadius='20px';pas.style.minWidth='80px';}
+  if(lot){lot.className='btn bsm'+(b==='โลตัส'?' bp':' bg2');lot.style.borderRadius='20px';lot.style.minWidth='80px';}
 }
 function initBranchUI(){ setBranch(_activeBranch); }
 

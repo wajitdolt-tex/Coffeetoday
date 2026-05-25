@@ -238,6 +238,23 @@ canvas{display:block;width:100%;border-radius:8px;}
     <div class="ct">✏️ เพิ่ม / แก้ไขเมนู</div>
     <div class="fgrp" style="margin-bottom:12px"><label>ชื่อเมนู</label><input type="text" id="nm-name" placeholder="เช่น ทูเดย์เย็น 22oz"></div>
     <div class="fgrp" style="margin-bottom:12px"><label>ราคาขาย (บาท)</label><input type="number" id="nm-price" placeholder="55" min="0"></div>
+    <div class="fgrp" style="margin-bottom:12px"><label>หมวดหมู่ <span style="font-size:11px;color:var(--t3);font-weight:400">(เว้นว่าง = ระบบจัดให้อัตโนมัติ)</span></label>
+      <select id="nm-cat">
+        <option value="">— อัตโนมัติจากชื่อ —</option>
+        <option value="☕ ร้อน 8oz">☕ ร้อน 8oz</option>
+        <option value="☕ ร้อน 12oz">☕ ร้อน 12oz</option>
+        <option value="🧊 เย็น 16oz">🧊 เย็น 16oz</option>
+        <option value="🧊 เย็น 22oz">🧊 เย็น 22oz</option>
+        <option value="🥤 ปั่น 16oz">🥤 ปั่น 16oz</option>
+        <option value="🥤 ปั่น 22oz">🥤 ปั่น 22oz</option>
+        <option value="🍵 ชา">🍵 ชา</option>
+        <option value="🥛 นม/โกโก้">🥛 นม/โกโก้</option>
+        <option value="🍓 สมูทตี้">🍓 สมูทตี้</option>
+        <option value="🫧 โซดา">🫧 โซดา</option>
+        <option value="➕ Topping">➕ Topping</option>
+        <option value="🍞 อาหาร">🍞 อาหาร</option>
+      </select>
+    </div>
     <div class="slb">ส่วนผสม (วัตถุดิบ + สูตรย่อย)</div>
     <div id="rec-ings"></div>
     <button class="btn bg2" style="width:100%;margin:8px 0 14px" onclick="addIR()">+ เพิ่มส่วนผสม</button>
@@ -929,18 +946,67 @@ function updCP(){var cost=rR.reduce(function(s,r){if(!r.iId||!r.qty)return s;if(
 // MENUS
 // ============================================================
 var _editingMenuId=null, _menuCatFilter='ทั้งหมด';
-function getMenuCat(n){n=n||'';if(n.match(/ร้อน|Hot/i))return '☕ ร้อน';if(n.match(/ปั่น|Frappe/i))return '🥤 ปั่น';if(n.match(/โซดา|Soda/i))return '🫧 โซดา';if(n.match(/สมูทตี้|Smoothie/i))return '🍓 สมูทตี้';if(n.match(/ชา|Tea|Matcha|Twining/i))return '🍵 ชา';if(n.match(/นม|Milk|โกโก้|ช็อค|Choc/i))return '🥛 นม/โกโก้';if(n.match(/เย็น|Iced/i))return '🧊 เย็น';if(n.match(/ขนมปัง|วาฟเฟิล|แครกเกอร์|กล้วย|น้ำดื่ม/i))return '🍞 อาหาร';if(n.match(/เพิ่ม|บุก|Topping/i))return '➕ Topping';return '☕ เย็น';}
-function rMenuCatBtns(){var cats=['ทั้งหมด'],seen={};menus.forEach(function(m){var c=getMenuCat(m.name);if(!seen[c]){seen[c]=1;cats.push(c);}});var el=document.getElementById('menu-cat-btns');if(!el)return;el.innerHTML=cats.map(function(c){return '<button class="btn bsm '+(_menuCatFilter===c?'bp':'bg2')+'" onclick="setMenuCat(\''+c+'\')" style="font-size:11px">'+c+'</button>';}).join('');}
+function getMenuCat(n,cat){
+  if(cat&&cat!=='') return cat;
+  n=n||'';
+  var oz='';
+  var ozM=n.match(/(\d+)\s*oz/i);
+  if(ozM) oz=' '+ozM[1]+'oz';
+  if(n.match(/ร้อน|Hot/i))          return '☕ ร้อน'+oz;
+  if(n.match(/ปั่น|Frappe/i))        return '🥤 ปั่น'+oz;
+  if(n.match(/โซดา|Soda/i))          return '🫧 โซดา';
+  if(n.match(/สมูทตี้|Smoothie/i))   return '🍓 สมูทตี้';
+  if(n.match(/ชา|Tea|Matcha|Twining/i)) return '🍵 ชา';
+  if(n.match(/นม|Milk|โกโก้|ช็อค|Choc/i)) return '🥛 นม/โกโก้';
+  if(n.match(/เย็น|Iced/i))          return '🧊 เย็น'+oz;
+  if(n.match(/ขนมปัง|วาฟเฟิล|แครกเกอร์|กล้วย|น้ำดื่ม/i)) return '🍞 อาหาร';
+  if(n.match(/เพิ่ม|บุก|Topping/i))  return '➕ Topping';
+  return '☕ เย็น'+oz;
+}
+function rMenuCatBtns(){var cats=['ทั้งหมด'],seen={};menus.forEach(function(m){var c=getMenuCat(m.name,m.cat);if(!seen[c]){seen[c]=1;cats.push(c);}});var el=document.getElementById('menu-cat-btns');if(!el)return;el.innerHTML=cats.map(function(c){return '<button class="btn bsm '+(_menuCatFilter===c?'bp':'bg2')+'" onclick="setMenuCat(\''+c+'\')" style="font-size:11px">'+c+'</button>';}).join('');}
 function setMenuCat(cat){_menuCatFilter=cat;rMenuCatBtns();rMenus();}
-function editMenu(id){var m=menus.find(function(x){return x.id===id;});if(!m)return;_editingMenuId=id;document.getElementById('nm-name').value=m.name;document.getElementById('nm-price').value=m.price;rR=(m.recipe&&m.recipe.length)?m.recipe.map(function(r){return Object.assign({},r);}):[{iId:'',qty:0,unit:'g'}];var btn=document.getElementById('b-am');btn.textContent='💾 บันทึกการแก้ไข';btn.style.background='var(--yl)';btn.style.color='#000';document.getElementById('b-cancel-edit').style.display='block';document.getElementById('nm-name').scrollIntoView({behavior:'smooth',block:'center'});bRec();}
-function cancelEditMenu(){_editingMenuId=null;document.getElementById('nm-name').value='';document.getElementById('nm-price').value='';rR=[{iId:'',qty:0,unit:'g'}];var btn=document.getElementById('b-am');btn.textContent='+ บันทึกเมนู';btn.style.background='';btn.style.color='';document.getElementById('b-cancel-edit').style.display='none';bRec();}
+function editMenu(id){
+  var m=menus.find(function(x){return x.id===id;});if(!m)return;
+  _editingMenuId=id;
+  document.getElementById('nm-name').value=m.name;
+  document.getElementById('nm-price').value=m.price;
+  var catSel=document.getElementById('nm-cat');
+  if(catSel) catSel.value=m.cat||'';
+  rR=(m.recipe&&m.recipe.length)?m.recipe.map(function(r){return Object.assign({},r);}):[{iId:'',qty:0,unit:'g'}];
+  var btn=document.getElementById('b-am');btn.textContent='💾 บันทึกการแก้ไข';btn.style.background='var(--yl)';btn.style.color='#000';
+  document.getElementById('b-cancel-edit').style.display='block';
+  document.getElementById('nm-name').scrollIntoView({behavior:'smooth',block:'center'});
+  bRec();
+}
+function cancelEditMenu(){
+  _editingMenuId=null;
+  document.getElementById('nm-name').value='';
+  document.getElementById('nm-price').value='';
+  var catSel=document.getElementById('nm-cat');if(catSel)catSel.value='';
+  rR=[{iId:'',qty:0,unit:'g'}];
+  var btn=document.getElementById('b-am');btn.textContent='+ บันทึกเมนู';btn.style.background='';btn.style.color='';
+  document.getElementById('b-cancel-edit').style.display='none';bRec();
+}
 function addMenu(){
-  var name=document.getElementById('nm-name').value.trim(),price=parseFloat(document.getElementById('nm-price').value);
+  var name=document.getElementById('nm-name').value.trim();
+  var price=parseFloat(document.getElementById('nm-price').value);
+  var catSel=document.getElementById('nm-cat');
+  var cat=catSel?catSel.value:'';
   if(!name||isNaN(price))return alert('กรุณากรอกชื่อเมนูและราคา');
   var recipe=rR.filter(function(r){return r.iId&&r.qty>0;});
   var b=document.getElementById('b-am');b.disabled=true;b.textContent='⏳...';
-  if(_editingMenuId){var m=menus.find(function(x){return x.id===_editingMenuId;});if(!m){b.disabled=false;return;}m.name=name;m.price=price;m.recipe=recipe;var item=Object.assign({},m,{recipe:JSON.stringify(recipe)});var doSave=function(){cancelEditMenu();rAll();sS('ok','อัพเดตเมนูแล้ว');b.disabled=false;b.textContent='+ บันทึกเมนู';};if(API)apiP({action:'upsert',sheet:'Menus',data:item}).then(doSave).catch(function(e){alert(e.message);b.disabled=false;b.textContent='💾 บันทึกการแก้ไข';});else doSave();}
-  else{if(!recipe.length)return alert('กรุณาเพิ่มวัตถุดิบ');var ni={id:uid(),name:name,price:price,recipe:JSON.stringify(recipe)};var doAdd=function(){menus.push(Object.assign({},ni,{recipe:recipe}));document.getElementById('nm-name').value='';document.getElementById('nm-price').value='';rR=[{iId:'',qty:0,unit:'g'}];rAll();sS('ok','บันทึกแล้ว');b.disabled=false;b.textContent='+ บันทึกเมนู';};if(API)apiP({action:'upsert',sheet:'Menus',data:ni}).then(doAdd).catch(function(e){alert(e.message);b.disabled=false;b.textContent='+ บันทึกเมนู';});else doAdd();}
+  if(_editingMenuId){
+    var m=menus.find(function(x){return x.id===_editingMenuId;});if(!m){b.disabled=false;return;}
+    m.name=name;m.price=price;m.recipe=recipe;m.cat=cat;
+    var item=Object.assign({},m,{recipe:JSON.stringify(recipe),cat:cat});
+    var doSave=function(){cancelEditMenu();rAll();sS('ok','อัพเดตเมนูแล้ว');b.disabled=false;b.textContent='+ บันทึกเมนู';};
+    if(API)apiP({action:'upsert',sheet:'Menus',data:item}).then(doSave).catch(function(e){alert(e.message);b.disabled=false;b.textContent='💾 บันทึกการแก้ไข';});else doSave();
+  } else {
+    if(!recipe.length)return alert('กรุณาเพิ่มวัตถุดิบ');
+    var ni={id:uid(),name:name,price:price,cat:cat,recipe:JSON.stringify(recipe)};
+    var doAdd=function(){menus.push(Object.assign({},ni,{recipe:recipe}));document.getElementById('nm-name').value='';document.getElementById('nm-price').value='';if(catSel)catSel.value='';rR=[{iId:'',qty:0,unit:'g'}];rAll();sS('ok','บันทึกแล้ว');b.disabled=false;b.textContent='+ บันทึกเมนู';};
+    if(API)apiP({action:'upsert',sheet:'Menus',data:ni}).then(doAdd).catch(function(e){alert(e.message);b.disabled=false;b.textContent='+ บันทึกเมนู';});else doAdd();
+  }
 }
 function delMenu(id){if(!confirm('ลบเมนูนี้?'))return;var del=function(){menus=menus.filter(function(m){return m.id!==id;});rAll();};if(API)apiP({action:'delete',sheet:'Menus',data:{id:id}}).then(del).catch(function(e){alert(e.message);});else del();}
 function dmSt(e,id){dragMSrc=id;e.currentTarget.classList.add('dragging');}
@@ -951,7 +1017,7 @@ function toggleMenuDetail(id){var el=document.getElementById('mdet-'+id);if(!el)
 function rMenus(){
   rMenuCatBtns();var tb=document.getElementById('m-tb');
   if(!menus.length){tb.innerHTML='<tr><td colspan="8"><div class="emp">ยังไม่มีเมนู</div></td></tr>';return;}
-  var filtered=_menuCatFilter==='ทั้งหมด'?menus:menus.filter(function(m){return getMenuCat(m.name)===_menuCatFilter;});
+  var filtered=_menuCatFilter==='ทั้งหมด'?menus:menus.filter(function(m){return getMenuCat(m.name,m.cat)===_menuCatFilter;});
   if(!filtered.length){tb.innerHTML='<tr><td colspan="8"><div class="emp">ไม่มีเมนูในหมวดนี้</div></td></tr>';return;}
   tb.innerHTML=filtered.map(function(m){var cost=cc(m),profit=m.price-cost,margin=m.price>0?profit/m.price*100:0,color=mc(margin);var rs=(m.recipe||[]).map(function(r){if(r.iId&&r.iId.startsWith('sr_')){var sr=subRecipes.find(function(x){return x.id===r.iId;});return sr?'🧪 '+sr.name+' '+r.qty+sr.yieldUnit:'';}var ing=ings.find(function(x){return String(x.id)===String(r.iId);});return ing?ing.name+' '+r.qty+(r.unit||ing.unit):'';}).filter(Boolean).join(' · ');return '<tr class="drag-row" draggable="true" data-mid="'+m.id+'" ondragstart="dmSt(event,\''+m.id+'\')" ondragover="dmOv(event)" ondrop="dmDp(event,\''+m.id+'\')" ondragend="dmEd(event)" ontouchstart="tmSt(event,\''+m.id+'\')" ontouchmove="tmMv(event)" ontouchend="tmEd(event)"><td><span class="drag-handle">⠿</span></td><td><div style="display:flex;align-items:center;gap:6px"><span style="font-weight:700;color:var(--br)">'+m.name+'</span><button id="mbtn-'+m.id+'" onclick="toggleMenuDetail(\''+m.id+'\')" style="border:none;background:none;cursor:pointer;color:var(--t3);font-size:11px;padding:0 2px">▼</button></div><div id="mdet-'+m.id+'" style="display:none;font-size:11px;color:var(--t3);margin-top:3px;line-height:1.7">'+rs+'</div></td><td class="mn" style="font-weight:700">'+fB(m.price)+'</td><td class="mn" style="color:var(--b2c)">'+fB(cost)+'</td><td class="mn" style="color:'+color+';font-weight:700">'+fB(profit)+'</td><td><div class="mw"><div class="mb"><div class="mf" style="width:'+Math.min(margin,100)+'%;background:'+color+'"></div></div><span class="mp" style="color:'+color+'">'+margin.toFixed(0)+'%</span></div></td><td>'+bdg(margin)+'</td><td><div style="display:flex;gap:4px"><button class="btn bg2 bsm" onclick="editMenu(\''+m.id+'\')">✏️</button><button class="btn bd2 bsm" onclick="delMenu(\''+m.id+'\')">ลบ</button></div></td></tr>';}).join('');
 }

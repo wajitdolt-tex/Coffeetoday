@@ -241,8 +241,6 @@ td{padding:10px 12px;vertical-align:middle}
         <div class="dash-stat"><div class="dash-stat-num" id="dashComm">0</div><div class="dash-stat-label">ค่าคอม (฿)</div></div>
       </div>
       <div class="dash-quick">
-        <button class="dash-quick-btn" onclick="openClockModal('in')">&#10003; เข้างาน</button>
-        <button class="dash-quick-btn" onclick="openClockModal('out')">&#128682; ออกงาน</button>
         <button class="dash-quick-btn leave" onclick="openLeaveModal()">&#128197; ยื่นใบลา</button>
       </div>
     </div>
@@ -303,6 +301,7 @@ td{padding:10px 12px;vertical-align:middle}
     <button class="tab-btn" onclick="showTab('manual',this)">บันทึกเอง</button>
     <button class="tab-btn" onclick="showTab('holidays',this)">วันหยุด</button>
     <button class="tab-btn" onclick="showTab('pastpay',this)">รอบเก่า</button>
+    <button class="tab-btn" onclick="showTab('sync',this)">🔄 Sync Sheets</button>
   </div>
   <div class="tab-content active" id="tab-dashboard">
     <div id="statsRow" class="stats-row"></div>
@@ -417,6 +416,33 @@ td{padding:10px 12px;vertical-align:middle}
         <thead><tr><th>พนักงาน</th><th>รอบ</th><th>วันทำงาน</th><th>OT</th><th>OT วันหยุด</th><th>วันหยุด</th><th>คอม</th><th>สาย</th><th>ยอดรวม</th><th>ลบ</th></tr></thead>
         <tbody id="ppHistoryTable"></tbody>
       </table></div>
+    </div>
+  </div>
+</div>
+
+  <!-- TAB SYNC -->
+  <div class="tab-content" id="tab-sync">
+    <div class="card">
+      <div class="card-title">🔄 Sync กับ Google Sheets</div>
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:20px">ซิงค์ข้อมูลระหว่าง Supabase และ Google Sheets (Coffee Today Attendance)</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px">
+          <div style="font-size:15px;font-weight:700;margin-bottom:8px">📤 Supabase → Sheets</div>
+          <p style="font-size:12px;color:var(--ink3);margin-bottom:16px;line-height:1.6">ดึงข้อมูลทั้งหมดจาก Supabase แล้วเพิ่มเข้า Google Sheets เฉพาะ record ที่ยังไม่มีใน Sheets</p>
+          <button class="btn btn-primary" onclick="syncToSheets()">📤 Sync ไป Sheets</button>
+          <div id="syncToSheetsResult" style="margin-top:12px;font-size:13px"></div>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px">
+          <div style="font-size:15px;font-weight:700;margin-bottom:8px">📥 Sheets → Supabase</div>
+          <p style="font-size:12px;color:var(--ink3);margin-bottom:16px;line-height:1.6">ดึงข้อมูลจาก Google Sheets แล้วเพิ่มเข้า Supabase เฉพาะ record ที่ยังไม่มีใน Supabase</p>
+          <button class="btn btn-success" onclick="syncFromSheets()">📥 Import จาก Sheets</button>
+          <div id="syncFromSheetsResult" style="margin-top:12px;font-size:13px"></div>
+        </div>
+      </div>
+      <div style="margin-top:20px;background:#1a1e2e;border-radius:var(--radius);padding:16px;color:#fff">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:#60a5fa">สถานะล่าสุด</div>
+        <div id="syncStatusLog" style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.8">กด Sync เพื่อเริ่ม...</div>
+      </div>
     </div>
   </div>
 </div>
@@ -555,6 +581,7 @@ td{padding:10px 12px;vertical-align:middle}
 <script>
 var SUPA_URL='https://ummtqzweedmotrffqrhw.supabase.co';
 var SUPA_KEY='sb_publishable_yIUQ7A8IjCXKSp7OgKoGjw_65k3iO-X';
+var GAS_URL='https://script.google.com/macros/s/AKfycbyHDd3wAvt5_U9_CsqhAsF8faav8wAOmdSg34x8pz2WQp8uhmp1K2tDG1rY8XdKuO-BYA/exec';
 var PH=[
   {date:'2026-01-01',name:'วันขึ้นปีใหม่'},{date:'2026-03-03',name:'วันมาฆบูชา'},
   {date:'2026-04-13',name:'วันสงกรานต์'},{date:'2026-04-14',name:'วันสงกรานต์'},{date:'2026-04-15',name:'วันสงกรานต์'},
@@ -758,6 +785,7 @@ function showTab(t,btn){
   if(t==='dashboard')renderDashboard();if(t==='allLogs')renderAllLogs();if(t==='summary')renderSummary();
   if(t==='employees')renderEmpTable();if(t==='manual')populateManualForm();
   if(t==='holidays')renderHolidayTable();if(t==='pastpay')populatePastPayForm();
+  if(t==='sync'){document.getElementById('syncStatusLog').textContent='กด Sync เพื่อเริ่ม...';}
   if(t==='leaves')renderHRLeaves();
 }
 
@@ -1092,7 +1120,7 @@ async function saveCommission(){
 function renderMyLog(){
   var tbody=document.getElementById('myLogTable');
   if(!selectedEmpId){tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">&#128070;</div><div class="empty-text">กรุณาเลือกพนักงานด้านบน</div></div></td></tr>';return;}
-  var myLogs=logs.filter(function(l){return String(l.empId)===String(selectedEmpId);}).slice().reverse().slice(0,50);
+  var myLogs=logs.filter(function(l){return String(l.empId)===String(selectedEmpId);}).slice().sort(function(a,b){var da=toDateStr(a.date)||'';var db=toDateStr(b.date)||'';return db.localeCompare(da);}).slice(0,50);
   if(!myLogs.length){tbody.innerHTML='<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">&#128205;</div><div class="empty-text">ยังไม่มีบันทึก</div></div></td></tr>';return;}
   var eMap={};employees.forEach(function(e){eMap[e.id]={name:e.name,branch:e.branch};});
   tbody.innerHTML=myLogs.map(function(l){
@@ -1521,6 +1549,85 @@ function renderPPHistory(){
   }).join('');
 }
 function deletePastPay(id){if(!confirm('ลบรายการนี้?'))return;pastPayData=pastPayData.filter(function(d){return d.id!==id;});localStorage.setItem('ct_pastpay',JSON.stringify(pastPayData));renderPPHistory();showToast('ลบเรียบร้อย');}
+
+// SYNC FUNCTIONS
+function addSyncLog(msg){
+  var el=document.getElementById('syncStatusLog');
+  if(!el)return;
+  var now=new Date().toLocaleTimeString('th-TH');
+  el.innerHTML='['+now+'] '+msg+'<br>'+el.innerHTML;
+}
+async function syncToSheets(){
+  var btn=event.target;btn.disabled=true;btn.textContent='⏳ กำลัง Sync...';
+  var res=document.getElementById('syncToSheetsResult');res.textContent='';
+  addSyncLog('เริ่ม Sync Supabase → Sheets...');
+  try{
+    var allLogs=await supaFetch('/rest/v1/logs?select=*&limit=5000');
+    if(!Array.isArray(allLogs)){throw new Error('โหลด logs ล้มเหลว');}
+    addSyncLog('ดึงข้อมูลจาก Supabase ได้ '+allLogs.length+' records');
+    var payload={action:'syncToSheets',logs:allLogs};
+    var gasRes=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    var gasData=await gasRes.json();
+    if(gasData.ok){
+      var msg='✅ Sync สำเร็จ เพิ่มใหม่ '+gasData.added+' records';
+      res.innerHTML='<span style="color:#057a55;font-weight:600">'+msg+'</span>';
+      addSyncLog(msg);
+    }else{
+      throw new Error(JSON.stringify(gasData));
+    }
+  }catch(e){
+    var errMsg='❌ ล้มเหลว: '+e.message;
+    res.innerHTML='<span style="color:#c81e1e">'+errMsg+'</span>';
+    addSyncLog(errMsg);
+  }
+  btn.disabled=false;btn.textContent='📤 Sync ไป Sheets';
+}
+async function syncFromSheets(){
+  var btn=event.target;btn.disabled=true;btn.textContent='⏳ กำลัง Import...';
+  var res=document.getElementById('syncFromSheetsResult');res.textContent='';
+  addSyncLog('เริ่ม Import Sheets → Supabase...');
+  try{
+    var gasRes=await fetch(GAS_URL+'?action=getSheetLogs');
+    var gasData=await gasRes.json();
+    if(!gasData.ok||!gasData.logs){throw new Error('ดึงข้อมูลจาก Sheets ล้มเหลว');}
+    var sheetLogs=gasData.logs;
+    addSyncLog('ดึงจาก Sheets ได้ '+sheetLogs.length+' records');
+    var existingIds=new Set(logs.map(function(l){return l.id;}));
+    var newLogs=sheetLogs.filter(function(l){return l.id&&!existingIds.has(String(l.id));});
+    addSyncLog('พบข้อมูลใหม่ที่ยังไม่มีใน Supabase: '+newLogs.length+' records');
+    if(!newLogs.length){
+      res.innerHTML='<span style="color:#057a55;font-weight:600">✅ ข้อมูลครบแล้ว ไม่มีอะไรต้อง import</span>';
+      addSyncLog('ไม่มีข้อมูลใหม่');
+      btn.disabled=false;btn.textContent='📥 Import จาก Sheets';return;
+    }
+    var ok=0,fail=0;
+    for(var i=0;i<newLogs.length;i++){
+      var l=newLogs[i];
+      try{
+        var dateVal=l.date;
+        if(dateVal&&String(dateVal).indexOf('T')>-1)dateVal=String(dateVal).substring(0,10);
+        await supaFetch('/rest/v1/logs','POST',{
+          id:l.id,emp_id:l.emp_id,date:dateVal,branch:l.branch,
+          clock_in:l.clock_in,clock_out:l.clock_out||'',
+          hours:l.hours||null,hours_ot:l.hours_ot||0,type:l.type||'normal',
+          late_minutes:l.late_minutes||0,sales:l.sales||0,
+          comm_diff:0,commission:l.commission||0,comm_rate:0,note:l.note||''
+        });
+        ok++;
+        if(ok%10===0)addSyncLog('นำเข้าแล้ว '+ok+'/'+newLogs.length+'...');
+      }catch(e2){fail++;}
+    }
+    var msg='✅ Import สำเร็จ: เพิ่ม '+ok+' records'+(fail>0?' (ล้มเหลว '+fail+')':'');
+    res.innerHTML='<span style="color:#057a55;font-weight:600">'+msg+'</span>';
+    addSyncLog(msg);
+    await loadAll();
+  }catch(e){
+    var errMsg='❌ ล้มเหลว: '+e.message;
+    res.innerHTML='<span style="color:#c81e1e">'+errMsg+'</span>';
+    addSyncLog(errMsg);
+  }
+  btn.disabled=false;btn.textContent='📥 Import จาก Sheets';
+}
 
 function openModal(id){document.querySelectorAll('.modal-overlay.open').forEach(function(m){if(m.id!==id)m.classList.remove('open');});document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}

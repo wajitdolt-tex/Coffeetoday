@@ -1406,7 +1406,6 @@ function populateYearlySelects(){
 }
 function renderYearlySummary(){
   var pastPayData=JSON.parse(localStorage.getItem('ct_pastpay')||'[]');
-  populateYearlySelects();
   var year=parseInt(document.getElementById('yearlyYear').value)||new Date().getFullYear();
   var empF=document.getElementById('yearlyEmp').value;
   var container=document.getElementById('yearlyCards');
@@ -1436,18 +1435,18 @@ function renderYearlySummary(){
     for(var m=1;m<=12;m++){var dv=md[m],sal=(dv.days>0||dv.isPastPay)?(emp.salary||0):0,rt=sal+dv.ot+dv.hotOT+dv.hw+dv.comm;tS+=sal;tO+=dv.ot;tH+=dv.hotOT;tW+=dv.hw;tC+=dv.comm;tL+=dv.lateMin;
       if(dv.days>0||dv.comm>0||dv.isPastPay){mRows+='<tr style="border-bottom:1px solid #e5e7eb"><td style="padding:8px">'+thM[m-1]+' '+be+'</td><td style="padding:8px;text-align:right">'+sal.toLocaleString()+'</td><td style="padding:8px;text-align:right">'+(dv.ot>0?dv.ot.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td><td style="padding:8px;text-align:right">'+(dv.hotOT>0?dv.hotOT.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td><td style="padding:8px;text-align:right">'+(dv.hw>0?dv.hw.toLocaleString():'--')+'</td><td style="padding:8px;text-align:right;color:#057a55">'+(dv.comm>0?dv.comm.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td><td style="padding:8px;text-align:right;font-weight:700">'+rt.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td><td style="padding:8px;text-align:center">'+(dv.lateMin>0?'<span style="color:#c81e1e;font-size:11px">'+dv.lateMin+'น.</span>':'--')+'</td></tr>';}}
     var grand=tS+tO+tH+tW+tC;
-    return'<div class="card" style="margin-bottom:20px">'+
-      '<div style="text-align:center;padding-bottom:14px;border-bottom:1px solid #e5e7eb;margin-bottom:16px">'+
-        '<div style="font-size:17px;font-weight:700">Coffee Today สรุปรายได้ประจำปี พ.ศ. '+be+'</div>'+
-        '<div style="font-size:14px;color:#6b7280;margin-top:4px">'+emp.name+' - '+brL(emp.branch)+'</div></div>'+
-      '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">'+
-        '<thead><tr style="background:#1a1a1a;color:#fff"><th style="padding:8px;text-align:left">เดือน</th><th style="padding:8px;text-align:right">เงินเดือน</th><th style="padding:8px;text-align:right">OT</th><th style="padding:8px;text-align:right">OT วันหยุด</th><th style="padding:8px;text-align:right">วันหยุดx2</th><th style="padding:8px;text-align:right">คอม</th><th style="padding:8px;text-align:right">รวม</th><th style="padding:8px;text-align:center">สาย</th></tr></thead>'+
+    return'<div class="summary-report" style="margin-bottom:20px">'+
+      '<div class="summary-header">'+
+        '<h3>&#9749; Coffee Today</h3>'+
+        '<p style="font-size:15px;font-weight:600;margin-top:6px">สรุปรายได้ประจำปี พ.ศ. '+be+'</p>'+
+        '<p style="font-size:13px;color:rgba(255,255,255,.7);margin-top:4px">'+emp.name+' &nbsp;·&nbsp; '+brL(emp.branch)+'</p>'+
+      '</div>'+
+      '<div class="summary-body" style="padding:0"><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">'+
+        '<thead><tr style="background:#f1f5f9"><th style="padding:10px 12px;text-align:left;color:#374151;font-weight:600">เดือน</th><th style="padding:10px 12px;text-align:right;color:#374151;font-weight:600">เงินเดือน</th><th style="padding:10px 12px;text-align:right;color:#374151;font-weight:600">OT</th><th style="padding:10px 12px;text-align:right;color:#374151;font-weight:600">OT วันหยุด</th><th style="padding:10px 12px;text-align:right;color:#374151;font-weight:600">วันหยุดx2</th><th style="padding:10px 12px;text-align:right;color:#374151;font-weight:600">คอม</th><th style="padding:10px 12px;text-align:right;color:#374151;font-weight:600">รวม</th><th style="padding:10px 12px;text-align:center;color:#374151;font-weight:600">สาย</th></tr></thead>'+
         '<tbody>'+mRows+'</tbody>'+
-        '<tfoot><tr style="background:#fff5f5;font-weight:700;border-top:2px solid #e53e3e"><td style="padding:8px">รวมทั้งปี</td><td style="padding:8px;text-align:right">'+tS.toLocaleString()+'</td><td style="padding:8px;text-align:right">'+(tO>0?tO.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td><td style="padding:8px;text-align:right">'+(tH>0?tH.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td><td style="padding:8px;text-align:right">'+(tW>0?tW.toLocaleString():'--')+'</td><td style="padding:8px;text-align:right;color:#057a55">'+(tC>0?tC.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td><td style="padding:8px;text-align:right;font-size:15px;color:#e53e3e">'+grand.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td><td style="padding:8px;text-align:center">'+(tL>0?'<span style="color:#c81e1e">'+tL+'น.</span>':'--')+'</td></tr></tfoot>'+
-      '</table></div>'+
-      '<div style="background:linear-gradient(135deg,#1a1e2e,#16213e);color:#fff;border-radius:10px;padding:14px;text-align:center;margin-top:16px">'+
-        '<div style="font-size:12px;opacity:.8">รายได้รวมทั้งสิ้น พ.ศ. '+be+'</div>'+
-        '<div style="font-size:28px;font-weight:700;color:#60a5fa">'+grand.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div></div>'+
+        '<tfoot><tr style="background:#fff5f5;font-weight:700;border-top:2px solid #e53e3e"><td style="padding:10px 12px">รวมทั้งปี</td><td style="padding:10px 12px;text-align:right">'+tS.toLocaleString()+'</td><td style="padding:10px 12px;text-align:right">'+(tO>0?tO.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td><td style="padding:10px 12px;text-align:right">'+(tH>0?tH.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td><td style="padding:10px 12px;text-align:right">'+(tW>0?tW.toLocaleString():'--')+'</td><td style="padding:10px 12px;text-align:right;color:#057a55">'+(tC>0?tC.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td><td style="padding:10px 12px;text-align:right;font-size:15px;color:#e53e3e">'+grand.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td><td style="padding:10px 12px;text-align:center">'+(tL>0?'<span style="color:#c81e1e">'+tL+'น.</span>':'--')+'</td></tr></tfoot>'+
+      '</table></div></div>'+
+      '<div class="summary-total"><div style="font-size:12px;opacity:.7;margin-bottom:4px">รายได้รวมทั้งสิ้น พ.ศ. '+be+'</div><div class="amount">'+grand.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div></div>'+
     '</div>';
   }).join('');
 }
@@ -1489,12 +1488,21 @@ function renderEmpYearlySummary(){
     if(dv.days>0||dv.comm>0||dv.isPastPay){mRows+='<tr style="border-bottom:1px solid #e5e7eb"><td style="padding:8px">'+thM[m2-1]+' '+be+'</td><td style="padding:8px;text-align:right">'+sal.toLocaleString()+'</td><td style="padding:8px;text-align:right">'+(dv.ot>0?dv.ot.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td><td style="padding:8px;text-align:right">'+(dv.hotOT>0?dv.hotOT.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td><td style="padding:8px;text-align:right">'+(dv.hw>0?dv.hw.toLocaleString():'--')+'</td><td style="padding:8px;text-align:right;color:#057a55">'+(dv.comm>0?dv.comm.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td><td style="padding:8px;text-align:right;font-weight:700">'+rt.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td><td style="padding:8px;text-align:center">'+(dv.lateMin>0?'<span style="color:#c81e1e;font-size:11px">'+dv.lateMin+'น.</span>':'--')+'</td></tr>';}}
   var grand=tS+tO+tH+tW+tC;
   document.getElementById('empYearlyContent').innerHTML=
+    '<div class="summary-report">'+
+    '<div class="summary-header">'+
+      '<h3>&#9749; Coffee Today</h3>'+
+      '<p style="font-size:15px;font-weight:600;margin-top:6px">สรุปรายได้ประจำปี พ.ศ. '+be+'</p>'+
+      '<p style="font-size:13px;color:rgba(255,255,255,.7);margin-top:4px">'+emp.name+' &nbsp;·&nbsp; '+brL(emp.branch)+'</p>'+
+    '</div>'+
+    '<div class="summary-body" style="padding:0">'+
     '<table style="width:100%;border-collapse:collapse;font-size:13px">'+
-    '<thead><tr style="background:#1a1a1a;color:#fff"><th style="padding:8px;text-align:left">เดือน</th><th style="padding:8px;text-align:right">เงินเดือน</th><th style="padding:8px;text-align:right">OT</th><th style="padding:8px;text-align:right">OT วันหยุด</th><th style="padding:8px;text-align:right">วันหยุด</th><th style="padding:8px;text-align:right">คอม</th><th style="padding:8px;text-align:right">รวม</th><th style="padding:8px;text-align:center">สาย</th></tr></thead>'+
+    '<thead><tr style="background:#f1f5f9"><th style="padding:10px 12px;text-align:left;color:#374151;font-weight:600">เดือน</th><th style="padding:10px 12px;text-align:right;color:#374151;font-weight:600">เงินเดือน</th><th style="padding:10px 12px;text-align:right;color:#374151;font-weight:600">OT</th><th style="padding:10px 12px;text-align:right;color:#374151;font-weight:600">OT วันหยุด</th><th style="padding:10px 12px;text-align:right;color:#374151;font-weight:600">วันหยุด</th><th style="padding:10px 12px;text-align:right;color:#374151;font-weight:600">คอม</th><th style="padding:10px 12px;text-align:right;color:#374151;font-weight:600">รวม</th><th style="padding:10px 12px;text-align:center;color:#374151;font-weight:600">สาย</th></tr></thead>'+
     '<tbody>'+mRows+'</tbody>'+
-    '<tfoot><tr style="background:#fff5f5;font-weight:700;border-top:2px solid #e53e3e"><td style="padding:8px">รวมทั้งปี</td><td style="padding:8px;text-align:right">'+tS.toLocaleString()+'</td><td style="padding:8px;text-align:right">'+(tO>0?tO.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td><td style="padding:8px;text-align:right">'+(tH>0?tH.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td><td style="padding:8px;text-align:right">'+(tW>0?tW.toLocaleString():'--')+'</td><td style="padding:8px;text-align:right;color:#057a55">'+(tC>0?tC.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td><td style="padding:8px;text-align:right;color:#e53e3e;font-size:15px">'+grand.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td><td style="padding:8px;text-align:center">'+(tL>0?'<span style="color:#c81e1e">'+tL+'น.</span>':'--')+'</td></tr></tfoot>'+
+    '<tfoot><tr style="background:#fff5f5;font-weight:700;border-top:2px solid #e53e3e"><td style="padding:10px 12px">รวมทั้งปี</td><td style="padding:10px 12px;text-align:right">'+tS.toLocaleString()+'</td><td style="padding:10px 12px;text-align:right">'+(tO>0?tO.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td><td style="padding:10px 12px;text-align:right">'+(tH>0?tH.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td><td style="padding:10px 12px;text-align:right">'+(tW>0?tW.toLocaleString():'--')+'</td><td style="padding:10px 12px;text-align:right;color:#057a55">'+(tC>0?tC.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'--')+'</td><td style="padding:10px 12px;text-align:right;color:#e53e3e;font-size:15px">'+grand.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td><td style="padding:10px 12px;text-align:center">'+(tL>0?'<span style="color:#c81e1e">'+tL+'น.</span>':'--')+'</td></tr></tfoot>'+
     '</table>'+
-    '<div style="background:linear-gradient(135deg,#1a1e2e,#16213e);color:#fff;border-radius:10px;padding:14px;text-align:center;margin-top:14px"><div style="font-size:12px;opacity:.8">รายได้รวม พ.ศ. '+be+'</div><div style="font-size:26px;font-weight:700;color:#60a5fa">'+grand.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div></div>';
+    '</div>'+
+    '<div class="summary-total"><div style="font-size:12px;opacity:.7;margin-bottom:4px">รายได้รวมทั้งสิ้น พ.ศ. '+be+'</div><div class="amount">'+grand.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div></div>'+
+    '</div>';
 }
 
 var pastPayData=JSON.parse(localStorage.getItem('ct_pastpay')||'[]');

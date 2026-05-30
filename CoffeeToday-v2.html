@@ -1398,7 +1398,7 @@ function setSummaryMode(mode){
   document.getElementById('summaryYearlyView').style.display=mode==='yearly'?'block':'none';
   document.getElementById('summaryModeBtn').className='btn btn-sm '+(mode==='period'?'btn-primary':'btn-ghost');
   document.getElementById('yearlyModeBtn').className='btn btn-sm '+(mode==='yearly'?'btn-primary':'btn-ghost');
-  if(mode==='yearly')renderYearlySummary();
+  if(mode==='yearly'){populateYearlySelects();renderYearlySummary();}
 }
 function populateYearlySelects(){
   var years=new Set();logs.forEach(function(l){var ds=toDateStr(l.date);if(ds&&ds.length>=4){var y=parseInt(ds.substring(0,4));if(!isNaN(y))years.add(y);}});

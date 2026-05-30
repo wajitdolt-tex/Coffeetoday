@@ -1059,6 +1059,7 @@ async function submitClock(){
       var log={id:genId(),empId:empId,date:ds,branch:branchVal,clockIn:ts,clockOut:'',type:logType,sales:0,commission:0,commRate:0,note:document.getElementById('modalNote').value,hours:null,hoursOT:0,lateMinutes:late,commDiff:0};
       await apiAddLog(log);logs.push(log);
       showToast('บันทึกเข้างาน'+(late>0?' สาย '+late+' นาที':''),'success');
+      autoSyncToSheets();
       closeModal('clockModal');renderMyLog();renderEmpCards();
       var emp=employees.find(function(e){return e.id===empId;});if(emp)updateEmpDashboard(emp);
     }else{
@@ -1072,6 +1073,7 @@ async function submitClock(){
       await apiUpdateLog({id:entry.id,clockOut:ts,hours:hours2,hoursOT:hoursOT2,type:type2,note:note,lateMinutes:late2});
       Object.assign(entry,{clockOut:ts,hours:hours2,hoursOT:hoursOT2,type:type2,note:note,lateMinutes:late2});
       showToast('ออกงาน'+(late2>0?' สาย '+late2+' นาที':'')+(hoursOT2>0?' OT '+hoursOT2+' ชม.':''),'success');
+      autoSyncToSheets();
       closeModal('clockModal');renderMyLog();renderEmpCards();
       if(emp2)updateEmpDashboard(emp2);
     }
@@ -1115,6 +1117,7 @@ async function saveCommission(){
       await apiAddLog(log);logs.push(log);
       showToast('คอม '+Number(r.commission).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}),'success');
     }
+    autoSyncToSheets();
     document.getElementById('commSales').value='';document.getElementById('commNote').value='';
     document.getElementById('commCalcResult').style.display='none';document.getElementById('commNoTier').style.display='none';
     renderMyLog();if(emp)updateEmpDashboard(emp);
@@ -1634,6 +1637,13 @@ function addSyncLog(msg){
   if(!el)return;
   var now=new Date().toLocaleTimeString('th-TH');
   el.innerHTML='['+now+'] '+msg+'<br>'+el.innerHTML;
+}
+async function autoSyncToSheets(){
+  try{
+    var allLogs=await supaFetch('/rest/v1/logs?select=*&limit=5000');
+    if(!Array.isArray(allLogs))return;
+    await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'syncToSheets',logs:allLogs})});
+  }catch(e){console.log('auto sync failed:',e.message);}
 }
 async function syncToSheets(){
   var btn=event.target;btn.disabled=true;btn.textContent='⏳ กำลัง Sync...';

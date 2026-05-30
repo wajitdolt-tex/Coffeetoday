@@ -1199,7 +1199,7 @@ function renderDashboard(){
 function renderAllLogs(){
   var empF=document.getElementById('filterEmp').value,branchF=document.getElementById('filterBranch').value,ppKey=document.getElementById('filterPayPeriod').value;
   var eMap={};employees.forEach(function(e){eMap[e.id]={name:e.name,branch:e.branch};});
-  var filtered=logs.slice().reverse();
+  var filtered=logs.slice().sort(function(a,b){var da=toDateStr(a.date)||'';var db=toDateStr(b.date)||'';return db.localeCompare(da);});
   if(empF)filtered=filtered.filter(function(l){return l.empId===empF;});
   if(branchF)filtered=filtered.filter(function(l){return((eMap[l.empId]||{}).branch||l.branch)===branchF;});
   if(ppKey){var pids=new Set(logsInPP(ppKey).map(function(l){return l.id;}));filtered=filtered.filter(function(l){return pids.has(l.id);});}

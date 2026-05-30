@@ -1595,7 +1595,39 @@ async function sendAllPayslips(){
       var year=new Date().getFullYear();
       var sickDays=leaves.filter(function(l){return l.empId===emp.id&&l.type==='sick'&&l.status==='approved'&&String(l.dateStart||'').indexOf(String(year))===0;}).reduce(function(s,l){return s+(Number(l.days)||0);},0);
       var personalDays=leaves.filter(function(l){return l.empId===emp.id&&l.type==='personal'&&l.status==='approved'&&String(l.dateStart||'').indexOf(String(year))===0;}).reduce(function(s,l){return s+(Number(l.days)||0);},0);
-      var summaryData={days:days,ot:ot,hotOT:hotOT,hwDays:hwDays,comm:comm,lateMin:lateMin,totalSales:totalSales,sickDays:sickDays,personalDays:personalDays};
+      // คำนวณเงินได้สะสมต่อปีจากเว็บ (ตรงกับสรุปรายปี)
+      var otPay=ot*(emp.otRate||50);
+      var hotPay=hotOT*(emp.holidayRate||100);
+      var hwPay=hwDays*(emp.dailyWage||500);
+      var currentTotal=(emp.salary||15000)+otPay+hotPay+hwPay+comm;
+      var ppParts=ppKey.split('-').map(Number);
+      var endMo=ppParts[1]+1>12?1:ppParts[1]+1;
+      var endYr=ppParts[1]+1>12?ppParts[0]+1:ppParts[0];
+      // คำนวณรายได้สะสมจาก logs ทั้งปี
+      var yearLogs=logs.filter(function(l){var ds=toDateStr(l.date);return l.empId===emp.id&&ds&&ds.startsWith(String(endYr));});
+      var thaiMonths2=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+      var yearlyTotal=0;
+      for(var mo=1;mo<=endMo;mo++){
+        if(mo===endMo){yearlyTotal+=currentTotal;continue;}
+        var moLogs=yearLogs.filter(function(l){
+          var ds=toDateStr(l.date);if(!ds)return false;
+          var p=ds.split('-').map(Number);
+          var ld=p[2],lm=p[1];
+          var assignMo=ld>=16?lm+1:lm;
+          if(assignMo>12)assignMo=1;
+          return assignMo===mo;
+        });
+        var moHwOT=moLogs.filter(function(l){return['holiday_work','public_holiday'].indexOf(l.type)>=0;}).reduce(function(s,l){return s+(Number(l.hoursOT)||0);},0);
+        var moTotalOT=moLogs.reduce(function(s,l){return s+(Number(l.hoursOT)||0);},0);
+        var moOT=Math.max(0,moTotalOT-moHwOT);
+        var moHotOT=moLogs.filter(function(l){return l.type==='holiday_ot';}).reduce(function(s,l){return s+(Number(l.hours)||0);},0)+moHwOT;
+        var moHwDays=new Set(moLogs.filter(function(l){return['holiday_work','public_holiday'].indexOf(l.type)>=0;}).map(function(l){return toDateStr(l.date);})).size;
+        var moCommByDate={};
+        moLogs.forEach(function(l){var ds=toDateStr(l.date);if(ds&&Number(l.sales||0)>0){if(!moCommByDate[ds]||l.type==='commission')moCommByDate[ds]=l;}});
+        var moComm=+Object.values(moCommByDate).reduce(function(s,l){return s+getCommFromLog(l,emp.branch);},0).toFixed(2);
+        yearlyTotal+=(emp.salary||15000)+(moOT*(emp.otRate||50))+(moHotOT*(emp.holidayRate||100))+(moHwDays*(emp.dailyWage||500))+moComm;
+      }
+      var summaryData={days:days,ot:ot,hotOT:hotOT,hwDays:hwDays,comm:comm,lateMin:lateMin,totalSales:totalSales,sickDays:sickDays,personalDays:personalDays,yearlyIncome:yearlyTotal};
       var res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'sendPayslip',empId:emp.id,ppKey:ppKey,summaryData:summaryData})});
       var data=await res.json();
       if(data.ok){ok++;showToast('ส่งสลิป '+emp.name+' ไปที่ '+data.email+' แล้ว ✅','success');}

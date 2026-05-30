@@ -252,9 +252,10 @@ td{padding:10px 12px;vertical-align:middle}
         <div class="form-group"><label>ยอดขาย (฿)</label><input type="number" id="commSales" class="big-num" placeholder="0" min="0" oninput="onSalesInput()"></div>
       </div>
       <div id="commCalcResult" style="display:none" class="comm-result">
-        <div class="comm-detail">ยอด <strong id="commSalesDisp">0</strong> ส่วนต่าง <strong id="commDiffDisp">0</strong> x <strong id="commRateDisp">0%</strong></div>
-        <div class="comm-amount">฿<span id="commAmtDisp">0</span></div>
-        <div class="comm-detail" id="commFormula"></div>
+        <div class="comm-amount">ค่าคอม ฿<span id="commAmtDisp">0</span> <span id="commRateDisp" style="font-size:13px;opacity:.7"></span></div>
+        <div id="commSalesDisp" style="display:none"></div>
+        <div id="commDiffDisp" style="display:none"></div>
+        <div id="commFormula" style="display:none"></div>
       </div>
       <div id="commNoTier" style="display:none;background:var(--warning-bg);border:1px solid #fcd34d;border-radius:var(--radius);padding:10px 14px;font-size:13px;color:var(--warning);margin-bottom:14px">ยอดขายยังไม่ถึงขั้นต่ำ</div>
       <div class="form-row full"><div class="form-group"><label>หมายเหตุ</label><input type="text" id="commNote" placeholder="หมายเหตุ..."></div></div>
@@ -1088,7 +1089,7 @@ function onSalesInput(){
   if(r.tier){
     document.getElementById('commSalesDisp').textContent=sales.toLocaleString();
     document.getElementById('commDiffDisp').textContent=r.diff.toLocaleString();
-    document.getElementById('commRateDisp').textContent=r.tier.label;
+    document.getElementById('commRateDisp').textContent='('+r.tier.label+')';
     document.getElementById('commAmtDisp').textContent=Number(r.commission).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
     document.getElementById('commFormula').textContent='('+sales.toLocaleString()+'-'+r.tier.min.toLocaleString()+') x '+r.tier.label;
     calc.style.display='block';noT.style.display='none';

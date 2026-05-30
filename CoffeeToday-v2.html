@@ -336,7 +336,10 @@ td{padding:10px 12px;vertical-align:middle}
         <div class="form-group"><label>สาขา</label><select id="summaryBranch" onchange="renderSummary()"><option value="">ทั้งหมด</option><option value="lotus">โลตัสระยอง</option><option value="passion">แพชชั่นระยอง</option></select></div>
         <div class="form-group"><label>พนักงาน</label><select id="summaryEmp" onchange="renderSummary()"><option value="">ทั้งหมด</option></select></div>
       </div>
-      <button class="btn btn-ghost btn-sm" style="margin-bottom:12px" onclick="printCards('summaryCards')">พิมพ์</button>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="printCards('summaryCards')">พิมพ์</button>
+        <button class="btn btn-success btn-sm" onclick="sendAllPayslips()">📧 ส่งสลิปทางเมล</button>
+      </div>
       <div id="summaryCards"></div>
     </div>
     <div id="summaryYearlyView" style="display:none">
@@ -581,7 +584,7 @@ td{padding:10px 12px;vertical-align:middle}
 <script>
 var SUPA_URL='https://ummtqzweedmotrffqrhw.supabase.co';
 var SUPA_KEY='sb_publishable_yIUQ7A8IjCXKSp7OgKoGjw_65k3iO-X';
-var GAS_URL='https://script.google.com/macros/s/AKfycbw0MGUdvwAUeQfXNoVO-mEAXpWGy-kK9zvLpQBwyVgAil_-AwIVo9D-zzTNMy_Y0gVThw/exec';
+var GAS_URL='https://script.google.com/macros/s/AKfycbwAVVFPxQ4vQyKZzKMwUMyp5n6ZNFPtBmGSoKU0lZzDCBcP-bU981iROKzx9yzDXXSslg/exec';
 var PH=[
   {date:'2026-01-01',name:'วันขึ้นปีใหม่'},{date:'2026-03-03',name:'วันมาฆบูชา'},
   {date:'2026-04-13',name:'วันสงกรานต์'},{date:'2026-04-14',name:'วันสงกรานต์'},{date:'2026-04-15',name:'วันสงกรานต์'},
@@ -1559,6 +1562,50 @@ function renderPPHistory(){
 function deletePastPay(id){if(!confirm('ลบรายการนี้?'))return;pastPayData=pastPayData.filter(function(d){return d.id!==id;});localStorage.setItem('ct_pastpay',JSON.stringify(pastPayData));renderPPHistory();showToast('ลบเรียบร้อย');}
 
 // SYNC FUNCTIONS
+// SEND PAYSLIP
+async function sendAllPayslips(){
+  var ppKey=document.getElementById('summaryPayPeriod').value;
+  var empF=document.getElementById('summaryEmp').value;
+  if(!ppKey){showToast('กรุณาเลือกรอบก่อน','error');return;}
+  var targets=employees.filter(function(e){return e.active;});
+  if(empF)targets=targets.filter(function(e){return e.id===empF;});
+  if(!targets.length){showToast('ไม่พบพนักงาน','error');return;}
+  if(!confirm('ส่งสลิป PDF ทางเมลให้ '+targets.length+' คน?\n'+targets.map(function(e){return e.name;}).join(', '))){return;}
+  var pl=logsInPP(ppKey);
+  var ok=0,fail=0;
+  for(var i=0;i<targets.length;i++){
+    var emp=targets[i];
+    var el=pl.filter(function(l){return l.empId===emp.id;});
+    showToast('กำลังส่งสลิป '+emp.name+'...','');
+    try{
+      // คำนวณข้อมูลสรุป
+      var hwOT=el.filter(function(l){return['holiday_work','public_holiday'].indexOf(l.type)>=0;}).reduce(function(s,l){return s+(Number(l.hoursOT)||0);},0);
+      var totalOT=el.reduce(function(s,l){return s+(Number(l.hoursOT)||0);},0);
+      var ot=Math.max(0,totalOT-hwOT);
+      var hotOT=el.filter(function(l){return l.type==='holiday_ot';}).reduce(function(s,l){return s+(Number(l.hours)||0);},0)+hwOT;
+      var hwDays=new Set(el.filter(function(l){return['holiday_work','public_holiday'].indexOf(l.type)>=0;}).map(function(l){return toDateStr(l.date);})).size;
+      var commByDate={};
+      el.forEach(function(l){var ds=toDateStr(l.date);if(ds&&Number(l.sales||0)>0){if(!commByDate[ds]||l.type==='commission')commByDate[ds]=l;}});
+      var commLogs=Object.values(commByDate);
+      var totalSales=commLogs.reduce(function(s,l){return s+(Number(l.sales)||0);},0);
+      var comm=+commLogs.reduce(function(s,l){return s+getCommFromLog(l,emp.branch);},0).toFixed(2);
+      var days=new Set(el.filter(function(l){var ci=toTimeStr(l.clockIn);return ci&&ci!=='00:00';}).map(function(l){return toDateStr(l.date);})).size;
+      var lateMin=el.reduce(function(s,l){return s+(Number(l.lateMinutes)||0);},0);
+      // ใบลา
+      var year=new Date().getFullYear();
+      var sickDays=leaves.filter(function(l){return l.empId===emp.id&&l.type==='sick'&&l.status==='approved'&&String(l.dateStart||'').indexOf(String(year))===0;}).reduce(function(s,l){return s+(Number(l.days)||0);},0);
+      var personalDays=leaves.filter(function(l){return l.empId===emp.id&&l.type==='personal'&&l.status==='approved'&&String(l.dateStart||'').indexOf(String(year))===0;}).reduce(function(s,l){return s+(Number(l.days)||0);},0);
+      var summaryData={days:days,ot:ot,hotOT:hotOT,hwDays:hwDays,comm:comm,lateMin:lateMin,totalSales:totalSales,sickDays:sickDays,personalDays:personalDays};
+      var res=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'sendPayslip',empId:emp.id,ppKey:ppKey,summaryData:summaryData})});
+      var data=await res.json();
+      if(data.ok){ok++;showToast('ส่งสลิป '+emp.name+' ไปที่ '+data.email+' แล้ว ✅','success');}
+      else throw new Error(data.error||'unknown');
+    }catch(e){fail++;showToast('ส่งสลิป '+emp.name+' ล้มเหลว: '+e.message,'error');}
+    await new Promise(function(r){setTimeout(r,1500);});
+  }
+  showToast('ส่งสลิปเสร็จ: สำเร็จ '+ok+' ล้มเหลว '+fail,(fail===0?'success':'error'));
+}
+
 function addSyncLog(msg){
   var el=document.getElementById('syncStatusLog');
   if(!el)return;

@@ -448,13 +448,23 @@ tr:hover td{background:var(--bg3);}
 <style>
 @media print {
   body > * { display: none !important; }
-  #cp-print-area { display: block !important; font-family: 'Sarabun', sans-serif; }
+  #cp-print-area { display: block !important; font-family: 'Sarabun', sans-serif; padding: 20px; }
   #cp-print-area table { width: 100%; border-collapse: collapse; font-size: 12px; }
   #cp-print-area th, #cp-print-area td { border: 1px solid #333; padding: 4px 8px; text-align: center; }
   #cp-print-area th { background: #f0f0f0; font-weight: bold; }
   #cp-print-area .print-title { font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 6px; }
   #cp-print-area .print-sub { font-size: 13px; text-align: center; margin-bottom: 12px; }
-  #cp-print-area .print-summary { margin-top: 12px; font-size: 13px; }
+  #cp-print-area .print-summary {
+    margin-top: 16px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    border: 2px solid #333;
+    display: inline-block;
+    padding: 6px 24px;
+    width: 100%;
+    box-sizing: border-box;
+  }
 }
 </style>
 

@@ -1487,19 +1487,31 @@ function renderPayables() {
 async function syncToSheets(type, branch, branchName, items) {
   if (!cfg.gsUrl) return;
   try {
-    await fetch(cfg.gsUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({
-        type: type,
-        branch: branch,
-        branchName: branchName,
-        items: items,
-        timestamp: new Date().toISOString()
-      })
+    var payload = JSON.stringify({
+      type: type,
+      branch: branch,
+      branchName: branchName,
+      items: items,
+      timestamp: new Date().toISOString()
     });
+    var url = cfg.gsUrl + '?payload=' + encodeURIComponent(payload);
+    await fetch(url, { method: 'GET', mode: 'no-cors' });
   } catch(err) { console.log('sync error', type, err); }
+}
+
+async function appendToSheet(type, branch, branchName, item) {
+  if (!cfg.gsUrl) return;
+  try {
+    var payload = JSON.stringify({
+      type: type,
+      branch: branch,
+      branchName: branchName,
+      item: item,
+      timestamp: new Date().toISOString()
+    });
+    var url = cfg.gsUrl + '?payload=' + encodeURIComponent(payload);
+    await fetch(url, { method: 'GET', mode: 'no-cors' });
+  } catch(err) { console.log('append error', type, err); }
 }
 
 async function syncPayable(showToast) {
@@ -1749,20 +1761,17 @@ async function saveLinemanSun() {
   // sync ขึ้น Sheets
   if (cfg.gsUrl) {
     try {
-      await fetch(cfg.gsUrl, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'lineman',
-          branch: branch,
-          branchName: BRANCH_NAMES[branch],
-          month: month,
-          amount: parseFloat(amount) || 0,
-          note: note,
-          timestamp: new Date().toISOString()
-        })
+      var lmPayload = JSON.stringify({
+        type: 'lineman',
+        branch: branch,
+        branchName: BRANCH_NAMES[branch],
+        month: month,
+        amount: parseFloat(amount) || 0,
+        note: note,
+        timestamp: new Date().toISOString()
       });
+      var lmUrl = cfg.gsUrl + '?payload=' + encodeURIComponent(lmPayload);
+      await fetch(lmUrl, { method: 'GET', mode: 'no-cors' });
     } catch(e) { console.log('lineman sync error', e); }
   }
 
@@ -2980,11 +2989,13 @@ function addCoupon() {
   if (coupons.find(function(c) { return c.code === code && c.branch === branch; })) {
     toast('รหัสคูปองนี้บันทึกแล้ว', 'error'); return;
   }
-  coupons.unshift({ id: Date.now(), branch: branch, date: date, code: code, type: type, amount: amount });
-  saveCoupons();
+  var newCoupon = { id: Date.now(), branch: branch, date: date, code: code, type: type, amount: amount };
+  coupons.unshift(newCoupon);
+  localStorage.setItem('ct_coupons', JSON.stringify(coupons));
   renderCoupons();
   document.getElementById('cp-code').value = '';
   document.getElementById('cp-amount').value = '';
+  appendToSheet('coupon_append', branch, BRANCH_NAMES[branch], newCoupon);
   toast('บันทึกคูปอง ' + code + ' แล้ว ✓', 'success');
 }
 

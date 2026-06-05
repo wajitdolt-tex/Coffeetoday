@@ -1685,10 +1685,12 @@ async function loadSummary() {
     // โหลดคูปองจาก Sheets
     if (data.couponRows && data.couponRows.length) {
       var sheetsCoupons = data.couponRows.map(function(r) {
+        var rawDate = String(r[0]||'');
+        if (rawDate.indexOf('T') >= 0) rawDate = rawDate.split('T')[0];
         return {
           id: r[4] || Date.now(),
           branch: branchKey,
-          date: String(r[0]||''),
+          date: rawDate,
           code: String(r[1]||''),
           type: String(r[2]||''),
           amount: parseFloat(r[3])||0
@@ -3011,7 +3013,7 @@ function addCoupon() {
   var code   = document.getElementById('cp-code').value.trim().toUpperCase();
   var type   = document.getElementById('cp-type').value;
   var branch = document.getElementById('cp-branch').value;
-  var date   = document.getElementById('cp-date').value;
+  var date   = (document.getElementById('cp-date').value || '').split('T')[0];
   if (!code)  { toast('กรุณากรอกรหัสคูปอง', 'error'); return; }
   if (!date)  { toast('กรุณาเลือกวันที่', 'error'); return; }
   var cpType = CP_TYPES[type];
@@ -3098,7 +3100,7 @@ function renderCoupons() {
       tAmount += c.amount;
       var tr = document.createElement('tr');
       tr.innerHTML =
-        '<td class="mono">' + c.date + '</td>'
+        '<td class="mono">' + (c.date ? c.date.split('T')[0] : '') + '</td>'
         + '<td style="font-weight:600;font-family:\'DM Mono\',monospace;">' + c.code + '</td>'
         + '<td style="font-size:13px;">' + (CP_TYPES[c.type] ? CP_TYPES[c.type].label : c.type) + '</td>'
         + '<td class="mono" style="color:var(--red);">' + fmt(c.amount) + '</td>'

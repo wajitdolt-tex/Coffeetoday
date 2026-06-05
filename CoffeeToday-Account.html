@@ -105,6 +105,7 @@ tr:hover td{background:var(--bg3);}
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="switchPage('daily',this)">รายวัน</button>
     <button class="nav-tab" onclick="switchPage('payable',this)">วางบิล</button>
+    <button class="nav-tab" onclick="switchPage('coupon',this)">คูปอง</button>
     <button class="nav-tab" onclick="switchPage('acctexp',this)">บัญชีร้าน</button>
     <button class="nav-tab" onclick="switchPage('summary',this)">สรุปเดือน</button>
     <button class="nav-tab" onclick="switchPage('admin',this)">🔒 Admin</button>
@@ -378,6 +379,87 @@ tr:hover td{background:var(--bg3);}
     <button class="btn btn-primary btn-sm" onclick="syncPayable(true)">☁ บันทึกขึ้น Sheets</button>
   </div>
 </div>
+
+<!-- ════ COUPON ════ -->
+<div id="page-coupon" class="page">
+  <div class="page-header"><h1>บันทึกคูปอง</h1><p>บันทึกรหัสคูปองที่ลูกค้าใช้งาน และ Export สรุปส่ง IT</p></div>
+
+  <div class="card">
+    <div class="card-title">บันทึกคูปอง</div>
+    <div class="grid-3">
+      <div class="form-row"><label>สาขา</label>
+        <select id="cp-branch">
+          <option value="passione">แพชชั่นระยอง</option>
+          <option value="lotus">โลตัสระยอง</option>
+        </select>
+      </div>
+      <div class="form-row"><label>วันที่</label><input type="date" id="cp-date"></div>
+      <div class="form-row"><label>รหัสคูปอง</label><input type="text" id="cp-code" placeholder="เช่น QD542367" style="text-transform:uppercase;"></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-row"><label>ประเภทคูปอง</label>
+        <select id="cp-type" onchange="onCpTypeChange()">
+          <option value="discount10">ส่วนลด 10 บาท</option>
+          <option value="free_thai">ฟรีชาไทย (50฿)</option>
+          <option value="free_greenmilk">ฟรีชาเขียวนม (50฿)</option>
+          <option value="discount50">ส่วนลด 50%</option>
+          <option value="buy1get1">1ฟรี1 / ส่วนลดเครื่องดื่ม 1ฟรี1</option>
+        </select>
+      </div>
+      <div class="form-row" id="cp-amount-row" style="display:none;">
+        <label>มูลค่าส่วนลด (฿)</label>
+        <input type="number" id="cp-amount" placeholder="0.00" step="0.01">
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="addCoupon()">+ บันทึกคูปอง</button>
+  </div>
+
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+    <span style="font-size:12px;color:var(--text3);">กรองสาขา:</span>
+    <button class="btn btn-sm btn-outline" id="cpf-passione" onclick="filterCoupon('passione')" style="border-color:var(--accent);color:var(--accent);">แพชชั่น</button>
+    <button class="btn btn-sm btn-outline" id="cpf-lotus" onclick="filterCoupon('lotus')">โลตัส</button>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:13px;flex-wrap:wrap;">
+    <span style="font-size:12px;color:var(--text3);">กรองเดือน:</span>
+    <input type="month" id="cp-filter-month" oninput="renderCoupons()" style="width:150px;font-size:13px;padding:4px 8px;">
+    <button class="btn btn-outline btn-sm" onclick="document.getElementById('cp-filter-month').value='';renderCoupons()">ทั้งหมด</button>
+    <button class="btn btn-primary btn-sm" onclick="exportCouponPDF()" style="margin-left:auto;">⬇ Export PDF ส่ง IT</button>
+    <button class="btn btn-primary btn-sm" onclick="syncCoupons(true)">☁ บันทึกขึ้น Sheets</button>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>วันที่</th><th>รหัสคูปอง</th><th>ประเภท</th><th>มูลค่า (฿)</th><th></th></tr></thead>
+        <tbody id="cp-tbody"></tbody>
+      </table>
+      <div id="cp-empty" class="empty-state" style="display:none;"><div class="icon">🎟</div><p>ยังไม่มีรายการ</p></div>
+    </div>
+  </div>
+
+  <div class="grid-3" style="margin-top:13px;">
+    <div class="stat-box"><div class="stat-label">จำนวนคูปองทั้งหมด</div><div class="stat-value" id="cp-tot-count">0</div></div>
+    <div class="stat-box"><div class="stat-label">มูลค่าส่วนลดรวม</div><div class="stat-value neg" id="cp-tot-amount">฿0.00</div></div>
+    <div class="stat-box"><div class="stat-label">เดือน</div><div class="stat-value" id="cp-tot-month" style="font-size:14px;">-</div></div>
+  </div>
+</div>
+
+<!-- Print Template for Coupon PDF -->
+<div id="cp-print-area" style="display:none;">
+</div>
+
+<style>
+@media print {
+  body > * { display: none !important; }
+  #cp-print-area { display: block !important; font-family: 'Sarabun', sans-serif; }
+  #cp-print-area table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  #cp-print-area th, #cp-print-area td { border: 1px solid #333; padding: 4px 8px; text-align: center; }
+  #cp-print-area th { background: #f0f0f0; font-weight: bold; }
+  #cp-print-area .print-title { font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 6px; }
+  #cp-print-area .print-sub { font-size: 13px; text-align: center; margin-bottom: 12px; }
+  #cp-print-area .print-summary { margin-top: 12px; font-size: 13px; }
+}
+</style>
 
 <!-- ════ SUMMARY ════ -->
 
@@ -988,11 +1070,19 @@ document.addEventListener('DOMContentLoaded', function() {
   if (cfg.branch) {
     var aeBranch = document.getElementById('ae-branch');
     if (aeBranch) aeBranch.value = cfg.branch;
+    var cpBranch = document.getElementById('cp-branch');
+    if (cpBranch) cpBranch.value = cfg.branch;
+    filterCoupon(cfg.branch);
   }
+  var cpDateEl = document.getElementById('cp-date');
+  if (cpDateEl) cpDateEl.value = new Date().toISOString().split('T')[0];
+  var cpMonthEl = document.getElementById('cp-filter-month');
+  if (cpMonthEl) cpMonthEl.value = new Date().toISOString().slice(0,7);
   renderAcctExp();
   renderSalaries();
   renderLoans();
   renderPayables();
+  renderCoupons();
 });
 
 function switchPage(name, btn) {
@@ -1535,6 +1625,26 @@ async function loadSummary() {
         localStorage.setItem('ct_loans', JSON.stringify(loans));
       }
       renderLoans();
+    }
+
+    // โหลดคูปองจาก Sheets
+    if (data.couponRows && data.couponRows.length) {
+      var sheetsCoupons = data.couponRows.map(function(r) {
+        return {
+          id: r[4] || Date.now(),
+          branch: branchKey,
+          date: String(r[0]||''),
+          code: String(r[1]||''),
+          type: String(r[2]||''),
+          amount: parseFloat(r[3])||0
+        };
+      });
+      var otherBranchCoupons = coupons.filter(function(c) { return c.branch !== branchKey; });
+      var sheetsIds = {};
+      sheetsCoupons.forEach(function(c) { sheetsIds[c.id] = true; });
+      coupons = otherBranchCoupons.filter(function(c) { return !sheetsIds[c.id]; }).concat(sheetsCoupons);
+      localStorage.setItem('ct_coupons', JSON.stringify(coupons));
+      renderCoupons();
     }
 
     renderSummary(data.rows || [], data.acctExpRows || [], branchKey);
@@ -2814,6 +2924,198 @@ function toggleExtraDetail() {
   var isOpen = detail.style.display !== 'none';
   detail.style.display = isOpen ? 'none' : 'block';
   btn.textContent = isOpen ? '▼ ดูรายละเอียด' : '▲ ซ่อน';
+}
+
+// ════ COUPON ════
+var coupons = JSON.parse(localStorage.getItem('ct_coupons') || '[]');
+var cpBranchFilter = 'passione';
+
+var CP_TYPES = {
+  discount10:    { label: 'ส่วนลด 10 บาท',           amount: 10,  fixed: true },
+  free_thai:     { label: 'ฟรีชาไทย',                amount: 50,  fixed: true },
+  free_greenmilk:{ label: 'ฟรีชาเขียวนม',            amount: 50,  fixed: true },
+  discount50:    { label: 'ส่วนลด 50%',              amount: 0,   fixed: false },
+  buy1get1:      { label: '1ฟรี1 / ส่วนลดเครื่องดื่ม 1ฟรี1', amount: 0, fixed: false }
+};
+
+function onCpTypeChange() {
+  var type = document.getElementById('cp-type').value;
+  var amountRow = document.getElementById('cp-amount-row');
+  amountRow.style.display = CP_TYPES[type] && !CP_TYPES[type].fixed ? 'block' : 'none';
+  if (CP_TYPES[type] && CP_TYPES[type].fixed) {
+    document.getElementById('cp-amount').value = '';
+  }
+}
+
+function addCoupon() {
+  var code   = document.getElementById('cp-code').value.trim().toUpperCase();
+  var type   = document.getElementById('cp-type').value;
+  var branch = document.getElementById('cp-branch').value;
+  var date   = document.getElementById('cp-date').value;
+  if (!code)  { toast('กรุณากรอกรหัสคูปอง', 'error'); return; }
+  if (!date)  { toast('กรุณาเลือกวันที่', 'error'); return; }
+  var cpType = CP_TYPES[type];
+  var amount = cpType.fixed ? cpType.amount : (parseFloat(document.getElementById('cp-amount').value) || 0);
+  if (!cpType.fixed && !amount) { toast('กรุณากรอกมูลค่าส่วนลด', 'error'); return; }
+  // เช็คซ้ำ
+  if (coupons.find(function(c) { return c.code === code && c.branch === branch; })) {
+    toast('รหัสคูปองนี้บันทึกแล้ว', 'error'); return;
+  }
+  coupons.unshift({ id: Date.now(), branch: branch, date: date, code: code, type: type, amount: amount });
+  saveCoupons();
+  renderCoupons();
+  document.getElementById('cp-code').value = '';
+  document.getElementById('cp-amount').value = '';
+  toast('บันทึกคูปอง ' + code + ' แล้ว ✓', 'success');
+}
+
+function delCoupon(id) {
+  if (!confirm('ลบรายการนี้?')) return;
+  coupons = coupons.filter(function(c) { return c.id !== id; });
+  saveCoupons();
+  renderCoupons();
+}
+
+function saveCoupons() {
+  localStorage.setItem('ct_coupons', JSON.stringify(coupons));
+  syncCoupons();
+}
+
+async function syncCoupons(showToast) {
+  if (!cfg.gsUrl) return;
+  var branches = ['passione', 'lotus'];
+  for (var b = 0; b < branches.length; b++) {
+    var branch = branches[b];
+    var items = coupons.filter(function(c) { return c.branch === branch; });
+    if (!items.length) continue;
+    try {
+      await fetch(cfg.gsUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'coupon',
+          branch: branch,
+          branchName: BRANCH_NAMES[branch],
+          items: items,
+          timestamp: new Date().toISOString()
+        })
+      });
+    } catch(e) { console.log('coupon sync error', e); }
+  }
+  if (showToast) toast('ซิงค์คูปองขึ้น Sheets แล้ว ✓', 'success');
+}
+
+function filterCoupon(branch) {
+  cpBranchFilter = branch;
+  ['passione','lotus'].forEach(function(k) {
+    var el = document.getElementById('cpf-' + k);
+    if (!el) return;
+    el.style.borderColor = k === branch ? 'var(--accent)' : '';
+    el.style.color       = k === branch ? 'var(--accent)' : '';
+  });
+  renderCoupons();
+}
+
+function renderCoupons() {
+  var tbody  = document.getElementById('cp-tbody');
+  var empty  = document.getElementById('cp-empty');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  var filterMonth = document.getElementById('cp-filter-month').value;
+  var list = coupons.filter(function(c) { return c.branch === cpBranchFilter; });
+  if (filterMonth) list = list.filter(function(c) { return c.date && c.date.startsWith(filterMonth); });
+  var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
+  var tAmount = 0;
+  if (!list.length) { empty.style.display = 'block'; }
+  else {
+    empty.style.display = 'none';
+    list.forEach(function(c) {
+      tAmount += c.amount;
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td class="mono">' + c.date + '</td>'
+        + '<td style="font-weight:600;font-family:\'DM Mono\',monospace;">' + c.code + '</td>'
+        + '<td style="font-size:13px;">' + (CP_TYPES[c.type] ? CP_TYPES[c.type].label : c.type) + '</td>'
+        + '<td class="mono" style="color:var(--red);">' + fmt(c.amount) + '</td>'
+        + '<td><button class="btn btn-danger btn-sm" onclick="delCoupon(' + c.id + ')">ลบ</button></td>';
+      tbody.appendChild(tr);
+    });
+  }
+  document.getElementById('cp-tot-count').textContent  = list.length + ' ใบ';
+  document.getElementById('cp-tot-amount').textContent = fmt(tAmount);
+  document.getElementById('cp-tot-month').textContent  = filterMonth || 'ทั้งหมด';
+}
+
+function exportCouponPDF() {
+  var filterMonth = document.getElementById('cp-filter-month').value;
+  if (!filterMonth) { toast('กรุณาเลือกเดือนก่อน Export', 'error'); return; }
+  var list = coupons.filter(function(c) {
+    return c.branch === cpBranchFilter && c.date && c.date.startsWith(filterMonth);
+  });
+  if (!list.length) { toast('ไม่มีข้อมูลในเดือนนี้', 'error'); return; }
+
+  var branchName = BRANCH_NAMES[cpBranchFilter] || cpBranchFilter;
+  var thaiMonths = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  var parts = filterMonth.split('-');
+  var monthName = thaiMonths[parseInt(parts[1])] + ' ' + (parseInt(parts[0]) + 543);
+
+  // นับแต่ละประเภท
+  var typeCounts = {};
+  var typeAmounts = {};
+  Object.keys(CP_TYPES).forEach(function(k) { typeCounts[k] = 0; typeAmounts[k] = 0; });
+  list.forEach(function(c) {
+    if (typeCounts[c.type] !== undefined) {
+      typeCounts[c.type]++;
+      typeAmounts[c.type] += c.amount;
+    }
+  });
+  var totalAmount = list.reduce(function(s, c) { return s + c.amount; }, 0);
+
+  // เรียงตามวันที่
+  list.sort(function(a,b) { return a.date.localeCompare(b.date); });
+
+  var rows = list.map(function(c) {
+    var day = parseInt(c.date.split('-')[2]);
+    return '<tr>'
+      + '<td>' + day + '</td>'
+      + '<td>' + c.code + '</td>'
+      + '<td>' + (c.type === 'discount10' ? '1' : '') + '</td>'
+      + '<td>' + (c.type === 'free_thai' ? '1' : '') + '</td>'
+      + '<td>' + (c.type === 'free_greenmilk' ? '1' : '') + '</td>'
+      + '<td>' + (c.type === 'discount50' ? '1' : '') + '</td>'
+      + '<td>' + (c.type === 'buy1get1' || c.type === 'drink1free1' ? '1' : '') + '</td>'
+      + '</tr>';
+  }).join('');
+
+  var printArea = document.getElementById('cp-print-area');
+  printArea.innerHTML =
+    '<div class="print-title">สรุปการใช้คูปอง เดือน' + monthName + ' สาขา' + branchName + '</div>'
+    + '<table>'
+    + '<thead><tr><th>วันที่</th><th>รหัสคูปอง</th><th>ส่วนลด 10 บาท</th><th>ฟรีชาไทย</th><th>ฟรีชาเขียวนม</th><th>ส่วนลด 50%</th><th>1ฟรี1 / ส่วนลดเครื่องดื่ม 1ฟรี1</th></tr></thead>'
+    + '<tbody>' + rows + '</tbody>'
+    + '<tfoot>'
+    + '<tr style="font-weight:bold;background:#f0f0f0;">'
+      + '<td colspan="2">รวมบิล ' + list.length + '</td>'
+      + '<td>' + typeCounts['discount10'] + '</td>'
+      + '<td>' + typeCounts['free_thai'] + '</td>'
+      + '<td>' + typeCounts['free_greenmilk'] + '</td>'
+      + '<td>' + typeCounts['discount50'] + '</td>'
+      + '<td>' + (typeCounts['buy1get1'] + (typeCounts['drink1free1']||0)) + '</td>'
+    + '</tr>'
+    + '<tr style="font-weight:bold;background:#f0f0f0;">'
+      + '<td colspan="2">รวมส่วนลด</td>'
+      + '<td>' + (typeAmounts['discount10'] || '') + '</td>'
+      + '<td>' + (typeAmounts['free_thai'] || '') + '</td>'
+      + '<td>' + (typeAmounts['free_greenmilk'] || '') + '</td>'
+      + '<td>' + (typeAmounts['discount50'] || '') + '</td>'
+      + '<td>' + ((typeAmounts['buy1get1']||0) + (typeAmounts['drink1free1']||0) || '') + '</td>'
+    + '</tr>'
+    + '</tfoot>'
+    + '</table>'
+    + '<div class="print-summary">สรุปยอดลด ' + totalAmount.toLocaleString('th-TH') + ' บาท</div>';
+
+  window.print();
 }
 
 function toast(msg, type) {

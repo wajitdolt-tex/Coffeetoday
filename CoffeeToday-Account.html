@@ -378,6 +378,9 @@ tr:hover td{background:var(--bg3);}
     <div class="stat-box"><div class="stat-label">ค้างชำระ</div><div class="stat-value neg" id="p-tot-unpaid">฿0.00</div></div>
     <div class="stat-box"><div class="stat-label">ชำระแล้ว</div><div class="stat-value pos" id="p-tot-paid">฿0.00</div></div>
   </div>
+  <div style="text-align:right;margin-top:13px;padding-bottom:12px;">
+    <button class="btn btn-primary btn-sm" onclick="syncPayable(true)">☁ บันทึกขึ้น Sheets</button>
+  </div>
 </div>
 
 <!-- ════ COUPON ════ -->
@@ -448,6 +451,9 @@ tr:hover td{background:var(--bg3);}
     <div class="stat-box"><div class="stat-label">จำนวนคูปองทั้งหมด</div><div class="stat-value" id="cp-tot-count">0</div></div>
     <div class="stat-box"><div class="stat-label">มูลค่าส่วนลดรวม</div><div class="stat-value neg" id="cp-tot-amount">฿0.00</div></div>
     <div class="stat-box"><div class="stat-label">เดือน</div><div class="stat-value" id="cp-tot-month" style="font-size:14px;">-</div></div>
+  </div>
+  <div style="text-align:right;margin-top:13px;padding-bottom:12px;">
+    <button class="btn btn-primary btn-sm" onclick="syncCoupons(true)">☁ บันทึกขึ้น Sheets</button>
   </div>
 </div>
 
@@ -783,7 +789,7 @@ tr:hover td{background:var(--bg3);}
     <div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:12px;color:var(--text2);">ยอดรวมเงินเดือน <span id="sal-filter-label" style="color:var(--accent);"></span></span>
       <div style="display:flex;align-items:center;gap:10px;">
-        <button class="btn btn-primary btn-sm" onclick="syncSalary(true)" style="display:none;">☁ บันทึกขึ้น Sheets</button>
+        <button class="btn btn-primary btn-sm" onclick="syncSalary(true)">☁ บันทึกขึ้น Sheets</button>
         <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--blue);font-size:15px;" id="sal-total">฿0.00</span>
       </div>
     </div>
@@ -846,7 +852,7 @@ tr:hover td{background:var(--bg3);}
     <div class="stat-box"><div class="stat-label">รายการ <span id="ae-filter-label" style="color:var(--accent);"></span></div><div class="stat-value" id="ae-tot-count">0</div></div>
     <div class="stat-box"><div class="stat-label">ยอดรวม</div><div class="stat-value neg" id="ae-tot-amount">฿0.00</div></div>
   </div>
-  <div style="text-align:right;margin-top:13px;padding-bottom:12px;display:none;">
+  <div style="text-align:right;margin-top:13px;padding-bottom:12px;">
     <button class="btn btn-primary btn-sm" onclick="syncAcctExp()">☁ บันทึกขึ้น Sheets (เฉพาะสาขาที่เลือก)</button>
   </div>
 
@@ -1246,8 +1252,8 @@ async function submitDaily() {
   };
 
   try {
-    await fetch(cfg.gsUrl, { method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    var dailyUrl = cfg.gsUrl + '?payload=' + encodeURIComponent(JSON.stringify(payload));
+    await fetch(dailyUrl, { method: 'GET', mode: 'no-cors' });
     toast(isEditMode ? 'อัปเดตข้อมูลสำเร็จ ✓' : 'บันทึกสำเร็จ ✓', 'success');
     isEditMode = false;
     editRowIndex = -1;

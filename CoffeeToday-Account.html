@@ -387,19 +387,27 @@ tr:hover td{background:var(--bg3);}
 
   <div class="card">
     <div class="card-title">บันทึกคูปอง</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
-      <div class="form-row" style="flex:1;min-width:140px;"><label>สาขา</label>
-        <select id="cp-branch">
+    <div style="display:flex;gap:13px;align-items:flex-end;margin-bottom:13px;flex-wrap:wrap;">
+      <div class="form-row" style="width:180px;margin-bottom:0;">
+        <label>สาขา</label>
+        <select id="cp-branch" style="width:180px;">
           <option value="passione">แพชชั่นระยอง</option>
           <option value="lotus">โลตัสระยอง</option>
         </select>
       </div>
-      <div class="form-row" style="flex:1;min-width:140px;"><label>วันที่</label><input type="date" id="cp-date"></div>
-      <div class="form-row" style="flex:1;min-width:140px;"><label>รหัสคูปอง</label><input type="text" id="cp-code" placeholder="เช่น QD542367" style="text-transform:uppercase;"></div>
+      <div class="form-row" style="width:150px;margin-bottom:0;">
+        <label>วันที่</label>
+        <input type="date" id="cp-date" style="width:150px;">
+      </div>
+      <div class="form-row" style="width:160px;margin-bottom:0;">
+        <label>รหัสคูปอง</label>
+        <input type="text" id="cp-code" placeholder="เช่น QD542367" style="width:160px;text-transform:uppercase;">
+      </div>
     </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
-      <div class="form-row" style="flex:2;min-width:200px;"><label>ประเภทคูปอง</label>
-        <select id="cp-type" onchange="onCpTypeChange()">
+    <div style="display:flex;gap:13px;align-items:flex-end;margin-bottom:13px;flex-wrap:wrap;">
+      <div class="form-row" style="width:280px;margin-bottom:0;">
+        <label>ประเภทคูปอง</label>
+        <select id="cp-type" onchange="onCpTypeChange()" style="width:280px;">
           <option value="discount10">ส่วนลด 10 บาท</option>
           <option value="free_thai">ฟรีชาไทย (50฿)</option>
           <option value="free_greenmilk">ฟรีชาเขียวนม (50฿)</option>
@@ -407,9 +415,9 @@ tr:hover td{background:var(--bg3);}
           <option value="buy1get1">1ฟรี1 / ส่วนลดเครื่องดื่ม 1ฟรี1</option>
         </select>
       </div>
-      <div class="form-row" id="cp-amount-row" style="display:none;flex:1;min-width:140px;">
+      <div class="form-row" id="cp-amount-row" style="display:none;width:150px;margin-bottom:0;">
         <label>มูลค่าส่วนลด (฿)</label>
-        <input type="number" id="cp-amount" placeholder="0.00" step="0.01">
+        <input type="number" id="cp-amount" placeholder="0.00" step="0.01" style="width:150px;">
       </div>
     </div>
     <button class="btn btn-primary" onclick="addCoupon()">+ บันทึกคูปอง</button>

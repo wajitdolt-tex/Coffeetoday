@@ -375,8 +375,6 @@ tr:hover td{background:var(--bg3);}
     <div class="stat-box"><div class="stat-label">ค้างชำระ</div><div class="stat-value neg" id="p-tot-unpaid">฿0.00</div></div>
     <div class="stat-box"><div class="stat-label">ชำระแล้ว</div><div class="stat-value pos" id="p-tot-paid">฿0.00</div></div>
   </div>
-  <div style="text-align:right;margin-top:13px;padding-bottom:12px;">
-    <button class="btn btn-primary btn-sm" onclick="syncPayable(true)">☁ บันทึกขึ้น Sheets</button>
   </div>
 </div>
 
@@ -386,7 +384,7 @@ tr:hover td{background:var(--bg3);}
 
   <div class="card">
     <div class="card-title">บันทึกคูปอง</div>
-    <div class="grid-3">
+    <div class="grid-2" style="margin-bottom:10px;">
       <div class="form-row"><label>สาขา</label>
         <select id="cp-branch">
           <option value="passione">แพชชั่นระยอง</option>
@@ -394,9 +392,9 @@ tr:hover td{background:var(--bg3);}
         </select>
       </div>
       <div class="form-row"><label>วันที่</label><input type="date" id="cp-date"></div>
-      <div class="form-row"><label>รหัสคูปอง</label><input type="text" id="cp-code" placeholder="เช่น QD542367" style="text-transform:uppercase;"></div>
     </div>
-    <div class="grid-2">
+    <div class="grid-2" style="margin-bottom:10px;">
+      <div class="form-row"><label>รหัสคูปอง</label><input type="text" id="cp-code" placeholder="เช่น QD542367" style="text-transform:uppercase;"></div>
       <div class="form-row"><label>ประเภทคูปอง</label>
         <select id="cp-type" onchange="onCpTypeChange()">
           <option value="discount10">ส่วนลด 10 บาท</option>
@@ -406,10 +404,10 @@ tr:hover td{background:var(--bg3);}
           <option value="buy1get1">1ฟรี1 / ส่วนลดเครื่องดื่ม 1ฟรี1</option>
         </select>
       </div>
-      <div class="form-row" id="cp-amount-row" style="display:none;">
-        <label>มูลค่าส่วนลด (฿)</label>
-        <input type="number" id="cp-amount" placeholder="0.00" step="0.01">
-      </div>
+    </div>
+    <div class="form-row" id="cp-amount-row" style="display:none;max-width:300px;">
+      <label>มูลค่าส่วนลด (฿)</label>
+      <input type="number" id="cp-amount" placeholder="0.00" step="0.01">
     </div>
     <button class="btn btn-primary" onclick="addCoupon()">+ บันทึกคูปอง</button>
   </div>
@@ -424,7 +422,6 @@ tr:hover td{background:var(--bg3);}
     <input type="month" id="cp-filter-month" oninput="renderCoupons()" style="width:150px;font-size:13px;padding:4px 8px;">
     <button class="btn btn-outline btn-sm" onclick="document.getElementById('cp-filter-month').value='';renderCoupons()">ทั้งหมด</button>
     <button class="btn btn-primary btn-sm" onclick="exportCouponPDF()" style="margin-left:auto;">⬇ Export PDF ส่ง IT</button>
-    <button class="btn btn-primary btn-sm" onclick="syncCoupons(true)">☁ บันทึกขึ้น Sheets</button>
   </div>
 
   <div class="card" style="padding:0;overflow:hidden;">
@@ -766,7 +763,7 @@ tr:hover td{background:var(--bg3);}
     <div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:12px;color:var(--text2);">ยอดรวมเงินเดือน <span id="sal-filter-label" style="color:var(--accent);"></span></span>
       <div style="display:flex;align-items:center;gap:10px;">
-        <button class="btn btn-primary btn-sm" onclick="syncSalary(true)">☁ บันทึกขึ้น Sheets</button>
+        <button class="btn btn-primary btn-sm" onclick="syncSalary(true)" style="display:none;">☁ บันทึกขึ้น Sheets</button>
         <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--blue);font-size:15px;" id="sal-total">฿0.00</span>
       </div>
     </div>
@@ -829,7 +826,7 @@ tr:hover td{background:var(--bg3);}
     <div class="stat-box"><div class="stat-label">รายการ <span id="ae-filter-label" style="color:var(--accent);"></span></div><div class="stat-value" id="ae-tot-count">0</div></div>
     <div class="stat-box"><div class="stat-label">ยอดรวม</div><div class="stat-value neg" id="ae-tot-amount">฿0.00</div></div>
   </div>
-  <div style="text-align:right;margin-top:13px;padding-bottom:12px;">
+  <div style="text-align:right;margin-top:13px;padding-bottom:12px;display:none;">
     <button class="btn btn-primary btn-sm" onclick="syncAcctExp()">☁ บันทึกขึ้น Sheets (เฉพาะสาขาที่เลือก)</button>
   </div>
 
@@ -2653,7 +2650,6 @@ function saveSalaries() {
   localStorage.setItem('ct_salaries', JSON.stringify(salaries));
   syncSalary();
 }
-
 function getSalaryTotal(branch, month) {
   return salaries.filter(function(s) {
     var matchBranch = !branch || s.branch === branch;
@@ -2840,6 +2836,7 @@ function addAcctExp() {
     note: document.getElementById('ae-note').value.trim()
   });
   saveAcctExp();
+  syncAcctExp();
   renderAcctExp();
   document.getElementById('ae-desc').value = '';
   document.getElementById('ae-amount').value = '';
@@ -2908,13 +2905,15 @@ function renderAcctExp() {
 }
 
 async function syncAcctExp() {
-  if (!cfg.gsUrl) { toast('กรุณาตั้งค่า URL ก่อน', 'error'); return; }
-  var branch = aeFilter !== 'all' ? aeFilter : (cfg.branch || 'passione');
-  var branchName = BRANCH_NAMES[branch];
-  var itemsToSync = acctExps.filter(function(x) { return x.branch === branch; });
-  if (!itemsToSync.length) { toast('ไม่มีรายการของ' + branchName + 'ที่จะบันทึก', 'error'); return; }
-  await syncToSheets('acctexp', branch, branchName, itemsToSync);
-  toast('ซิงค์ ' + branchName + ' ขึ้น Sheets แล้ว ✓', 'success');
+  if (!cfg.gsUrl) return;
+  var branches = ['passione', 'lotus'];
+  for (var b = 0; b < branches.length; b++) {
+    var branch = branches[b];
+    var branchName = BRANCH_NAMES[branch];
+    var itemsToSync = acctExps.filter(function(x) { return x.branch === branch; });
+    if (!itemsToSync.length) continue;
+    await syncToSheets('acctexp', branch, branchName, itemsToSync);
+  }
 }
 
 function toggleExtraDetail() {

@@ -924,6 +924,11 @@ function filterPBranch(type) {
 }
 var payables = JSON.parse(localStorage.getItem('ct_payables') || '[]');
 var cfg = JSON.parse(localStorage.getItem('ct_cfg') || '{}');
+// Hardcode URL — ไม่ต้องตั้งค่า
+if (!cfg.gsUrl) {
+  cfg.gsUrl = 'https://script.google.com/macros/s/AKfycbx7xo7RxSw9icLZtlZx1d4njstPdOzOtrcKa8Gaxt0N5eQBCdf-XnH-Gl62J8_aJBQM/exec';
+  localStorage.setItem('ct_cfg', JSON.stringify(cfg));
+}
 
 var BRANCH_NAMES = { passione: 'แพชชั่นระยอง', lotus: 'โลตัสระยอง' };
 

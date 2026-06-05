@@ -379,7 +379,7 @@ tr:hover td{background:var(--bg3);}
     <div class="stat-box"><div class="stat-label">ชำระแล้ว</div><div class="stat-value pos" id="p-tot-paid">฿0.00</div></div>
   </div>
   <div style="text-align:right;margin-top:13px;padding-bottom:12px;">
-    <button class="btn btn-primary btn-sm" onclick="syncPayable(true)">☁ บันทึกขึ้น Sheets</button>
+    <button class="btn btn-primary btn-sm" onclick="syncPayable(true, this)">☁ บันทึกขึ้น Sheets</button>
   </div>
 </div>
 
@@ -453,7 +453,7 @@ tr:hover td{background:var(--bg3);}
     <div class="stat-box"><div class="stat-label">เดือน</div><div class="stat-value" id="cp-tot-month" style="font-size:14px;">-</div></div>
   </div>
   <div style="text-align:right;margin-top:13px;padding-bottom:12px;">
-    <button class="btn btn-primary btn-sm" onclick="syncCoupons(true)">☁ บันทึกขึ้น Sheets</button>
+    <button class="btn btn-primary btn-sm" onclick="syncCoupons(true, this)">☁ บันทึกขึ้น Sheets</button>
   </div>
 </div>
 
@@ -789,7 +789,7 @@ tr:hover td{background:var(--bg3);}
     <div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:12px;color:var(--text2);">ยอดรวมเงินเดือน <span id="sal-filter-label" style="color:var(--accent);"></span></span>
       <div style="display:flex;align-items:center;gap:10px;">
-        <button class="btn btn-primary btn-sm" onclick="syncSalary(true)">☁ บันทึกขึ้น Sheets</button>
+        <button class="btn btn-primary btn-sm" onclick="syncSalary(true, this)">☁ บันทึกขึ้น Sheets</button>
         <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--blue);font-size:15px;" id="sal-total">฿0.00</span>
       </div>
     </div>
@@ -853,7 +853,7 @@ tr:hover td{background:var(--bg3);}
     <div class="stat-box"><div class="stat-label">ยอดรวม</div><div class="stat-value neg" id="ae-tot-amount">฿0.00</div></div>
   </div>
   <div style="text-align:right;margin-top:13px;padding-bottom:12px;">
-    <button class="btn btn-primary btn-sm" onclick="syncAcctExp()">☁ บันทึกขึ้น Sheets (เฉพาะสาขาที่เลือก)</button>
+    <button class="btn btn-primary btn-sm" onclick="syncAcctExp(this)">☁ บันทึกขึ้น Sheets (เฉพาะสาขาที่เลือก)</button>
   </div>
 
   <!-- เงินยืม -->
@@ -1520,11 +1520,24 @@ async function appendToSheet(type, branch, branchName, item) {
   } catch(err) { console.log('append error', type, err); }
 }
 
-async function syncPayable(showToast) {
+
+function setBtnLoading(btn, loading) {
+  if (!btn) return;
+  if (loading) {
+    btn.disabled = true;
+    btn.dataset.origText = btn.innerHTML;
+    btn.innerHTML = '<span class="loader"></span> กำลังบันทึก...';
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = btn.dataset.origText || btn.innerHTML;
+  }
+}
+async function syncPayable(showToast, btn) {
   if (!cfg.gsUrl) {
     if (showToast) toast('กรุณาตั้งค่า URL ก่อน', 'error');
     return;
   }
+  setBtnLoading(btn, true);
   try {
     var branches = ['passione', 'lotus'];
     for (var b = 0; b < branches.length; b++) {
@@ -1536,19 +1549,26 @@ async function syncPayable(showToast) {
     if (showToast) toast('ซิงค์วางบิลขึ้น Sheets แล้ว ✓', 'success');
   } catch(err) {
     if (showToast) toast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+  } finally {
+    setBtnLoading(btn, false);
   }
 }
 
-async function syncSalary(showToast) {
+async function syncSalary(showToast, btn) {
   if (!cfg.gsUrl) return;
-  var branches = ['passione', 'lotus'];
-  for (var b = 0; b < branches.length; b++) {
-    var branch = branches[b];
-    var items = salaries.filter(function(s) { return s.branch === branch; });
-    if (!items.length) continue;
-    await syncToSheets('salary', branch, BRANCH_NAMES[branch], items);
+  setBtnLoading(btn, true);
+  try {
+    var branches = ['passione', 'lotus'];
+    for (var b = 0; b < branches.length; b++) {
+      var branch = branches[b];
+      var items = salaries.filter(function(s) { return s.branch === branch; });
+      if (!items.length) continue;
+      await syncToSheets('salary', branch, BRANCH_NAMES[branch], items);
+    }
+    if (showToast) toast('ซิงค์เงินเดือนขึ้น Sheets แล้ว ✓', 'success');
+  } finally {
+    setBtnLoading(btn, false);
   }
-  if (showToast) toast('ซิงค์เงินเดือนขึ้น Sheets แล้ว ✓', 'success');
 }
 
 async function syncLoan() {
@@ -2939,15 +2959,21 @@ function renderAcctExp() {
   });
 }
 
-async function syncAcctExp() {
+async function syncAcctExp(btn) {
   if (!cfg.gsUrl) return;
-  var branches = ['passione', 'lotus'];
-  for (var b = 0; b < branches.length; b++) {
-    var branch = branches[b];
-    var branchName = BRANCH_NAMES[branch];
-    var itemsToSync = acctExps.filter(function(x) { return x.branch === branch; });
-    if (!itemsToSync.length) continue;
-    await syncToSheets('acctexp', branch, branchName, itemsToSync);
+  setBtnLoading(btn, true);
+  try {
+    var branches = ['passione', 'lotus'];
+    for (var b = 0; b < branches.length; b++) {
+      var branch = branches[b];
+      var branchName = BRANCH_NAMES[branch];
+      var itemsToSync = acctExps.filter(function(x) { return x.branch === branch; });
+      if (!itemsToSync.length) continue;
+      await syncToSheets('acctexp', branch, branchName, itemsToSync);
+    }
+    toast('ซิงค์บัญชีร้านขึ้น Sheets แล้ว ✓', 'success');
+  } finally {
+    setBtnLoading(btn, false);
   }
 }
 
@@ -3017,26 +3043,31 @@ function saveCoupons() {
   syncCoupons();
 }
 
-async function syncCoupons(showToast) {
+async function syncCoupons(showToast, btn) {
   if (!cfg.gsUrl) return;
-  var branches = ['passione', 'lotus'];
-  for (var b = 0; b < branches.length; b++) {
-    var branch = branches[b];
-    var items = coupons.filter(function(c) { return c.branch === branch; });
-    if (!items.length) continue;
-    try {
-      var payload = JSON.stringify({
-        type: 'coupon',
-        branch: branch,
-        branchName: BRANCH_NAMES[branch],
-        items: items,
-        timestamp: new Date().toISOString()
-      });
-      var url = cfg.gsUrl + '?payload=' + encodeURIComponent(payload);
-      await fetch(url, { method: 'GET', mode: 'no-cors' });
-    } catch(e) { console.log('coupon sync error', e); }
+  setBtnLoading(btn, true);
+  try {
+    var branches = ['passione', 'lotus'];
+    for (var b = 0; b < branches.length; b++) {
+      var branch = branches[b];
+      var items = coupons.filter(function(c) { return c.branch === branch; });
+      if (!items.length) continue;
+      try {
+        var payload = JSON.stringify({
+          type: 'coupon',
+          branch: branch,
+          branchName: BRANCH_NAMES[branch],
+          items: items,
+          timestamp: new Date().toISOString()
+        });
+        var url = cfg.gsUrl + '?payload=' + encodeURIComponent(payload);
+        await fetch(url, { method: 'GET', mode: 'no-cors' });
+      } catch(e) { console.log('coupon sync error', e); }
+    }
+    if (showToast) toast('ซิงค์คูปองขึ้น Sheets แล้ว ✓', 'success');
+  } finally {
+    setBtnLoading(btn, false);
   }
-  if (showToast) toast('ซิงค์คูปองขึ้น Sheets แล้ว ✓', 'success');
 }
 
 function filterCoupon(branch) {

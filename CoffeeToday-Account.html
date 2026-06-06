@@ -1503,8 +1503,12 @@ async function syncToSheets(type, branch, branchName, items) {
       items: items,
       timestamp: new Date().toISOString()
     });
-    var url = cfg.gsUrl + '?payload=' + encodeURIComponent(payload);
-    await fetch(url, { method: 'GET', mode: 'no-cors' });
+    await fetch(cfg.gsUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload
+    });
   } catch(err) { console.log('sync error', type, err); }
 }
 
@@ -1518,8 +1522,12 @@ async function appendToSheet(type, branch, branchName, item) {
       item: item,
       timestamp: new Date().toISOString()
     });
-    var url = cfg.gsUrl + '?payload=' + encodeURIComponent(payload);
-    await fetch(url, { method: 'GET', mode: 'no-cors' });
+    await fetch(cfg.gsUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload
+    });
   } catch(err) { console.log('append error', type, err); }
 }
 

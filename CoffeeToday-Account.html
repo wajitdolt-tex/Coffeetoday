@@ -873,11 +873,14 @@ tr:hover td{background:var(--bg3);}
 
     <hr class="divider">
 
-    <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
-      <span style="font-size:12px;color:var(--text3);">กรองสาขา:</span>
-      <button class="btn btn-sm btn-outline" id="lf-all" onclick="filterLoan('all')" style="border-color:var(--accent);color:var(--accent);">ทั้งหมด</button>
-      <button class="btn btn-sm btn-outline" id="lf-passione" onclick="filterLoan('passione')">แพชชั่น</button>
-      <button class="btn btn-sm btn-outline" id="lf-lotus" onclick="filterLoan('lotus')">โลตัส</button>
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap;justify-content:space-between;">
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <span style="font-size:12px;color:var(--text3);">กรองสาขา:</span>
+        <button class="btn btn-sm btn-outline" id="lf-all" onclick="filterLoan('all')" style="border-color:var(--accent);color:var(--accent);">ทั้งหมด</button>
+        <button class="btn btn-sm btn-outline" id="lf-passione" onclick="filterLoan('passione')">แพชชั่น</button>
+        <button class="btn btn-sm btn-outline" id="lf-lotus" onclick="filterLoan('lotus')">โลตัส</button>
+      </div>
+      <button class="btn btn-sm btn-outline" id="loan-show-settled-btn" onclick="toggleLoanSettled()" style="font-size:11px;">👁 แสดงที่คืนครบแล้ว</button>
     </div>
 
     <div class="tbl-wrap">
@@ -1540,11 +1543,15 @@ async function syncPayable(showToast, btn) {
   setBtnLoading(btn, true);
   try {
     var branches = ['passione', 'lotus'];
+    // แก้ closure bug: แยก filter ออกมาก่อน loop เพื่อให้ branchKey ถูก capture ถูกต้อง
+    var passItems = payables.filter(function(px) { return px.branch === 'passione'; });
+    var lotusItems = payables.filter(function(px) { return px.branch === 'lotus'; });
+    var itemsMap = { passione: passItems, lotus: lotusItems };
     for (var b = 0; b < branches.length; b++) {
-      var branch = branches[b];
-      var items = payables.filter(function(px) { return px.branch === branch; });
-      if (!items.length) continue;
-      await syncToSheets('payable', branch, BRANCH_NAMES[branch], items);
+      var branchKey = branches[b];
+      var items = itemsMap[branchKey];
+      // sync ทุก branch เสมอ แม้ไม่มี items — Apps Script จะล้างแถวเก่าให้
+      await syncToSheets('payable', branchKey, BRANCH_NAMES[branchKey], items);
     }
     if (showToast) toast('ซิงค์วางบิลขึ้น Sheets แล้ว ✓', 'success');
   } catch(err) {
@@ -2493,6 +2500,14 @@ function adminClearAll() {
 // ════ LOAN ════
 var loans = JSON.parse(localStorage.getItem('ct_loans') || '[]');
 var loanFilter = 'all';
+var loanShowSettled = false;
+
+function toggleLoanSettled() {
+  loanShowSettled = !loanShowSettled;
+  var btn = document.getElementById('loan-show-settled-btn');
+  if (btn) btn.textContent = loanShowSettled ? '🙈 ซ่อนที่คืนครบแล้ว' : '👁 แสดงที่คืนครบแล้ว';
+  renderLoans();
+}
 
 function filterLoan(f) {
   loanFilter = f;
@@ -2513,7 +2528,7 @@ function addLoan() {
   if (!from)              { toast('กรุณาระบุว่ายืมจากใคร', 'error'); return; }
   if (!amount || amount <= 0) { toast('กรุณาระบุจำนวนเงิน', 'error'); return; }
   loans.unshift({
-    id: Date.now(),
+    id: Date.now() + Math.floor(Math.random() * 10000),
     date: date,
     from: from,
     amount: amount,
@@ -2582,6 +2597,13 @@ function delLoan(id) {
 }
 
 function saveLoans() {
+  // dedup by id
+  var seen = {};
+  loans = loans.filter(function(l) {
+    if (seen[l.id]) return false;
+    seen[l.id] = true;
+    return true;
+  });
   localStorage.setItem('ct_loans', JSON.stringify(loans));
   syncLoan();
 }
@@ -2596,6 +2618,13 @@ function renderLoans() {
   var tAll = 0, tPaid = 0;
 
   var list = loanFilter === 'all' ? loans : loans.filter(function(l) { return l.branch === loanFilter; });
+  // ซ่อนรายการที่คืนครบแล้วถ้า loanShowSettled = false
+  if (!loanShowSettled) {
+    list = list.filter(function(l) {
+      var repaid = l.repayments.reduce(function(s, r) { return s + r.amount; }, 0);
+      return (l.amount - repaid) > 0;
+    });
+  }
 
   if (!list.length) { empty.style.display = 'block'; }
   else {

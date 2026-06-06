@@ -1620,15 +1620,20 @@ async function loadSummary() {
         };
       });
       var otherBranchPayables = payables.filter(function(px) { return px.branch !== branchKey; });
-      // dedup: ถ้า id ซ้ำกันให้เอา Sheets เป็นหลัก
+      // merge: Sheets อัพเดท status (paid/paidDate) แต่รายการใหม่ที่ยังไม่ sync ขึ้นชีทให้เก็บไว้
       var sheetsIds = {};
       sheetsPayables.forEach(function(p) { sheetsIds[p.id] = true; });
-      payables = otherBranchPayables.filter(function(px) { return !sheetsIds[px.id]; }).concat(sheetsPayables);
+      // รายการที่อยู่ใน local แต่ไม่มีในชีท = รายการใหม่ที่ยังไม่ sync → เก็บไว้
+      var localOnlyPayables = payables.filter(function(px) {
+        return px.branch === branchKey && !sheetsIds[px.id];
+      });
+      payables = otherBranchPayables.concat(sheetsPayables).concat(localOnlyPayables);
       localStorage.setItem('ct_payables', JSON.stringify(payables));
+      // sync รายการใหม่ที่ยังไม่มีในชีทขึ้นไปด้วยเลย
+      if (localOnlyPayables.length) syncPayable();
       renderPayables();
     } else if (data.payableRows && data.payableRows.length === 0) {
-      payables = payables.filter(function(px) { return px.branch !== branchKey; });
-      localStorage.setItem('ct_payables', JSON.stringify(payables));
+      // ชีทว่าง แต่ local อาจมีรายการใหม่ที่ยังไม่ sync → ไม่ลบ local
       renderPayables();
     }
 

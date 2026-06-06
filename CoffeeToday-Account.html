@@ -434,7 +434,10 @@ tr:hover td{background:var(--bg3);}
     <span style="font-size:12px;color:var(--text3);">กรองเดือน:</span>
     <input type="month" id="cp-filter-month" oninput="renderCoupons()" style="width:150px;font-size:13px;padding:4px 8px;">
     <button class="btn btn-outline btn-sm" onclick="document.getElementById('cp-filter-month').value='';renderCoupons()">ทั้งหมด</button>
-    <button class="btn btn-primary btn-sm" onclick="exportCouponPDF()" style="margin-left:auto;">⬇ Export PDF ส่ง IT</button>
+    <div style="margin-left:auto;display:flex;gap:8px;">
+      <button class="btn btn-primary btn-sm" onclick="syncCoupons(true, this)">☁ บันทึกขึ้น Sheets</button>
+      <button class="btn btn-primary btn-sm" onclick="exportCouponPDF()">⬇ Export PDF ส่ง IT</button>
+    </div>
   </div>
 
   <div class="card" style="padding:0;overflow:hidden;">
@@ -451,9 +454,6 @@ tr:hover td{background:var(--bg3);}
     <div class="stat-box"><div class="stat-label">จำนวนคูปองทั้งหมด</div><div class="stat-value" id="cp-tot-count">0</div></div>
     <div class="stat-box"><div class="stat-label">มูลค่าส่วนลดรวม</div><div class="stat-value neg" id="cp-tot-amount">฿0.00</div></div>
     <div class="stat-box"><div class="stat-label">เดือน</div><div class="stat-value" id="cp-tot-month" style="font-size:14px;">-</div></div>
-  </div>
-  <div style="text-align:right;margin-top:13px;padding-bottom:12px;">
-    <button class="btn btn-primary btn-sm" onclick="syncCoupons(true, this)">☁ บันทึกขึ้น Sheets</button>
   </div>
 </div>
 

@@ -1708,9 +1708,13 @@ async function loadSummary() {
       var sheetsCoupons = data.couponRows.map(function(r) {
         var rawDate = String(r[0]||'');
         if (rawDate.indexOf('T') >= 0) rawDate = rawDate.split('T')[0];
+        // อ่าน branch จาก column F ในชีท แล้วแปลงกลับเป็น key
+        var BRANCH_KEY_MAP = { 'แพชชั่นระยอง': 'passione', 'โลตัสระยอง': 'lotus' };
+        var rawBranch = String(r[5]||'');
+        var mappedBranch = BRANCH_KEY_MAP[rawBranch] || branchKey;
         return {
           id: r[4] || Date.now(),
-          branch: branchKey,
+          branch: mappedBranch,
           date: rawDate,
           code: String(r[1]||''),
           type: String(r[2]||''),

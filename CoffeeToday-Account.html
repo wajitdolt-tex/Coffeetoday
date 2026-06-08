@@ -1117,6 +1117,7 @@ function switchPage(name, btn) {
   document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
   document.getElementById('page-' + name).classList.add('active');
   btn.classList.add('active');
+  if (name === 'coupon') loadCouponsFromSheets();
 }
 
 var BRANCH_ACCOUNTS = {
@@ -3101,6 +3102,41 @@ function delCoupon(id) {
 function saveCoupons() {
   localStorage.setItem('ct_coupons', JSON.stringify(coupons));
   syncCoupons();
+}
+
+async function loadCouponsFromSheets() {
+  if (!cfg.gsUrl) return;
+  var BRANCH_KEY_MAP = { 'แพชชั่นระยอง': 'passione', 'โลตัสระยอง': 'lotus' };
+  var branches = ['passione', 'lotus'];
+  for (var b = 0; b < branches.length; b++) {
+    var branchKey = branches[b];
+    try {
+      var url = cfg.gsUrl + '?branch=' + branchKey + '&month=';
+      var resp = await fetch(url);
+      var data = await resp.json();
+      if (data.couponRows && data.couponRows.length) {
+        var sheetsCoupons = data.couponRows.map(function(r) {
+          var rawDate = String(r[0]||'');
+          if (rawDate.indexOf('T') >= 0) rawDate = rawDate.split('T')[0];
+          var rawBranch = String(r[5]||'');
+          return {
+            id: r[4] || Date.now(),
+            branch: BRANCH_KEY_MAP[rawBranch] || branchKey,
+            date: rawDate,
+            code: String(r[1]||''),
+            type: String(r[2]||''),
+            amount: parseFloat(r[3])||0
+          };
+        });
+        var otherBranch = coupons.filter(function(c) { return c.branch !== branchKey; });
+        var sheetsIds = {};
+        sheetsCoupons.forEach(function(c) { sheetsIds[c.id] = true; });
+        coupons = otherBranch.filter(function(c) { return !sheetsIds[c.id]; }).concat(sheetsCoupons);
+        localStorage.setItem('ct_coupons', JSON.stringify(coupons));
+      }
+    } catch(err) { console.log('loadCoupons error', branchKey, err); }
+  }
+  renderCoupons();
 }
 
 async function syncCoupons(showToast, btn) {

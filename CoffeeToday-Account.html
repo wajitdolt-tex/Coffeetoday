@@ -1257,8 +1257,12 @@ async function submitDaily() {
   };
 
   try {
-    var dailyUrl = cfg.gsUrl + '?payload=' + encodeURIComponent(JSON.stringify(payload));
-    await fetch(dailyUrl, { method: 'GET', mode: 'no-cors' });
+    await fetch(cfg.gsUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
     toast(isEditMode ? 'อัปเดตข้อมูลสำเร็จ ✓' : 'บันทึกสำเร็จ ✓', 'success');
     isEditMode = false;
     editRowIndex = -1;
@@ -1824,8 +1828,7 @@ async function saveLinemanSun() {
         note: note,
         timestamp: new Date().toISOString()
       });
-      var lmUrl = cfg.gsUrl + '?payload=' + encodeURIComponent(lmPayload);
-      await fetch(lmUrl, { method: 'GET', mode: 'no-cors' });
+      await fetch(cfg.gsUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: lmPayload });
     } catch(e) { console.log('lineman sync error', e); }
   }
 
@@ -2601,8 +2604,7 @@ function addRepayment(id) {
       items: itemsToSync,
       timestamp: new Date().toISOString()
     });
-    var url = cfg.gsUrl + '?payload=' + encodeURIComponent(payload);
-    fetch(url, { method: 'GET', mode: 'no-cors' })
+    fetch(cfg.gsUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: payload })
       .then(function() { toast('ซิงค์รายการคืนเงินแล้ว ✓', 'success'); })
       .catch(function() { toast('บันทึกการคืนเงินแล้ว แต่ sync ไม่สำเร็จ', 'error'); });
   } else {
@@ -3156,8 +3158,7 @@ async function syncCoupons(showToast, btn) {
           items: items,
           timestamp: new Date().toISOString()
         });
-        var url = cfg.gsUrl + '?payload=' + encodeURIComponent(payload);
-        await fetch(url, { method: 'GET', mode: 'no-cors' });
+        await fetch(cfg.gsUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: payload });
       } catch(e) { console.log('coupon sync error', e); }
     }
     if (showToast) toast('ซิงค์คูปองขึ้น Sheets แล้ว ✓', 'success');

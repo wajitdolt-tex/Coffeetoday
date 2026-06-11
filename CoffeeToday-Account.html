@@ -92,6 +92,9 @@ tr:hover td{background:var(--bg3);}
 @keyframes slideIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
 .loader{display:inline-block;width:13px;height:13px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes cpPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,180,0,0.5)}50%{box-shadow:0 0 0 6px rgba(255,180,0,0)}}
+.cp-unsaved{animation:cpPulse 1.2s ease-in-out infinite;border-color:#e6a000!important;background:#ffb400!important;color:#000!important;}
+.cp-unsaved-badge{display:inline-block;background:#ffb400;color:#000;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:8px;vertical-align:middle;}
 .empty-state{text-align:center;padding:44px 20px;color:var(--text3);}
 .empty-state .icon{font-size:26px;margin-bottom:8px;}
 .empty-state p{font-size:13px;}
@@ -403,7 +406,7 @@ tr:hover td{background:var(--bg3);}
       </div>
       <div class="form-row" style="width:160px;margin-bottom:0;">
         <label>รหัสคูปอง</label>
-        <input type="text" id="cp-code" placeholder="เช่น QD542367" style="width:160px;text-transform:uppercase;">
+        <input type="text" id="cp-code" placeholder="เช่น QD542367" style="width:160px;text-transform:uppercase;" oninput="onCpCodeInput()" onkeydown="if(event.key==='Enter'){addCoupon();}">
       </div>
     </div>
     <div style="display:flex;gap:13px;align-items:flex-end;margin-bottom:13px;flex-wrap:wrap;">
@@ -422,7 +425,7 @@ tr:hover td{background:var(--bg3);}
         <input type="number" id="cp-amount" placeholder="0.00" step="0.01" style="width:150px;">
       </div>
     </div>
-    <button class="btn btn-primary" onclick="addCoupon()">+ บันทึกคูปอง</button>
+    <button class="btn btn-primary" id="cp-save-btn" onclick="addCoupon()">+ บันทึกคูปอง</button>
   </div>
 
   <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
@@ -3093,6 +3096,32 @@ function onCpTypeChange() {
   }
 }
 
+function onCpCodeInput() {
+  var code = document.getElementById('cp-code').value.trim();
+  var btn = document.getElementById('cp-save-btn');
+  if (!btn) return;
+  if (code) {
+    btn.classList.add('cp-unsaved');
+    var badge = document.getElementById('cp-unsaved-badge');
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.id = 'cp-unsaved-badge';
+      badge.className = 'cp-unsaved-badge';
+      badge.textContent = '! ยังไม่บันทึก';
+      btn.parentNode.insertBefore(badge, btn.nextSibling);
+    }
+  } else {
+    clearCpUnsaved();
+  }
+}
+
+function clearCpUnsaved() {
+  var btn = document.getElementById('cp-save-btn');
+  if (btn) btn.classList.remove('cp-unsaved');
+  var badge = document.getElementById('cp-unsaved-badge');
+  if (badge) badge.parentNode.removeChild(badge);
+}
+
 function addCoupon() {
   var code   = document.getElementById('cp-code').value.trim().toUpperCase();
   var type   = document.getElementById('cp-type').value;
@@ -3113,6 +3142,7 @@ function addCoupon() {
   renderCoupons();
   document.getElementById('cp-code').value = '';
   document.getElementById('cp-amount').value = '';
+  clearCpUnsaved();
   appendToSheet('coupon_append', branch, BRANCH_NAMES[branch], newCoupon);
   toast('บันทึกคูปอง ' + code + ' แล้ว ✓', 'success');
 }
@@ -3220,6 +3250,12 @@ function renderCoupons() {
   var filterMonth = document.getElementById('cp-filter-month').value;
   var list = coupons.filter(function(c) { return c.branch === cpBranchFilter; });
   if (filterMonth) list = list.filter(function(c) { return c.date && c.date.startsWith(filterMonth); });
+  list.sort(function(a, b) {
+    var da = a.date || '';
+    var db = b.date || '';
+    if (db !== da) return db > da ? 1 : -1;
+    return (b.id || 0) - (a.id || 0);
+  });
   var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
   var tAmount = 0;
   if (!list.length) { empty.style.display = 'block'; }
@@ -3343,6 +3379,14 @@ function toast(msg, type) {
 }
 
 
+
+window.addEventListener('beforeunload', function(e) {
+  var code = document.getElementById('cp-code');
+  if (code && code.value.trim()) {
+    e.preventDefault();
+    e.returnValue = 'มีรหัสคูปองที่ยังไม่ได้บันทึก';
+  }
+});
 </script>
 
 </body>

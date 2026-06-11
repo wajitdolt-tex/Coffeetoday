@@ -1717,8 +1717,9 @@ async function loadSummary() {
         var BRANCH_KEY_MAP = { 'แพชชั่นระยอง': 'passione', 'โลตัสระยอง': 'lotus' };
         var rawBranch = String(r[5]||'');
         var mappedBranch = BRANCH_KEY_MAP[rawBranch] || branchKey;
+        var rowId = r[4] ? String(r[4]) : (rawDate + '_' + String(r[1]||'') + '_' + mappedBranch);
         return {
-          id: r[4] || Date.now(),
+          id: rowId,
           branch: mappedBranch,
           date: rawDate,
           code: String(r[1]||''),
@@ -1726,11 +1727,33 @@ async function loadSummary() {
           amount: parseFloat(r[3])||0
         };
       });
+      // แยก local ของสาขาอื่นไว้ก่อน
       var otherBranchCoupons = coupons.filter(function(c) { return c.branch !== branchKey; });
-      var sheetsIds = {};
-      sheetsCoupons.forEach(function(c) { sheetsIds[c.id] = true; });
-      coupons = otherBranchCoupons.filter(function(c) { return !sheetsIds[c.id]; }).concat(sheetsCoupons);
+      // รายการ local ของ branchKey ที่ยังไม่มีใน Sheets (unsynced) — เก็บไว้
+      var sheetsIdsSet = {};
+      sheetsCoupons.forEach(function(c) { sheetsIdsSet[String(c.id)] = true; });
+      var localOnlyCoupons = coupons.filter(function(c) {
+        return c.branch === branchKey && !sheetsIdsSet[String(c.id)];
+      });
+      // merge: สาขาอื่น + Sheets ของ branchKey + local ที่ยังไม่ sync
+      coupons = otherBranchCoupons.concat(sheetsCoupons).concat(localOnlyCoupons);
+      // sync local ที่ยังไม่อยู่ใน Sheets ขึ้นไปด้วย
+      if (localOnlyCoupons.length) {
+        localOnlyCoupons.forEach(function(c) {
+          appendToSheet('coupon_append', c.branch, BRANCH_NAMES[c.branch], c);
+        });
+      }
       localStorage.setItem('ct_coupons', JSON.stringify(coupons));
+      renderCoupons();
+    } else if (data.couponRows && data.couponRows.length === 0) {
+      // ชีทว่าง — ไม่ลบ local เพราะอาจเป็น local ที่ยังไม่ sync
+      // sync local ของ branch นี้ขึ้นไปก่อน
+      var localBranchCoupons = coupons.filter(function(c) { return c.branch === branchKey; });
+      if (localBranchCoupons.length) {
+        localBranchCoupons.forEach(function(c) {
+          appendToSheet('coupon_append', c.branch, BRANCH_NAMES[c.branch], c);
+        });
+      }
       renderCoupons();
     }
 
@@ -3096,9 +3119,15 @@ function addCoupon() {
 
 function delCoupon(id) {
   if (!confirm('ลบรายการนี้?')) return;
+  var deleted = coupons.filter(function(c) { return c.id === id; });
   coupons = coupons.filter(function(c) { return c.id !== id; });
-  saveCoupons();
+  localStorage.setItem('ct_coupons', JSON.stringify(coupons));
   renderCoupons();
+  // ส่ง delete เฉพาะรายการนี้ ไม่ replace ทั้งชีท
+  if (deleted.length && cfg.gsUrl) {
+    var d = deleted[0];
+    appendToSheet('coupon_delete', d.branch, BRANCH_NAMES[d.branch], { id: d.id, code: d.code });
+  }
 }
 
 function saveCoupons() {
@@ -3121,9 +3150,11 @@ async function loadCouponsFromSheets() {
           var rawDate = String(r[0]||'');
           if (rawDate.indexOf('T') >= 0) rawDate = rawDate.split('T')[0];
           var rawBranch = String(r[5]||'');
+          var mappedBranch = BRANCH_KEY_MAP[rawBranch] || branchKey;
+          var rowId = r[4] ? String(r[4]) : (rawDate + '_' + String(r[1]||'') + '_' + mappedBranch);
           return {
-            id: r[4] || Date.now(),
-            branch: BRANCH_KEY_MAP[rawBranch] || branchKey,
+            id: rowId,
+            branch: mappedBranch,
             date: rawDate,
             code: String(r[1]||''),
             type: String(r[2]||''),
@@ -3131,9 +3162,12 @@ async function loadCouponsFromSheets() {
           };
         });
         var otherBranch = coupons.filter(function(c) { return c.branch !== branchKey; });
-        var sheetsIds = {};
-        sheetsCoupons.forEach(function(c) { sheetsIds[c.id] = true; });
-        coupons = otherBranch.filter(function(c) { return !sheetsIds[c.id]; }).concat(sheetsCoupons);
+        var sheetsIdsSet = {};
+        sheetsCoupons.forEach(function(c) { sheetsIdsSet[String(c.id)] = true; });
+        var localOnly = coupons.filter(function(c) {
+          return c.branch === branchKey && !sheetsIdsSet[String(c.id)];
+        });
+        coupons = otherBranch.concat(sheetsCoupons).concat(localOnly);
         localStorage.setItem('ct_coupons', JSON.stringify(coupons));
       }
     } catch(err) { console.log('loadCoupons error', branchKey, err); }

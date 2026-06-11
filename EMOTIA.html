@@ -246,6 +246,30 @@ body{
 .card-share{background:var(--coral);color:white;box-shadow:0 3px 10px rgba(232,114,90,0.35);}
 .card-close{background:white;color:var(--ink2);border:1.5px solid var(--soft);}
 
+/* ── WEEKLY RECAP ── */
+.recap-panel{
+  margin:0 18px 14px;
+  background:white;border:2px solid var(--soft);
+  border-radius:20px;padding:14px 16px;
+  box-shadow:0 3px 14px rgba(0,0,0,0.06);
+  display:none;
+}
+.recap-head{margin-bottom:10px;}
+.recap-title{font-family:var(--font-d);font-size:14px;color:var(--ink);font-weight:600;}
+.recap-summary{font-size:12px;color:var(--ink2);margin-bottom:12px;line-height:1.5;}
+.recap-summary b{color:var(--coral);}
+.recap-bars{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;}
+.recap-bar-row{display:flex;align-items:center;gap:8px;}
+.recap-emoji{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+.recap-track{flex:1;height:8px;background:var(--soft);border-radius:4px;overflow:hidden;}
+.recap-fill{height:100%;border-radius:4px;transition:width 0.6s cubic-bezier(.22,1,.36,1);}
+.recap-num{font-size:11px;color:var(--dim);width:16px;text-align:right;flex-shrink:0;}
+.recap-balance{border-top:1px solid var(--soft);padding-top:12px;}
+.recap-bal-label{font-size:11px;color:var(--dim);margin-bottom:6px;}
+.recap-bal-bar{height:8px;background:var(--lavender);border-radius:4px;overflow:hidden;}
+.recap-bal-pos{height:100%;background:linear-gradient(90deg,var(--gold),var(--peach));border-radius:4px;transition:width 0.6s;}
+.recap-bal-legend{display:flex;justify-content:space-between;font-size:10px;color:var(--dim);margin-top:5px;}
+
 /* result card */
 .result-wrap{padding:0 18px 14px;}
 .result-card{
@@ -310,6 +334,33 @@ body{
 /* ══ IZAKAYA / CHAT ══ */
 .iz-fullbg{position:absolute;top:0;left:0;right:0;bottom:0;transition:background 1.4s ease;z-index:0;}
 .iz-room{position:absolute;top:0;left:0;right:0;bottom:0;z-index:1;pointer-events:none;overflow:hidden;}
+/* atmospheric depth + vignette for realism */
+.iz-room::after{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:radial-gradient(ellipse 120% 80% at 50% 30%,transparent 40%,rgba(0,0,0,0.35) 100%);
+  pointer-events:none;
+}
+/* light ray + dust particles overlay */
+.iz-atmos{
+  position:absolute;top:0;left:0;right:0;bottom:0;z-index:2;
+  pointer-events:none;overflow:hidden;
+}
+.iz-ray{
+  position:absolute;top:-20%;width:80px;height:140%;
+  background:linear-gradient(180deg,rgba(255,220,150,0.08),transparent 70%);
+  transform:rotate(8deg);filter:blur(8px);
+}
+.iz-dust{
+  position:absolute;width:3px;height:3px;border-radius:50%;
+  background:rgba(255,230,180,0.4);
+  animation:dustFloat 12s linear infinite;
+}
+@keyframes dustFloat{
+  0%{transform:translate(0,100%);opacity:0;}
+  10%{opacity:0.5;}
+  90%{opacity:0.3;}
+  100%{transform:translate(20px,-20%);opacity:0;}
+}
 .iz-char{
   position:absolute;right:10px;top:50%;
   transform:translateY(-60%);
@@ -494,6 +545,11 @@ body{
 .cx-card.r-r{border-color:var(--lavender);}
 .cx-card.r-u{border-color:var(--sky);}
 .cx-card.r-c{border-color:var(--mint);}
+.cx-card.hidden-card{opacity:0.7;filter:none;background:linear-gradient(135deg,#FBF3FF,white);border-style:dashed;}
+.cx-card.hidden-card .cx-emoji{opacity:0.8;}
+.cx-card.unlockable{border-color:var(--coral);border-style:solid;opacity:1;animation:pulseGlow 2s ease-in-out infinite;}
+@keyframes pulseGlow{0%,100%{box-shadow:0 2px 10px rgba(232,114,90,0.1)}50%{box-shadow:0 2px 18px rgba(232,114,90,0.3)}}
+.cx-now{color:var(--coral)!important;font-weight:700;}
 
 /* ── BOTTOM NAV ── */
 .bnav{
@@ -652,6 +708,7 @@ body{
       <rect x="65" y="132" width="13" height="14" rx="6.5" fill="#D4A882"/>
       <rect x="81" y="130" width="13" height="16" rx="6.5" fill="#D4A882"/>
       <ellipse cx="100" cy="108" rx="7" ry="9" fill="#FAF0E0"/>
+      <g id="alp-acc"></g>
     </svg>
     <div class="mood-pill" id="mood-pill">รอการค้นพบ</div>
   </div>
@@ -697,6 +754,14 @@ body{
     <div class="stat"><div class="stat-n" id="st-str">0</div><div class="stat-l">วันต่อเนื่อง</div></div>
   </div>
 
+  <!-- Weekly recap -->
+  <div class="recap-panel" id="recap-panel">
+    <div class="recap-head">
+      <span class="recap-title">📊 สรุปอารมณ์ 7 วัน</span>
+    </div>
+    <div class="recap-body" id="recap-body"></div>
+  </div>
+
   <div class="izakaya-teaser" onclick="goTab('pub')">
     <div class="iz-glow"></div>
     <div class="iz-title">🏮 พูดคุยกับตัวละคร</div>
@@ -716,6 +781,7 @@ body{
 <div class="screen" id="screen-pub">
   <div class="iz-fullbg" id="iz-fullbg"></div>
   <div class="iz-room" id="iz-room"></div>
+  <div class="iz-atmos" id="iz-atmos"></div>
   <div class="iz-char" id="iz-char"></div>
   <div class="iz-topbar">
     <div class="iz-topbar-left">
@@ -998,8 +1064,33 @@ var EMOTIONS = [
   {id:'sonder',th:'ซอนเดอร์',en:'Sonder',r:'rare',xp:30,e:'🏙',d:'ตระหนักว่าทุกคนที่เดินผ่านไปต่างมีชีวิตที่ซับซ้อนเหมือนเรา'},
   {id:'hiraeth',th:'ฮิราเอธ',en:'Hiraeth',r:'rare',xp:30,e:'🏔',d:'ความโหยหาบ้านที่อาจไม่เคยมีอยู่จริง ความรู้สึกแบบเวลส์โบราณ'},
   {id:'sehnsucht',th:'เซ็นซุกท์',en:'Sehnsucht',r:'legendary',xp:50,e:'✨',d:'ความโหยหาอันลึกซึ้งที่ไร้ชื่อ ความรู้สึกว่าชีวิตสมบูรณ์แบบมีอยู่ที่ไหนสักที่'},
-  {id:'mamihlapinatapai',th:'มามิห์ลาปินาทาไป',en:'Mamihlapinatapai',r:'legendary',xp:50,e:'👁',d:'ความเงียบระหว่างสองคนที่ต่างรอให้อีกฝ่ายพูดสิ่งที่รู้สึกร่วมกัน'}
+  {id:'mamihlapinatapai',th:'มามิห์ลาปินาทาไป',en:'Mamihlapinatapai',r:'legendary',xp:50,e:'👁',d:'ความเงียบระหว่างสองคนที่ต่างรอให้อีกฝ่ายพูดสิ่งที่รู้สึกร่วมกัน'},
+  /* ── HIDDEN / SEASONAL — ปลดล็อกเฉพาะเงื่อนไข ── */
+  {id:'petrichor',th:'เพทริคอร์',en:'Petrichor',r:'rare',xp:35,e:'🌧',hidden:true,cond:'night',d:'กลิ่นดินหลังฝนแรก ความรู้สึกสดชื่นปนความทรงจำ — ค้นพบได้ยามค่ำคืน'},
+  {id:'serenity',th:'เซเรนิตี้',en:'Serenity',r:'rare',xp:35,e:'🌄',hidden:true,cond:'morning',d:'ความสงบใสยามเช้าตรู่ ก่อนโลกตื่น — ค้นพบได้ยามรุ่งสาง'},
+  {id:'saudade',th:'ซาวดาจี',en:'Saudade',r:'legendary',xp:60,e:'🕊',hidden:true,cond:'weekend',d:'ความคิดถึงอันอ่อนหวานถึงสิ่งที่อาจไม่กลับมา — ค้นพบได้วันหยุด'},
+  {id:'kenopsia',th:'เคนอปเซีย',en:'Kenopsia',r:'legendary',xp:60,e:'🏚',hidden:true,cond:'late',d:'บรรยากาศวังเวงของที่ที่เคยมีคนพลุกพล่าน แต่ตอนนี้เงียบงัน — ดึกแล้ว'}
 ];
+
+/* check if a hidden emotion's condition is met right now */
+function condMet(cond){
+  var now=new Date();
+  var h=now.getHours();
+  var day=now.getDay();
+  if(cond==='night') return h>=19 || h<5;
+  if(cond==='morning') return h>=5 && h<8;
+  if(cond==='weekend') return day===0 || day===6;
+  if(cond==='late') return h>=23 || h<3;
+  return false;
+}
+/* get list of currently unlockable hidden emotion ids */
+function activeHidden(){
+  var out=[];
+  EMOTIONS.forEach(function(em){
+    if(em.hidden && condMet(em.cond)) out.push(em.id);
+  });
+  return out;
+}
 
 var SCENES = [
   {id:'izakaya',name:'อิซากายะ',short:'IZAKAYA',title:'ร้านอิซากายะยามค่ำ',sub:'เสียงน้ำแข็งกระทบแก้ว ไอควันจากถ่าน',e:'🏮',bg:'bg-izakaya',
@@ -1049,7 +1140,11 @@ var MOODS = {
   sonder:{a:'#C0A060',b:'rgba(192,160,96,0.4)',l:'ซอนเดอร์'},
   hiraeth:{a:'#9098A0',b:'rgba(144,152,160,0.3)',l:'ฮิราเอธ'},
   sehnsucht:{a:'#9E8FBF',b:'rgba(158,143,192,0.45)',l:'เซ็นซุกท์'},
-  mamihlapinatapai:{a:'#C8C0B0',b:'rgba(200,192,176,0.25)',l:'มามิห์ลา...'}
+  mamihlapinatapai:{a:'#C8C0B0',b:'rgba(200,192,176,0.25)',l:'มามิห์ลา...'},
+  petrichor:{a:'#6A8A9A',b:'rgba(106,138,154,0.4)',l:'เพทริคอร์'},
+  serenity:{a:'#E8B060',b:'rgba(232,176,96,0.4)',l:'เซเรนิตี้'},
+  saudade:{a:'#A89FC0',b:'rgba(168,159,192,0.4)',l:'ซาวดาจี'},
+  kenopsia:{a:'#80808A',b:'rgba(128,128,138,0.3)',l:'เคนอปเซีย'}
 };
 
 /* ═══════════════ STATE ═══════════════ */
@@ -1134,6 +1229,62 @@ function renderQuests(){
   }
 }
 
+/* ── WEEKLY RECAP ── */
+function renderRecap(){
+  var box=document.getElementById('recap-body');
+  var panel=document.getElementById('recap-panel');
+  if(!box) return;
+  // collect last 7 days
+  var now=new Date();
+  var cutoff=new Date(now.getTime()-7*24*60*60*1000);
+  var recent=ST.hist.filter(function(h){return new Date(h.date)>=cutoff;});
+  if(recent.length<2){
+    panel.style.display='none';
+    return;
+  }
+  panel.style.display='block';
+  // count emotions
+  var counts={};
+  recent.forEach(function(h){
+    var em=EMOTIONS.filter(function(e){return e.id===h.emotionId;})[0];
+    if(em) counts[em.id]=(counts[em.id]||0)+1;
+  });
+  // sort
+  var sorted=Object.keys(counts).map(function(id){
+    var em=EMOTIONS.filter(function(e){return e.id===id;})[0];
+    return {em:em,n:counts[id]};
+  }).sort(function(a,b){return b.n-a.n;});
+  var maxN=sorted[0].n;
+  var rarColors={common:'#A8D5C2',uncommon:'#A8C8E8',rare:'#C8B8E8',legendary:'#E8C460'};
+  // top emotion summary line
+  var top=sorted[0];
+  var html='<div class="recap-summary">สัปดาห์นี้ '+top.em.e+' <b>'+top.em.th+'</b> เด่นที่สุด ('+top.n+' ครั้ง)</div>';
+  html+='<div class="recap-bars">';
+  sorted.slice(0,5).forEach(function(item){
+    var pct=item.n/maxN*100;
+    html+='<div class="recap-bar-row">'
+      +'<span class="recap-emoji">'+item.em.e+'</span>'
+      +'<div class="recap-track"><div class="recap-fill" style="width:'+pct+'%;background:'+rarColors[item.em.r]+'"></div></div>'
+      +'<span class="recap-num">'+item.n+'</span>'
+      +'</div>';
+  });
+  html+='</div>';
+  // mood balance: positive vs heavy
+  var positive=['joy','love','hope','gratitude','calm','serenity','awe','joy'];
+  var pos=0,heavy=0;
+  recent.forEach(function(h){
+    if(positive.indexOf(h.emotionId)!==-1) pos++;
+    else heavy++;
+  });
+  var posPct=Math.round(pos/(pos+heavy)*100);
+  html+='<div class="recap-balance">'
+    +'<div class="recap-bal-label">สมดุลอารมณ์</div>'
+    +'<div class="recap-bal-bar"><div class="recap-bal-pos" style="width:'+posPct+'%"></div></div>'
+    +'<div class="recap-bal-legend"><span>เบาสบาย '+posPct+'%</span><span>ลึกซึ้ง '+(100-posPct)+'%</span></div>'
+    +'</div>';
+  box.innerHTML=html;
+}
+
 function load(){
   try{
     var d=localStorage.getItem('em_disc');
@@ -1180,7 +1331,7 @@ function goTab(t){
   if(t==='cal') renderCal();
   if(t==='codex') renderCodex();
   if(t==='pub') initIz();
-  if(t==='home') renderQuests();
+  if(t==='home'){ renderQuests(); renderRecap(); }
 }
 
 /* ═══════════════ HUD ═══════════════ */
@@ -1193,7 +1344,59 @@ function hud(){
   document.getElementById('st-disc').textContent=Object.keys(ST.disc).length;
   document.getElementById('st-exp').textContent=ST.xp;
   document.getElementById('st-str').textContent=streak();
+  updateAlpacaEvo();
 }
+
+/* ── ALPACA EVOLUTION ── accessory based on dominant emotion category */
+function dominantCategory(){
+  var byCat={common:0,uncommon:0,rare:0,legendary:0};
+  var moodCount={};
+  Object.keys(ST.disc).forEach(function(id){
+    var em=EMOTIONS.filter(function(e){return e.id===id;})[0];
+    if(em){ byCat[em.r]+=ST.disc[id]; moodCount[id]=ST.disc[id]; }
+  });
+  // find most discovered single emotion
+  var topId=null,topN=0;
+  Object.keys(moodCount).forEach(function(id){ if(moodCount[id]>topN){topN=moodCount[id];topId=id;} });
+  return {byCat:byCat, topId:topId, topN:topN};
+}
+
+function updateAlpacaEvo(){
+  var acc=document.getElementById('alp-acc');
+  if(!acc) return;
+  var dom=dominantCategory();
+  var total=Object.keys(ST.disc).length;
+  var svg='';
+  // tier 1: 3+ discovered → flower crown
+  // tier 2: 7+ → + scarf colored by dominant category
+  // tier 3: legendary discovered → glowing halo
+  var hasLegendary=false;
+  Object.keys(ST.disc).forEach(function(id){
+    var em=EMOTIONS.filter(function(e){return e.id===id;})[0];
+    if(em&&em.r==='legendary') hasLegendary=true;
+  });
+  if(total>=3){
+    // flower crown
+    svg+='<ellipse cx="54" cy="38" rx="4" ry="4" fill="#E8A0B8"/><ellipse cx="65" cy="35" rx="4.5" ry="4.5" fill="#F5C060"/><ellipse cx="76" cy="38" rx="4" ry="4" fill="#A8D5C2"/>';
+    svg+='<circle cx="54" cy="38" r="1.5" fill="#fff"/><circle cx="65" cy="35" r="1.5" fill="#fff"/><circle cx="76" cy="38" r="1.5" fill="#fff"/>';
+  }
+  if(total>=7){
+    // scarf colored by dominant category
+    var catColor={common:'#A8D5C2',uncommon:'#A8C8E8',rare:'#C8B8E8',legendary:'#E8C460'};
+    var topCat='common',topVal=0;
+    Object.keys(dom.byCat).forEach(function(c){if(dom.byCat[c]>topVal){topVal=dom.byCat[c];topCat=c;}});
+    var sc=catColor[topCat]||'#A8D5C2';
+    svg+='<path d="M50 84 Q65 92 80 84 L78 92 Q65 98 52 92 Z" fill="'+sc+'"/>';
+    svg+='<rect x="74" y="88" width="6" height="16" rx="2" fill="'+sc+'"/>';
+  }
+  if(hasLegendary){
+    // glowing halo
+    svg+='<ellipse cx="65" cy="30" rx="22" ry="6" fill="none" stroke="#E8C460" stroke-width="2" opacity="0.7"/>';
+    svg+='<ellipse cx="65" cy="64" rx="40" ry="40" fill="rgba(232,196,96,0.06)"/>';
+  }
+  acc.innerHTML=svg;
+}
+
 function streak(){
   if(!ST.hist.length) return 0;
   var map={};
@@ -1233,8 +1436,15 @@ function analyze(){
   btn.disabled=true;
   btn.innerHTML='<span class="sh"><\/span><span class="dots"><span><\/span><span><\/span><span><\/span><\/span>';
 
-  var list=EMOTIONS.map(function(e,i){return (i+1)+'. '+e.th+' ('+e.en+') ['+e.r+']';}).join('\n');
-  var prompt='ผู้ใช้บอกว่า: "'+txt+'"\n\nอารมณ์ที่เป็นไปได้:\n'+list+'\n\nตอบเป็น JSON เท่านั้น ไม่มีข้อความอื่น:\n{"emotionId":"<id lowercase>","reason":"<อธิบาย 2-3 ประโยค ภาษาไทย อบอุ่น>"}';
+  // build emotion list: always include regular, include hidden only if condition met
+  var unlockedHidden=activeHidden();
+  var available=EMOTIONS.filter(function(e){
+    if(!e.hidden) return true;
+    return unlockedHidden.indexOf(e.id)!==-1;
+  });
+  var list=available.map(function(e,i){return (i+1)+'. '+e.th+' ('+e.en+') ['+e.r+']';}).join('\n');
+  var hiddenNote=unlockedHidden.length ? '\n\n(ช่วงเวลานี้มีอารมณ์พิเศษให้ค้นพบได้ ถ้าความรู้สึกตรงกับมัน)' : '';
+  var prompt='ผู้ใช้บอกว่า: "'+txt+'"\n\nอารมณ์ที่เป็นไปได้:\n'+list+hiddenNote+'\n\nเลือกอารมณ์ที่ตรงที่สุด ตอบเป็น JSON เท่านั้น ไม่มีข้อความอื่น:\n{"emotionId":"<id lowercase>","reason":"<อธิบาย 2-3 ประโยค ภาษาไทย อบอุ่น>"}';
 
   callAI(prompt,function(res){
     btn.disabled=false;
@@ -1395,6 +1605,26 @@ function setScene(id){
   if(whoEl) whoEl.textContent='\u{1F464} '+sc.who;
   var charEl=document.getElementById('iz-char');
   if(charEl && CHARS[id]) charEl.innerHTML=CHARS[id];
+  // atmosphere: light rays + dust, varies per scene
+  var atmos=document.getElementById('iz-atmos');
+  if(atmos){
+    var rayColor={
+      izakaya:'rgba(255,180,90,0.10)',sakura:'rgba(255,180,220,0.08)',
+      midnight:'rgba(120,160,255,0.06)',forest:'rgba(180,230,160,0.07)',
+      cosmos:'rgba(160,140,255,0.07)',beach:'rgba(255,200,140,0.08)',
+      mountain:'rgba(200,210,255,0.07)'
+    };
+    var rc=rayColor[id]||'rgba(255,220,150,0.08)';
+    var ah='<div class="iz-ray" style="left:18%;background:linear-gradient(180deg,'+rc+',transparent 70%)"></div>';
+    ah+='<div class="iz-ray" style="left:52%;width:50px;background:linear-gradient(180deg,'+rc+',transparent 65%)"></div>';
+    // dust particles
+    var dustN=(id==='cosmos'||id==='mountain')?10:6;
+    for(var di=0;di<dustN;di++){
+      var dl=Math.random()*100, dd=Math.random()*12, ds=8+Math.random()*8;
+      ah+='<div class="iz-dust" style="left:'+dl+'%;bottom:0;animation-delay:'+dd+'s;animation-duration:'+ds+'s"></div>';
+    }
+    atmos.innerHTML=ah;
+  }
   document.querySelectorAll('.iz-map-btn').forEach(function(b){b.classList.remove('active');});
   var activeBtn=document.getElementById('sb-'+id);
   if(activeBtn) activeBtn.classList.add('active');
@@ -1536,28 +1766,40 @@ function cxFilter(f,el){
 }
 function renderCodex(){
   var disc=Object.keys(ST.disc).length;
-  document.getElementById('cx-prog').textContent='ค้นพบ '+disc+' / '+EMOTIONS.length;
+  document.getElementById('cx-prog').textContent='ค้นพบ '+disc+' / '+EMOTIONS.length+' อารมณ์';
   var list=EMOTIONS.filter(function(e){return ST.cxFilter==='all'||e.r===ST.cxFilter;});
   var cCls={common:'c-c',uncommon:'c-u',rare:'c-r',legendary:'c-l'};
   var rCls={common:'r-c',uncommon:'r-u',rare:'r-r',legendary:'r-l'};
+  var condHint={night:'🌙 ยามค่ำคืน',morning:'🌄 รุ่งสาง',weekend:'🗓 วันหยุด',late:'🌌 ดึกมาก'};
   var html='';
   list.forEach(function(em){
     var ok=!!ST.disc[em.id];
     var cnt=ST.disc[em.id]||0;
-    html+='<div class="cx-card '+rCls[em.r]+(ok?'':' locked')+'" onclick="cxTap(\''+em.id+'\')">'
-      +(ok?'':'<div class="cx-lock">🔒<\/div>')
+    var isHidden=em.hidden&&!ok;
+    var unlockable=em.hidden&&condMet(em.cond)&&!ok;
+    html+='<div class="cx-card '+rCls[em.r]+(ok?'':' locked')+(isHidden?' hidden-card':'')+(unlockable?' unlockable':'')+'" onclick="cxTap(\''+em.id+'\')">'
+      +(ok?'':'<div class="cx-lock">'+(isHidden?'✦':'🔒')+'<\/div>')
       +'<div class="cx-rarity '+cCls[em.r]+'">'+em.r.toUpperCase()+'<\/div>'
-      +'<span class="cx-emoji">'+(ok?em.e:'❓')+'<\/span>'
-      +'<div class="cx-name">'+(ok?em.th:'???')+'<\/div>'
-      +'<div class="cx-en">'+(ok?em.en:'')+'<\/div>'
-      +(ok?'<div class="cx-cnt">×'+cnt+'<\/div>':'')
+      +'<span class="cx-emoji">'+(ok?em.e:(isHidden?'✦':'❓'))+'<\/span>'
+      +'<div class="cx-name">'+(ok?em.th:(isHidden?'อารมณ์ลับ':'???'))+'<\/div>'
+      +'<div class="cx-en">'+(ok?em.en:(isHidden?condHint[em.cond]||'':''))+'<\/div>'
+      +(ok?'<div class="cx-cnt">×'+cnt+'<\/div>':(unlockable?'<div class="cx-cnt cx-now">ปลดได้ตอนนี้!<\/div>':''))
       +'<\/div>';
   });
   document.getElementById('cx-grid').innerHTML=html;
 }
 function cxTap(id){
   var em=EMOTIONS.filter(function(e){return e.id===id;})[0];
-  if(!em||!ST.disc[em.id]){toast('ยังไม่ได้ค้นพบ 🔒');return;}
+  if(!em) return;
+  if(!ST.disc[em.id]){
+    if(em.hidden){
+      var condHint={night:'ยามค่ำคืน (19:00-05:00)',morning:'รุ่งสาง (05:00-08:00)',weekend:'วันเสาร์-อาทิตย์',late:'ดึกมาก (23:00-03:00)'};
+      toast('✦ อารมณ์ลับ — ค้นพบได้ช่วง '+condHint[em.cond]);
+    }else{
+      toast('ยังไม่ได้ค้นพบ 🔒');
+    }
+    return;
+  }
   toast(em.e+' '+em.th+' — '+em.en);
 }
 
@@ -1585,6 +1827,7 @@ function init(){
   initChars();
   rollQuests();
   renderQuests();
+  renderRecap();
   var ob=document.getElementById('onboard');
   if(ST.onboarded){ob.style.display='none';ob.classList.add('hidden');}
   else{ob.style.display='';ob.classList.remove('hidden');}

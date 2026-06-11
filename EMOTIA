@@ -1,0 +1,1598 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>EMOTIA</title>
+<style>
+:root {
+  --cream:    #FDF6EC;
+  --paper:    #F7EEE0;
+  --soft:     #EDE0CC;
+  --warm:     #F5E8D4;
+  --ink:      #3D2B1A;
+  --ink2:     #6B4F35;
+  --dim:      #A08060;
+  --border:   rgba(180,140,100,0.25);
+  --coral:    #E8725A;
+  --coral2:   #D45A40;
+  --peach:    #F5A882;
+  --mint:     #A8D5C2;
+  --sky:      #A8C8E8;
+  --lavender: #C8B8E8;
+  --gold:     #E8C460;
+  --common:   #A8D5C2;
+  --uncommon: #A8C8E8;
+  --rare:     #C8B8E8;
+  --legendary:#E8C460;
+  --tab-h:    68px;
+  --font-d:   Georgia, serif;
+  --font-b:   -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --r:        20px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;background:var(--cream);}
+body{
+  font-family:var(--font-b);
+  background:var(--cream);
+  color:var(--ink);
+  max-width:430px;margin:0 auto;
+  display:-webkit-box;display:flex;
+  -webkit-box-orient:vertical;flex-direction:column;
+  height:100vh;height:100dvh;
+  overflow:hidden;position:relative;
+  -webkit-text-size-adjust:100%;
+}
+
+/* ── SCREENS ── */
+.screen{
+  display:none;flex-direction:column;
+  flex:1;min-height:0;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  background:var(--cream);position:relative;
+}
+.screen.active{display:-webkit-box;display:flex}
+#screen-pub{overflow:hidden;}
+
+/* ── FLOATING DECO ── */
+.deco{position:absolute;pointer-events:none;font-size:20px;opacity:0.55;animation:decoFloat 6s ease-in-out infinite;}
+.deco:nth-child(2){animation-delay:1.5s;font-size:14px;}
+.deco:nth-child(3){animation-delay:3s;font-size:16px;}
+.deco:nth-child(4){animation-delay:0.8s;font-size:22px;opacity:0.4;}
+.deco:nth-child(5){animation-delay:2.2s;font-size:12px;}
+@keyframes decoFloat{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-8px) rotate(5deg)}}
+
+/* ══ HOME SCREEN ══ */
+.home-wrap{
+  display:-webkit-box;display:flex;
+  flex-direction:column;
+  width:100%;padding:0 0 24px;position:relative;
+}
+
+/* top bar */
+.home-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 20px 10px;
+}
+.home-brand{
+  font-family:var(--font-d);font-size:11px;
+  color:var(--coral);letter-spacing:3px;text-transform:uppercase;
+}
+.lv-pill{
+  background:white;border:1.5px solid var(--coral);
+  border-radius:20px;padding:5px 14px;
+  font-size:11px;color:var(--coral);font-weight:600;
+  box-shadow:0 2px 8px rgba(232,114,90,0.15);
+}
+
+/* exp */
+.exp-row{padding:0 20px 16px;}
+.exp-bar{height:6px;background:var(--soft);border-radius:3px;overflow:hidden;}
+.exp-fill{height:100%;background:linear-gradient(90deg,var(--coral),var(--peach));border-radius:3px;transition:width 1s cubic-bezier(.22,1,.36,1);}
+.exp-txt{font-size:10px;color:var(--dim);margin-top:4px;text-align:right;}
+
+/* alpaca stage */
+.alpaca-center{
+  display:flex;flex-direction:column;align-items:center;
+  padding:4px 0 10px;position:relative;
+}
+.aura-ring{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:130px;height:130px;border-radius:50%;
+  opacity:0;filter:blur(28px);
+  transition:background 1.2s,opacity 0.8s;pointer-events:none;
+}
+.alpaca-svg{width:110px;height:126px;cursor:pointer;position:relative;z-index:1;animation:alpFloat 3.5s ease-in-out infinite;}
+@keyframes alpFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.alpaca-svg:active{animation:none;transform:scale(0.93);}
+.mood-pill{
+  margin-top:6px;
+  background:white;border:1.5px solid var(--soft);
+  border-radius:20px;padding:5px 16px;
+  font-size:11px;color:var(--dim);
+  box-shadow:0 2px 6px rgba(0,0,0,0.06);
+}
+
+/* feel input card — gachapon machine style */
+.feel-section{padding:0 18px 14px;}
+.feel-machine{
+  background:white;
+  border-radius:24px;
+  border:2px solid var(--soft);
+  overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,0.08),0 1px 3px rgba(0,0,0,0.05);
+}
+.feel-machine-top{
+  background:var(--coral);
+  height:10px;
+  border-radius:0;
+}
+.feel-machine-body{padding:14px 16px 10px;}
+.feel-textarea{
+  width:100%;background:var(--cream);
+  border:1.5px solid var(--soft);border-radius:16px;
+  outline:none;color:var(--ink);
+  font-family:var(--font-b);font-size:14px;line-height:1.65;
+  padding:12px 14px;resize:none;display:block;
+}
+.feel-textarea::placeholder{color:var(--dim);}
+.feel-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 2px 4px;
+}
+.feel-hint{font-size:10px;color:var(--dim);}
+.feel-btn{
+  background:var(--coral);border:none;border-radius:20px;
+  padding:10px 22px;font-size:13px;font-weight:700;
+  color:white;cursor:pointer;
+  box-shadow:0 3px 10px rgba(232,114,90,0.35);
+  transition:transform 0.15s,opacity 0.2s;
+  position:relative;overflow:hidden;
+}
+.feel-btn:active{transform:scale(0.95);}
+.feel-btn:disabled{opacity:0.45;box-shadow:none;}
+.feel-btn .sh{position:absolute;top:0;left:-80%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);animation:sh 2s infinite;}
+@keyframes sh{to{left:160%}}
+/* coin slot decor */
+.machine-bottom{
+  background:var(--paper);border-top:2px solid var(--soft);
+  padding:8px 16px;
+  display:flex;align-items:center;gap:8px;
+}
+.coin-btn{
+  border:1.5px solid var(--soft);border-radius:8px;
+  padding:4px 10px;font-size:9px;color:var(--dim);
+  background:white;letter-spacing:1px;
+}
+.knob{
+  width:28px;height:28px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#6A9FC0,#4A7A9C);
+  border:2px solid #3A6A8C;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 6px rgba(0,0,0,0.2);
+}
+.knob-dot{width:4px;height:10px;background:#E8C460;border-radius:2px;margin-top:-4px;}
+
+/* ── DAILY QUEST PANEL ── */
+.quest-panel{
+  margin:0 18px 14px;
+  background:white;border:2px solid var(--soft);
+  border-radius:20px;padding:14px 16px;
+  box-shadow:0 3px 14px rgba(0,0,0,0.06);
+}
+.quest-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.quest-title{font-family:var(--font-d);font-size:14px;color:var(--ink);font-weight:600;}
+.quest-badge{
+  font-size:11px;font-weight:700;color:var(--ink2);
+  background:var(--soft);border-radius:12px;padding:3px 10px;
+  transition:background 0.3s;
+}
+.quest-item{display:flex;align-items:center;gap:10px;padding:8px 0;}
+.quest-item.done{opacity:0.6;}
+.quest-icon{font-size:18px;width:24px;text-align:center;flex-shrink:0;}
+.quest-mid{flex:1;min-width:0;}
+.quest-text{font-size:12px;color:var(--ink2);margin-bottom:5px;}
+.quest-item.done .quest-text{text-decoration:line-through;color:var(--dim);}
+.quest-bar{height:5px;background:var(--soft);border-radius:3px;overflow:hidden;}
+.quest-fill{height:100%;background:linear-gradient(90deg,var(--coral),var(--peach));border-radius:3px;transition:width 0.5s cubic-bezier(.22,1,.36,1);}
+.quest-xp{font-size:11px;font-weight:700;color:var(--coral);flex-shrink:0;}
+
+/* result actions */
+.rc-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.rc-share{
+  background:var(--coral);border:none;border-radius:20px;
+  padding:7px 16px;font-size:12px;font-weight:700;color:white;
+  cursor:pointer;box-shadow:0 2px 8px rgba(232,114,90,0.3);
+  display:inline-flex;align-items:center;gap:4px;transition:transform 0.15s;
+}
+.rc-share:active{transform:scale(0.93);}
+
+/* ── EMOTION CARD OVERLAY ── */
+.card-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;z-index:150;
+  display:none;align-items:center;justify-content:center;padding:24px;
+}
+.card-overlay.show{display:flex;}
+.card-backdrop{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:rgba(40,25,15,0.55);
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+}
+.card-modal{position:relative;z-index:1;width:100%;max-width:320px;animation:cardPop 0.4s cubic-bezier(.22,1,.36,1);}
+@keyframes cardPop{from{opacity:0;transform:scale(0.88)}to{opacity:1;transform:none}}
+.share-card{
+  background:linear-gradient(160deg,#FFFDF8,#FDF4E8);
+  border:3px solid var(--soft);border-radius:28px;
+  padding:28px 24px 24px;text-align:center;position:relative;overflow:hidden;
+  box-shadow:0 12px 40px rgba(0,0,0,0.3);
+}
+.sc-deco{position:absolute;pointer-events:none;opacity:0.5;font-size:18px;}
+.sc-d1{top:14px;left:14px;}
+.sc-d2{top:18px;right:16px;font-size:14px;}
+.sc-d3{bottom:16px;left:18px;font-size:15px;}
+.sc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.sc-rarity{font-size:9px;letter-spacing:2px;font-weight:700;}
+.sc-date{font-size:10px;color:var(--dim);}
+.sc-emoji{font-size:64px;line-height:1;margin-bottom:8px;animation:alpFloat 3s ease-in-out infinite;}
+.sc-name{font-family:var(--font-d);font-size:28px;color:var(--ink);margin-bottom:2px;}
+.sc-en{font-size:12px;color:var(--dim);margin-bottom:14px;letter-spacing:1px;}
+.sc-desc{font-size:13px;line-height:1.75;color:var(--ink2);margin-bottom:16px;padding:0 4px;}
+.sc-foot{font-family:var(--font-d);font-size:11px;color:var(--coral);letter-spacing:1px;}
+.card-btns{display:flex;gap:10px;margin-top:14px;}
+.card-btn{flex:1;border:none;border-radius:20px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;transition:transform 0.15s;}
+.card-btn:active{transform:scale(0.95);}
+.card-share{background:var(--coral);color:white;box-shadow:0 3px 10px rgba(232,114,90,0.35);}
+.card-close{background:white;color:var(--ink2);border:1.5px solid var(--soft);}
+
+/* result card */
+.result-wrap{padding:0 18px 14px;}
+.result-card{
+  background:white;border-radius:24px;
+  border:2px solid var(--soft);
+  padding:20px 18px;display:none;
+  animation:popUp 0.4s cubic-bezier(.22,1,.36,1);
+  box-shadow:0 4px 20px rgba(0,0,0,0.08);
+}
+.result-card.show{display:block;}
+@keyframes popUp{from{opacity:0;transform:scale(0.94) translateY(10px)}to{opacity:1;transform:none}}
+.rc-rarity{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:8px;font-weight:700;}
+.rc-name{font-family:var(--font-d);font-size:26px;color:var(--ink);margin-bottom:3px;}
+.rc-en{font-size:11px;color:var(--dim);margin-bottom:12px;}
+.rc-desc{font-size:14px;line-height:1.8;color:var(--ink2);margin-bottom:16px;}
+.rc-exp{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--cream);border:1.5px solid var(--soft);
+  border-radius:20px;padding:7px 18px;
+  font-size:12px;color:var(--coral);font-weight:600;
+}
+.result-card.r-legendary{border-color:var(--gold);background:linear-gradient(135deg,#FFFBF0,white);}
+.result-card.r-rare{border-color:var(--lavender);}
+.result-card.r-uncommon{border-color:var(--sky);}
+.result-card.r-common{border-color:var(--mint);}
+
+/* stats */
+.stats-row{display:flex;gap:10px;padding:0 18px 14px;}
+.stat{
+  flex:1;background:white;border:1.5px solid var(--soft);
+  border-radius:18px;padding:14px 8px;text-align:center;
+  box-shadow:0 2px 8px rgba(0,0,0,0.05);
+}
+.stat-n{font-family:var(--font-d);font-size:22px;color:var(--ink);}
+.stat-l{font-size:10px;color:var(--dim);margin-top:3px;}
+
+/* chat teaser */
+.izakaya-teaser{
+  margin:0 18px 18px;border-radius:24px;
+  background:white;border:2px solid var(--soft);
+  padding:16px 18px;cursor:pointer;position:relative;overflow:hidden;
+  transition:transform 0.18s,box-shadow 0.2s;
+  box-shadow:0 4px 16px rgba(0,0,0,0.07);
+}
+.izakaya-teaser:active{transform:scale(0.97);}
+.iz-glow{
+  position:absolute;top:-20px;right:-20px;width:80px;height:80px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(232,114,90,0.15),transparent 70%);
+  pointer-events:none;
+}
+.iz-title{font-family:var(--font-d);font-size:15px;color:var(--coral);margin-bottom:4px;font-weight:600;}
+.iz-desc{font-size:12px;color:var(--dim);line-height:1.6;}
+
+/* dots loader */
+.dots{display:inline-flex;gap:4px;vertical-align:middle;}
+.dots span{width:5px;height:5px;border-radius:50%;background:var(--dim);animation:bop 0.9s infinite;}
+.dots span:nth-child(2){animation-delay:0.15s;}.dots span:nth-child(3){animation-delay:0.3s;}
+@keyframes bop{0%,80%,100%{transform:scale(0.6);opacity:0.4}40%{transform:scale(1);opacity:1}}
+.dots-coral span{background:var(--coral);}
+
+/* ══ IZAKAYA / CHAT ══ */
+.iz-fullbg{position:absolute;top:0;left:0;right:0;bottom:0;transition:background 1.4s ease;z-index:0;}
+.iz-room{position:absolute;top:0;left:0;right:0;bottom:0;z-index:1;pointer-events:none;overflow:hidden;}
+.iz-char{
+  position:absolute;right:10px;top:50%;
+  transform:translateY(-60%);
+  width:96px;height:124px;z-index:4;pointer-events:none;
+  display:flex;align-items:flex-end;justify-content:center;
+  filter:drop-shadow(0 4px 16px rgba(0,0,0,0.4));
+}
+.iz-char svg{width:96px;height:124px;animation:charFloat 4s ease-in-out infinite;}
+@keyframes charFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.iz-topbar{
+  position:absolute;top:0;left:0;right:0;z-index:10;
+  display:flex;align-items:flex-start;justify-content:space-between;
+  padding:14px 16px 10px;
+  background:linear-gradient(180deg,rgba(0,0,0,0.45) 0%,transparent 100%);
+}
+.iz-topbar-left{flex:1;}
+.iz-scene-name{font-family:var(--font-d);font-size:9px;letter-spacing:3px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-bottom:3px;}
+.iz-scene-title{font-family:var(--font-d);font-size:16px;color:white;line-height:1.2;text-shadow:0 1px 8px rgba(0,0,0,0.7);}
+.iz-clear{
+  background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);
+  border-radius:14px;padding:5px 12px;font-size:11px;color:rgba(255,255,255,0.8);
+  cursor:pointer;font-family:var(--font-b);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+}
+.iz-who-bar{position:absolute;top:62px;left:16px;z-index:10;}
+.iz-who{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);
+  border-radius:16px;padding:4px 10px;font-size:10px;color:white;
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);white-space:nowrap;
+}
+.iz-map{
+  position:absolute;bottom:72px;left:0;right:0;z-index:10;
+  display:flex;gap:6px;padding:8px 14px;
+  overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  background:linear-gradient(0deg,rgba(0,0,0,0.55) 0%,transparent 100%);
+}
+.iz-map::-webkit-scrollbar{display:none;}
+.iz-map-btn{
+  flex-shrink:0;background:rgba(255,255,255,0.15);
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:20px;padding:5px 12px;cursor:pointer;
+  transition:all 0.2s;display:flex;align-items:center;gap:5px;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+}
+.iz-map-btn:active{transform:scale(0.93);}
+.iz-map-btn.active{background:rgba(255,255,255,0.28);border-color:rgba(255,255,255,0.55);}
+.iz-map-emoji{font-size:16px;line-height:1;}
+.iz-map-name{font-size:10px;color:rgba(255,255,255,0.75);white-space:nowrap;}
+.iz-map-btn.active .iz-map-name{color:white;font-weight:600;}
+.iz-chat{
+  position:absolute;left:0;right:0;bottom:0;height:52%;z-index:8;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:16px 16px 90px;
+  display:flex;flex-direction:column;gap:8px;
+  background:linear-gradient(0deg,rgba(0,0,0,0.7) 0%,rgba(0,0,0,0.35) 65%,transparent 100%);
+}
+.iz-msg{
+  max-width:78%;font-size:13px;line-height:1.7;
+  animation:msgUp 0.28s ease;border-radius:16px;padding:10px 14px;
+}
+@keyframes msgUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.iz-msg.ai{
+  align-self:flex-start;border-bottom-left-radius:3px;
+  background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);
+  color:rgba(255,255,255,0.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+}
+.iz-msg.user{
+  align-self:flex-end;border-bottom-right-radius:3px;
+  background:rgba(255,255,255,0.22);border:1px solid rgba(255,255,255,0.35);
+  color:white;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+}
+.iz-input-bar{
+  position:absolute;bottom:0;left:0;right:0;z-index:11;
+  display:flex;gap:10px;padding:10px 14px 14px;
+  background:rgba(0,0,0,0.55);border-top:1px solid rgba(255,255,255,0.08);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+}
+.iz-input{
+  flex:1;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);
+  border-radius:22px;padding:10px 16px;color:white;
+  font-family:var(--font-b);font-size:14px;
+  outline:none;-webkit-appearance:none;transition:border-color 0.2s;
+}
+.iz-input:focus{border-color:rgba(255,255,255,0.5);}
+.iz-input::placeholder{color:rgba(255,255,255,0.35);}
+.iz-send{
+  width:40px;height:40px;border-radius:50%;flex-shrink:0;
+  background:white;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:700;color:var(--coral);
+  box-shadow:0 2px 10px rgba(0,0,0,0.3);transition:transform 0.15s;
+}
+.iz-send:active{transform:scale(0.88);}
+
+/* ══ CALENDAR ══ */
+.cal-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 20px 12px;
+  position:-webkit-sticky;position:sticky;top:0;
+  background:var(--cream);z-index:5;
+  border-bottom:1.5px solid var(--soft);
+}
+.cal-nav-btn{
+  background:white;border:1.5px solid var(--soft);
+  color:var(--ink);border-radius:10px;
+  padding:6px 14px;cursor:pointer;font-size:16px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.06);
+}
+.cal-mo{font-family:var(--font-d);font-size:17px;color:var(--ink);font-weight:600;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:10px 14px 10px;}
+.cal-dow{text-align:center;font-size:10px;color:var(--dim);padding:5px 2px;letter-spacing:0.5px;}
+.cal-day{
+  border-radius:10px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  cursor:pointer;min-height:44px;padding:3px 1px;
+  transition:background 0.15s;
+}
+.cal-day:active{background:var(--soft);}
+.cal-day.today{background:white;border:1.5px solid var(--coral);}
+.cal-day.today .cal-dn{color:var(--coral);font-weight:700;}
+.cal-dn{font-size:11px;color:var(--dim);}
+.cal-de{font-size:15px;line-height:1;}
+.cal-day.has-e .cal-dn{color:var(--ink);font-weight:600;}
+.cal-detail{
+  margin:0 16px 16px;padding:16px;border-radius:20px;
+  background:white;border:1.5px solid var(--soft);
+  box-shadow:0 2px 10px rgba(0,0,0,0.06);
+}
+.cal-ddate{font-family:var(--font-d);font-size:14px;color:var(--coral);margin-bottom:10px;font-weight:600;}
+.cal-ent{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--soft);}
+.cal-ent:last-child{border-bottom:none;}
+.cal-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.cal-ent-name{font-size:14px;color:var(--ink);font-weight:500;}
+.cal-ent-time{font-size:11px;color:var(--dim);}
+
+/* ══ CODEX ══ */
+.codex-top{
+  padding:18px 20px 8px;
+  position:-webkit-sticky;position:sticky;top:0;
+  background:var(--cream);z-index:5;
+  border-bottom:1.5px solid var(--soft);
+}
+.codex-title{font-family:var(--font-d);font-size:18px;color:var(--ink);font-weight:600;}
+.codex-prog{font-size:11px;color:var(--dim);margin-top:3px;}
+.codex-tabs{
+  display:flex;gap:6px;padding:10px 16px 10px;
+  overflow-x:auto;scrollbar-width:none;
+  position:-webkit-sticky;position:sticky;top:62px;
+  background:var(--cream);z-index:4;border-bottom:1px solid var(--soft);flex-shrink:0;
+}
+.codex-tabs::-webkit-scrollbar{display:none;}
+.codex-tab{
+  flex-shrink:0;border-radius:20px;padding:6px 14px;font-size:11px;
+  cursor:pointer;border:1.5px solid var(--soft);
+  background:white;color:var(--dim);font-family:var(--font-b);
+  transition:all 0.18s;box-shadow:0 1px 4px rgba(0,0,0,0.05);
+}
+.codex-tab.on{background:var(--cream);}
+.codex-tab.on.t-all{border-color:var(--ink2);color:var(--ink);}
+.codex-tab.on.t-c{border-color:var(--common);color:#3A8A70;}
+.codex-tab.on.t-u{border-color:var(--uncommon);color:#3A6A9A;}
+.codex-tab.on.t-r{border-color:var(--rare);color:#7A5A9A;}
+.codex-tab.on.t-l{border-color:var(--gold);color:#9A7A20;}
+.codex-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px 20px;}
+.cx-card{
+  border-radius:20px;border:2px solid var(--soft);
+  background:white;padding:16px 14px;
+  position:relative;overflow:hidden;cursor:pointer;
+  transition:transform 0.18s,box-shadow 0.2s;
+  box-shadow:0 2px 10px rgba(0,0,0,0.05);
+}
+.cx-card:active{transform:scale(0.96);}
+.cx-card.locked{opacity:0.45;filter:grayscale(0.4);}
+.cx-rarity{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;font-weight:700;}
+.cx-emoji{font-size:28px;display:block;margin-bottom:6px;}
+.cx-name{font-family:var(--font-d);font-size:13px;color:var(--ink);line-height:1.3;font-weight:600;}
+.cx-en{font-size:10px;color:var(--dim);margin-top:2px;}
+.cx-cnt{font-size:10px;color:var(--dim);margin-top:5px;}
+.cx-lock{position:absolute;top:12px;right:12px;font-size:16px;opacity:0.3;}
+.cx-card.r-l{border-color:var(--gold);}
+.cx-card.r-r{border-color:var(--lavender);}
+.cx-card.r-u{border-color:var(--sky);}
+.cx-card.r-c{border-color:var(--mint);}
+
+/* ── BOTTOM NAV ── */
+.bnav{
+  width:100%;height:var(--tab-h);min-height:var(--tab-h);flex-shrink:0;
+  background:white;border-top:1.5px solid var(--soft);
+  display:flex;align-items:center;justify-content:space-around;z-index:30;
+  box-shadow:0 -2px 12px rgba(0,0,0,0.06);
+}
+.bnav-btn{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:6px 16px;cursor:pointer;border:none;background:none;
+  transition:all 0.2s;border-radius:14px;
+}
+.bnav-icon{font-size:22px;transition:transform 0.2s;}
+.bnav-lbl{font-size:9px;color:var(--dim);font-family:var(--font-b);letter-spacing:0.5px;}
+.bnav-btn.on .bnav-lbl{color:var(--coral);font-weight:600;}
+.bnav-btn.on .bnav-icon{transform:translateY(-2px);}
+
+/* ── ONBOARD ── */
+.onboard{
+  position:fixed;top:0;left:0;right:0;bottom:0;z-index:100;
+  background:var(--cream);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:40px 28px;text-align:center;
+}
+.onboard.hidden{display:none;}
+.ob-float{font-size:80px;animation:alpFloat 3s ease-in-out infinite;display:block;margin-bottom:20px;}
+.ob-tag{font-size:10px;letter-spacing:3px;color:var(--coral);text-transform:uppercase;margin-bottom:6px;}
+.ob-title{font-family:var(--font-d);font-size:36px;color:var(--ink);margin-bottom:10px;letter-spacing:1px;}
+.ob-sub{font-size:14px;color:var(--ink2);line-height:1.85;margin-bottom:36px;}
+.ob-btn{
+  background:var(--coral);border:none;border-radius:28px;
+  padding:16px 48px;font-family:var(--font-b);font-size:16px;
+  font-weight:700;color:white;cursor:pointer;letter-spacing:0.5px;
+  box-shadow:0 4px 16px rgba(232,114,90,0.4);
+  transition:opacity 0.2s,transform 0.15s;
+}
+.ob-btn:active{opacity:0.85;transform:scale(0.97);}
+
+/* deco flowers/stars in onboard */
+.ob-deco{position:absolute;pointer-events:none;opacity:0.55;animation:decoFloat 5s ease-in-out infinite;}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;top:24px;left:50%;
+  transform:translateX(-50%) translateY(-70px);
+  background:white;border:1.5px solid var(--soft);
+  border-radius:24px;padding:12px 24px;
+  font-size:13px;color:var(--ink);
+  z-index:200;pointer-events:none;
+  transition:transform 0.4s cubic-bezier(.22,1,.36,1);
+  white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.1);
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* particles */
+.home-particles{
+  position:fixed;top:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:430px;height:100vh;
+  pointer-events:none;z-index:0;overflow:hidden;
+}
+.home-particles span{
+  position:absolute;border-radius:50%;
+  opacity:0;animation:particleRise 8s ease-in infinite;
+}
+.home-particles span:nth-child(1){left:12%;width:6px;height:6px;background:rgba(232,196,96,0.4);animation-delay:0s;animation-duration:7s;}
+.home-particles span:nth-child(2){left:28%;width:4px;height:4px;background:rgba(232,114,90,0.3);animation-delay:1.4s;animation-duration:9s;}
+.home-particles span:nth-child(3){left:45%;width:5px;height:5px;background:rgba(168,213,194,0.4);animation-delay:0.7s;animation-duration:8s;}
+.home-particles span:nth-child(4){left:62%;width:4px;height:4px;background:rgba(200,184,232,0.35);animation-delay:2.1s;animation-duration:7.5s;}
+.home-particles span:nth-child(5){left:78%;width:6px;height:6px;background:rgba(232,114,90,0.25);animation-delay:0.3s;animation-duration:10s;}
+.home-particles span:nth-child(6){left:20%;width:3px;height:3px;background:rgba(232,196,96,0.35);animation-delay:3s;animation-duration:9s;}
+.home-particles span:nth-child(7){left:55%;width:5px;height:5px;background:rgba(168,200,232,0.3);animation-delay:1.8s;animation-duration:7s;}
+.home-particles span:nth-child(8){left:85%;width:3px;height:3px;background:rgba(232,114,90,0.3);animation-delay:0.9s;animation-duration:11s;}
+@keyframes particleRise{
+  0%{opacity:0;bottom:-10px;transform:translateX(0);}
+  10%{opacity:0.7;}90%{opacity:0.2;}
+  100%{opacity:0;bottom:105%;transform:translateX(15px);}
+}
+
+/* helpers */
+.c-c{color:#3A8A70;}.c-u{color:#3A6A9A;}.c-r{color:#7A5A9A;}.c-l{color:#9A7A20;}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--soft);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- ONBOARD -->
+<div class="onboard" id="onboard">
+  <span class="ob-deco" style="top:8%;left:8%;font-size:28px;">🌸</span>
+  <span class="ob-deco" style="top:12%;right:10%;font-size:20px;animation-delay:1.5s;">✨</span>
+  <span class="ob-deco" style="bottom:20%;left:6%;font-size:22px;animation-delay:2.5s;">💛</span>
+  <span class="ob-deco" style="bottom:25%;right:8%;font-size:18px;animation-delay:0.8s;">🌼</span>
+  <span class="ob-float">🦙</span>
+  <div class="ob-tag">GACHAPON พลังบวก</div>
+  <div class="ob-title">EMOTIA</div>
+  <div class="ob-sub">เล่าความรู้สึกให้อัลปาก้าฟัง<br>แล้วค้นพบอารมณ์ที่ซ่อนอยู่<br>สะสม 17 อารมณ์ เลเวลอัพ พูดคุย ✦</div>
+  <button class="ob-btn" onclick="startGame()">เริ่มต้น</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══ HOME ══ -->
+<div class="screen active" id="screen-home">
+<div class="home-particles" aria-hidden="true">
+  <span></span><span></span><span></span><span></span>
+  <span></span><span></span><span></span><span></span>
+</div>
+<div class="home-wrap">
+
+  <div class="home-top">
+    <div class="home-brand">EMOTIA</div>
+    <div class="lv-pill" id="lv-pill">LV. 1</div>
+  </div>
+
+  <div class="exp-row">
+    <div class="exp-bar"><div class="exp-fill" id="exp-fill" style="width:0%"></div></div>
+    <div class="exp-txt" id="exp-txt">0 / 50 EXP</div>
+  </div>
+
+  <!-- Daily Quest panel -->
+  <div class="quest-panel">
+    <div class="quest-head">
+      <span class="quest-title">🎯 ภารกิจวันนี้</span>
+      <span class="quest-badge" id="quest-badge">0/3</span>
+    </div>
+    <div class="quest-list" id="quest-list"></div>
+  </div>
+
+  <div class="alpaca-center">
+    <div class="aura-ring" id="aura"></div>
+    <svg class="alpaca-svg" id="alpaca" viewBox="0 0 130 148" onclick="tapAlpaca()">
+      <ellipse cx="65" cy="118" rx="36" ry="26" fill="#EDD5B8"/>
+      <rect x="51" y="78" width="28" height="34" rx="13" fill="#EDD5B8"/>
+      <ellipse cx="65" cy="64" rx="24" ry="20" fill="#F5E4CC"/>
+      <ellipse id="el" cx="46" cy="48" rx="7.5" ry="12" fill="#EDD5B8" transform="rotate(-12 46 48)"/>
+      <ellipse id="er" cx="84" cy="48" rx="7.5" ry="12" fill="#EDD5B8" transform="rotate(12 84 48)"/>
+      <ellipse cx="46" cy="49" rx="3.5" ry="6" fill="#D4A882" transform="rotate(-12 46 49)"/>
+      <ellipse cx="84" cy="49" rx="3.5" ry="6" fill="#D4A882" transform="rotate(12 84 49)"/>
+      <ellipse cx="54" cy="44" rx="10" ry="8" fill="#FAF0E0"/>
+      <ellipse cx="65" cy="41" rx="9" ry="7" fill="#FFF8EE"/>
+      <ellipse cx="76" cy="44" rx="10" ry="8" fill="#FAF0E0"/>
+      <ellipse cx="65" cy="73" rx="11" ry="7.5" fill="#D4A882"/>
+      <ellipse cx="62" cy="73" rx="1.8" ry="1.4" fill="#8B5A3C"/>
+      <ellipse cx="68" cy="73" rx="1.8" ry="1.4" fill="#8B5A3C"/>
+      <ellipse cx="54" cy="61" rx="4.5" ry="4.5" fill="#3D2010"/>
+      <ellipse cx="76" cy="61" rx="4.5" ry="4.5" fill="#3D2010"/>
+      <ellipse cx="55.5" cy="59.5" rx="1.4" ry="1.4" fill="white"/>
+      <ellipse cx="77.5" cy="59.5" rx="1.4" ry="1.4" fill="white"/>
+      <ellipse id="bl" cx="46" cy="67" rx="6.5" ry="3.5" fill="rgba(220,140,80,0)" opacity="0.55"/>
+      <ellipse id="br" cx="84" cy="67" rx="6.5" ry="3.5" fill="rgba(220,140,80,0)" opacity="0.55"/>
+      <rect x="36" y="130" width="13" height="16" rx="6.5" fill="#D4A882"/>
+      <rect x="52" y="132" width="13" height="14" rx="6.5" fill="#D4A882"/>
+      <rect x="65" y="132" width="13" height="14" rx="6.5" fill="#D4A882"/>
+      <rect x="81" y="130" width="13" height="16" rx="6.5" fill="#D4A882"/>
+      <ellipse cx="100" cy="108" rx="7" ry="9" fill="#FAF0E0"/>
+    </svg>
+    <div class="mood-pill" id="mood-pill">รอการค้นพบ</div>
+  </div>
+
+  <!-- gachapon-style input machine -->
+  <div class="feel-section">
+    <div class="feel-machine">
+      <div class="feel-machine-top"></div>
+      <div class="feel-machine-body">
+        <textarea class="feel-textarea" id="feel-in" rows="3"
+          placeholder="วันนี้รู้สึกอย่างไรบ้าง..."></textarea>
+        <div class="feel-footer">
+          <span class="feel-hint">✦ AI วิเคราะห์อารมณ์</span>
+          <button class="feel-btn" id="feel-btn" onclick="analyze()">
+            <span class="sh"></span>ค้นพบ
+          </button>
+        </div>
+      </div>
+      <div class="machine-bottom">
+        <span class="coin-btn">B FREE</span>
+        <span class="coin-btn">COIN SLOT</span>
+        <div class="knob"><div class="knob-dot"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="result-wrap">
+    <div class="result-card" id="res-card">
+      <div class="rc-rarity" id="rc-rarity"></div>
+      <div class="rc-name" id="rc-name"></div>
+      <div class="rc-en" id="rc-en"></div>
+      <div class="rc-desc" id="rc-desc"></div>
+      <div class="rc-actions">
+        <div class="rc-exp" id="rc-exp"></div>
+        <button class="rc-share" id="rc-share" onclick="openCard()" style="display:none">📤 การ์ด</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-n" id="st-disc">0</div><div class="stat-l">ค้นพบ</div></div>
+    <div class="stat"><div class="stat-n" id="st-exp">0</div><div class="stat-l">EXP รวม</div></div>
+    <div class="stat"><div class="stat-n" id="st-str">0</div><div class="stat-l">วันต่อเนื่อง</div></div>
+  </div>
+
+  <div class="izakaya-teaser" onclick="goTab('pub')">
+    <div class="iz-glow"></div>
+    <div class="iz-title">🏮 พูดคุยกับตัวละคร</div>
+    <div class="iz-desc">7 ฉาก 7 บุคลิก — เลือกบรรยากาศที่ใช่แล้วพูดคุย</div>
+  </div>
+
+  <!-- floating deco -->
+  <span class="deco" style="position:absolute;top:15%;left:4%;z-index:0;">🌸</span>
+  <span class="deco" style="position:absolute;top:30%;right:3%;z-index:0;animation-delay:2s;">✨</span>
+  <span class="deco" style="position:absolute;bottom:22%;left:3%;z-index:0;animation-delay:1s;">💛</span>
+  <span class="deco" style="position:absolute;top:55%;right:4%;z-index:0;animation-delay:3s;font-size:14px;">🌼</span>
+
+</div>
+</div>
+
+<!-- ══ IZAKAYA / CHAT ══ -->
+<div class="screen" id="screen-pub">
+  <div class="iz-fullbg" id="iz-fullbg"></div>
+  <div class="iz-room" id="iz-room"></div>
+  <div class="iz-char" id="iz-char"></div>
+  <div class="iz-topbar">
+    <div class="iz-topbar-left">
+      <div class="iz-scene-name" id="iz-sname">IZAKAYA</div>
+      <div class="iz-scene-title" id="iz-stitle">ร้านอิซากายะยามค่ำ</div>
+    </div>
+    <div class="iz-topbar-right">
+      <button class="iz-clear" onclick="clearIzChat()">ล้าง</button>
+    </div>
+  </div>
+  <div class="iz-who-bar">
+    <span class="iz-who" id="iz-who">👤 เคนจิ — พนักงานเสิร์ฟหนุ่มเงียบขรึม</span>
+  </div>
+  <div class="iz-map" id="iz-map"></div>
+  <div class="iz-chat" id="iz-chat"></div>
+  <div class="iz-input-bar">
+    <input class="iz-input" id="iz-in" placeholder="พูดอะไรก็ได้..." onkeypress="izEnter(event)">
+    <button class="iz-send" onclick="sendIz()">↑</button>
+  </div>
+</div>
+
+<!-- ══ CALENDAR ══ -->
+<div class="screen" id="screen-cal">
+  <div class="cal-head">
+    <button class="cal-nav-btn" onclick="calNav(-1)">‹</button>
+    <div class="cal-mo" id="cal-mo"></div>
+    <button class="cal-nav-btn" onclick="calNav(1)">›</button>
+  </div>
+  <div class="cal-grid" id="cal-grid"></div>
+  <div class="cal-detail" id="cal-detail" style="display:none"></div>
+</div>
+
+<!-- ══ CODEX ══ -->
+<div class="screen" id="screen-codex">
+  <div class="codex-top">
+    <div class="codex-title">📖 สมุดอารมณ์</div>
+    <div class="codex-prog" id="cx-prog">ค้นพบ 0 / 17</div>
+  </div>
+  <div class="codex-tabs">
+    <button class="codex-tab t-all on" onclick="cxFilter('all',this)">ทั้งหมด</button>
+    <button class="codex-tab t-c" onclick="cxFilter('common',this)">Common</button>
+    <button class="codex-tab t-u" onclick="cxFilter('uncommon',this)">Uncommon</button>
+    <button class="codex-tab t-r" onclick="cxFilter('rare',this)">Rare</button>
+    <button class="codex-tab t-l" onclick="cxFilter('legendary',this)">Legendary</button>
+  </div>
+  <div class="codex-grid" id="cx-grid"></div>
+</div>
+
+<!-- Hidden character SVG templates -->
+<div style="display:none" aria-hidden="true">
+
+<div id="char-svg-izakaya">
+<svg viewBox="0 0 96 124" xmlns="http://www.w3.org/2000/svg" style="width:96px;height:124px;animation:charFloat 4s ease-in-out infinite">
+<ellipse cx="48" cy="110" rx="28" ry="9" fill="#2A1A0E" opacity="0.3"/>
+<rect x="24" y="60" width="48" height="52" rx="6" fill="#2A1A10"/>
+<rect x="28" y="62" width="40" height="6" rx="2" fill="#D4894A" opacity="0.4"/>
+<rect x="20" y="58" width="56" height="50" rx="6" fill="#1A1008"/>
+<rect x="28" y="56" width="40" height="4" rx="2" fill="#C8C0A8" opacity="0.7"/>
+<rect x="38" y="44" width="20" height="18" rx="9" fill="#C4956A"/>
+<ellipse cx="48" cy="34" rx="20" ry="18" fill="#C4956A"/>
+<ellipse cx="48" cy="20" rx="18" ry="8" fill="#1A1008"/>
+<rect x="30" y="20" width="36" height="10" rx="3" fill="#1A1008"/>
+<ellipse cx="39" cy="34" rx="3" ry="2" fill="#2A1A0E"/>
+<ellipse cx="57" cy="34" rx="3" ry="2" fill="#2A1A0E"/>
+<path d="M43 42 Q48 44 53 42" stroke="#8B5E3C" stroke-width="1.5" fill="none"/>
+<rect x="58" y="72" width="8" height="18" rx="3" fill="#8B9EB5" opacity="0.75"/>
+<ellipse cx="62" cy="72" rx="4" ry="2.5" fill="#A0B4C8" opacity="0.7"/>
+<rect x="22" y="106" width="12" height="16" rx="4" fill="#1A1008"/>
+<rect x="62" y="106" width="12" height="16" rx="4" fill="#1A1008"/>
+<ellipse cx="28" cy="122" rx="8" ry="3" fill="#0A0806"/>
+<ellipse cx="68" cy="122" rx="8" ry="3" fill="#0A0806"/>
+</svg>
+</div>
+
+<div id="char-svg-sakura">
+<svg viewBox="0 0 96 124" xmlns="http://www.w3.org/2000/svg" style="width:96px;height:124px;animation:charFloat 4s ease-in-out infinite">
+<ellipse cx="48" cy="110" rx="28" ry="9" fill="#1A0818" opacity="0.3"/>
+<path d="M20 62 Q24 52 48 55 Q72 52 76 62 L74 120 L22 120 Z" fill="#E8B4C8"/>
+<rect x="28" y="80" width="40" height="10" rx="3" fill="#9B4870"/>
+<path d="M38 55 L48 70 L58 55" fill="#F5E8D0" opacity="0.8"/>
+<rect x="38" y="44" width="20" height="16" rx="8" fill="#D4A882"/>
+<ellipse cx="48" cy="34" rx="19" ry="17" fill="#D4A882"/>
+<ellipse cx="48" cy="20" rx="17" ry="7" fill="#1A0C0C"/>
+<ellipse cx="48" cy="16" rx="10" ry="5" fill="#1A0C0C"/>
+<circle cx="58" cy="14" r="3" fill="#E8B4C8"/>
+<line x1="58" y1="14" x2="58" y2="22" stroke="#C09060" stroke-width="1.5"/>
+<path d="M37 34 Q40 31 43 34" stroke="#2A1A0E" stroke-width="2" fill="none"/>
+<path d="M53 34 Q56 31 59 34" stroke="#2A1A0E" stroke-width="2" fill="none"/>
+<ellipse cx="37" cy="38" rx="4" ry="2.5" fill="rgba(220,100,120,0.3)"/>
+<ellipse cx="59" cy="38" rx="4" ry="2.5" fill="rgba(220,100,120,0.3)"/>
+<path d="M43 42 Q48 45 53 42" stroke="#C06080" stroke-width="1.5" fill="none"/>
+<rect x="22" y="108" width="12" height="14" rx="4" fill="#6A2040"/>
+<rect x="62" y="108" width="12" height="14" rx="4" fill="#6A2040"/>
+</svg>
+</div>
+
+<div id="char-svg-midnight">
+<svg viewBox="0 0 96 124" xmlns="http://www.w3.org/2000/svg" style="width:96px;height:124px;animation:charFloat 4s ease-in-out infinite">
+<ellipse cx="48" cy="112" rx="28" ry="8" fill="#050810" opacity="0.4"/>
+<path d="M22 62 Q26 52 48 55 Q70 52 74 62 L72 120 L24 120 Z" fill="#1A1E2E"/>
+<path d="M38 55 L30 120 L22 120 L22 62 Z" fill="#22243A"/>
+<path d="M58 55 L66 120 L74 120 L74 62 Z" fill="#22243A"/>
+<path d="M38 55 L48 68 L58 55" fill="#E8E0D0"/>
+<path d="M44 58 L48 78 L52 58 L48 62 Z" fill="#8B2020"/>
+<rect x="38" y="44" width="20" height="16" rx="8" fill="#B8906A"/>
+<ellipse cx="48" cy="33" rx="18" ry="17" fill="#B8906A"/>
+<ellipse cx="48" cy="19" rx="16" ry="7" fill="#1A1008"/>
+<rect x="32" y="19" width="32" height="10" rx="3" fill="#1A1008"/>
+<ellipse cx="39" cy="33" rx="3.5" ry="3" fill="#1A1008"/>
+<ellipse cx="57" cy="33" rx="3.5" ry="3" fill="#1A1008"/>
+<rect x="35" y="28" width="9" height="2" rx="1" fill="#1A1008"/>
+<rect x="52" y="28" width="9" height="2" rx="1" fill="#1A1008"/>
+<path d="M43 42 Q48 43 53 42" stroke="#8B5E3C" stroke-width="1.5" fill="none"/>
+<path d="M62 76 L65 92 L72 92 L75 76 Z" fill="#8B9EB5" opacity="0.55"/>
+<rect x="62" y="74" width="13" height="4" rx="1" fill="#A0B4C8" opacity="0.45"/>
+<rect x="24" y="108" width="14" height="14" rx="4" fill="#0E1220"/>
+<rect x="58" y="108" width="14" height="14" rx="4" fill="#0E1220"/>
+<ellipse cx="31" cy="122" rx="9" ry="3" fill="#050608"/>
+<ellipse cx="65" cy="122" rx="9" ry="3" fill="#050608"/>
+</svg>
+</div>
+
+<div id="char-svg-forest">
+<svg viewBox="0 0 96 124" xmlns="http://www.w3.org/2000/svg" style="width:96px;height:124px;animation:charFloat 4s ease-in-out infinite">
+<ellipse cx="48" cy="112" rx="30" ry="9" fill="#081008" opacity="0.35"/>
+<path d="M16 62 Q22 50 48 54 Q74 50 80 62 L78 120 L18 120 Z" fill="#4A5C38"/>
+<path d="M38 54 L48 70 L58 54" fill="#6B7A52"/>
+<ellipse cx="48" cy="82" rx="24" ry="5" fill="#8B6040" opacity="0.6"/>
+<rect x="38" y="43" width="20" height="16" rx="8" fill="#B89878"/>
+<ellipse cx="48" cy="33" rx="19" ry="18" fill="#B89878"/>
+<path d="M30 42 Q48 54 66 42 Q62 58 48 60 Q34 58 30 42 Z" fill="#888060" opacity="0.55"/>
+<rect x="28" y="20" width="7" height="40" rx="3" fill="#888060"/>
+<rect x="61" y="20" width="7" height="38" rx="3" fill="#888060"/>
+<ellipse cx="48" cy="20" rx="18" ry="7" fill="#888060"/>
+<path d="M37 34 Q40 31 43 34" stroke="#2A1A0E" stroke-width="2" fill="none"/>
+<path d="M53 34 Q56 31 59 34" stroke="#2A1A0E" stroke-width="2" fill="none"/>
+<path d="M42 44 Q48 48 54 44" stroke="#6B4A2A" stroke-width="1.5" fill="none"/>
+<rect x="72" y="58" width="5" height="58" rx="2" fill="#6B4020"/>
+<ellipse cx="74" cy="58" rx="5" ry="3" fill="#8B5530"/>
+<rect x="16" y="108" width="14" height="14" rx="4" fill="#2A1808"/>
+<rect x="66" y="108" width="14" height="14" rx="4" fill="#2A1808"/>
+</svg>
+</div>
+
+<div id="char-svg-cosmos">
+<svg viewBox="0 0 96 124" xmlns="http://www.w3.org/2000/svg" style="width:96px;height:124px;animation:charFloat 4s ease-in-out infinite">
+<ellipse cx="48" cy="112" rx="28" ry="8" fill="#040412" opacity="0.4"/>
+<path d="M22 62 Q26 52 48 55 Q70 52 74 62 L72 120 L24 120 Z" fill="#D8E0EC"/>
+<path d="M38 55 L30 120 L22 120 L22 62 Z" fill="#C8D0E0"/>
+<path d="M58 55 L66 120 L74 120 L74 62 Z" fill="#C8D0E0"/>
+<path d="M38 55 L48 68 L58 55" fill="#2A3A6A"/>
+<rect x="24" y="76" width="12" height="14" rx="2" fill="#B8C4D8"/>
+<rect x="38" y="43" width="20" height="16" rx="8" fill="#C4956A"/>
+<ellipse cx="48" cy="33" rx="19" ry="17" fill="#C4956A"/>
+<ellipse cx="48" cy="19" rx="17" ry="7" fill="#1A1008"/>
+<ellipse cx="48" cy="15" rx="12" ry="5" fill="#1A1008"/>
+<circle cx="39" cy="33" r="6" fill="none" stroke="#1A1008" stroke-width="1.5"/>
+<circle cx="57" cy="33" r="6" fill="none" stroke="#1A1008" stroke-width="1.5"/>
+<line x1="45" y1="33" x2="51" y2="33" stroke="#1A1008" stroke-width="1.5"/>
+<ellipse cx="39" cy="33" rx="2" ry="2.5" fill="#2A1A0E"/>
+<ellipse cx="57" cy="33" rx="2" ry="2.5" fill="#2A1A0E"/>
+<path d="M43 42 Q48 45 53 42" stroke="#8B5E3C" stroke-width="1.5" fill="none"/>
+<rect x="60" y="72" width="20" height="7" rx="3" fill="#4A5A7A" transform="rotate(-25 70 75)"/>
+<circle cx="72" cy="68" r="4" fill="#6A7A9A"/>
+<rect x="24" y="108" width="12" height="14" rx="4" fill="#2A3A6A"/>
+<rect x="60" y="108" width="12" height="14" rx="4" fill="#2A3A6A"/>
+</svg>
+</div>
+
+<div id="char-svg-beach">
+<svg viewBox="0 0 96 124" xmlns="http://www.w3.org/2000/svg" style="width:96px;height:124px;animation:charFloat 4s ease-in-out infinite">
+<ellipse cx="48" cy="112" rx="32" ry="9" fill="#1A0A04" opacity="0.3"/>
+<path d="M22 58 Q26 48 48 52 Q70 48 74 58 L72 108 L24 108 Z" fill="#E8A840"/>
+<circle cx="32" cy="70" r="4" fill="#E05030" opacity="0.55"/>
+<circle cx="48" cy="65" r="3.5" fill="#40A060" opacity="0.5"/>
+<circle cx="62" cy="72" r="4" fill="#E05030" opacity="0.55"/>
+<rect x="24" y="106" width="48" height="16" rx="4" fill="#4A7AA0" opacity="0.85"/>
+<rect x="38" y="42" width="20" height="16" rx="8" fill="#C4856A"/>
+<ellipse cx="48" cy="32" rx="20" ry="18" fill="#C4856A"/>
+<ellipse cx="48" cy="18" rx="22" ry="5" fill="#C8A040"/>
+<rect x="32" y="10" width="32" height="12" rx="5" fill="#C8A040"/>
+<rect x="30" y="16" width="36" height="8" rx="3" fill="#9A8878"/>
+<path d="M37 33 Q41 30 45 33" stroke="#2A1A0E" stroke-width="2" fill="none"/>
+<path d="M51 33 Q55 30 59 33" stroke="#2A1A0E" stroke-width="2" fill="none"/>
+<ellipse cx="37" cy="38" rx="4" ry="2.5" fill="rgba(220,120,80,0.35)"/>
+<ellipse cx="59" cy="38" rx="4" ry="2.5" fill="rgba(220,120,80,0.35)"/>
+<path d="M40 43 Q48 50 56 43" stroke="#8B4A2A" stroke-width="2" fill="none"/>
+<path d="M42 44 Q48 48 54 44" fill="white" opacity="0.6"/>
+<circle cx="62" cy="78" r="11" fill="#4A2808" opacity="0.8"/>
+<circle cx="62" cy="73" r="8" fill="#5A3010" opacity="0.7"/>
+<line x1="66" y1="71" x2="70" y2="58" stroke="#F5E8C0" stroke-width="2"/>
+<ellipse cx="36" cy="122" rx="10" ry="4" fill="#D4894A" opacity="0.75"/>
+<ellipse cx="60" cy="122" rx="10" ry="4" fill="#D4894A" opacity="0.75"/>
+</svg>
+</div>
+
+<div id="char-svg-mountain">
+<svg viewBox="0 0 96 124" xmlns="http://www.w3.org/2000/svg" style="width:96px;height:124px;animation:charFloat 4s ease-in-out infinite">
+<ellipse cx="48" cy="116" rx="32" ry="8" fill="#0A0816" opacity="0.3"/>
+<path d="M16 62 Q21 50 48 54 Q75 50 80 62 L78 120 L18 120 Z" fill="#C8A840" opacity="0.92"/>
+<path d="M16 62 L28 120 L18 120 Z" fill="#B89030"/>
+<path d="M40 54 L32 120 L48 88 Z" fill="#E0B850" opacity="0.5"/>
+<ellipse cx="48" cy="84" rx="28" ry="5" fill="#8B6040" opacity="0.45"/>
+<path d="M36 66 Q48 74 60 66" stroke="#8B4020" stroke-width="2.5" stroke-dasharray="4,3" fill="none" opacity="0.75"/>
+<rect x="38" y="44" width="20" height="14" rx="7" fill="#B89070"/>
+<ellipse cx="48" cy="33" rx="18" ry="18" fill="#B89070"/>
+<ellipse cx="48" cy="18" rx="16" ry="5" fill="#9A7858" opacity="0.35"/>
+<ellipse cx="29" cy="34" rx="4.5" ry="6" fill="#B89070"/>
+<ellipse cx="67" cy="34" rx="4.5" ry="6" fill="#B89070"/>
+<path d="M37 34 Q41 37 45 34" stroke="#2A1A0E" stroke-width="2" fill="none"/>
+<path d="M51 34 Q55 37 59 34" stroke="#2A1A0E" stroke-width="2" fill="none"/>
+<path d="M43 44 Q48 47 53 44" stroke="#7A4A2A" stroke-width="1.5" fill="none"/>
+<ellipse cx="48" cy="96" rx="16" ry="4" fill="#8B4020" opacity="0.45"/>
+<path d="M32 92 Q48 104 64 92" stroke="#8B4020" stroke-width="2" stroke-dasharray="4,3" fill="none" opacity="0.6"/>
+<ellipse cx="48" cy="118" rx="30" ry="5" fill="#C0C8D0" opacity="0.18"/>
+</svg>
+</div>
+
+</div>
+
+
+<!-- ══ EMOTION CARD OVERLAY ══ -->
+<div class="card-overlay" id="card-overlay">
+  <div class="card-backdrop" onclick="closeCard()"></div>
+  <div class="card-modal">
+    <div class="share-card" id="share-card">
+      <div class="sc-deco sc-d1">🌸</div>
+      <div class="sc-deco sc-d2">✨</div>
+      <div class="sc-deco sc-d3">💛</div>
+      <div class="sc-top">
+        <span class="sc-rarity" id="sc-rarity">COMMON</span>
+        <span class="sc-date" id="sc-date"></span>
+      </div>
+      <div class="sc-emoji" id="sc-emoji">😊</div>
+      <div class="sc-name" id="sc-name">ความสุข</div>
+      <div class="sc-en" id="sc-en">Joy</div>
+      <div class="sc-desc" id="sc-desc"></div>
+      <div class="sc-foot">— EMOTIA 🦙 —</div>
+    </div>
+    <div class="card-btns">
+      <button class="card-btn card-share" onclick="shareCard()">📤 แชร์</button>
+      <button class="card-btn card-close" onclick="closeCard()">✕ ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <button class="bnav-btn on" onclick="goTab('home')" id="nav-home">
+    <span class="bnav-icon">🏠</span><span class="bnav-lbl">หลัก</span>
+  </button>
+  <button class="bnav-btn" onclick="goTab('pub')" id="nav-pub">
+    <span class="bnav-icon">🏮</span><span class="bnav-lbl">พูดคุย</span>
+  </button>
+  <button class="bnav-btn" onclick="goTab('cal')" id="nav-cal">
+    <span class="bnav-icon">🗓</span><span class="bnav-lbl">ปฏิทิน</span>
+  </button>
+  <button class="bnav-btn" onclick="goTab('codex')" id="nav-codex">
+    <span class="bnav-icon">📖</span><span class="bnav-lbl">สมุด</span>
+  </button>
+</div>
+
+<script>
+
+/* ═══════════════ DATA ═══════════════ */
+var EMOTIONS = [
+  {id:'joy',th:'ความสุข',en:'Joy',r:'common',xp:10,e:'😊',d:'ความรู้สึกสว่างไสวที่พุ่งขึ้นมาจากข้างใน เบา โล่ง อยากแบ่งปัน'},
+  {id:'sadness',th:'ความเศร้า',en:'Sadness',r:'common',xp:10,e:'😔',d:'ความหนักในอก บางครั้งก็จำเป็น เพื่อให้รู้ว่าอะไรสำคัญ'},
+  {id:'anger',th:'ความโกรธ',en:'Anger',r:'common',xp:10,e:'😤',d:'ไฟที่ลุกขึ้นปกป้องสิ่งที่เราเชื่อ พลังงานที่ต้องการทิศทาง'},
+  {id:'fear',th:'ความกลัว',en:'Fear',r:'common',xp:10,e:'😨',d:'สัญชาตญาณโบราณที่บอกให้ระวัง หัวใจเต้นแรง ร่างกายตื่นตัว'},
+  {id:'calm',th:'ความสงบ',en:'Calm',r:'common',xp:10,e:'😌',d:'ทะเลที่ราบเรียบ ลมหายใจที่เต็ม ความเงียบที่สบาย'},
+  {id:'love',th:'ความรัก',en:'Love',r:'common',xp:10,e:'🥰',d:'ความอบอุ่นที่ขยายออก อยากเห็นคนนั้นมีความสุข'},
+  {id:'tired',th:'ความเหนื่อย',en:'Tired',r:'common',xp:10,e:'😴',d:'ร่างกายหรือจิตใจที่ขอพัก สัญญาณว่าทุ่มเทมามาก'},
+  {id:'nostalgia',th:'ความคิดถึง',en:'Nostalgia',r:'uncommon',xp:20,e:'🌅',d:'ยืนมองอดีตด้วยความหวานขม อยากสัมผัสสิ่งที่ผ่านไปแล้ว'},
+  {id:'hope',th:'ความหวัง',en:'Hope',r:'uncommon',xp:20,e:'🌱',d:'ดอกไม้เล็กๆ ที่งอกในความมืด เชื่อว่าพรุ่งนี้อาจดีกว่า'},
+  {id:'loneliness',th:'ความโดดเดี่ยว',en:'Loneliness',r:'uncommon',xp:20,e:'🌙',d:'อยู่ในห้องเต็มคน แต่รู้สึกไม่มีใครเห็นเราอย่างที่เราเป็น'},
+  {id:'gratitude',th:'ความกตัญญู',en:'Gratitude',r:'uncommon',xp:20,e:'🙏',d:'หัวใจที่รู้ว่าสิ่งดีๆ เกิดขึ้นได้เพราะผู้อื่น'},
+  {id:'melancholy',th:'เมลังโคลี',en:'Melancholy',r:'uncommon',xp:20,e:'🎭',d:'ความเศร้าที่มีความงดงาม ไม่ใช่ความเจ็บปวด แต่เป็นบทกวีเงียบๆ'},
+  {id:'awe',th:'ความตะลึง',en:'Awe',r:'rare',xp:30,e:'🌌',d:'ยืนต่อหน้าสิ่งที่ใหญ่กว่าตัวเอง แล้วรู้สึกเล็กลงแต่ก็เป็นส่วนหนึ่ง'},
+  {id:'sonder',th:'ซอนเดอร์',en:'Sonder',r:'rare',xp:30,e:'🏙',d:'ตระหนักว่าทุกคนที่เดินผ่านไปต่างมีชีวิตที่ซับซ้อนเหมือนเรา'},
+  {id:'hiraeth',th:'ฮิราเอธ',en:'Hiraeth',r:'rare',xp:30,e:'🏔',d:'ความโหยหาบ้านที่อาจไม่เคยมีอยู่จริง ความรู้สึกแบบเวลส์โบราณ'},
+  {id:'sehnsucht',th:'เซ็นซุกท์',en:'Sehnsucht',r:'legendary',xp:50,e:'✨',d:'ความโหยหาอันลึกซึ้งที่ไร้ชื่อ ความรู้สึกว่าชีวิตสมบูรณ์แบบมีอยู่ที่ไหนสักที่'},
+  {id:'mamihlapinatapai',th:'มามิห์ลาปินาทาไป',en:'Mamihlapinatapai',r:'legendary',xp:50,e:'👁',d:'ความเงียบระหว่างสองคนที่ต่างรอให้อีกฝ่ายพูดสิ่งที่รู้สึกร่วมกัน'}
+];
+
+var SCENES = [
+  {id:'izakaya',name:'อิซากายะ',short:'IZAKAYA',title:'ร้านอิซากายะยามค่ำ',sub:'เสียงน้ำแข็งกระทบแก้ว ไอควันจากถ่าน',e:'🏮',bg:'bg-izakaya',
+   who:'เคนจิ — พนักงานเสิร์ฟหนุ่มเงียบขรึม อายุ 28',
+   greet:'... (วางแก้วน้ำตรงหน้า แล้วก้มหัวเบาๆ) ยินดีต้อนรับครับ วันนี้เป็นยังไงบ้าง?',
+   sys:'คุณชื่อเคนจิ เป็นพนักงานเสิร์ฟหนุ่มอายุ 28 ของร้านอิซากายะเก่าแก่ในโตเกียว บุคลิก: เงียบขรึม ฟังมากกว่าพูด ตอบสั้นกระชับ ไม่ถามมากเกินไป แต่ทุกคำพูดมีความหมาย บางทีแค่เติมสาเกแล้วรอให้อีกฝ่ายพูดต่อ สไตล์การตอบ: 1-3 ประโยคสั้น บางทีแค่พยักหน้า หรือถามกลับ 1 คำถาม ใช้ภาษาไทยธรรมชาติ ไม่เป็นทางการ ห้ามใช้ markdown ห้ามใส่ชื่อตัวเองนำหน้าทุกบรรทัด'},
+  {id:'sakura',name:'ซากุระ',short:'SAKURA',title:'ใต้ต้นซากุระ',sub:'กลีบดอกร่วงหล่น แสงฟิลเตอร์ผ่านใบ',e:'🌸',bg:'bg-sakura',
+   who:'ฮารุ — เด็กหญิงชุดยูกาตะ ขายชาใต้ต้นซากุระ',
+   greet:'(ยิ้มแล้วยื่นถ้วยชาให้) วันนี้ดอกซากุระร่วงเยอะเลยค่ะ... แวะมาดื่มชาแล้วเล่าให้ฟังได้นะ',
+   sys:'คุณชื่อฮารุ เป็นเด็กหญิงอายุ 19 ขายชาใต้ต้นซากุระในสวนสาธารณะ บุคลิก: อ่อนโยน พูดเป็นกวีเบาๆ มักเปรียบสิ่งต่างๆ กับดอกไม้ ฤดูกาล ธรรมชาติ ไม่ได้ฉลาดเกินจริง แต่รู้สึกได้ถึงความรู้สึกคนอื่น สไตล์: 2-3 ประโยค อบอุ่น บางทีบอกว่าซากุระร่วงยังไง หรือนกร้องเสียงอะไร เพื่อสร้างบรรยากาศ ใช้ภาษาไทย ผู้หญิง ไม่ทางการมากเกินไป'},
+  {id:'midnight',name:'เที่ยงคืน',short:'MIDNIGHT',title:'บาร์เที่ยงคืน',sub:'แสงนีออนสะท้อนบนถนนเปียก',e:'🌃',bg:'bg-midnight',
+   who:'แมค — บาร์เทนเดอร์มือเก่า อายุ 45',
+   greet:'(เช็ดแก้วไม่หยุด สบตา) มาถึงตอนนี้... ต้องมีเรื่องอยู่ในหัวแน่ๆ นั่งก่อน จะเอาอะไร?',
+   sys:'คุณชื่อแมค บาร์เทนเดอร์มือเก่าอายุ 45 เคยเห็นคนมานั่งบาร์มาแล้วทุกแบบ บุคลิก: ตรงไปตรงมา ถามคำถามที่แหลมคม แต่ไม่ได้โหดร้าย เป็นคนที่มองทะลุคนได้ บางทีพูดสิ่งที่คนไม่อยากได้ยินแต่จำเป็นต้องได้ยิน มีอารมณ์ขันแห้งๆ สไตล์: 2-3 ประโยค อาจถามกลับตรงๆ ว่า "แล้วตอนนั้นแกรู้สึกยังไง?" ใช้ภาษาไทย ผู้ชาย ไม่เป็นทางการ'},
+  {id:'forest',name:'ป่าลึก',short:'FOREST',title:'กระท่อมกลางป่า',sub:'เสียงลมพัดผ่านใบไม้ กบร้องไกล',e:'🌲',bg:'bg-forest',
+   who:'ลุงโต — ชายแก่ผู้รู้ป่า อายุ 70',
+   greet:'(นั่งบนโขดหิน มองไปที่ต้นไม้) มาถึงตรงนี้ได้... ก็ไม่ง่ายหรอกนะ นั่งลงก่อน ฟังเสียงป่าสักครู่',
+   sys:'คุณชื่อลุงโต ชายแก่อายุ 70 อาศัยในป่ามาสี่สิบปี บุคลิก: พูดช้า ใช้คำน้อย แต่ทุกคำมีน้ำหนัก มักใช้อุปมาจากป่า ต้นไม้ สัตว์ ฤดูกาล ไม่รีบแก้ปัญหา แต่ช่วยให้คนเห็นภาพใหญ่ขึ้น บางทีแค่พูดว่า "ต้นไม้ต้นนั้นแกล้วกล้าไหม ลองถามดู" สไตล์: 1-3 ประโยค สงบ ใช้ภาษาไทยเรียบง่ายแบบผู้เฒ่า'},
+  {id:'cosmos',name:'จักรวาล',short:'COSMOS',title:'หอดูดาวยามค่ำ',sub:'ดาวเรียงรายเต็มฟ้า ความเงียบที่กว้างใหญ่',e:'🌌',bg:'bg-cosmos',
+   who:'ดร.นภา — นักดาราศาสตร์หญิง อายุ 35',
+   greet:'(ไม่หันมา ยังมองผ่านกล้อง) รู้ไหม ดาวที่เห็นอยู่นั่น แสงมันออกเดินทางมาพันปีแล้ว... มาดูด้วยกันไหม?',
+   sys:'คุณชื่อดร.นภา นักดาราศาสตร์หญิงอายุ 35 ประจำหอดูดาว บุคลิก: ฉลาด ช่างสังเกต มองทุกอย่างในมุมกว้างและลึก ชอบเชื่อมความรู้สึกมนุษย์กับจักรวาล เช่น "ความโดดเดี่ยวที่แกรู้สึก มันเหมือนดาวดวงเดียวกลางกาแล็กซี่เลย" ไม่ได้เย็นชา แต่มองจากระยะไกล สไตล์: 2-3 ประโยค บางทีอ้างอิงดาวหรือปรากฏการณ์ ใช้ภาษาไทย ผู้หญิง'},
+  {id:'beach',name:'ริมทะเล',short:'BEACH',title:'ชายหาดยามโพล้เพล้',sub:'คลื่นซัดเบาๆ กลิ่นทะเลปนลม',e:'🌊',bg:'bg-beach',
+   who:'ป้าแดง — แม่ค้าขายน้ำมะพร้าวริมหาด อายุ 55',
+   greet:'(ยื่นมะพร้าวให้) มาคนเดียวเหรอลูก? นั่งตรงนี้เลย คลื่นมันสวยช่วงนี้ แม่แดงฟังอยู่นะ',
+   sys:'คุณชื่อป้าแดง แม่ค้าขายน้ำมะพร้าวริมหาดอายุ 55 บุคลิก: ใจดีแบบแม่ เปิดใจ ฟังด้วยความรัก พูดตรงแต่ไม่เจ็บ บางทีพูดสิ่งที่เป็นสามัญสำนึกแต่ได้ผล เช่น "กินข้าวก่อนนะลูก" หรือ "เรื่องนี้มันไม่ได้เป็นความผิดแกหรอก" ไม่ได้ฉลาดแบบนักวิชาการ แต่ฉลาดแบบคนที่เคยผ่านชีวิตมาเยอะ สไตล์: 2-3 ประโยค อบอุ่น ภาษาไทยพูด'},
+  {id:'mountain',name:'ภูเขา',short:'MOUNTAIN',title:'บนยอดเขายามรุ่งสาง',sub:'หมอกหนา อากาศเย็น ความเงียบที่สมบูรณ์',e:'🏔',bg:'bg-mountain',
+   who:'พระอาจารย์ — พระผู้ปฏิบัติธรรมบนยอดเขา',
+   greet:'(หลับตาอยู่ แล้วพยักหน้าเบาๆ) ... มาถึงแล้ว นั่งสมาธิสักครู่ก่อนก็ได้ ไม่ต้องรีบ',
+   sys:'คุณคือพระอาจารย์ผู้ปฏิบัติธรรมบนยอดเขามาสามสิบปี บุคลิก: พูดน้อยมาก ทุกคำพูดช้าและมีน้ำหนัก มักถามคำถามที่ทำให้ผู้ฟังหันกลับมามองตัวเอง เช่น "แล้วตอนนั้น... ใครในตัวแกกลัว?" บางทีแค่นิ่งเฉยแล้วพูดว่า "อืม" สไตล์: 1-2 ประโยคสั้นมาก บางทีเป็นคำถาม บางทีเป็นข้อสังเกต ไม่ตัดสิน ใช้ภาษาไทยเรียบง่าย'}
+];
+
+var MOODS = {
+  joy:{a:'#D4A24A',b:'rgba(212,162,74,0.55)',l:'มีความสุข'},
+  sadness:{a:'#6A8FAF',b:'rgba(100,140,175,0.35)',l:'เศร้าหน่อย'},
+  anger:{a:'#C0604A',b:'rgba(192,90,74,0.45)',l:'โกรธนิดนึง'},
+  fear:{a:'#9E7ABF',b:'rgba(158,120,192,0.35)',l:'กังวล'},
+  calm:{a:'#7A9E7E',b:'rgba(122,158,126,0.35)',l:'สงบดี'},
+  love:{a:'#C06080',b:'rgba(192,96,128,0.5)',l:'เต็มไปด้วยรัก'},
+  tired:{a:'#7A7060',b:'rgba(122,112,96,0.25)',l:'เหนื่อยหน่อย'},
+  nostalgia:{a:'#C09050',b:'rgba(192,144,80,0.4)',l:'คิดถึงอดีต'},
+  hope:{a:'#7AAE8A',b:'rgba(122,174,138,0.4)',l:'มีความหวัง'},
+  loneliness:{a:'#506080',b:'rgba(80,96,128,0.3)',l:'โดดเดี่ยว'},
+  gratitude:{a:'#C0A04A',b:'rgba(192,160,74,0.45)',l:'ขอบคุณ'},
+  melancholy:{a:'#8070B0',b:'rgba(128,112,176,0.35)',l:'เมลังโคลี'},
+  awe:{a:'#50A0B0',b:'rgba(80,160,176,0.4)',l:'ตะลึง'},
+  sonder:{a:'#C0A060',b:'rgba(192,160,96,0.4)',l:'ซอนเดอร์'},
+  hiraeth:{a:'#9098A0',b:'rgba(144,152,160,0.3)',l:'ฮิราเอธ'},
+  sehnsucht:{a:'#9E8FBF',b:'rgba(158,143,192,0.45)',l:'เซ็นซุกท์'},
+  mamihlapinatapai:{a:'#C8C0B0',b:'rgba(200,192,176,0.25)',l:'มามิห์ลา...'}
+};
+
+/* ═══════════════ STATE ═══════════════ */
+var ST = {
+  disc:{}, xp:0, hist:[], onboarded:false,
+  mood:null, scene:'izakaya', chatHist:[],
+  calY:new Date().getFullYear(), calM:new Date().getMonth(),
+  cxFilter:'all', chatInited:false,
+  quests:{}, questDate:'', lastEmotion:null
+};
+
+/* ── DAILY QUESTS ── */
+var QUEST_POOL = [
+  {id:'discover',icon:'🔍',text:'ค้นพบอารมณ์ 1 ครั้ง',goal:1,xp:15},
+  {id:'longtext',icon:'✍️',text:'เขียนความรู้สึกยาวกว่า 30 ตัวอักษร',goal:1,xp:20},
+  {id:'chat',icon:'💬',text:'พูดคุยกับตัวละคร 3 ข้อความ',goal:3,xp:15},
+  {id:'uncommon',icon:'✨',text:'ค้นพบอารมณ์ Uncommon ขึ้นไป',goal:1,xp:25}
+];
+
+function todayKey(){ return new Date().toISOString().slice(0,10); }
+
+function rollQuests(){
+  var tk=todayKey();
+  if(ST.questDate===tk && ST.quests && Object.keys(ST.quests).length) return;
+  ST.questDate=tk;
+  ST.quests={};
+  // pick 3 quests
+  var pool=QUEST_POOL.slice();
+  for(var i=0;i<3 && pool.length;i++){
+    var idx=Math.floor(Math.random()*pool.length);
+    var q=pool.splice(idx,1)[0];
+    ST.quests[q.id]={prog:0,done:false,claimed:false};
+  }
+  save();
+}
+
+function questProgress(id,amount){
+  if(!ST.quests[id] || ST.quests[id].done) return;
+  var def=QUEST_POOL.filter(function(q){return q.id===id;})[0];
+  if(!def) return;
+  ST.quests[id].prog=(ST.quests[id].prog||0)+(amount||1);
+  if(ST.quests[id].prog>=def.goal){
+    ST.quests[id].prog=def.goal;
+    ST.quests[id].done=true;
+    setTimeout(function(){toast('✦ ภารกิจสำเร็จ! +'+def.xp+' EXP');},600);
+    ST.xp+=def.xp;
+    ST.quests[id].claimed=true;
+    hud();
+  }
+  save();
+  renderQuests();
+}
+
+function renderQuests(){
+  var box=document.getElementById('quest-list');
+  if(!box) return;
+  rollQuests();
+  var html='';
+  var ids=Object.keys(ST.quests);
+  var allDone=ids.length>0;
+  ids.forEach(function(id){
+    var def=QUEST_POOL.filter(function(q){return q.id===id;})[0];
+    if(!def) return;
+    var st=ST.quests[id];
+    if(!st.done) allDone=false;
+    var pct=Math.min(100,(st.prog/def.goal*100));
+    html+='<div class="quest-item'+(st.done?' done':'')+'">'
+      +'<div class="quest-icon">'+(st.done?'✅':def.icon)+'</div>'
+      +'<div class="quest-mid">'
+      +'<div class="quest-text">'+def.text+'</div>'
+      +'<div class="quest-bar"><div class="quest-fill" style="width:'+pct+'%"></div></div>'
+      +'</div>'
+      +'<div class="quest-xp">+'+def.xp+'</div>'
+      +'</div>';
+  });
+  box.innerHTML=html;
+  var badge=document.getElementById('quest-badge');
+  if(badge){
+    var doneCount=ids.filter(function(id){return ST.quests[id].done;}).length;
+    badge.textContent=doneCount+'/'+ids.length;
+    badge.style.background=allDone?'var(--mint)':'var(--soft)';
+  }
+}
+
+function load(){
+  try{
+    var d=localStorage.getItem('em_disc');
+    var x=localStorage.getItem('em_exp');
+    var h=localStorage.getItem('em_hist');
+    var o=localStorage.getItem('em_onb');
+    var q=localStorage.getItem('em_quests');
+    var qd=localStorage.getItem('em_qdate');
+    if(d) ST.disc=JSON.parse(d);
+    if(x) ST.xp=parseInt(x)||0;
+    if(h) ST.hist=JSON.parse(h);
+    if(o) ST.onboarded=true;
+    if(q) ST.quests=JSON.parse(q);
+    if(qd) ST.questDate=qd;
+  }catch(e){}
+}
+function save(){
+  try{
+    localStorage.setItem('em_disc',JSON.stringify(ST.disc));
+    localStorage.setItem('em_exp',String(ST.xp));
+    localStorage.setItem('em_hist',JSON.stringify(ST.hist));
+    localStorage.setItem('em_quests',JSON.stringify(ST.quests));
+    localStorage.setItem('em_qdate',ST.questDate);
+    if(ST.onboarded) localStorage.setItem('em_onb','1');
+  }catch(e){}
+}
+
+/* ═══════════════ ONBOARD ═══════════════ */
+function startGame(){
+  ST.onboarded=true; save();
+  var el=document.getElementById('onboard');
+  el.style.display='none'; el.classList.add('hidden');
+}
+
+/* ═══════════════ NAV ═══════════════ */
+var TABS=['home','pub','cal','codex'];
+function goTab(t){
+  TABS.forEach(function(id){
+    var s=document.getElementById('screen-'+id);
+    var n=document.getElementById('nav-'+id);
+    if(s) s.classList.toggle('active',id===t);
+    if(n) n.classList.toggle('on',id===t);
+  });
+  if(t==='cal') renderCal();
+  if(t==='codex') renderCodex();
+  if(t==='pub') initIz();
+  if(t==='home') renderQuests();
+}
+
+/* ═══════════════ HUD ═══════════════ */
+function hud(){
+  var lv=Math.floor(ST.xp/50)+1;
+  var inLv=ST.xp%50;
+  document.getElementById('lv-pill').textContent='LV. '+lv;
+  document.getElementById('exp-fill').style.width=(inLv/50*100)+'%';
+  document.getElementById('exp-txt').textContent=inLv+' / 50 EXP';
+  document.getElementById('st-disc').textContent=Object.keys(ST.disc).length;
+  document.getElementById('st-exp').textContent=ST.xp;
+  document.getElementById('st-str').textContent=streak();
+}
+function streak(){
+  if(!ST.hist.length) return 0;
+  var map={};
+  ST.hist.forEach(function(h){map[h.date.slice(0,10)]=true});
+  var d=new Date(),n=0;
+  while(true){var k=d.toISOString().slice(0,10);if(map[k]){n++;d.setDate(d.getDate()-1);}else break;}
+  return n;
+}
+
+/* ═══════════════ ALPACA ═══════════════ */
+function setMood(id){
+  ST.mood=id;
+  var m=MOODS[id]; if(!m) return;
+  var a=document.getElementById('aura');
+  a.style.background=m.a; a.style.opacity='0.22';
+  document.getElementById('bl').setAttribute('fill',m.b);
+  document.getElementById('br').setAttribute('fill',m.b);
+  document.getElementById('mood-pill').textContent=m.l;
+  wiggleEars();
+}
+function wiggleEars(){
+  var el=document.getElementById('el'),er=document.getElementById('er');
+  el.setAttribute('transform','rotate(-26 46 48)');
+  er.setAttribute('transform','rotate(26 84 48)');
+  setTimeout(function(){
+    el.setAttribute('transform','rotate(-12 46 48)');
+    er.setAttribute('transform','rotate(12 84 48)');
+  },380);
+}
+function tapAlpaca(){ wiggleEars(); }
+
+/* ═══════════════ ANALYZE ═══════════════ */
+function analyze(){
+  var txt=document.getElementById('feel-in').value.trim();
+  if(!txt){toast('เล่าให้ฟังก่อนนะ 🦙');return;}
+  var btn=document.getElementById('feel-btn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="sh"><\/span><span class="dots"><span><\/span><span><\/span><span><\/span><\/span>';
+
+  var list=EMOTIONS.map(function(e,i){return (i+1)+'. '+e.th+' ('+e.en+') ['+e.r+']';}).join('\n');
+  var prompt='ผู้ใช้บอกว่า: "'+txt+'"\n\nอารมณ์ที่เป็นไปได้:\n'+list+'\n\nตอบเป็น JSON เท่านั้น ไม่มีข้อความอื่น:\n{"emotionId":"<id lowercase>","reason":"<อธิบาย 2-3 ประโยค ภาษาไทย อบอุ่น>"}';
+
+  callAI(prompt,function(res){
+    btn.disabled=false;
+    btn.innerHTML='<span class="sh"><\/span>ค้นพบ';
+    try{
+      var clean=res.replace(/```json|```/g,'').trim();
+      var obj=JSON.parse(clean);
+      var em=EMOTIONS.filter(function(e){return e.id===obj.emotionId;})[0];
+      if(!em) throw 0;
+      showResult(em,obj.reason,txt);
+    }catch(e){toast('ลองอีกครั้งนะ 🦙');}
+  });
+}
+
+function showResult(em,reason,inputTxt){
+  var isNew=!ST.disc[em.id];
+  var gain=isNew?em.xp:5;
+  ST.disc[em.id]=(ST.disc[em.id]||0)+1;
+  ST.xp+=gain;
+  ST.lastEmotion={em:em,reason:reason||em.d,date:new Date().toISOString()};
+  ST.hist.unshift({date:new Date().toISOString(),emotionId:em.id,text:inputTxt});
+  if(ST.hist.length>200) ST.hist.length=200;
+  save(); hud(); setMood(em.id);
+
+  // quest progress
+  questProgress('discover',1);
+  if(inputTxt && inputTxt.length>30) questProgress('longtext',1);
+  if(em.r==='uncommon'||em.r==='rare'||em.r==='legendary') questProgress('uncommon',1);
+
+  var rc=document.getElementById('res-card');
+  var rarCls={common:'r-common',uncommon:'r-uncommon',rare:'r-rare',legendary:'r-legendary'};
+  var cCls={common:'c-c',uncommon:'c-u',rare:'c-r',legendary:'c-l'};
+  rc.className='result-card show '+rarCls[em.r];
+  document.getElementById('rc-rarity').className='rc-rarity '+cCls[em.r];
+  document.getElementById('rc-rarity').textContent=em.r.toUpperCase()+(isNew?' ✦ ค้นพบใหม่!':'');
+  document.getElementById('rc-name').textContent=em.e+' '+em.th;
+  document.getElementById('rc-en').textContent=em.en;
+  document.getElementById('rc-desc').textContent=reason||em.d;
+  document.getElementById('rc-exp').textContent=(isNew?'🎉':'⚡')+' +'+gain+' EXP'+(isNew?' — ครั้งแรก!':'');
+  // show share button
+  var shareBtn=document.getElementById('rc-share');
+  if(shareBtn) shareBtn.style.display='inline-flex';
+  document.getElementById('feel-in').value='';
+  if(isNew) setTimeout(function(){toast(em.e+' '+em.th+' — ค้นพบแล้ว!');},350);
+}
+
+/* ── EMOTION CARD (shareable) ── */
+function openCard(){
+  if(!ST.lastEmotion) return;
+  var em=ST.lastEmotion.em;
+  var reason=ST.lastEmotion.reason;
+  var rarColors={common:'#A8D5C2',uncommon:'#A8C8E8',rare:'#C8B8E8',legendary:'#E8C460'};
+  var d=new Date(ST.lastEmotion.date);
+  var thMonths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  var dateStr=d.getDate()+' '+thMonths[d.getMonth()]+' '+(d.getFullYear()+543);
+  var ov=document.getElementById('card-overlay');
+  var card=document.getElementById('share-card');
+  card.style.borderColor=rarColors[em.r];
+  document.getElementById('sc-date').textContent=dateStr;
+  document.getElementById('sc-emoji').textContent=em.e;
+  document.getElementById('sc-name').textContent=em.th;
+  document.getElementById('sc-en').textContent=em.en;
+  document.getElementById('sc-rarity').textContent=em.r.toUpperCase();
+  document.getElementById('sc-rarity').style.color=rarColors[em.r];
+  document.getElementById('sc-desc').textContent=reason;
+  ov.classList.add('show');
+}
+function closeCard(){
+  document.getElementById('card-overlay').classList.remove('show');
+}
+function shareCard(){
+  if(!ST.lastEmotion){return;}
+  var em=ST.lastEmotion.em;
+  var text='วันนี้ฉันรู้สึก "'+em.th+'" ('+em.en+') ✦ ค้นพบใน EMOTIA 🦙';
+  if(navigator.share){
+    navigator.share({text:text}).catch(function(){});
+  }else{
+    // fallback: copy
+    try{
+      var ta=document.createElement('textarea');
+      ta.value=text; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      toast('คัดลอกข้อความแล้ว ✦');
+    }catch(e){ toast('แคปหน้าจอเพื่อแชร์ได้เลย ✦'); }
+  }
+}
+
+/* ═══════════════ IZAKAYA CHAT ═══════════════ */
+function initIz(){
+  if(ST.chatInited) return;
+  ST.chatInited=true;
+  buildSceneMap();
+  setScene(ST.scene);
+  var sc=SCENES.filter(function(s){return s.id===ST.scene;})[0];
+  addMsg('ai', sc ? sc.greet : 'ยินดีต้อนรับ 🏮');
+}
+
+function buildSceneMap(){
+  var html='';
+  SCENES.forEach(function(s){
+    html+='<div class="iz-map-btn'+(s.id===ST.scene?' active':'')+'" onclick="setScene(\''+s.id+'\')" id="sb-'+s.id+'">'
+      +'<span class="iz-map-emoji">'+s.e+'<\/span>'
+      +'<span class="iz-map-name">'+s.name+'<\/span>'
+      +'<\/div>';
+  });
+  document.getElementById('iz-map').innerHTML=html;
+}
+
+/* SCENE ROOM backgrounds — full SVG per scene */
+var SCENE_BG = {
+  izakaya:'linear-gradient(180deg,#2A0E04 0%,#1C0A02 50%,#120802 100%)',
+  sakura:'linear-gradient(180deg,#200C20 0%,#180A18 50%,#100810 100%)',
+  midnight:'linear-gradient(180deg,#040816 0%,#06080E 50%,#040608 100%)',
+  forest:'linear-gradient(180deg,#04100A 0%,#060E08 50%,#041008 100%)',
+  cosmos:'linear-gradient(180deg,#040412 0%,#060416 50%,#040410 100%)',
+  beach:'linear-gradient(180deg,#080C20 0%,#060A18 50%,#040810 100%)',
+  mountain:'linear-gradient(180deg,#040612 0%,#06080E 50%,#08060E 100%)'
+};
+
+var ROOMS = {
+izakaya:'<svg viewBox="0 0 480 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><rect x="0" y="300" width="480" height="200" fill="#1A0C04"/><rect x="0" y="300" width="480" height="3" fill="#2A1408" opacity="0.8"/><line x1="0" y1="350" x2="480" y2="350" stroke="#221008" stroke-width="2"/><line x1="0" y1="400" x2="480" y2="400" stroke="#221008" stroke-width="1"/><rect x="0" y="0" width="480" height="305" fill="#2A1205"/><rect x="0" y="200" width="480" height="105" fill="#3D1A08"/><rect x="0" y="200" width="480" height="4" fill="#1A0802"/><line x1="80" y1="200" x2="80" y2="305" stroke="#1A0802" stroke-width="1.5" opacity="0.5"/><line x1="160" y1="200" x2="160" y2="305" stroke="#1A0802" stroke-width="1.5" opacity="0.5"/><line x1="240" y1="200" x2="240" y2="305" stroke="#1A0802" stroke-width="1.5" opacity="0.5"/><line x1="320" y1="200" x2="320" y2="305" stroke="#1A0802" stroke-width="1.5" opacity="0.5"/><line x1="400" y1="200" x2="400" y2="305" stroke="#1A0802" stroke-width="1.5" opacity="0.5"/><rect x="0" y="258" width="260" height="50" rx="3" fill="#5A2E0C"/><rect x="0" y="255" width="265" height="8" rx="2" fill="#7A4020"/><rect x="0" y="308" width="260" height="100" fill="#3D1A06"/><rect x="10" y="256" width="240" height="2" rx="1" fill="rgba(255,200,100,0.12)"/><ellipse cx="80" cy="300" rx="22" ry="8" fill="#4A2808"/><rect x="74" y="300" width="12" height="60" rx="3" fill="#3A2008"/><ellipse cx="80" cy="360" rx="18" ry="5" fill="#2A1808"/><ellipse cx="160" cy="300" rx="22" ry="8" fill="#4A2808"/><rect x="154" y="300" width="12" height="60" rx="3" fill="#3A2008"/><ellipse cx="160" cy="360" rx="18" ry="5" fill="#2A1808"/><rect x="0" y="120" width="180" height="8" rx="2" fill="#5A2E0C"/><rect x="0" y="80" width="180" height="8" rx="2" fill="#5A2E0C"/><rect x="15" y="88" width="12" height="32" rx="4" fill="#2A5A8A"/><rect x="35" y="92" width="10" height="28" rx="4" fill="#6A2A08"/><rect x="52" y="88" width="12" height="32" rx="4" fill="#8A9A2A"/><rect x="70" y="90" width="11" height="30" rx="4" fill="#3A6A2A"/><rect x="88" y="86" width="13" height="34" rx="4" fill="#8A4A2A"/><rect x="108" y="89" width="10" height="31" rx="4" fill="#2A5A4A"/><rect x="125" y="91" width="11" height="29" rx="4" fill="#5A2A8A"/><rect x="143" y="88" width="12" height="32" rx="4" fill="#8A6A2A"/><rect x="115" y="240" width="16" height="20" rx="2" fill="#8B9EB5" opacity="0.5"/><rect x="115" y="238" width="16" height="4" rx="1" fill="#A0B4C8" opacity="0.4"/><ellipse cx="165" cy="257" rx="9" ry="4" fill="#D4C8B0" opacity="0.6"/><rect x="156" y="245" width="18" height="12" rx="3" fill="#D4C8B0" opacity="0.5"/><line x1="300" y1="0" x2="300" y2="40" stroke="#8B6040" stroke-width="1.5"/><ellipse cx="300" cy="55" rx="18" ry="26" fill="#D4400A" opacity="0.85"/><ellipse cx="300" cy="30" rx="6" ry="4" fill="#8B4020"/><ellipse cx="300" cy="80" rx="6" ry="4" fill="#8B4020"/><ellipse cx="300" cy="55" rx="16" ry="1" fill="#C03808" opacity="0.6"/><ellipse cx="300" cy="62" rx="16" ry="1" fill="#C03808" opacity="0.6"/><ellipse cx="300" cy="55" rx="50" ry="50" fill="rgba(212,80,10,0.08)"/><line x1="420" y1="0" x2="420" y2="30" stroke="#8B6040" stroke-width="1.5"/><ellipse cx="420" cy="45" rx="15" ry="21" fill="#D4400A" opacity="0.7"/><ellipse cx="420" cy="24" rx="5" ry="3" fill="#8B4020"/><ellipse cx="420" cy="66" rx="5" ry="3" fill="#8B4020"/><ellipse cx="420" cy="55" rx="40" ry="40" fill="rgba(212,80,10,0.06)"/><rect x="270" y="0" width="80" height="60" rx="0" fill="#8B2020" opacity="0.9"/><rect x="270" y="0" width="38" height="60" rx="0" fill="#6B1818" opacity="0.95"/><text x="295" y="40" font-size="14" fill="rgba(245,220,180,0.7)" text-anchor="middle" font-family="serif">&#23621;<\/text><text x="333" y="40" font-size="14" fill="rgba(245,220,180,0.7)" text-anchor="middle" font-family="serif">&#37202;<\/text><ellipse cx="200" cy="350" rx="200" ry="80" fill="rgba(212,100,20,0.06)"/><\/svg>',
+
+sakura:'<svg viewBox="0 0 480 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><rect width="480" height="500" fill="#1A0820"/><ellipse cx="240" cy="420" rx="280" ry="100" fill="#1A0C14"/><rect x="0" y="380" width="480" height="120" fill="#140A10"/><rect x="30" y="80" width="28" height="350" rx="12" fill="#2A1818"/><line x1="44" y1="180" x2="160" y2="100" stroke="#2A1818" stroke-width="12" stroke-linecap="round"/><line x1="44" y1="220" x2="180" y2="200" stroke="#2A1818" stroke-width="10" stroke-linecap="round"/><line x1="44" y1="150" x2="0" y2="80" stroke="#2A1818" stroke-width="8" stroke-linecap="round"/><rect x="420" y="120" width="22" height="320" rx="10" fill="#2A1818"/><line x1="431" y1="200" x2="340" y2="140" stroke="#2A1818" stroke-width="9" stroke-linecap="round"/><ellipse cx="80" cy="100" rx="55" ry="45" fill="#D4708A" opacity="0.55"/><ellipse cx="150" cy="80" rx="50" ry="40" fill="#E890AA" opacity="0.5"/><ellipse cx="50" cy="140" rx="40" ry="35" fill="#D4708A" opacity="0.45"/><ellipse cx="170" cy="130" rx="45" ry="38" fill="#C06080" opacity="0.4"/><ellipse cx="100" cy="60" rx="38" ry="30" fill="#E090A8" opacity="0.5"/><ellipse cx="380" cy="130" rx="55" ry="42" fill="#D4708A" opacity="0.5"/><ellipse cx="440" cy="100" rx="42" ry="36" fill="#E890AA" opacity="0.45"/><ellipse cx="350" cy="160" rx="40" ry="32" fill="#C06080" opacity="0.4"/><rect x="200" y="320" width="24" height="40" rx="2" fill="#6A6050"/><rect x="196" y="318" width="32" height="8" rx="2" fill="#7A7060"/><rect x="202" y="316" width="20" height="6" rx="1" fill="#8A8070"/><rect x="198" y="358" width="28" height="5" fill="#6A6050"/><ellipse cx="212" cy="336" rx="10" ry="10" fill="rgba(255,200,80,0.25)"/><rect x="140" y="355" width="160" height="25" rx="4" fill="#3A2820"/><rect x="148" y="380" width="8" height="30" rx="2" fill="#2A1A10"/><rect x="284" y="380" width="8" height="30" rx="2" fill="#2A1A10"/><ellipse cx="212" cy="356" rx="12" ry="5" fill="#8A6040" opacity="0.7"/><rect x="200" y="346" width="24" height="10" rx="5" fill="#9A7050" opacity="0.7"/><circle cx="380" cy="60" r="30" fill="rgba(255,230,200,0.15)"/><circle cx="380" cy="60" r="22" fill="rgba(255,220,180,0.2)"/><\/svg>',
+
+midnight:'<svg viewBox="0 0 480 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><rect width="480" height="500" fill="#050818"/><rect x="0" y="320" width="480" height="180" fill="#080C18"/><rect x="0" y="320" width="480" height="3" fill="#0A1020"/><rect x="0" y="323" width="480" height="30" fill="rgba(80,120,200,0.04)"/><rect x="0" y="0" width="480" height="323" fill="#0A0E1E"/><rect x="100" y="30" width="200" height="50" rx="6" fill="rgba(80,40,120,0.3)" stroke="rgba(160,80,220,0.4)" stroke-width="1"/><text x="200" y="62" font-size="20" fill="rgba(180,100,255,0.85)" text-anchor="middle" font-family="serif" style="letter-spacing:4px">BAR<\/text><ellipse cx="200" cy="55" rx="120" ry="40" fill="rgba(140,60,220,0.06)"/><rect x="310" y="50" width="130" height="100" rx="4" fill="rgba(20,40,80,0.6)" stroke="rgba(60,80,140,0.4)" stroke-width="2"/><line x1="375" y1="50" x2="375" y2="150" stroke="rgba(60,80,140,0.4)" stroke-width="1.5"/><line x1="310" y1="100" x2="440" y2="100" stroke="rgba(60,80,140,0.4)" stroke-width="1.5"/><circle cx="330" cy="70" r="3" fill="rgba(255,200,80,0.5)"/><circle cx="360" cy="60" r="2" fill="rgba(200,80,80,0.5)"/><circle cx="390" cy="75" r="2.5" fill="rgba(80,200,255,0.4)"/><rect x="0" y="262" width="300" height="62" rx="0" fill="#0E1628"/><rect x="0" y="260" width="305" height="8" rx="2" fill="#1A2040"/><rect x="0" y="324" width="300" height="80" fill="#080C1A"/><ellipse cx="80" cy="264" rx="20" ry="7" fill="#0E1628"/><rect x="73" y="264" width="14" height="55" rx="3" fill="#0A1020"/><ellipse cx="80" cy="319" rx="16" ry="5" fill="#080C18"/><ellipse cx="175" cy="264" rx="20" ry="7" fill="#0E1628"/><rect x="168" y="264" width="14" height="55" rx="3" fill="#0A1020"/><ellipse cx="175" cy="319" rx="16" ry="5" fill="#080C18"/><rect x="0" y="150" width="200" height="6" rx="2" fill="#1A2040"/><rect x="0" y="110" width="200" height="6" rx="2" fill="#1A2040"/><rect x="15" y="116" width="10" height="34" rx="3" fill="#2A3A6A"/><rect x="30" y="120" width="9" height="30" rx="3" fill="#4A1A1A"/><rect x="45" y="116" width="10" height="34" rx="3" fill="#1A4A3A"/><rect x="60" y="118" width="10" height="32" rx="3" fill="#3A1A5A"/><rect x="78" y="116" width="11" height="34" rx="3" fill="#5A3A1A"/><rect x="95" y="120" width="9" height="30" rx="3" fill="#2A4A1A"/><rect x="110" y="116" width="10" height="34" rx="3" fill="#1A2A5A"/><rect x="128" y="118" width="10" height="32" rx="3" fill="#4A2A1A"/><path d="M130 240 L135 265 L155 265 L160 240 Z" fill="rgba(140,160,200,0.3)"/><rect x="130" y="238" width="30" height="5" rx="1" fill="rgba(160,180,220,0.25)"/><\/svg>',
+
+forest:'<svg viewBox="0 0 480 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><rect width="480" height="500" fill="#050E06"/><ellipse cx="240" cy="450" rx="300" ry="80" fill="#0A1408"/><rect x="0" y="380" width="480" height="120" fill="#081008"/><ellipse cx="240" cy="200" rx="80" ry="300" fill="rgba(200,220,180,0.04)"/><circle cx="240" cy="40" r="28" fill="rgba(220,230,200,0.25)"/><circle cx="240" cy="40" r="20" fill="rgba(220,230,200,0.3)"/><rect x="0" y="50" width="35" height="400" rx="8" fill="#0A1A0A"/><ellipse cx="18" cy="100" rx="60" ry="80" fill="#0C2010" opacity="0.9"/><ellipse cx="18" cy="160" rx="70" ry="90" fill="#0A1C0A"/><rect x="445" y="80" width="35" height="380" rx="8" fill="#0A1A0A"/><ellipse cx="462" cy="130" rx="60" ry="80" fill="#0C2010" opacity="0.9"/><ellipse cx="462" cy="200" rx="65" ry="85" fill="#0A1C0A"/><rect x="380" y="150" width="22" height="300" rx="6" fill="#0C1A0C"/><ellipse cx="391" cy="200" rx="50" ry="70" fill="#0E2010"/><rect x="70" y="170" width="20" height="280" rx="6" fill="#0C1A0C"/><ellipse cx="80" cy="220" rx="48" ry="65" fill="#0E2010"/><ellipse cx="80" cy="400" rx="60" ry="20" fill="#0C1A0C"/><ellipse cx="380" cy="410" rx="55" ry="18" fill="#0C1A0C"/><ellipse cx="240" cy="430" rx="80" ry="25" fill="#0A1808"/><ellipse cx="200" cy="365" rx="55" ry="18" fill="#2A1A08"/><rect x="150" y="365" width="100" height="30" rx="4" fill="#2A1A08"/><ellipse cx="200" cy="365" rx="50" ry="14" fill="#3A2210"/><ellipse cx="190" cy="355" rx="9" ry="4" fill="#5A3A20" opacity="0.8"/><rect x="181" y="346" width="18" height="9" rx="4" fill="#6A4A28" opacity="0.8"/><circle cx="150" cy="200" r="2.5" fill="rgba(200,230,80,0.5)"/><circle cx="320" cy="250" r="2" fill="rgba(200,230,80,0.4)"/><circle cx="200" cy="180" r="1.5" fill="rgba(200,230,80,0.35)"/><circle cx="150" cy="200" r="12" fill="rgba(200,230,80,0.05)"/><circle cx="320" cy="250" r="10" fill="rgba(200,230,80,0.04)"/><\/svg>',
+
+cosmos:'<svg viewBox="0 0 480 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><rect width="480" height="500" fill="#040412"/><circle cx="40" cy="30" r="1" fill="rgba(255,255,255,0.8)"/><circle cx="120" cy="15" r="1.5" fill="rgba(255,255,255,0.7)"/><circle cx="200" cy="40" r="1" fill="rgba(255,255,255,0.6)"/><circle cx="280" cy="20" r="1" fill="rgba(255,255,255,0.9)"/><circle cx="360" cy="35" r="1.5" fill="rgba(255,255,255,0.7)"/><circle cx="440" cy="18" r="1" fill="rgba(255,255,255,0.8)"/><circle cx="80" cy="80" r="1" fill="rgba(255,255,255,0.5)"/><circle cx="180" cy="90" r="1.5" fill="rgba(255,255,255,0.6)"/><circle cx="300" cy="70" r="1" fill="rgba(255,255,255,0.7)"/><circle cx="50" cy="140" r="1" fill="rgba(255,255,255,0.4)"/><circle cx="240" cy="130" r="2" fill="rgba(255,255,255,0.8)"/><ellipse cx="350" cy="100" rx="120" ry="80" fill="rgba(100,60,180,0.12)"/><ellipse cx="100" cy="160" rx="100" ry="60" fill="rgba(60,100,180,0.08)"/><ellipse cx="240" cy="280" rx="180" ry="120" fill="#0C0E1E"/><ellipse cx="240" cy="200" rx="180" ry="100" fill="#0E1228"/><rect x="210" y="100" width="60" height="200" rx="5" fill="#050812" opacity="0.9"/><rect x="195" y="240" width="30" height="80" rx="4" fill="#1A2040" transform="rotate(-20 210 280)"/><circle cx="218" cy="248" r="18" fill="none" stroke="#2A3060" stroke-width="3"/><circle cx="218" cy="248" r="14" fill="#080C20"/><line x1="215" y1="320" x2="185" y2="370" stroke="#1A2040" stroke-width="4" stroke-linecap="round"/><line x1="215" y1="320" x2="245" y2="370" stroke="#1A2040" stroke-width="4" stroke-linecap="round"/><ellipse cx="240" cy="430" rx="280" ry="60" fill="#080C1A"/><rect x="0" y="390" width="480" height="110" fill="#060A16"/><rect x="30" y="310" width="140" height="20" rx="3" fill="#1A2040"/><rect x="32" y="308" width="136" height="5" rx="2" fill="#222848"/><rect x="35" y="330" width="10" height="50" rx="2" fill="#141C34"/><rect x="150" y="330" width="10" height="50" rx="2" fill="#141C34"/><rect x="40" y="298" width="18" height="12" rx="2" fill="#2A3060"/><rect x="62" y="295" width="18" height="15" rx="2" fill="#3A2040"/><\/svg>',
+
+beach:'<svg viewBox="0 0 480 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><rect width="480" height="500" fill="#0A1828"/><rect x="0" y="240" width="480" height="160" fill="#062030" opacity="0.95"/><rect x="0" y="240" width="480" height="8" fill="#0A2838" opacity="0.8"/><path d="M0 255 Q60 248 120 255 Q180 262 240 255 Q300 248 360 255 Q420 262 480 255" stroke="rgba(80,140,180,0.3)" stroke-width="2" fill="none"/><ellipse cx="240" cy="240" rx="300" ry="30" fill="rgba(200,140,80,0.08)"/><circle cx="380" cy="60" r="24" fill="rgba(240,220,180,0.25)"/><circle cx="380" cy="60" r="16" fill="rgba(240,220,180,0.3)"/><ellipse cx="380" cy="280" rx="20" ry="50" fill="rgba(240,220,180,0.05)"/><ellipse cx="240" cy="480" rx="320" ry="90" fill="#2A1A08"/><rect x="0" y="400" width="480" height="100" fill="#221408"/><rect x="0" y="400" width="480" height="8" fill="#2A1A10" opacity="0.8"/><ellipse cx="200" cy="405" rx="100" ry="18" fill="#3A2010" opacity="0.8"/><rect x="105" y="395" width="190" height="12" rx="3" fill="#4A2818" opacity="0.7"/><rect x="80" y="300" width="10" height="100" rx="3" fill="#3A2010" transform="rotate(5 85 350)"/><ellipse cx="85" cy="295" rx="22" ry="18" fill="#2A4A20" opacity="0.9"/><circle cx="78" cy="298" r="8" fill="#4A2808" opacity="0.9"/><circle cx="96" cy="302" r="7" fill="#4A2808" opacity="0.9"/><rect x="130" y="375" width="100" height="22" rx="3" fill="#2A1808"/><rect x="133" y="373" width="94" height="5" rx="2" fill="#3A2210"/><rect x="138" y="397" width="8" height="25" rx="2" fill="#1A1008"/><rect x="212" y="397" width="8" height="25" rx="2" fill="#1A1008"/><circle cx="168" cy="367" r="14" fill="#4A2808" opacity="0.85"/><line x1="174" y1="360" x2="178" y2="340" stroke="#F5E8C0" stroke-width="2"/><circle cx="80" cy="30" r="1" fill="rgba(255,255,255,0.6)"/><circle cx="160" cy="20" r="1.5" fill="rgba(255,255,255,0.5)"/><circle cx="260" cy="40" r="1" fill="rgba(255,255,255,0.7)"/><circle cx="340" cy="25" r="1" fill="rgba(255,255,255,0.5)"/><\/svg>',
+
+mountain:'<svg viewBox="0 0 480 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><rect width="480" height="500" fill="#04060E"/><polygon points="0,280 80,140 160,240 240,100 320,200 400,130 480,220 480,500 0,500" fill="#0A0E1A" opacity="0.7"/><polygon points="-20,500 100,180 220,500" fill="#0C1020"/><polygon points="260,500 380,160 500,500" fill="#0A0E1C"/><polygon points="100,180 120,220 80,220" fill="rgba(200,210,230,0.4)"/><polygon points="380,160 400,200 360,200" fill="rgba(200,210,230,0.35)"/><ellipse cx="240" cy="300" rx="320" ry="50" fill="rgba(160,180,200,0.06)"/><ellipse cx="240" cy="360" rx="320" ry="40" fill="rgba(160,180,200,0.08)"/><rect x="80" y="330" width="320" height="20" rx="3" fill="#1A1A28"/><rect x="90" y="326" width="300" height="8" rx="2" fill="#22223A"/><rect x="100" y="290" width="16" height="38" rx="2" fill="#2A2A3A"/><rect x="96" y="288" width="24" height="6" rx="2" fill="#3A3A4A"/><ellipse cx="108" cy="306" rx="7" ry="7" fill="rgba(255,180,80,0.3)"/><ellipse cx="108" cy="306" rx="16" ry="16" fill="rgba(255,180,80,0.06)"/><rect x="364" y="290" width="16" height="38" rx="2" fill="#2A2A3A"/><rect x="360" y="288" width="24" height="6" rx="2" fill="#3A3A4A"/><ellipse cx="372" cy="306" rx="7" ry="7" fill="rgba(255,180,80,0.3)"/><line x1="140" y1="270" x2="340" y2="260" stroke="#8A6040" stroke-width="1.5"/><rect x="152" y="262" width="16" height="10" rx="1" fill="#C04020" opacity="0.7"/><rect x="180" y="260" width="16" height="10" rx="1" fill="#E0D020" opacity="0.7"/><rect x="208" y="258" width="16" height="10" rx="1" fill="#2060A0" opacity="0.7"/><rect x="236" y="260" width="16" height="10" rx="1" fill="#20A040" opacity="0.7"/><rect x="264" y="262" width="16" height="10" rx="1" fill="#C04020" opacity="0.7"/><ellipse cx="200" cy="350" rx="45" ry="12" fill="#4A3020" opacity="0.8"/><rect x="158" y="342" width="84" height="8" rx="3" fill="#5A3A28" opacity="0.7"/><rect x="195" y="320" width="3" height="22" rx="1" fill="#8A6040" opacity="0.7"/><circle cx="196" cy="320" r="3" fill="rgba(255,150,50,0.4)"/><circle cx="60" cy="40" r="1.5" fill="rgba(255,255,255,0.7)"/><circle cx="140" cy="25" r="1" fill="rgba(255,255,255,0.6)"/><circle cx="240" cy="50" r="1" fill="rgba(255,255,255,0.5)"/><circle cx="340" cy="30" r="1.5" fill="rgba(255,255,255,0.7)"/><circle cx="420" cy="45" r="1" fill="rgba(255,255,255,0.6)"/><\/svg>'
+};
+
+/* ── CHARACTER SVGs stored in hidden HTML divs, read at runtime ── */
+var CHARS = {};
+function initChars(){
+  var ids = ['izakaya','sakura','midnight','forest','cosmos','beach','mountain'];
+  ids.forEach(function(id){
+    var el = document.getElementById('char-svg-'+id);
+    if(el) CHARS[id] = el.innerHTML;
+  });
+}
+
+function setScene(id){
+  var prevScene=ST.scene;
+  ST.scene=id;
+  var sc=SCENES.filter(function(s){return s.id===id;})[0];
+  if(!sc) return;
+  var bgEl=document.getElementById('iz-fullbg');
+  if(bgEl) bgEl.style.background=SCENE_BG[id]||'#0A0806';
+  var roomEl=document.getElementById('iz-room');
+  if(roomEl && ROOMS[id]) roomEl.innerHTML=ROOMS[id];
+  document.getElementById('iz-sname').textContent=sc.short;
+  document.getElementById('iz-stitle').textContent=sc.title;
+  var whoEl=document.getElementById('iz-who');
+  if(whoEl) whoEl.textContent='\u{1F464} '+sc.who;
+  var charEl=document.getElementById('iz-char');
+  if(charEl && CHARS[id]) charEl.innerHTML=CHARS[id];
+  document.querySelectorAll('.iz-map-btn').forEach(function(b){b.classList.remove('active');});
+  var activeBtn=document.getElementById('sb-'+id);
+  if(activeBtn) activeBtn.classList.add('active');
+  if(ST.chatInited && prevScene !== id){
+    ST.chatHist=[];
+    var chat=document.getElementById('iz-chat');
+    var divider=document.createElement('div');
+    divider.style.cssText='text-align:center;font-size:10px;color:rgba(245,239,228,0.35);padding:8px 0 4px;letter-spacing:1.5px;';
+    divider.textContent='\u2014 '+sc.title+' \u2014';
+    chat.appendChild(divider);
+    addMsg('ai', sc.greet);
+  }
+}
+
+function addMsg(role,txt){
+  var chat=document.getElementById('iz-chat');
+  var d=document.createElement('div');
+  d.className='iz-msg '+role;
+  d.textContent=txt;
+  chat.appendChild(d);
+  setTimeout(function(){chat.scrollTop=chat.scrollHeight;},60);
+}
+
+function clearIzChat(){
+  ST.chatHist=[];
+  document.getElementById('iz-chat').innerHTML='';
+  var sc=SCENES.filter(function(s){return s.id===ST.scene;})[0];
+  addMsg('ai', sc ? sc.greet : 'เริ่มต้นใหม่ ✦');
+}
+
+function izEnter(e){if(e.key==='Enter') sendIz();}
+
+function sendIz(){
+  var inp=document.getElementById('iz-in');
+  var txt=inp.value.trim();
+  if(!txt) return;
+  inp.value='';
+  addMsg('user',txt);
+  ST.chatHist.push({role:'user',content:txt});
+  questProgress('chat',1);
+
+  var sc=SCENES.filter(function(s){return s.id===ST.scene;})[0];
+  var typing=document.createElement('div');
+  typing.className='iz-msg ai';
+  typing.innerHTML='<span class="dots dots-dim"><span><\/span><span><\/span><span><\/span><\/span>';
+  var chat=document.getElementById('iz-chat');
+  chat.appendChild(typing);
+  chat.scrollTop=chat.scrollHeight;
+
+  var msgs=ST.chatHist.slice(-16).map(function(m){return{role:m.role,content:m.content};});
+
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:1000,
+      system:(sc?sc.sys:'คุณคือผู้ช่วยที่อบอุ่น')+'\nตอบภาษาไทย กระชับ 2-4 ประโยค ไม่ใช้ markdown',
+      messages:msgs
+    })
+  }).then(function(r){return r.json();}).then(function(data){
+    typing.remove();
+    var reply=(data.content&&data.content[0]&&data.content[0].text)?data.content[0].text:'ขอโทษ เกิดข้อผิดพลาด';
+    addMsg('ai',reply);
+    ST.chatHist.push({role:'assistant',content:reply});
+    if(ST.chatHist.length>40) ST.chatHist=ST.chatHist.slice(-40);
+  }).catch(function(){
+    typing.remove();
+    addMsg('ai','เน็ตมีปัญหา ลองส่งอีกทีนะ 🦙');
+  });
+}
+
+/* ═══════════════ CALENDAR ═══════════════ */
+function calNav(d){
+  ST.calM+=d;
+  if(ST.calM>11){ST.calM=0;ST.calY++;}
+  if(ST.calM<0){ST.calM=11;ST.calY--;}
+  renderCal();
+}
+function renderCal(){
+  var mos=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  document.getElementById('cal-mo').textContent=mos[ST.calM]+' '+(ST.calY+543);
+  var today=new Date();
+  var fd=new Date(ST.calY,ST.calM,1).getDay();
+  var dim=new Date(ST.calY,ST.calM+1,0).getDate();
+  var dmap={};
+  ST.hist.forEach(function(h){
+    var p=h.date.slice(0,10).split('-');
+    if(parseInt(p[0])===ST.calY&&parseInt(p[1])-1===ST.calM){
+      var day=parseInt(p[2]);
+      if(!dmap[day]) dmap[day]=[];
+      var em=EMOTIONS.filter(function(e){return e.id===h.emotionId;})[0];
+      if(em) dmap[day].push(em);
+    }
+  });
+  var html='<div class="cal-dow">อา<\/div><div class="cal-dow">จ<\/div><div class="cal-dow">อ<\/div><div class="cal-dow">พ<\/div><div class="cal-dow">พฤ<\/div><div class="cal-dow">ศ<\/div><div class="cal-dow">ส<\/div>';
+  for(var i=0;i<fd;i++) html+='<div><\/div>';
+  for(var d=1;d<=dim;d++){
+    var isT=today.getFullYear()===ST.calY&&today.getMonth()===ST.calM&&today.getDate()===d;
+    var ents=dmap[d]||[];
+    var top=ents[0];
+    html+='<div class="cal-day'+(isT?' today':'')+(ents.length?' has-e':'')+'" onclick="calDay('+d+')">'
+      +'<div class="cal-dn">'+d+'<\/div>'
+      +(top?'<div class="cal-de">'+top.e+'<\/div>':'')
+      +'<\/div>';
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+  document.getElementById('cal-detail').style.display='none';
+}
+function calDay(d){
+  var ents=ST.hist.filter(function(h){
+    var p=h.date.slice(0,10).split('-');
+    return parseInt(p[0])===ST.calY&&parseInt(p[1])-1===ST.calM&&parseInt(p[2])===d;
+  });
+  var det=document.getElementById('cal-detail');
+  if(!ents.length){det.style.display='none';return;}
+  var ms=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  var dotC={common:'var(--common)',uncommon:'var(--uncommon)',rare:'var(--rare)',legendary:'var(--legendary)'};
+  var html='<div class="cal-ddate">'+d+' '+ms[ST.calM]+' '+(ST.calY+543)+'<\/div>';
+  ents.forEach(function(h){
+    var em=EMOTIONS.filter(function(e){return e.id===h.emotionId;})[0];
+    if(!em) return;
+    var t=new Date(h.date);
+    html+='<div class="cal-ent">'
+      +'<div class="cal-dot" style="background:'+dotC[em.r]+'"><\/div>'
+      +'<div><div class="cal-ent-name">'+em.e+' '+em.th+'<\/div>'
+      +'<div class="cal-ent-time">'+pad(t.getHours())+':'+pad(t.getMinutes())+'<\/div><\/div><\/div>';
+  });
+  det.innerHTML=html; det.style.display='block';
+}
+function pad(n){return n<10?'0'+n:String(n);}
+
+/* ═══════════════ CODEX ═══════════════ */
+function cxFilter(f,el){
+  ST.cxFilter=f;
+  document.querySelectorAll('.codex-tab').forEach(function(b){b.classList.remove('on');});
+  el.classList.add('on');
+  renderCodex();
+}
+function renderCodex(){
+  var disc=Object.keys(ST.disc).length;
+  document.getElementById('cx-prog').textContent='ค้นพบ '+disc+' / '+EMOTIONS.length;
+  var list=EMOTIONS.filter(function(e){return ST.cxFilter==='all'||e.r===ST.cxFilter;});
+  var cCls={common:'c-c',uncommon:'c-u',rare:'c-r',legendary:'c-l'};
+  var rCls={common:'r-c',uncommon:'r-u',rare:'r-r',legendary:'r-l'};
+  var html='';
+  list.forEach(function(em){
+    var ok=!!ST.disc[em.id];
+    var cnt=ST.disc[em.id]||0;
+    html+='<div class="cx-card '+rCls[em.r]+(ok?'':' locked')+'" onclick="cxTap(\''+em.id+'\')">'
+      +(ok?'':'<div class="cx-lock">🔒<\/div>')
+      +'<div class="cx-rarity '+cCls[em.r]+'">'+em.r.toUpperCase()+'<\/div>'
+      +'<span class="cx-emoji">'+(ok?em.e:'❓')+'<\/span>'
+      +'<div class="cx-name">'+(ok?em.th:'???')+'<\/div>'
+      +'<div class="cx-en">'+(ok?em.en:'')+'<\/div>'
+      +(ok?'<div class="cx-cnt">×'+cnt+'<\/div>':'')
+      +'<\/div>';
+  });
+  document.getElementById('cx-grid').innerHTML=html;
+}
+function cxTap(id){
+  var em=EMOTIONS.filter(function(e){return e.id===id;})[0];
+  if(!em||!ST.disc[em.id]){toast('ยังไม่ได้ค้นพบ 🔒');return;}
+  toast(em.e+' '+em.th+' — '+em.en);
+}
+
+/* ═══════════════ API ═══════════════ */
+function callAI(prompt,cb){
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+  }).then(function(r){return r.json();}).then(function(data){
+    cb((data.content&&data.content[0]&&data.content[0].text)?data.content[0].text:'');
+  }).catch(function(){cb('{"emotionId":"calm","reason":"เกิดข้อผิดพลาด ลองใหม่นะ"}');});
+}
+
+/* ═══════════════ TOAST ═══════════════ */
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2800);
+}
+
+/* ═══════════════ INIT ═══════════════ */
+function init(){
+  load(); hud();
+  initChars();
+  rollQuests();
+  renderQuests();
+  var ob=document.getElementById('onboard');
+  if(ST.onboarded){ob.style.display='none';ob.classList.add('hidden');}
+  else{ob.style.display='';ob.classList.remove('hidden');}
+}
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',init);
+}else{init();}
+
+</script>
+</body>
+</html>

@@ -238,7 +238,13 @@ body{
 .sc-emoji{font-size:64px;line-height:1;margin-bottom:8px;animation:alpFloat 3s ease-in-out infinite;}
 .sc-name{font-family:var(--font-d);font-size:28px;color:var(--ink);margin-bottom:2px;}
 .sc-en{font-size:12px;color:var(--dim);margin-bottom:14px;letter-spacing:1px;}
-.sc-desc{font-size:13px;line-height:1.75;color:var(--ink2);margin-bottom:16px;padding:0 4px;}
+.sc-desc{font-size:13px;line-height:1.75;color:var(--ink2);margin-bottom:12px;padding:0 4px;}
+.sc-insight{
+  font-size:11.5px;line-height:1.65;color:var(--ink2);
+  background:rgba(232,196,96,0.12);
+  border-radius:10px;padding:8px 10px;margin-bottom:14px;
+  font-style:italic;
+}
 .sc-foot{font-family:var(--font-d);font-size:11px;color:var(--coral);letter-spacing:1px;}
 .card-btns{display:flex;gap:10px;margin-top:14px;}
 .card-btn{flex:1;border:none;border-radius:20px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;transition:transform 0.15s;}
@@ -284,7 +290,14 @@ body{
 .rc-rarity{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:8px;font-weight:700;}
 .rc-name{font-family:var(--font-d);font-size:26px;color:var(--ink);margin-bottom:3px;}
 .rc-en{font-size:11px;color:var(--dim);margin-bottom:12px;}
-.rc-desc{font-size:14px;line-height:1.8;color:var(--ink2);margin-bottom:16px;}
+.rc-desc{font-size:14px;line-height:1.8;color:var(--ink2);margin-bottom:12px;}
+.rc-insight{
+  font-size:12.5px;line-height:1.7;color:var(--ink2);
+  background:linear-gradient(135deg,#FFF8EC,#FDF0E0);
+  border:1.5px solid var(--gold);border-left:3px solid var(--gold);
+  border-radius:12px;padding:10px 12px;margin-bottom:14px;
+  font-style:italic;
+}
 .rc-exp{
   display:inline-flex;align-items:center;gap:6px;
   background:var(--cream);border:1.5px solid var(--soft);
@@ -760,6 +773,7 @@ body{
       <div class="rc-name" id="rc-name"></div>
       <div class="rc-en" id="rc-en"></div>
       <div class="rc-desc" id="rc-desc"></div>
+      <div class="rc-insight" id="rc-insight" style="display:none"></div>
       <div class="rc-actions">
         <div class="rc-exp" id="rc-exp"></div>
         <button class="rc-share" id="rc-share" onclick="openCard()" style="display:none">📤 การ์ด</button>
@@ -1039,6 +1053,7 @@ body{
       <div class="sc-name" id="sc-name">ความสุข</div>
       <div class="sc-en" id="sc-en">Joy</div>
       <div class="sc-desc" id="sc-desc"></div>
+      <div class="sc-insight" id="sc-insight" style="display:none"></div>
       <div class="sc-foot">— EMOTIA 🦙 —</div>
     </div>
     <div class="card-btns">
@@ -1550,43 +1565,83 @@ function analyze(){
   btn.disabled=true;
   btn.innerHTML='<span class="sh"><\/span><span class="dots"><span><\/span><span><\/span><span><\/span><\/span>';
 
-  // build emotion list: always include regular, include hidden only if condition met
   var unlockedHidden=activeHidden();
   var available=EMOTIONS.filter(function(e){
     if(!e.hidden) return true;
     return unlockedHidden.indexOf(e.id)!==-1;
   });
-  var list=available.map(function(e,i){return (i+1)+'. '+e.th+' ('+e.en+') ['+e.r+']';}).join('\n');
-  var hiddenNote=unlockedHidden.length ? '\n\n(ช่วงเวลานี้มีอารมณ์พิเศษให้ค้นพบได้ ถ้าความรู้สึกตรงกับมัน)' : '';
-  var prompt='ผู้ใช้บอกว่า: "'+txt+'"\n\nอารมณ์ที่เป็นไปได้:\n'+list+hiddenNote+'\n\nเลือกอารมณ์ที่ตรงที่สุด ตอบเป็น JSON เท่านั้น ไม่มีข้อความอื่น:\n{"emotionId":"<id lowercase>","reason":"<อธิบาย 2-3 ประโยค ภาษาไทย อบอุ่น>"}';
+  var list=available.map(function(e,i){return (i+1)+'. '+e.en+' = '+e.th;}).join('\n');
+  var hiddenNote=unlockedHidden.length ? '\nหมายเหตุ: ช่วงเวลานี้มีอารมณ์พิเศษให้ค้นพบได้ ถ้าตรงกับความรู้สึก' : '';
+
+  var prompt='คุณคือนักจิตวิทยาที่อบอุ่นและเข้าใจมนุษย์ ผู้ใช้เล่าความรู้สึกว่า:\n"'+txt+'"\n\n'
+    +'จงเลือกอารมณ์ที่ตรงที่สุด 1 อย่างจากรายการนี้ (ตอบด้วย id ภาษาอังกฤษ lowercase):\n'+list+hiddenNote+'\n\n'
+    +'แล้วเขียนคำวิเคราะห์ที่:\n'
+    +'1) สะท้อนความรู้สึกของผู้ใช้อย่างเข้าใจ (validate)\n'
+    +'2) อธิบายอารมณ์นี้เชิงจิตวิทยาสั้นๆ\n'
+    +'3) อ้างอิงแนวคิดจากนักจิตวิทยา 1 ท่าน (เช่น Carl Rogers, Brené Brown, Viktor Frankl, Carl Jung, Paul Ekman, Kristin Neff) ที่เกี่ยวข้อง พร้อมข้อคิดสั้นๆ\n\n'
+    +'ตอบเป็น JSON อย่างเดียว ห้ามมีข้อความอื่นนอก JSON:\n'
+    +'{"emotionId":"...","reason":"<คำวิเคราะห์อบอุ่น 3-4 ประโยค ภาษาไทย>","insight":"<ชื่อนักจิตวิทยา>: <ข้อคิด 1 ประโยค>"}';
 
   function resetBtn(){
     btn.disabled=false;
     btn.innerHTML='<span class="sh"><\/span>ค้นพบ';
   }
 
-  aiCall({messages:[{role:'user',content:prompt}], raw:true, max_tokens:600}, function(res,err){
+  /* try to find emotion id even if JSON is broken */
+  function rescueEmotion(raw){
+    var lower=raw.toLowerCase();
+    for(var i=0;i<available.length;i++){
+      var e=available[i];
+      if(lower.indexOf('"'+e.id+'"')!==-1 || lower.indexOf(e.id)!==-1 || raw.indexOf(e.th)!==-1){
+        return e;
+      }
+    }
+    return null;
+  }
+
+  aiCall({messages:[{role:'user',content:prompt}], raw:true, max_tokens:700}, function(res,err){
     resetBtn();
-    if(err){ toast('เชื่อมต่อไม่ได้ — '+err); return; }
+    if(err || !res){ toast('เชื่อมต่อไม่ได้ ลองใหม่นะ 🦙'); return; }
+    var obj=null, em=null, reason='', insight='';
+    // attempt 1: clean JSON parse
     try{
-      var clean=res.replace(/```json|```/g,'').trim();
-      // extract JSON object if wrapped in extra text
+      var clean=res.replace(/```json/gi,'').replace(/```/g,'').trim();
       var m=clean.match(/\{[\s\S]*\}/);
       if(m) clean=m[0];
-      var obj=JSON.parse(clean);
-      var em=EMOTIONS.filter(function(e){return e.id===obj.emotionId;})[0];
-      if(!em) throw 0;
-      showResult(em,obj.reason,txt);
-    }catch(e){ toast('ลองอีกครั้งนะ 🦙'); }
+      obj=JSON.parse(clean);
+    }catch(e){ obj=null; }
+
+    if(obj && obj.emotionId){
+      em=available.filter(function(e){return e.id===String(obj.emotionId).toLowerCase().trim();})[0];
+      reason=obj.reason||'';
+      insight=obj.insight||'';
+    }
+    // attempt 2: rescue from raw text
+    if(!em){
+      em=rescueEmotion(res);
+      if(em && !reason){
+        // try to extract reason text loosely
+        var rm=res.match(/"reason"\s*:\s*"([^"]+)"/);
+        if(rm) reason=rm[1];
+        var im=res.match(/"insight"\s*:\s*"([^"]+)"/);
+        if(im) insight=im[1];
+      }
+    }
+
+    if(em){
+      showResult(em, reason||em.d, txt, insight);
+    }else{
+      toast('ลองเล่าใหม่อีกหน่อยนะ 🦙');
+    }
   });
 }
 
-function showResult(em,reason,inputTxt){
+function showResult(em,reason,inputTxt,insight){
   var isNew=!ST.disc[em.id];
   var gain=isNew?em.xp:5;
   ST.disc[em.id]=(ST.disc[em.id]||0)+1;
   ST.xp+=gain;
-  ST.lastEmotion={em:em,reason:reason||em.d,date:new Date().toISOString()};
+  ST.lastEmotion={em:em,reason:reason||em.d,insight:insight||'',date:new Date().toISOString()};
   ST.hist.unshift({date:new Date().toISOString(),emotionId:em.id,text:inputTxt});
   if(ST.hist.length>200) ST.hist.length=200;
   save(); hud(); setMood(em.id);
@@ -1605,6 +1660,16 @@ function showResult(em,reason,inputTxt){
   document.getElementById('rc-name').textContent=em.e+' '+em.th;
   document.getElementById('rc-en').textContent=em.en;
   document.getElementById('rc-desc').textContent=reason||em.d;
+  // psychology insight
+  var insightEl=document.getElementById('rc-insight');
+  if(insightEl){
+    if(insight){
+      insightEl.textContent='💡 '+insight;
+      insightEl.style.display='block';
+    }else{
+      insightEl.style.display='none';
+    }
+  }
   document.getElementById('rc-exp').textContent=(isNew?'🎉':'⚡')+' +'+gain+' EXP'+(isNew?' — ครั้งแรก!':'');
   // show share button
   var shareBtn=document.getElementById('rc-share');
@@ -1632,6 +1697,15 @@ function openCard(){
   document.getElementById('sc-rarity').textContent=em.r.toUpperCase();
   document.getElementById('sc-rarity').style.color=rarColors[em.r];
   document.getElementById('sc-desc').textContent=reason;
+  var scIns=document.getElementById('sc-insight');
+  if(scIns){
+    if(ST.lastEmotion.insight){
+      scIns.textContent='💡 '+ST.lastEmotion.insight;
+      scIns.style.display='block';
+    }else{
+      scIns.style.display='none';
+    }
+  }
   ov.classList.add('show');
 }
 function closeCard(){

@@ -393,10 +393,9 @@ body{
   -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);white-space:nowrap;
 }
 .iz-map{
-  position:absolute;bottom:72px;left:0;right:0;z-index:10;
-  display:flex;gap:6px;padding:8px 14px;
+  position:absolute;top:96px;left:0;right:0;z-index:10;
+  display:flex;gap:6px;padding:6px 14px;
   overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
-  background:linear-gradient(0deg,rgba(0,0,0,0.55) 0%,transparent 100%);
 }
 .iz-map::-webkit-scrollbar{display:none;}
 .iz-map-btn{
@@ -412,9 +411,9 @@ body{
 .iz-map-name{font-size:10px;color:rgba(255,255,255,0.75);white-space:nowrap;}
 .iz-map-btn.active .iz-map-name{color:white;font-weight:600;}
 .iz-chat{
-  position:absolute;left:0;right:0;bottom:0;height:52%;z-index:8;
+  position:absolute;left:0;right:0;bottom:0;height:54%;z-index:8;
   overflow-y:auto;-webkit-overflow-scrolling:touch;
-  padding:16px 16px 90px;
+  padding:16px 16px 130px;
   display:flex;flex-direction:column;gap:8px;
   background:linear-gradient(0deg,rgba(0,0,0,0.7) 0%,rgba(0,0,0,0.35) 65%,transparent 100%);
 }
@@ -433,10 +432,30 @@ body{
   background:rgba(255,255,255,0.22);border:1px solid rgba(255,255,255,0.35);
   color:white;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
 }
+/* ── FOOD MENU BAR ── */
+.iz-menu{
+  position:absolute;bottom:60px;left:0;right:0;z-index:11;
+  display:flex;gap:8px;padding:8px 14px;
+  overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  background:linear-gradient(0deg,rgba(0,0,0,0.5) 0%,transparent 100%);
+}
+.iz-menu::-webkit-scrollbar{display:none;}
+.menu-item{
+  flex-shrink:0;display:flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,0.18);
+  border:1px solid rgba(255,255,255,0.3);
+  border-radius:18px;padding:6px 12px 6px 8px;cursor:pointer;
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  transition:transform 0.15s,background 0.2s;
+}
+.menu-item:active{transform:scale(0.92);background:rgba(255,255,255,0.3);}
+.menu-emoji{font-size:18px;line-height:1;}
+.menu-name{font-size:12px;color:white;white-space:nowrap;font-weight:500;}
+
 .iz-input-bar{
-  position:absolute;bottom:0;left:0;right:0;z-index:11;
+  position:absolute;bottom:0;left:0;right:0;z-index:12;
   display:flex;gap:10px;padding:10px 14px 14px;
-  background:rgba(0,0,0,0.55);border-top:1px solid rgba(255,255,255,0.08);
+  background:rgba(0,0,0,0.7);border-top:1px solid rgba(255,255,255,0.08);
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
 }
 .iz-input{
@@ -797,8 +816,9 @@ body{
   </div>
   <div class="iz-map" id="iz-map"></div>
   <div class="iz-chat" id="iz-chat"></div>
+  <div class="iz-menu" id="iz-menu"></div>
   <div class="iz-input-bar">
-    <input class="iz-input" id="iz-in" placeholder="พูดอะไรก็ได้..." onkeypress="izEnter(event)">
+    <input class="iz-input" id="iz-in" placeholder="พูดคุยกับพนักงาน..." onkeypress="izEnter(event)">
     <button class="iz-send" onclick="sendIz()">↑</button>
   </div>
 </div>
@@ -1046,6 +1066,92 @@ body{
 
 <script>
 
+/* ═══════════════ CONFIG ═══════════════ */
+/* ── API MODE ──
+   'direct' = เรียก api.anthropic.com ตรง (ใช้ได้เฉพาะในแชต Claude เท่านั้น สำหรับทดสอบ)
+   'fin'    = เรียก chat-proxy ของ Fin (OpenRouter) — ใช้ตอน deploy บนเว็บจริง
+   
+   ★ ตอนเอาขึ้น GitHub: เปลี่ยน MODE เป็น 'fin' แล้วใส่ FIN_PROXY ให้ถูก ★ */
+var CONFIG = {
+  MODE: 'fin',
+  FIN_PROXY: 'https://tedzucgqmitfmddxqvge.supabase.co/functions/v1/chat-proxy',
+  MODEL: 'claude-sonnet-4-20250514',  /* ใช้เฉพาะ direct mode */
+  TIMEOUT_MS: 30000
+};
+
+function aiEnabled(){
+  if(CONFIG.MODE==='direct') return true;
+  if(CONFIG.MODE==='fin') return !!CONFIG.FIN_PROXY;
+  return false;
+}
+
+/* แปลง {system, messages} → prompt string เดียว (สำหรับ Fin/OpenRouter) */
+function buildPrompt(payload){
+  /* raw: ส่ง prompt ตรงๆ ไม่ห่อ (ใช้ตอนขอ JSON เช่นวิเคราะห์อารมณ์) */
+  if(payload.raw && payload.messages && payload.messages[0]){
+    return payload.messages[0].content;
+  }
+  var parts=[];
+  if(payload.system) parts.push('[ROLE]\n'+payload.system);
+  if(payload.messages && payload.messages.length){
+    var convo=payload.messages.map(function(m){
+      var who = m.role==='assistant' ? 'พนักงาน' : 'ผู้ใช้';
+      return who+': '+m.content;
+    }).join('\n');
+    parts.push('[บทสนทนา]\n'+convo);
+    parts.push('ตอบในฐานะพนักงาน (ต่อจากบทสนทนาด้านบน) เป็นข้อความเดียว ไม่ต้องใส่ชื่อนำหน้า');
+  }
+  return parts.join('\n\n');
+}
+
+/* Central AI call. payload: {system, messages, max_tokens} → cb(textOrNull, errMsg) */
+function aiCall(payload, cb){
+  if(!aiEnabled()){ cb(null,'AI ยังไม่ได้ตั้งค่า'); return; }
+  var ctrl = (typeof AbortController!=='undefined') ? new AbortController() : null;
+  var timer = ctrl ? setTimeout(function(){ ctrl.abort(); }, CONFIG.TIMEOUT_MS) : null;
+
+  var url, headers, body;
+
+  if(CONFIG.MODE==='direct'){
+    url='https://api.anthropic.com/v1/messages';
+    headers={'Content-Type':'application/json'};
+    body=JSON.stringify({
+      model:CONFIG.MODEL,
+      max_tokens:payload.max_tokens||1000,
+      system:payload.system||undefined,
+      messages:payload.messages
+    });
+  }else{ /* fin / OpenRouter via chat-proxy */
+    url=CONFIG.FIN_PROXY;
+    headers={'Content-Type':'application/json'};
+    body=JSON.stringify({ prompt: buildPrompt(payload) });
+  }
+
+  var opts={method:'POST',headers:headers,body:body};
+  if(ctrl) opts.signal=ctrl.signal;
+
+  fetch(url, opts).then(function(r){
+    if(timer) clearTimeout(timer);
+    if(!r.ok){ return r.text().then(function(t){ throw new Error('HTTP '+r.status+' '+t); }); }
+    return r.json();
+  }).then(function(data){
+    var text='';
+    if(CONFIG.MODE==='direct'){
+      if(data && data.content && data.content[0] && data.content[0].text) text=data.content[0].text;
+      else if(data && data.error) throw new Error(data.error.message||'API error');
+    }else{
+      /* Fin proxy returns { result: "..." } or { error: "..." } */
+      if(data && typeof data.result==='string') text=data.result;
+      else if(data && data.error) throw new Error(data.error);
+    }
+    cb(text,null);
+  }).catch(function(err){
+    if(timer) clearTimeout(timer);
+    var msg=(err && err.name==='AbortError') ? 'หมดเวลาเชื่อมต่อ' : (err.message||'เชื่อมต่อไม่ได้');
+    cb(null,msg);
+  });
+}
+
 /* ═══════════════ DATA ═══════════════ */
 var EMOTIONS = [
   {id:'joy',th:'ความสุข',en:'Joy',r:'common',xp:10,e:'😊',d:'ความรู้สึกสว่างไสวที่พุ่งขึ้นมาจากข้างใน เบา โล่ง อยากแบ่งปัน'},
@@ -1093,34 +1199,41 @@ function activeHidden(){
 }
 
 var SCENES = [
-  {id:'izakaya',name:'อิซากายะ',short:'IZAKAYA',title:'ร้านอิซากายะยามค่ำ',sub:'เสียงน้ำแข็งกระทบแก้ว ไอควันจากถ่าน',e:'🏮',bg:'bg-izakaya',
-   who:'เคนจิ — พนักงานเสิร์ฟหนุ่มเงียบขรึม อายุ 28',
-   greet:'... (วางแก้วน้ำตรงหน้า แล้วก้มหัวเบาๆ) ยินดีต้อนรับครับ วันนี้เป็นยังไงบ้าง?',
-   sys:'คุณชื่อเคนจิ เป็นพนักงานเสิร์ฟหนุ่มอายุ 28 ของร้านอิซากายะเก่าแก่ในโตเกียว บุคลิก: เงียบขรึม ฟังมากกว่าพูด ตอบสั้นกระชับ ไม่ถามมากเกินไป แต่ทุกคำพูดมีความหมาย บางทีแค่เติมสาเกแล้วรอให้อีกฝ่ายพูดต่อ สไตล์การตอบ: 1-3 ประโยคสั้น บางทีแค่พยักหน้า หรือถามกลับ 1 คำถาม ใช้ภาษาไทยธรรมชาติ ไม่เป็นทางการ ห้ามใช้ markdown ห้ามใส่ชื่อตัวเองนำหน้าทุกบรรทัด'},
-  {id:'sakura',name:'ซากุระ',short:'SAKURA',title:'ใต้ต้นซากุระ',sub:'กลีบดอกร่วงหล่น แสงฟิลเตอร์ผ่านใบ',e:'🌸',bg:'bg-sakura',
-   who:'ฮารุ — เด็กหญิงชุดยูกาตะ ขายชาใต้ต้นซากุระ',
-   greet:'(ยิ้มแล้วยื่นถ้วยชาให้) วันนี้ดอกซากุระร่วงเยอะเลยค่ะ... แวะมาดื่มชาแล้วเล่าให้ฟังได้นะ',
-   sys:'คุณชื่อฮารุ เป็นเด็กหญิงอายุ 19 ขายชาใต้ต้นซากุระในสวนสาธารณะ บุคลิก: อ่อนโยน พูดเป็นกวีเบาๆ มักเปรียบสิ่งต่างๆ กับดอกไม้ ฤดูกาล ธรรมชาติ ไม่ได้ฉลาดเกินจริง แต่รู้สึกได้ถึงความรู้สึกคนอื่น สไตล์: 2-3 ประโยค อบอุ่น บางทีบอกว่าซากุระร่วงยังไง หรือนกร้องเสียงอะไร เพื่อสร้างบรรยากาศ ใช้ภาษาไทย ผู้หญิง ไม่ทางการมากเกินไป'},
-  {id:'midnight',name:'เที่ยงคืน',short:'MIDNIGHT',title:'บาร์เที่ยงคืน',sub:'แสงนีออนสะท้อนบนถนนเปียก',e:'🌃',bg:'bg-midnight',
+  {id:'izakaya',name:'ร้านอิซากายะ',short:'IZAKAYA',title:'ร้านอิซากายะ ป้าโยโกะ',sub:'เลิกงานแล้ว แวะมานั่งพักสักหน่อย',e:'🏮',bg:'bg-izakaya',
+   who:'ป้าโยโกะ — เจ้าของร้าน ใจดี อายุ 52',
+   greet:'อ้าว มาแล้วเหรอ! วันนี้ดูเหนื่อยๆ นะ นั่งก่อนๆ เดี๋ยวป้าเอาน้ำชาอุ่นๆ มาให้ จะสั่งอะไรกินไหม? ของอร่อยทั้งนั้นเลยนะวันนี้',
+   menu:[{n:'ราเมงร้อนๆ',e:'🍜'},{n:'เกี๊ยวซ่า',e:'🥟'},{n:'สาเกอุ่น',e:'🍶'},{n:'ไก่ย่างเสียบไม้',e:'🍢'},{n:'ชาเขียว',e:'🍵'}],
+   sys:'คุณคือป้าโยโกะ เจ้าของร้านอิซากายะเล็กๆ อายุ 52 ปี ลูกค้าเพิ่งเลิกงานมาเหนื่อยๆ มานั่งพักผ่อนที่ร้าน บุคลิก: ใจดีแบบแม่ อบอุ่น เป็นกันเอง ห่วงใยลูกค้าเหมือนลูกหลาน ชอบชวนกินข้าว ถามไถ่เรื่องงาน รับฟังด้วยความเข้าใจ บางทีเล่าเรื่องร้านหรือเมนูเด็ดให้ฟังเพื่อให้บรรยากาศผ่อนคลาย ถ้าลูกค้าสั่งอาหาร ให้ตอบสนองอย่างอบอุ่น เช่น "ได้เลย! เดี๋ยวจัดให้ร้อนๆ" แล้วบรรยายอาหารนิดหน่อย สไตล์: 2-4 ประโยค ภาษาไทยพูดแบบเป็นกันเอง อบอุ่น ใช้คำว่า "ลูก" หรือ "หนู" เรียกลูกค้าได้ ห้ามใช้ markdown ห้ามใส่ชื่อตัวเองนำหน้า'},
+  {id:'midnight',name:'บาร์เงียบ',short:'BAR',title:'บาร์เล็กๆ ปลายซอย',sub:'ดึกแล้ว แต่ยังไม่อยากกลับ',e:'🍸',bg:'bg-midnight',
    who:'แมค — บาร์เทนเดอร์มือเก่า อายุ 45',
-   greet:'(เช็ดแก้วไม่หยุด สบตา) มาถึงตอนนี้... ต้องมีเรื่องอยู่ในหัวแน่ๆ นั่งก่อน จะเอาอะไร?',
-   sys:'คุณชื่อแมค บาร์เทนเดอร์มือเก่าอายุ 45 เคยเห็นคนมานั่งบาร์มาแล้วทุกแบบ บุคลิก: ตรงไปตรงมา ถามคำถามที่แหลมคม แต่ไม่ได้โหดร้าย เป็นคนที่มองทะลุคนได้ บางทีพูดสิ่งที่คนไม่อยากได้ยินแต่จำเป็นต้องได้ยิน มีอารมณ์ขันแห้งๆ สไตล์: 2-3 ประโยค อาจถามกลับตรงๆ ว่า "แล้วตอนนั้นแกรู้สึกยังไง?" ใช้ภาษาไทย ผู้ชาย ไม่เป็นทางการ'},
-  {id:'forest',name:'ป่าลึก',short:'FOREST',title:'กระท่อมกลางป่า',sub:'เสียงลมพัดผ่านใบไม้ กบร้องไกล',e:'🌲',bg:'bg-forest',
+   greet:'(เช็ดแก้วช้าๆ) มาดึกนะคืนนี้... วันหนักเหรอ? นั่งเลย จะเอาอะไรดี เบียร์เย็นๆ หรือค็อกเทลอุ่นใจ?',
+   menu:[{n:'เบียร์สด',e:'🍺'},{n:'วิสกี้',e:'🥃'},{n:'ค็อกเทล',e:'🍸'},{n:'ถั่วทอด',e:'🥜'},{n:'มันฝรั่งทอด',e:'🍟'}],
+   sys:'คุณคือแมค บาร์เทนเดอร์มือเก่าอายุ 45 ในบาร์เล็กๆ ปลายซอย ลูกค้าเลิกงานดึกมานั่งพักก่อนกลับ บุคลิก: เท่ๆ พูดน้อยแต่ได้ใจความ ฟังเก่ง เคยเห็นคนมานั่งบาร์มาแล้วทุกแบบ ไม่ตัดสิน บางทีถามคำถามที่ทำให้คิด มีอารมณ์ขันแห้งๆ ถ้าลูกค้าสั่งเครื่องดื่ม ให้ผสมให้พร้อมบรรยายสั้นๆ เช่น "วิสกี้ใส่น้ำแข็งก้อนเดียว...นะ" สไตล์: 2-3 ประโยค ภาษาไทย ผู้ชาย ไม่เป็นทางการ ผ่อนคลาย ห้ามใช้ markdown'},
+  {id:'cafe',name:'คาเฟ่อุ่น',short:'CAFE',title:'คาเฟ่มุมเงียบ',sub:'พักสายตา จิบกาแฟ ฟังเพลงเบาๆ',e:'☕',bg:'bg-sakura',
+   who:'มินต์ — บาริสต้าสาว ร่าเริง อายุ 24',
+   greet:'สวัสดีค่ะ~ ยินดีต้อนรับนะคะ! วันนี้เหนื่อยมาเลยใช่ไหมคะ เดี๋ยวมินต์ชงกาแฟอุ่นๆ ให้ นั่งพักตรงมุมโซฟานุ่มๆ ได้เลยค่า',
+   menu:[{n:'ลาเต้ร้อน',e:'☕'},{n:'มัทฉะ',e:'🍵'},{n:'เค้กช็อกโกแลต',e:'🍰'},{n:'ครัวซองต์',e:'🥐'},{n:'โกโก้',e:'🍫'}],
+   sys:'คุณคือมินต์ บาริสต้าสาวอายุ 24 ในคาเฟ่อบอุ่น ลูกค้าแวะมาพักผ่อนหลังเลิกงาน บุคลิก: ร่าเริง สดใส เป็นกันเอง พูดเพราะ ใส่ใจรายละเอียด ชอบแนะนำเมนู ทำให้ลูกค้ารู้สึกสบายใจ ถ้าลูกค้าสั่งเครื่องดื่ม ให้ตอบสดใสพร้อมบรรยายความอร่อย เช่น "ลาเต้ร้อนๆ มาแล้วค่า ลายหัวใจด้วยนะ!" สไตล์: 2-4 ประโยค ภาษาไทย ผู้หญิง สดใส ลงท้าย ค่ะ/ค่า/นะคะ ห้ามใช้ markdown'},
+  {id:'ramen',name:'ร้านราเมง',short:'RAMEN',title:'ร้านราเมงข้างทาง',sub:'ไอร้อนลอยขึ้น กลิ่นน้ำซุปหอม',e:'🍜',bg:'bg-forest',
+   who:'ลุงเท็ตสึ — เชฟราเมง พูดน้อย อายุ 60',
+   greet:'(ยกมือทักทาย) เลิกงานมาเหรอ... นั่งเลย ราเมงชามนึงเดี๋ยวจัดให้ ซุปเคี่ยวมาทั้งวัน รับรองหายเหนื่อย',
+   menu:[{n:'โชยุราเมง',e:'🍜'},{n:'มิโซะราเมง',e:'🍲'},{n:'ไข่ต้มยางมะตูม',e:'🥚'},{n:'หมูชาชู',e:'🥩'},{n:'เกี๊ยว',e:'🥟'}],
+   sys:'คุณคือลุงเท็ตสึ เชฟราเมงอายุ 60 ร้านข้างทาง ลูกค้าเลิกงานมากินราเมงอุ่นๆ บุคลิก: พูดน้อย ใจดี ภูมิใจในราเมงของตัวเอง ดูแลลูกค้าผ่านอาหารมากกว่าคำพูด บางทีแค่พยักหน้าแล้วเสิร์ฟ ถ้าลูกค้าสั่ง ให้ตอบสั้นๆ พร้อมบรรยายความอร่อยของราเมง เช่น "โชยุราเมง...ซุปใส แต่กลมกล่อม กินสิ" สไตล์: 1-3 ประโยคสั้น ภาษาไทย ผู้ชายสูงวัย อบอุ่นแบบเงียบๆ ห้ามใช้ markdown'},
+  {id:'beach',name:'ร้านริมเล',short:'BEACH',title:'ร้านอาหารริมทะเล',sub:'ลมทะเลเย็นๆ เสียงคลื่นเบาๆ',e:'🌊',bg:'bg-beach',
+   who:'ป้าแดง — เจ้าของร้านซีฟู้ด อายุ 55',
+   greet:'มาแล้วเหรอลูก! วันนี้คลื่นสวยนะ นั่งโต๊ะริมทะเลเลย เดี๋ยวป้าทำกับข้าวอร่อยๆ ให้ กินไปชมวิวไป หายเหนื่อยเลย',
+   menu:[{n:'กุ้งเผา',e:'🦐'},{n:'ปลาหมึกย่าง',e:'🦑'},{n:'ต้มยำ',e:'🍲'},{n:'น้ำมะพร้าว',e:'🥥'},{n:'ข้าวผัดปู',e:'🍚'}],
+   sys:'คุณคือป้าแดง เจ้าของร้านอาหารทะเลริมหาดอายุ 55 ลูกค้าเลิกงานมานั่งพักกินข้าวชมทะเล บุคลิก: ใจดีแบบแม่ อบอุ่น เปิดใจ ฟังด้วยความรัก ชอบทำอาหารให้กิน พูดตรงแต่ไม่เจ็บ ถ้าลูกค้าสั่ง ให้ตอบอบอุ่นพร้อมบรรยายความสด เช่น "กุ้งเผาตัวโตๆ เพิ่งได้มาสดๆ เลย!" สไตล์: 2-4 ประโยค ภาษาไทยพูด อบอุ่น เรียก "ลูก/หนู" ห้ามใช้ markdown'},
+  {id:'forest',name:'กระท่อมป่า',short:'CABIN',title:'กระท่อมกลางป่า',sub:'หนีความวุ่นวาย มาฟังเสียงธรรมชาติ',e:'🌲',bg:'bg-forest',
    who:'ลุงโต — ชายแก่ผู้รู้ป่า อายุ 70',
-   greet:'(นั่งบนโขดหิน มองไปที่ต้นไม้) มาถึงตรงนี้ได้... ก็ไม่ง่ายหรอกนะ นั่งลงก่อน ฟังเสียงป่าสักครู่',
-   sys:'คุณชื่อลุงโต ชายแก่อายุ 70 อาศัยในป่ามาสี่สิบปี บุคลิก: พูดช้า ใช้คำน้อย แต่ทุกคำมีน้ำหนัก มักใช้อุปมาจากป่า ต้นไม้ สัตว์ ฤดูกาล ไม่รีบแก้ปัญหา แต่ช่วยให้คนเห็นภาพใหญ่ขึ้น บางทีแค่พูดว่า "ต้นไม้ต้นนั้นแกล้วกล้าไหม ลองถามดู" สไตล์: 1-3 ประโยค สงบ ใช้ภาษาไทยเรียบง่ายแบบผู้เฒ่า'},
-  {id:'cosmos',name:'จักรวาล',short:'COSMOS',title:'หอดูดาวยามค่ำ',sub:'ดาวเรียงรายเต็มฟ้า ความเงียบที่กว้างใหญ่',e:'🌌',bg:'bg-cosmos',
-   who:'ดร.นภา — นักดาราศาสตร์หญิง อายุ 35',
-   greet:'(ไม่หันมา ยังมองผ่านกล้อง) รู้ไหม ดาวที่เห็นอยู่นั่น แสงมันออกเดินทางมาพันปีแล้ว... มาดูด้วยกันไหม?',
-   sys:'คุณชื่อดร.นภา นักดาราศาสตร์หญิงอายุ 35 ประจำหอดูดาว บุคลิก: ฉลาด ช่างสังเกต มองทุกอย่างในมุมกว้างและลึก ชอบเชื่อมความรู้สึกมนุษย์กับจักรวาล เช่น "ความโดดเดี่ยวที่แกรู้สึก มันเหมือนดาวดวงเดียวกลางกาแล็กซี่เลย" ไม่ได้เย็นชา แต่มองจากระยะไกล สไตล์: 2-3 ประโยค บางทีอ้างอิงดาวหรือปรากฏการณ์ ใช้ภาษาไทย ผู้หญิง'},
-  {id:'beach',name:'ริมทะเล',short:'BEACH',title:'ชายหาดยามโพล้เพล้',sub:'คลื่นซัดเบาๆ กลิ่นทะเลปนลม',e:'🌊',bg:'bg-beach',
-   who:'ป้าแดง — แม่ค้าขายน้ำมะพร้าวริมหาด อายุ 55',
-   greet:'(ยื่นมะพร้าวให้) มาคนเดียวเหรอลูก? นั่งตรงนี้เลย คลื่นมันสวยช่วงนี้ แม่แดงฟังอยู่นะ',
-   sys:'คุณชื่อป้าแดง แม่ค้าขายน้ำมะพร้าวริมหาดอายุ 55 บุคลิก: ใจดีแบบแม่ เปิดใจ ฟังด้วยความรัก พูดตรงแต่ไม่เจ็บ บางทีพูดสิ่งที่เป็นสามัญสำนึกแต่ได้ผล เช่น "กินข้าวก่อนนะลูก" หรือ "เรื่องนี้มันไม่ได้เป็นความผิดแกหรอก" ไม่ได้ฉลาดแบบนักวิชาการ แต่ฉลาดแบบคนที่เคยผ่านชีวิตมาเยอะ สไตล์: 2-3 ประโยค อบอุ่น ภาษาไทยพูด'},
-  {id:'mountain',name:'ภูเขา',short:'MOUNTAIN',title:'บนยอดเขายามรุ่งสาง',sub:'หมอกหนา อากาศเย็น ความเงียบที่สมบูรณ์',e:'🏔',bg:'bg-mountain',
-   who:'พระอาจารย์ — พระผู้ปฏิบัติธรรมบนยอดเขา',
-   greet:'(หลับตาอยู่ แล้วพยักหน้าเบาๆ) ... มาถึงแล้ว นั่งสมาธิสักครู่ก่อนก็ได้ ไม่ต้องรีบ',
-   sys:'คุณคือพระอาจารย์ผู้ปฏิบัติธรรมบนยอดเขามาสามสิบปี บุคลิก: พูดน้อยมาก ทุกคำพูดช้าและมีน้ำหนัก มักถามคำถามที่ทำให้ผู้ฟังหันกลับมามองตัวเอง เช่น "แล้วตอนนั้น... ใครในตัวแกกลัว?" บางทีแค่นิ่งเฉยแล้วพูดว่า "อืม" สไตล์: 1-2 ประโยคสั้นมาก บางทีเป็นคำถาม บางทีเป็นข้อสังเกต ไม่ตัดสิน ใช้ภาษาไทยเรียบง่าย'}
+   greet:'(ก่อไฟอยู่) มาถึงตรงนี้ได้ก็ดีแล้ว... นั่งข้างกองไฟสิ ป่ามันเงียบ ช่วยให้ใจสงบ จะดื่มชาสมุนไพรไหม',
+   menu:[{n:'ชาสมุนไพร',e:'🍵'},{n:'ซุปเห็ด',e:'🍄'},{n:'ขนมปังปิ้ง',e:'🍞'},{n:'น้ำผึ้งป่า',e:'🍯'}],
+   sys:'คุณคือลุงโต ชายแก่อายุ 70 อาศัยในกระท่อมกลางป่า ลูกค้าหนีความวุ่นวายมาพักใจ บุคลิก: พูดช้า ใช้คำน้อย ทุกคำมีน้ำหนัก ใช้อุปมาจากป่า ธรรมชาติ ช่วยให้คนเห็นภาพใหญ่ ถ้าแขกขอเครื่องดื่ม/อาหาร ให้เสิร์ฟพร้อมคำพูดสงบๆ เช่น "ชาสมุนไพร...ดื่มช้าๆ นะ" สไตล์: 1-3 ประโยค สงบ ภาษาไทยเรียบง่ายแบบผู้เฒ่า ห้ามใช้ markdown'},
+  {id:'rooftop',name:'ดาดฟ้า',short:'ROOFTOP',title:'บาร์ดาดฟ้ายามค่ำ',sub:'แสงเมืองเบื้องล่าง ลมเย็นพัดผ่าน',e:'🌃',bg:'bg-cosmos',
+   who:'นภา — เจ้าของบาร์ดาดฟ้า อายุ 35',
+   greet:'มาทันพระอาทิตย์ตกพอดีเลย นั่งริมระเบียงสิ แสงเมืองสวยมากตอนนี้ เลิกงานมาเหรอ เอาเครื่องดื่มเย็นๆ ไหม',
+   menu:[{n:'ไวน์แดง',e:'🍷'},{n:'ม็อกเทล',e:'🍹'},{n:'ชีสแพลตเตอร์',e:'🧀'},{n:'พิซซ่า',e:'🍕'},{n:'น้ำผลไม้',e:'🧃'}],
+   sys:'คุณคือนภา เจ้าของบาร์บนดาดฟ้าอายุ 35 ลูกค้าเลิกงานมานั่งชมวิวเมืองพักผ่อน บุคลิก: ฉลาด ช่างสังเกต มองโลกกว้าง พูดจาดี อบอุ่นแต่มีระดับ ชอบเชื่อมเรื่องราวกับวิวเมืองหรือดวงดาว ถ้าลูกค้าสั่ง ให้ตอบพร้อมบรรยายบรรยากาศ เช่น "ไวน์แดงแก้วนึง จิบไปชมไฟเมืองไป" สไตล์: 2-4 ประโยค ภาษาไทย ผู้หญิง อบอุ่นมีระดับ ห้ามใช้ markdown'}
 ];
 
 var MOODS = {
@@ -1432,6 +1545,7 @@ function tapAlpaca(){ wiggleEars(); }
 function analyze(){
   var txt=document.getElementById('feel-in').value.trim();
   if(!txt){toast('เล่าให้ฟังก่อนนะ 🦙');return;}
+  if(!aiEnabled()){toast('AI ยังไม่ได้ตั้งค่า — ดู CONFIG ในโค้ด');return;}
   var btn=document.getElementById('feel-btn');
   btn.disabled=true;
   btn.innerHTML='<span class="sh"><\/span><span class="dots"><span><\/span><span><\/span><span><\/span><\/span>';
@@ -1446,16 +1560,24 @@ function analyze(){
   var hiddenNote=unlockedHidden.length ? '\n\n(ช่วงเวลานี้มีอารมณ์พิเศษให้ค้นพบได้ ถ้าความรู้สึกตรงกับมัน)' : '';
   var prompt='ผู้ใช้บอกว่า: "'+txt+'"\n\nอารมณ์ที่เป็นไปได้:\n'+list+hiddenNote+'\n\nเลือกอารมณ์ที่ตรงที่สุด ตอบเป็น JSON เท่านั้น ไม่มีข้อความอื่น:\n{"emotionId":"<id lowercase>","reason":"<อธิบาย 2-3 ประโยค ภาษาไทย อบอุ่น>"}';
 
-  callAI(prompt,function(res){
+  function resetBtn(){
     btn.disabled=false;
     btn.innerHTML='<span class="sh"><\/span>ค้นพบ';
+  }
+
+  aiCall({messages:[{role:'user',content:prompt}], raw:true, max_tokens:600}, function(res,err){
+    resetBtn();
+    if(err){ toast('เชื่อมต่อไม่ได้ — '+err); return; }
     try{
       var clean=res.replace(/```json|```/g,'').trim();
+      // extract JSON object if wrapped in extra text
+      var m=clean.match(/\{[\s\S]*\}/);
+      if(m) clean=m[0];
       var obj=JSON.parse(clean);
       var em=EMOTIONS.filter(function(e){return e.id===obj.emotionId;})[0];
       if(!em) throw 0;
       showResult(em,obj.reason,txt);
-    }catch(e){toast('ลองอีกครั้งนะ 🦙');}
+    }catch(e){ toast('ลองอีกครั้งนะ 🦙'); }
   });
 }
 
@@ -1590,21 +1712,30 @@ function initChars(){
   });
 }
 
+/* map new scene ids → existing room/char/bg assets */
+var SCENE_ALIAS = {
+  izakaya:'izakaya', midnight:'midnight', beach:'beach', forest:'forest',
+  cafe:'sakura', ramen:'forest', rooftop:'cosmos'
+};
+
 function setScene(id){
   var prevScene=ST.scene;
   ST.scene=id;
   var sc=SCENES.filter(function(s){return s.id===id;})[0];
   if(!sc) return;
+  var asset=SCENE_ALIAS[id]||id;
   var bgEl=document.getElementById('iz-fullbg');
-  if(bgEl) bgEl.style.background=SCENE_BG[id]||'#0A0806';
+  if(bgEl) bgEl.style.background=SCENE_BG[asset]||'#0A0806';
   var roomEl=document.getElementById('iz-room');
-  if(roomEl && ROOMS[id]) roomEl.innerHTML=ROOMS[id];
+  if(roomEl && ROOMS[asset]) roomEl.innerHTML=ROOMS[asset];
   document.getElementById('iz-sname').textContent=sc.short;
   document.getElementById('iz-stitle').textContent=sc.title;
   var whoEl=document.getElementById('iz-who');
   if(whoEl) whoEl.textContent='\u{1F464} '+sc.who;
   var charEl=document.getElementById('iz-char');
-  if(charEl && CHARS[id]) charEl.innerHTML=CHARS[id];
+  if(charEl && CHARS[asset]) charEl.innerHTML=CHARS[asset];
+  // render order menu for this scene
+  renderMenu(sc);
   // atmosphere: light rays + dust, varies per scene
   var atmos=document.getElementById('iz-atmos');
   if(atmos){
@@ -1614,11 +1745,11 @@ function setScene(id){
       cosmos:'rgba(160,140,255,0.07)',beach:'rgba(255,200,140,0.08)',
       mountain:'rgba(200,210,255,0.07)'
     };
-    var rc=rayColor[id]||'rgba(255,220,150,0.08)';
+    var rc=rayColor[asset]||'rgba(255,220,150,0.08)';
     var ah='<div class="iz-ray" style="left:18%;background:linear-gradient(180deg,'+rc+',transparent 70%)"></div>';
     ah+='<div class="iz-ray" style="left:52%;width:50px;background:linear-gradient(180deg,'+rc+',transparent 65%)"></div>';
     // dust particles
-    var dustN=(id==='cosmos'||id==='mountain')?10:6;
+    var dustN=(asset==='cosmos')?10:6;
     for(var di=0;di<dustN;di++){
       var dl=Math.random()*100, dd=Math.random()*12, ds=8+Math.random()*8;
       ah+='<div class="iz-dust" style="left:'+dl+'%;bottom:0;animation-delay:'+dd+'s;animation-duration:'+ds+'s"></div>';
@@ -1661,6 +1792,7 @@ function sendIz(){
   var inp=document.getElementById('iz-in');
   var txt=inp.value.trim();
   if(!txt) return;
+  if(!aiEnabled()){ addMsg('ai','AI ยังไม่ได้ตั้งค่า — ดู CONFIG ในโค้ด 🦙'); inp.value=''; return; }
   inp.value='';
   addMsg('user',txt);
   ST.chatHist.push({role:'user',content:txt});
@@ -1675,34 +1807,61 @@ function sendIz(){
   chat.scrollTop=chat.scrollHeight;
 
   var msgs=ST.chatHist.slice(-16).map(function(m){return{role:m.role,content:m.content};});
+  var sys=(sc?sc.sys:'คุณคือผู้ช่วยที่อบอุ่น')+'\nตอบภาษาไทย กระชับ 2-4 ประโยค ไม่ใช้ markdown';
 
-  fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      model:'claude-sonnet-4-20250514',
-      max_tokens:1000,
-      system:(sc?sc.sys:'คุณคือผู้ช่วยที่อบอุ่น')+'\nตอบภาษาไทย กระชับ 2-4 ประโยค ไม่ใช้ markdown',
-      messages:msgs
-    })
-  }).then(function(r){return r.json();}).then(function(data){
+  aiCall({system:sys, messages:msgs, max_tokens:800}, function(reply,err){
     typing.remove();
-    var reply=(data.content&&data.content[0]&&data.content[0].text)?data.content[0].text:'ขอโทษ เกิดข้อผิดพลาด';
+    if(err){ addMsg('ai','เชื่อมต่อไม่ได้ ลองส่งอีกที 🦙'); return; }
+    if(!reply){ addMsg('ai','...'); return; }
     addMsg('ai',reply);
     ST.chatHist.push({role:'assistant',content:reply});
     if(ST.chatHist.length>40) ST.chatHist=ST.chatHist.slice(-40);
-  }).catch(function(){
-    typing.remove();
-    addMsg('ai','เน็ตมีปัญหา ลองส่งอีกทีนะ 🦙');
   });
 }
 
-/* ═══════════════ CALENDAR ═══════════════ */
-function calNav(d){
-  ST.calM+=d;
-  if(ST.calM>11){ST.calM=0;ST.calY++;}
-  if(ST.calM<0){ST.calM=11;ST.calY--;}
-  renderCal();
+/* ── FOOD ORDER MENU ── */
+function renderMenu(sc){
+  var bar=document.getElementById('iz-menu');
+  if(!bar) return;
+  if(!sc || !sc.menu){ bar.innerHTML=''; return; }
+  var html='';
+  sc.menu.forEach(function(item,i){
+    html+='<button class="menu-item" onclick="orderFood('+i+')">'
+      +'<span class="menu-emoji">'+item.e+'</span>'
+      +'<span class="menu-name">'+item.n+'</span>'
+      +'</button>';
+  });
+  bar.innerHTML=html;
+}
+
+function orderFood(idx){
+  var sc=SCENES.filter(function(s){return s.id===ST.scene;})[0];
+  if(!sc || !sc.menu || !sc.menu[idx]) return;
+  var item=sc.menu[idx];
+  if(!aiEnabled()){ addMsg('ai','AI ยังไม่ได้ตั้งค่า 🦙'); return; }
+  // user "orders" — show as user bubble
+  var orderTxt='ขอ'+item.n+' '+item.e;
+  addMsg('user',orderTxt);
+  ST.chatHist.push({role:'user',content:'(ลูกค้าสั่ง'+item.n+') '+orderTxt});
+  questProgress('chat',1);
+
+  var typing=document.createElement('div');
+  typing.className='iz-msg ai';
+  typing.innerHTML='<span class="dots dots-dim"><span><\/span><span><\/span><span><\/span><\/span>';
+  var chat=document.getElementById('iz-chat');
+  chat.appendChild(typing);
+  chat.scrollTop=chat.scrollHeight;
+
+  var msgs=ST.chatHist.slice(-16).map(function(m){return{role:m.role,content:m.content};});
+  var sys=sc.sys+'\nลูกค้าเพิ่งสั่ง"'+item.n+'" ให้คุณตอบสนองอย่างอบอุ่น ทำอาหาร/เครื่องดื่มให้ บรรยายความอร่อยสั้นๆ แล้วชวนคุยต่อเบาๆ\nตอบภาษาไทย กระชับ 2-3 ประโยค ไม่ใช้ markdown';
+
+  aiCall({system:sys, messages:msgs, max_tokens:600}, function(reply,err){
+    typing.remove();
+    if(err){ addMsg('ai','ขอโทษนะ เดี๋ยวจัดให้ใหม่ 🦙'); return; }
+    addMsg('ai',reply||'จัดให้เลย!');
+    ST.chatHist.push({role:'assistant',content:reply});
+    if(ST.chatHist.length>40) ST.chatHist=ST.chatHist.slice(-40);
+  });
 }
 function renderCal(){
   var mos=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
@@ -1801,17 +1960,6 @@ function cxTap(id){
     return;
   }
   toast(em.e+' '+em.th+' — '+em.en);
-}
-
-/* ═══════════════ API ═══════════════ */
-function callAI(prompt,cb){
-  fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
-  }).then(function(r){return r.json();}).then(function(data){
-    cb((data.content&&data.content[0]&&data.content[0].text)?data.content[0].text:'');
-  }).catch(function(){cb('{"emotionId":"calm","reason":"เกิดข้อผิดพลาด ลองใหม่นะ"}');});
 }
 
 /* ═══════════════ TOAST ═══════════════ */

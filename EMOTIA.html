@@ -488,13 +488,28 @@ body{
 }
 .iz-send:active{transform:scale(0.88);}
 
-/* ══ CALENDAR ══ */
+/* ══ CALENDAR / DIARY ══ */
 .cal-head{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:18px 20px 12px;
+  padding:18px 20px 10px;
   position:-webkit-sticky;position:sticky;top:0;
-  background:var(--cream);z-index:5;
-  border-bottom:1.5px solid var(--soft);
+  background:var(--cream);z-index:6;
+}
+.cal-title{font-family:var(--font-d);font-size:18px;color:var(--ink);font-weight:600;}
+.cal-tabs{
+  display:flex;gap:8px;padding:0 16px 10px;
+  position:-webkit-sticky;position:sticky;top:54px;
+  background:var(--cream);z-index:5;border-bottom:1.5px solid var(--soft);
+}
+.cal-tab{
+  flex:1;border:1.5px solid var(--soft);background:white;
+  border-radius:14px;padding:9px;font-size:13px;color:var(--dim);
+  cursor:pointer;font-family:var(--font-b);font-weight:600;
+  transition:all 0.18s;box-shadow:0 1px 4px rgba(0,0,0,0.05);
+}
+.cal-tab.on{background:var(--coral);color:white;border-color:var(--coral);box-shadow:0 2px 10px rgba(232,114,90,0.3);}
+.cal-monthnav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px 8px;
 }
 .cal-nav-btn{
   background:white;border:1.5px solid var(--soft);
@@ -503,31 +518,109 @@ body{
   box-shadow:0 2px 6px rgba(0,0,0,0.06);
 }
 .cal-mo{font-family:var(--font-d);font-size:17px;color:var(--ink);font-weight:600;}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:10px 14px 10px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:6px 14px 10px;}
+
+/* ── MONTHLY PERSONA CARD ── */
+.persona-card{
+  margin:10px 16px 4px;border-radius:20px;
+  background:white;border:2px solid var(--soft);
+  padding:16px;box-shadow:0 3px 16px rgba(0,0,0,0.07);
+  position:relative;overflow:hidden;
+}
+.persona-card::before{
+  content:'';position:absolute;top:-30px;right:-30px;
+  width:110px;height:110px;border-radius:50%;
+  background:radial-gradient(circle,rgba(232,196,96,0.18),transparent 70%);
+  pointer-events:none;
+}
+.pc-newborn{border-color:var(--soft);}
+.pc-dreamer{border-color:var(--lavender);}
+.pc-sunchild{border-color:var(--gold);}
+.pc-sage{border-color:var(--mint);}
+.pc-warrior{border-color:var(--coral);}
+.pc-wanderer{border-color:var(--sky);}
+.pc-empath{border-color:var(--peach);}
+.pc-survivor{border-color:#9AAEC0;}
+.pc-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;position:relative;z-index:1;}
+.pc-emoji{font-size:40px;line-height:1;animation:alpFloat 3.5s ease-in-out infinite;}
+.pc-titles{flex:1;}
+.pc-tag{font-size:9px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;margin-bottom:3px;}
+.pc-name{font-family:var(--font-d);font-size:22px;color:var(--ink);font-weight:600;line-height:1.1;}
+.pc-sub{font-size:11px;color:var(--dim);letter-spacing:1px;margin-top:1px;}
+.pc-desc{font-size:13px;line-height:1.75;color:var(--ink2);margin-bottom:12px;position:relative;z-index:1;}
+.pc-trait{
+  display:inline-block;font-size:11px;color:var(--ink);font-weight:600;
+  background:var(--cream);border:1px solid var(--soft);
+  border-radius:14px;padding:5px 12px;margin-bottom:12px;
+}
+.pc-psych{
+  font-size:12px;line-height:1.65;color:var(--ink2);font-style:italic;
+  background:linear-gradient(135deg,#FFF8EC,#FDF0E0);
+  border-left:3px solid var(--gold);border-radius:10px;
+  padding:10px 12px;position:relative;z-index:1;
+}
+.pc-lock{font-size:12px;color:var(--dim);text-align:center;padding:6px 0;position:relative;z-index:1;}
 .cal-dow{text-align:center;font-size:10px;color:var(--dim);padding:5px 2px;letter-spacing:0.5px;}
 .cal-day{
   border-radius:10px;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  cursor:pointer;min-height:44px;padding:3px 1px;
+  align-items:center;justify-content:flex-start;
+  cursor:pointer;min-height:52px;padding:4px 1px 2px;
   transition:background 0.15s;
 }
 .cal-day:active{background:var(--soft);}
 .cal-day.today{background:white;border:1.5px solid var(--coral);}
 .cal-day.today .cal-dn{color:var(--coral);font-weight:700;}
-.cal-dn{font-size:11px;color:var(--dim);}
-.cal-de{font-size:15px;line-height:1;}
+.cal-day.selected{background:var(--warm);border:1.5px solid var(--peach);}
+.cal-dn{font-size:11px;color:var(--dim);margin-bottom:1px;}
+.cal-emos{display:flex;flex-wrap:wrap;justify-content:center;gap:1px;line-height:1;max-width:100%;}
+.cal-de{font-size:11px;line-height:1;}
+.cal-more{font-size:8px;color:var(--dim);}
 .cal-day.has-e .cal-dn{color:var(--ink);font-weight:600;}
 .cal-detail{
-  margin:0 16px 16px;padding:16px;border-radius:20px;
+  margin:12px 16px 16px;padding:16px;border-radius:20px;
   background:white;border:1.5px solid var(--soft);
   box-shadow:0 2px 10px rgba(0,0,0,0.06);
 }
-.cal-ddate{font-family:var(--font-d);font-size:14px;color:var(--coral);margin-bottom:10px;font-weight:600;}
-.cal-ent{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--soft);}
+.cal-ddate{font-family:var(--font-d);font-size:15px;color:var(--coral);margin-bottom:12px;font-weight:600;}
+.cal-ent{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--soft);}
 .cal-ent:last-child{border-bottom:none;}
-.cal-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
-.cal-ent-name{font-size:14px;color:var(--ink);font-weight:500;}
+.cal-ent-emoji{font-size:22px;line-height:1;flex-shrink:0;}
+.cal-ent-body{flex:1;min-width:0;}
+.cal-ent-top{display:flex;align-items:center;gap:8px;margin-bottom:3px;}
+.cal-ent-name{font-size:14px;color:var(--ink);font-weight:600;}
 .cal-ent-time{font-size:11px;color:var(--dim);}
+.cal-ent-text{font-size:13px;color:var(--ink2);line-height:1.6;background:var(--cream);border-radius:10px;padding:8px 10px;margin-top:4px;}
+
+/* ── TIMELINE ── */
+.timeline-body{padding:14px 16px 20px;}
+.tl-day{margin-bottom:20px;}
+.tl-day-head{
+  display:flex;align-items:center;gap:8px;margin-bottom:10px;
+  position:-webkit-sticky;position:sticky;top:96px;
+  background:var(--cream);padding:4px 0;z-index:2;
+}
+.tl-day-date{font-family:var(--font-d);font-size:14px;color:var(--ink);font-weight:600;}
+.tl-day-count{font-size:11px;color:var(--dim);background:var(--soft);border-radius:10px;padding:2px 8px;}
+.tl-card{
+  display:flex;gap:12px;padding:0 0 0 6px;margin-bottom:12px;position:relative;
+}
+.tl-line{
+  position:absolute;left:16px;top:30px;bottom:-12px;width:2px;
+  background:var(--soft);
+}
+.tl-card:last-child .tl-line{display:none;}
+.tl-dot{
+  width:22px;height:22px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;background:white;border:2px solid var(--soft);z-index:1;
+}
+.tl-content{flex:1;min-width:0;background:white;border:1.5px solid var(--soft);border-radius:16px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
+.tl-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.tl-name{font-size:14px;color:var(--ink);font-weight:600;}
+.tl-time{font-size:11px;color:var(--dim);}
+.tl-text{font-size:13px;color:var(--ink2);line-height:1.65;margin-top:6px;background:var(--cream);border-radius:10px;padding:8px 10px;}
+.tl-empty{text-align:center;padding:60px 30px;color:var(--dim);font-size:14px;line-height:1.8;}
+.tl-empty-emoji{font-size:48px;display:block;margin-bottom:12px;opacity:0.5;}
 
 /* ══ CODEX ══ */
 .codex-top{
@@ -680,7 +773,7 @@ body{
   <span class="ob-float">🦙</span>
   <div class="ob-tag">GACHAPON พลังบวก</div>
   <div class="ob-title">EMOTIA</div>
-  <div class="ob-sub">เล่าความรู้สึกให้อัลปาก้าฟัง<br>แล้วค้นพบอารมณ์ที่ซ่อนอยู่<br>สะสม 17 อารมณ์ เลเวลอัพ พูดคุย ✦</div>
+  <div class="ob-sub">เล่าความรู้สึกให้อัลปาก้าฟัง<br>แล้วค้นพบอารมณ์ที่ซ่อนอยู่<br>สะสม 17 อารมณ์ + 4 อารมณ์ลับ · เลเวลอัพ · พูดคุย ✦</div>
   <button class="ob-btn" onclick="startGame()">เริ่มต้น</button>
 </div>
 
@@ -837,22 +930,39 @@ body{
   </div>
 </div>
 
-<!-- ══ CALENDAR ══ -->
+<!-- ══ CALENDAR / DIARY ══ -->
 <div class="screen" id="screen-cal">
   <div class="cal-head">
-    <button class="cal-nav-btn" onclick="calNav(-1)">‹</button>
-    <div class="cal-mo" id="cal-mo"></div>
-    <button class="cal-nav-btn" onclick="calNav(1)">›</button>
+    <div class="cal-title">📔 ไดอารี่อารมณ์</div>
   </div>
-  <div class="cal-grid" id="cal-grid"></div>
-  <div class="cal-detail" id="cal-detail" style="display:none"></div>
+  <div class="cal-tabs">
+    <button class="cal-tab on" id="caltab-month" onclick="setCalView('month')">🗓 ปฏิทิน</button>
+    <button class="cal-tab" id="caltab-timeline" onclick="setCalView('timeline')">📜 ไทม์ไลน์</button>
+  </div>
+
+  <!-- MONTH VIEW -->
+  <div id="cal-month-view">
+    <div class="cal-monthnav">
+      <button class="cal-nav-btn" onclick="calNav(-1)">‹</button>
+      <div class="cal-mo" id="cal-mo"></div>
+      <button class="cal-nav-btn" onclick="calNav(1)">›</button>
+    </div>
+    <div class="persona-card" id="persona-card" style="display:none"></div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="cal-detail" id="cal-detail" style="display:none"></div>
+  </div>
+
+  <!-- TIMELINE VIEW -->
+  <div id="cal-timeline-view" style="display:none">
+    <div class="timeline-body" id="timeline-body"></div>
+  </div>
 </div>
 
 <!-- ══ CODEX ══ -->
 <div class="screen" id="screen-codex">
   <div class="codex-top">
     <div class="codex-title">📖 สมุดอารมณ์</div>
-    <div class="codex-prog" id="cx-prog">ค้นพบ 0 / 17</div>
+    <div class="codex-prog" id="cx-prog">ค้นพบ 0 / 21</div>
   </div>
   <div class="codex-tabs">
     <button class="codex-tab t-all on" onclick="cxFilter('all',this)">ทั้งหมด</button>
@@ -864,80 +974,187 @@ body{
   <div class="codex-grid" id="cx-grid"></div>
 </div>
 
-<!-- Hidden character SVG templates -->
+<!-- Hidden character SVG templates (restaurant staff) -->
 <div style="display:none" aria-hidden="true">
 
+<!-- ป้าโยโกะ - เจ้าของร้านอิซากายะ หญิงสูงวัยใจดี -->
 <div id="char-svg-izakaya">
 <svg viewBox="0 0 96 124" xmlns="http://www.w3.org/2000/svg" style="width:96px;height:124px;animation:charFloat 4s ease-in-out infinite">
-<ellipse cx="48" cy="110" rx="28" ry="9" fill="#2A1A0E" opacity="0.3"/>
-<rect x="24" y="60" width="48" height="52" rx="6" fill="#2A1A10"/>
-<rect x="28" y="62" width="40" height="6" rx="2" fill="#D4894A" opacity="0.4"/>
-<rect x="20" y="58" width="56" height="50" rx="6" fill="#1A1008"/>
-<rect x="28" y="56" width="40" height="4" rx="2" fill="#C8C0A8" opacity="0.7"/>
-<rect x="38" y="44" width="20" height="18" rx="9" fill="#C4956A"/>
-<ellipse cx="48" cy="34" rx="20" ry="18" fill="#C4956A"/>
-<ellipse cx="48" cy="20" rx="18" ry="8" fill="#1A1008"/>
-<rect x="30" y="20" width="36" height="10" rx="3" fill="#1A1008"/>
-<ellipse cx="39" cy="34" rx="3" ry="2" fill="#2A1A0E"/>
-<ellipse cx="57" cy="34" rx="3" ry="2" fill="#2A1A0E"/>
-<path d="M43 42 Q48 44 53 42" stroke="#8B5E3C" stroke-width="1.5" fill="none"/>
-<rect x="58" y="72" width="8" height="18" rx="3" fill="#8B9EB5" opacity="0.75"/>
-<ellipse cx="62" cy="72" rx="4" ry="2.5" fill="#A0B4C8" opacity="0.7"/>
-<rect x="22" y="106" width="12" height="16" rx="4" fill="#1A1008"/>
-<rect x="62" y="106" width="12" height="16" rx="4" fill="#1A1008"/>
-<ellipse cx="28" cy="122" rx="8" ry="3" fill="#0A0806"/>
-<ellipse cx="68" cy="122" rx="8" ry="3" fill="#0A0806"/>
+<ellipse cx="48" cy="112" rx="28" ry="8" fill="#2A1A0E" opacity="0.3"/>
+<!-- kimono body -->
+<path d="M22 60 Q26 50 48 53 Q70 50 74 60 L72 120 L24 120 Z" fill="#8B3A3A"/>
+<path d="M38 53 L48 70 L58 53" fill="#D8C0A0"/>
+<!-- apron -->
+<rect x="32" y="74" width="32" height="40" rx="3" fill="#E8DCC8"/>
+<rect x="32" y="74" width="32" height="4" fill="#C8A060"/>
+<!-- obi -->
+<rect x="24" y="68" width="48" height="9" rx="2" fill="#C8A040"/>
+<!-- neck + head -->
+<rect x="40" y="44" width="16" height="14" rx="7" fill="#D4A882"/>
+<ellipse cx="48" cy="34" rx="18" ry="17" fill="#D4A882"/>
+<!-- gray bun hair -->
+<ellipse cx="48" cy="20" rx="17" ry="8" fill="#C8C4C0"/>
+<ellipse cx="48" cy="15" rx="9" ry="6" fill="#D8D4D0"/>
+<circle cx="48" cy="14" r="4" fill="#B8B0A8"/>
+<!-- warm closed eyes (smiling) -->
+<path d="M37 34 Q41 37 45 34" stroke="#3D2010" stroke-width="2" fill="none"/>
+<path d="M51 34 Q55 37 59 34" stroke="#3D2010" stroke-width="2" fill="none"/>
+<!-- blush -->
+<ellipse cx="37" cy="39" rx="4" ry="2.5" fill="rgba(220,120,100,0.35)"/>
+<ellipse cx="59" cy="39" rx="4" ry="2.5" fill="rgba(220,120,100,0.35)"/>
+<!-- warm smile -->
+<path d="M42 43 Q48 48 54 43" stroke="#A85A3C" stroke-width="1.8" fill="none"/>
+<!-- bowl in hands -->
+<ellipse cx="48" cy="98" rx="14" ry="5" fill="#E8A040" opacity="0.85"/>
+<path d="M34 96 Q48 108 62 96" fill="#D89030" opacity="0.8"/>
+<ellipse cx="48" cy="94" rx="13" ry="3" fill="#F0C880" opacity="0.6"/>
 </svg>
 </div>
 
-<div id="char-svg-sakura">
-<svg viewBox="0 0 96 124" xmlns="http://www.w3.org/2000/svg" style="width:96px;height:124px;animation:charFloat 4s ease-in-out infinite">
-<ellipse cx="48" cy="110" rx="28" ry="9" fill="#1A0818" opacity="0.3"/>
-<path d="M20 62 Q24 52 48 55 Q72 52 76 62 L74 120 L22 120 Z" fill="#E8B4C8"/>
-<rect x="28" y="80" width="40" height="10" rx="3" fill="#9B4870"/>
-<path d="M38 55 L48 70 L58 55" fill="#F5E8D0" opacity="0.8"/>
-<rect x="38" y="44" width="20" height="16" rx="8" fill="#D4A882"/>
-<ellipse cx="48" cy="34" rx="19" ry="17" fill="#D4A882"/>
-<ellipse cx="48" cy="20" rx="17" ry="7" fill="#1A0C0C"/>
-<ellipse cx="48" cy="16" rx="10" ry="5" fill="#1A0C0C"/>
-<circle cx="58" cy="14" r="3" fill="#E8B4C8"/>
-<line x1="58" y1="14" x2="58" y2="22" stroke="#C09060" stroke-width="1.5"/>
-<path d="M37 34 Q40 31 43 34" stroke="#2A1A0E" stroke-width="2" fill="none"/>
-<path d="M53 34 Q56 31 59 34" stroke="#2A1A0E" stroke-width="2" fill="none"/>
-<ellipse cx="37" cy="38" rx="4" ry="2.5" fill="rgba(220,100,120,0.3)"/>
-<ellipse cx="59" cy="38" rx="4" ry="2.5" fill="rgba(220,100,120,0.3)"/>
-<path d="M43 42 Q48 45 53 42" stroke="#C06080" stroke-width="1.5" fill="none"/>
-<rect x="22" y="108" width="12" height="14" rx="4" fill="#6A2040"/>
-<rect x="62" y="108" width="12" height="14" rx="4" fill="#6A2040"/>
-</svg>
-</div>
-
+<!-- แมค - บาร์เทนเดอร์สูท -->
 <div id="char-svg-midnight">
 <svg viewBox="0 0 96 124" xmlns="http://www.w3.org/2000/svg" style="width:96px;height:124px;animation:charFloat 4s ease-in-out infinite">
 <ellipse cx="48" cy="112" rx="28" ry="8" fill="#050810" opacity="0.4"/>
-<path d="M22 62 Q26 52 48 55 Q70 52 74 62 L72 120 L24 120 Z" fill="#1A1E2E"/>
-<path d="M38 55 L30 120 L22 120 L22 62 Z" fill="#22243A"/>
-<path d="M58 55 L66 120 L74 120 L74 62 Z" fill="#22243A"/>
-<path d="M38 55 L48 68 L58 55" fill="#E8E0D0"/>
-<path d="M44 58 L48 78 L52 58 L48 62 Z" fill="#8B2020"/>
-<rect x="38" y="44" width="20" height="16" rx="8" fill="#B8906A"/>
-<ellipse cx="48" cy="33" rx="18" ry="17" fill="#B8906A"/>
-<ellipse cx="48" cy="19" rx="16" ry="7" fill="#1A1008"/>
-<rect x="32" y="19" width="32" height="10" rx="3" fill="#1A1008"/>
-<ellipse cx="39" cy="33" rx="3.5" ry="3" fill="#1A1008"/>
-<ellipse cx="57" cy="33" rx="3.5" ry="3" fill="#1A1008"/>
-<rect x="35" y="28" width="9" height="2" rx="1" fill="#1A1008"/>
-<rect x="52" y="28" width="9" height="2" rx="1" fill="#1A1008"/>
-<path d="M43 42 Q48 43 53 42" stroke="#8B5E3C" stroke-width="1.5" fill="none"/>
-<path d="M62 76 L65 92 L72 92 L75 76 Z" fill="#8B9EB5" opacity="0.55"/>
-<rect x="62" y="74" width="13" height="4" rx="1" fill="#A0B4C8" opacity="0.45"/>
-<rect x="24" y="108" width="14" height="14" rx="4" fill="#0E1220"/>
-<rect x="58" y="108" width="14" height="14" rx="4" fill="#0E1220"/>
-<ellipse cx="31" cy="122" rx="9" ry="3" fill="#050608"/>
-<ellipse cx="65" cy="122" rx="9" ry="3" fill="#050608"/>
+<path d="M22 62 Q26 52 48 55 Q70 52 74 62 L72 120 L24 120 Z" fill="#16182A"/>
+<path d="M38 55 L30 120 L22 120 L22 62 Z" fill="#1E2038"/>
+<path d="M58 55 L66 120 L74 120 L74 62 Z" fill="#1E2038"/>
+<path d="M38 55 L48 70 L58 55" fill="#0A0C16"/>
+<!-- vest -->
+<path d="M40 56 L40 100 L56 100 L56 56 L48 64 Z" fill="#2A2C44"/>
+<!-- bow tie -->
+<path d="M44 60 L48 64 L44 68 Z" fill="#8B2030"/>
+<path d="M52 60 L48 64 L52 68 Z" fill="#8B2030"/>
+<rect x="40" y="44" width="16" height="14" rx="7" fill="#C8A078"/>
+<ellipse cx="48" cy="33" rx="17" ry="16" fill="#C8A078"/>
+<!-- slick hair -->
+<path d="M31 28 Q48 16 65 28 Q60 22 48 20 Q36 22 31 28 Z" fill="#2A2018"/>
+<rect x="32" y="22" width="32" height="9" rx="3" fill="#2A2018"/>
+<!-- sharp eyes -->
+<ellipse cx="40" cy="33" rx="2.5" ry="3" fill="#2A1A0E"/>
+<ellipse cx="56" cy="33" rx="2.5" ry="3" fill="#2A1A0E"/>
+<rect x="36" y="28" width="8" height="1.5" rx="1" fill="#2A2018"/>
+<rect x="52" y="28" width="8" height="1.5" rx="1" fill="#2A2018"/>
+<!-- stubble -->
+<ellipse cx="48" cy="44" rx="11" ry="4" fill="#8B6A4A" opacity="0.25"/>
+<path d="M44 42 Q48 43 52 42" stroke="#7A5238" stroke-width="1.3" fill="none"/>
+<!-- cocktail glass in hand -->
+<path d="M58 78 L66 90 L74 78 Z" fill="rgba(180,200,230,0.4)"/>
+<rect x="63" y="90" width="6" height="14" rx="1" fill="rgba(160,180,210,0.4)"/>
+<ellipse cx="66" cy="78" rx="9" ry="2.5" fill="rgba(200,160,100,0.4)"/>
+<circle cx="70" cy="76" r="2" fill="#C04040" opacity="0.6"/>
 </svg>
 </div>
 
+<!-- มินต์ - บาริสต้าสาวสดใส -->
+<div id="char-svg-cafe">
+<svg viewBox="0 0 96 124" xmlns="http://www.w3.org/2000/svg" style="width:96px;height:124px;animation:charFloat 4s ease-in-out infinite">
+<ellipse cx="48" cy="112" rx="28" ry="8" fill="#2A1818" opacity="0.3"/>
+<!-- shirt -->
+<path d="M24 60 Q28 52 48 55 Q68 52 72 60 L70 120 L26 120 Z" fill="#F0E4D4"/>
+<!-- apron (cafe brown) -->
+<path d="M34 62 L32 116 L64 116 L62 62 Z" fill="#6B4A35"/>
+<rect x="34" y="62" width="28" height="3" fill="#8B6A50"/>
+<!-- apron strap -->
+<path d="M40 55 L36 62 M56 55 L60 62" stroke="#6B4A35" stroke-width="2.5"/>
+<rect x="40" y="46" width="16" height="14" rx="7" fill="#D8B090"/>
+<ellipse cx="48" cy="35" rx="18" ry="17" fill="#D8B090"/>
+<!-- ponytail brown hair -->
+<ellipse cx="48" cy="21" rx="18" ry="9" fill="#5A3A28"/>
+<rect x="30" y="22" width="9" height="22" rx="4" fill="#5A3A28"/>
+<rect x="57" y="22" width="9" height="20" rx="4" fill="#5A3A28"/>
+<ellipse cx="66" cy="26" rx="6" ry="10" fill="#6A4434"/>
+<!-- bangs -->
+<path d="M32 28 Q48 18 64 28 Q60 24 48 23 Q36 24 32 28 Z" fill="#5A3A28"/>
+<!-- bright eyes -->
+<ellipse cx="40" cy="35" rx="3" ry="3.5" fill="#3D2818"/>
+<ellipse cx="56" cy="35" rx="3" ry="3.5" fill="#3D2818"/>
+<circle cx="41" cy="34" r="1" fill="#fff"/>
+<circle cx="57" cy="34" r="1" fill="#fff"/>
+<!-- blush -->
+<ellipse cx="38" cy="40" rx="4" ry="2.5" fill="rgba(240,140,130,0.4)"/>
+<ellipse cx="58" cy="40" rx="4" ry="2.5" fill="rgba(240,140,130,0.4)"/>
+<!-- big smile -->
+<path d="M42 44 Q48 50 54 44" stroke="#C06850" stroke-width="2" fill="none"/>
+<!-- coffee cup -->
+<rect x="56" y="86" width="14" height="12" rx="2" fill="#F0E8DC"/>
+<path d="M70 88 Q75 88 75 92 Q75 96 70 96" stroke="#F0E8DC" stroke-width="2" fill="none"/>
+<ellipse cx="63" cy="86" rx="7" ry="2.5" fill="#8B5A3C"/>
+<!-- steam -->
+<path d="M60 82 Q62 78 60 75" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" fill="none"/>
+<path d="M66 82 Q68 78 66 75" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" fill="none"/>
+</svg>
+</div>
+
+<!-- ลุงเท็ตสึ - เชฟราเมง ผ้าโพกหัว -->
+<div id="char-svg-ramen">
+<svg viewBox="0 0 96 124" xmlns="http://www.w3.org/2000/svg" style="width:96px;height:124px;animation:charFloat 4s ease-in-out infinite">
+<ellipse cx="48" cy="112" rx="28" ry="8" fill="#1A1008" opacity="0.35"/>
+<!-- chef uniform -->
+<path d="M22 60 Q26 50 48 53 Q70 50 74 60 L72 120 L24 120 Z" fill="#E8E0D4"/>
+<!-- apron indigo -->
+<path d="M34 70 L33 116 L63 116 L62 70 Z" fill="#2A4A6A"/>
+<rect x="34" y="70" width="28" height="3" fill="#3A6A8A"/>
+<!-- collar -->
+<path d="M40 53 L48 64 L56 53" fill="#D0C8B8"/>
+<rect x="40" y="44" width="16" height="13" rx="6" fill="#C8956A"/>
+<ellipse cx="48" cy="34" rx="17" ry="16" fill="#C8956A"/>
+<!-- headband (hachimaki) white with red -->
+<rect x="29" y="24" width="38" height="8" rx="2" fill="#F0E8DC"/>
+<circle cx="48" cy="28" r="4" fill="#C03030"/>
+<!-- short gray hair sides -->
+<rect x="29" y="30" width="6" height="12" rx="3" fill="#8A8078"/>
+<rect x="61" y="30" width="6" height="12" rx="3" fill="#8A8078"/>
+<!-- weathered eyes -->
+<path d="M38 34 Q41 36 44 34" stroke="#2A1A0E" stroke-width="2" fill="none"/>
+<path d="M52 34 Q55 36 58 34" stroke="#2A1A0E" stroke-width="2" fill="none"/>
+<!-- wrinkles -->
+<path d="M36 31 Q38 30 40 31" stroke="#A87858" stroke-width="0.8" fill="none"/>
+<path d="M56 31 Q58 30 60 31" stroke="#A87858" stroke-width="0.8" fill="none"/>
+<!-- mustache -->
+<path d="M40 42 Q48 46 56 42 Q52 45 48 45 Q44 45 40 42 Z" fill="#9A8E80"/>
+<!-- ramen bowl steaming -->
+<ellipse cx="48" cy="96" rx="16" ry="5" fill="#C03828" opacity="0.85"/>
+<path d="M33 94 Q48 106 63 94" fill="#A82E20" opacity="0.85"/>
+<ellipse cx="48" cy="92" rx="14" ry="3.5" fill="#E8C060" opacity="0.7"/>
+<path d="M42 88 Q44 82 42 78" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" fill="none"/>
+<path d="M54 88 Q56 82 54 78" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" fill="none"/>
+</svg>
+</div>
+
+<!-- ป้าแดง - แม่ค้าซีฟู้ดริมทะเล -->
+<div id="char-svg-beach">
+<svg viewBox="0 0 96 124" xmlns="http://www.w3.org/2000/svg" style="width:96px;height:124px;animation:charFloat 4s ease-in-out infinite">
+<ellipse cx="48" cy="112" rx="30" ry="8" fill="#1A0A04" opacity="0.3"/>
+<!-- floral blouse -->
+<path d="M22 58 Q26 48 48 51 Q70 48 74 58 L72 116 L24 116 Z" fill="#E85040"/>
+<circle cx="34" cy="72" r="4" fill="#F0C040" opacity="0.7"/>
+<circle cx="52" cy="68" r="3.5" fill="#40A060" opacity="0.6"/>
+<circle cx="62" cy="80" r="4" fill="#F0C040" opacity="0.7"/>
+<!-- apron -->
+<rect x="34" y="74" width="28" height="42" rx="3" fill="#F0E0C8"/>
+<rect x="34" y="74" width="28" height="3" fill="#D0A060"/>
+<rect x="40" y="44" width="16" height="14" rx="7" fill="#C88A6A"/>
+<ellipse cx="48" cy="34" rx="18" ry="17" fill="#C88A6A"/>
+<!-- hair bun with flower -->
+<ellipse cx="48" cy="20" rx="17" ry="8" fill="#3A2820"/>
+<ellipse cx="48" cy="15" rx="9" ry="6" fill="#3A2820"/>
+<circle cx="60" cy="18" r="4" fill="#F06080"/>
+<circle cx="60" cy="18" r="1.5" fill="#F0C040"/>
+<!-- warm eyes -->
+<path d="M37 34 Q41 37 45 34" stroke="#2A1A0E" stroke-width="2" fill="none"/>
+<path d="M51 34 Q55 37 59 34" stroke="#2A1A0E" stroke-width="2" fill="none"/>
+<ellipse cx="37" cy="40" rx="4" ry="2.5" fill="rgba(220,120,100,0.4)"/>
+<ellipse cx="59" cy="40" rx="4" ry="2.5" fill="rgba(220,120,100,0.4)"/>
+<!-- big warm smile -->
+<path d="M41 43 Q48 49 55 43" stroke="#A85038" stroke-width="2" fill="none"/>
+<!-- plate of seafood -->
+<ellipse cx="48" cy="98" rx="16" ry="5" fill="#E8E0D4" opacity="0.9"/>
+<ellipse cx="44" cy="96" rx="5" ry="3" fill="#F08060"/>
+<ellipse cx="52" cy="96" rx="5" ry="3" fill="#F08060"/>
+</svg>
+</div>
+
+<!-- ลุงโต - ชายป่า -->
 <div id="char-svg-forest">
 <svg viewBox="0 0 96 124" xmlns="http://www.w3.org/2000/svg" style="width:96px;height:124px;animation:charFloat 4s ease-in-out infinite">
 <ellipse cx="48" cy="112" rx="30" ry="9" fill="#081008" opacity="0.35"/>
@@ -960,77 +1177,34 @@ body{
 </svg>
 </div>
 
-<div id="char-svg-cosmos">
+<!-- นภา - เจ้าของบาร์ดาดฟ้า สาวมีระดับ -->
+<div id="char-svg-rooftop">
 <svg viewBox="0 0 96 124" xmlns="http://www.w3.org/2000/svg" style="width:96px;height:124px;animation:charFloat 4s ease-in-out infinite">
 <ellipse cx="48" cy="112" rx="28" ry="8" fill="#040412" opacity="0.4"/>
-<path d="M22 62 Q26 52 48 55 Q70 52 74 62 L72 120 L24 120 Z" fill="#D8E0EC"/>
-<path d="M38 55 L30 120 L22 120 L22 62 Z" fill="#C8D0E0"/>
-<path d="M58 55 L66 120 L74 120 L74 62 Z" fill="#C8D0E0"/>
-<path d="M38 55 L48 68 L58 55" fill="#2A3A6A"/>
-<rect x="24" y="76" width="12" height="14" rx="2" fill="#B8C4D8"/>
-<rect x="38" y="43" width="20" height="16" rx="8" fill="#C4956A"/>
-<ellipse cx="48" cy="33" rx="19" ry="17" fill="#C4956A"/>
-<ellipse cx="48" cy="19" rx="17" ry="7" fill="#1A1008"/>
-<ellipse cx="48" cy="15" rx="12" ry="5" fill="#1A1008"/>
-<circle cx="39" cy="33" r="6" fill="none" stroke="#1A1008" stroke-width="1.5"/>
-<circle cx="57" cy="33" r="6" fill="none" stroke="#1A1008" stroke-width="1.5"/>
-<line x1="45" y1="33" x2="51" y2="33" stroke="#1A1008" stroke-width="1.5"/>
-<ellipse cx="39" cy="33" rx="2" ry="2.5" fill="#2A1A0E"/>
-<ellipse cx="57" cy="33" rx="2" ry="2.5" fill="#2A1A0E"/>
-<path d="M43 42 Q48 45 53 42" stroke="#8B5E3C" stroke-width="1.5" fill="none"/>
-<rect x="60" y="72" width="20" height="7" rx="3" fill="#4A5A7A" transform="rotate(-25 70 75)"/>
-<circle cx="72" cy="68" r="4" fill="#6A7A9A"/>
-<rect x="24" y="108" width="12" height="14" rx="4" fill="#2A3A6A"/>
-<rect x="60" y="108" width="12" height="14" rx="4" fill="#2A3A6A"/>
-</svg>
-</div>
-
-<div id="char-svg-beach">
-<svg viewBox="0 0 96 124" xmlns="http://www.w3.org/2000/svg" style="width:96px;height:124px;animation:charFloat 4s ease-in-out infinite">
-<ellipse cx="48" cy="112" rx="32" ry="9" fill="#1A0A04" opacity="0.3"/>
-<path d="M22 58 Q26 48 48 52 Q70 48 74 58 L72 108 L24 108 Z" fill="#E8A840"/>
-<circle cx="32" cy="70" r="4" fill="#E05030" opacity="0.55"/>
-<circle cx="48" cy="65" r="3.5" fill="#40A060" opacity="0.5"/>
-<circle cx="62" cy="72" r="4" fill="#E05030" opacity="0.55"/>
-<rect x="24" y="106" width="48" height="16" rx="4" fill="#4A7AA0" opacity="0.85"/>
-<rect x="38" y="42" width="20" height="16" rx="8" fill="#C4856A"/>
-<ellipse cx="48" cy="32" rx="20" ry="18" fill="#C4856A"/>
-<ellipse cx="48" cy="18" rx="22" ry="5" fill="#C8A040"/>
-<rect x="32" y="10" width="32" height="12" rx="5" fill="#C8A040"/>
-<rect x="30" y="16" width="36" height="8" rx="3" fill="#9A8878"/>
-<path d="M37 33 Q41 30 45 33" stroke="#2A1A0E" stroke-width="2" fill="none"/>
-<path d="M51 33 Q55 30 59 33" stroke="#2A1A0E" stroke-width="2" fill="none"/>
-<ellipse cx="37" cy="38" rx="4" ry="2.5" fill="rgba(220,120,80,0.35)"/>
-<ellipse cx="59" cy="38" rx="4" ry="2.5" fill="rgba(220,120,80,0.35)"/>
-<path d="M40 43 Q48 50 56 43" stroke="#8B4A2A" stroke-width="2" fill="none"/>
-<path d="M42 44 Q48 48 54 44" fill="white" opacity="0.6"/>
-<circle cx="62" cy="78" r="11" fill="#4A2808" opacity="0.8"/>
-<circle cx="62" cy="73" r="8" fill="#5A3010" opacity="0.7"/>
-<line x1="66" y1="71" x2="70" y2="58" stroke="#F5E8C0" stroke-width="2"/>
-<ellipse cx="36" cy="122" rx="10" ry="4" fill="#D4894A" opacity="0.75"/>
-<ellipse cx="60" cy="122" rx="10" ry="4" fill="#D4894A" opacity="0.75"/>
-</svg>
-</div>
-
-<div id="char-svg-mountain">
-<svg viewBox="0 0 96 124" xmlns="http://www.w3.org/2000/svg" style="width:96px;height:124px;animation:charFloat 4s ease-in-out infinite">
-<ellipse cx="48" cy="116" rx="32" ry="8" fill="#0A0816" opacity="0.3"/>
-<path d="M16 62 Q21 50 48 54 Q75 50 80 62 L78 120 L18 120 Z" fill="#C8A840" opacity="0.92"/>
-<path d="M16 62 L28 120 L18 120 Z" fill="#B89030"/>
-<path d="M40 54 L32 120 L48 88 Z" fill="#E0B850" opacity="0.5"/>
-<ellipse cx="48" cy="84" rx="28" ry="5" fill="#8B6040" opacity="0.45"/>
-<path d="M36 66 Q48 74 60 66" stroke="#8B4020" stroke-width="2.5" stroke-dasharray="4,3" fill="none" opacity="0.75"/>
-<rect x="38" y="44" width="20" height="14" rx="7" fill="#B89070"/>
-<ellipse cx="48" cy="33" rx="18" ry="18" fill="#B89070"/>
-<ellipse cx="48" cy="18" rx="16" ry="5" fill="#9A7858" opacity="0.35"/>
-<ellipse cx="29" cy="34" rx="4.5" ry="6" fill="#B89070"/>
-<ellipse cx="67" cy="34" rx="4.5" ry="6" fill="#B89070"/>
-<path d="M37 34 Q41 37 45 34" stroke="#2A1A0E" stroke-width="2" fill="none"/>
-<path d="M51 34 Q55 37 59 34" stroke="#2A1A0E" stroke-width="2" fill="none"/>
-<path d="M43 44 Q48 47 53 44" stroke="#7A4A2A" stroke-width="1.5" fill="none"/>
-<ellipse cx="48" cy="96" rx="16" ry="4" fill="#8B4020" opacity="0.45"/>
-<path d="M32 92 Q48 104 64 92" stroke="#8B4020" stroke-width="2" stroke-dasharray="4,3" fill="none" opacity="0.6"/>
-<ellipse cx="48" cy="118" rx="30" ry="5" fill="#C0C8D0" opacity="0.18"/>
+<!-- elegant dress -->
+<path d="M24 60 Q28 50 48 53 Q68 50 72 60 L70 120 L26 120 Z" fill="#3A2A4A"/>
+<path d="M38 53 L48 68 L58 53" fill="#5A4A6A"/>
+<!-- shawl -->
+<path d="M28 58 Q48 66 68 58 L66 72 Q48 78 30 72 Z" fill="#C8A040" opacity="0.5"/>
+<rect x="40" y="44" width="16" height="14" rx="7" fill="#C89878"/>
+<ellipse cx="48" cy="34" rx="17" ry="16" fill="#C89878"/>
+<!-- elegant wavy hair -->
+<path d="M30 30 Q30 18 48 18 Q66 18 66 30 L66 48 Q64 38 60 42 L60 30 Q48 24 36 30 L36 42 Q32 38 30 48 Z" fill="#2A1C28"/>
+<ellipse cx="48" cy="18" rx="18" ry="8" fill="#2A1C28"/>
+<!-- eyes -->
+<path d="M38 34 Q41 31 44 34" stroke="#2A1A0E" stroke-width="2" fill="none"/>
+<path d="M52 34 Q55 31 58 34" stroke="#2A1A0E" stroke-width="2" fill="none"/>
+<line x1="38" y1="34" x2="36" y2="32" stroke="#2A1A0E" stroke-width="1"/>
+<line x1="58" y1="34" x2="60" y2="32" stroke="#2A1A0E" stroke-width="1"/>
+<!-- subtle blush -->
+<ellipse cx="38" cy="39" rx="3.5" ry="2" fill="rgba(220,130,120,0.3)"/>
+<ellipse cx="58" cy="39" rx="3.5" ry="2" fill="rgba(220,130,120,0.3)"/>
+<!-- refined smile -->
+<path d="M43 43 Q48 47 53 43" stroke="#B05848" stroke-width="1.6" fill="none"/>
+<!-- wine glass -->
+<ellipse cx="64" cy="80" rx="6" ry="7" fill="rgba(140,40,60,0.45)"/>
+<rect x="63" y="86" width="2" height="14" fill="rgba(200,200,210,0.4)"/>
+<ellipse cx="64" cy="100" rx="6" ry="2" fill="rgba(200,200,210,0.4)"/>
 </svg>
 </div>
 
@@ -1456,7 +1630,7 @@ function goTab(t){
     if(s) s.classList.toggle('active',id===t);
     if(n) n.classList.toggle('on',id===t);
   });
-  if(t==='cal') renderCal();
+  if(t==='cal') setCalView(ST.calView||'month');
   if(t==='codex') renderCodex();
   if(t==='pub') initIz();
   if(t==='home'){ renderQuests(); renderRecap(); }
@@ -1779,7 +1953,7 @@ mountain:'<svg viewBox="0 0 480 500" xmlns="http://www.w3.org/2000/svg" preserve
 /* ── CHARACTER SVGs stored in hidden HTML divs, read at runtime ── */
 var CHARS = {};
 function initChars(){
-  var ids = ['izakaya','sakura','midnight','forest','cosmos','beach','mountain'];
+  var ids = ['izakaya','midnight','cafe','ramen','beach','forest','rooftop'];
   ids.forEach(function(id){
     var el = document.getElementById('char-svg-'+id);
     if(el) CHARS[id] = el.innerHTML;
@@ -1807,7 +1981,7 @@ function setScene(id){
   var whoEl=document.getElementById('iz-who');
   if(whoEl) whoEl.textContent='\u{1F464} '+sc.who;
   var charEl=document.getElementById('iz-char');
-  if(charEl && CHARS[asset]) charEl.innerHTML=CHARS[asset];
+  if(charEl && CHARS[id]) charEl.innerHTML=CHARS[id];
   // render order menu for this scene
   renderMenu(sc);
   // atmosphere: light rays + dust, varies per scene
@@ -1937,6 +2111,20 @@ function orderFood(idx){
     if(ST.chatHist.length>40) ST.chatHist=ST.chatHist.slice(-40);
   });
 }
+/* view state */
+ST.calView='month';
+ST.calSelectedDay=null;
+
+function setCalView(v){
+  ST.calView=v;
+  document.getElementById('caltab-month').classList.toggle('on',v==='month');
+  document.getElementById('caltab-timeline').classList.toggle('on',v==='timeline');
+  document.getElementById('cal-month-view').style.display = v==='month'?'block':'none';
+  document.getElementById('cal-timeline-view').style.display = v==='timeline'?'block':'none';
+  if(v==='month') renderCal();
+  else renderTimeline();
+}
+
 function renderCal(){
   var mos=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
   document.getElementById('cal-mo').textContent=mos[ST.calM]+' '+(ST.calY+543);
@@ -1958,35 +2146,227 @@ function renderCal(){
   for(var d=1;d<=dim;d++){
     var isT=today.getFullYear()===ST.calY&&today.getMonth()===ST.calM&&today.getDate()===d;
     var ents=dmap[d]||[];
-    var top=ents[0];
-    html+='<div class="cal-day'+(isT?' today':'')+(ents.length?' has-e':'')+'" onclick="calDay('+d+')">'
-      +'<div class="cal-dn">'+d+'<\/div>'
-      +(top?'<div class="cal-de">'+top.e+'<\/div>':'')
-      +'<\/div>';
+    // show up to 3 emoji, then +N
+    var emoHtml='';
+    if(ents.length){
+      var shown=ents.slice(0,3);
+      emoHtml='<div class="cal-emos">';
+      shown.forEach(function(em){ emoHtml+='<span class="cal-de">'+em.e+'<\/span>'; });
+      if(ents.length>3) emoHtml+='<span class="cal-more">+'+(ents.length-3)+'<\/span>';
+      emoHtml+='<\/div>';
+    }
+    var sel=(ST.calSelectedDay===d)?' selected':'';
+    html+='<div class="cal-day'+(isT?' today':'')+(ents.length?' has-e':'')+sel+'" onclick="calDay('+d+')">'
+      +'<div class="cal-dn">'+d+'<\/div>'+emoHtml+'<\/div>';
   }
   document.getElementById('cal-grid').innerHTML=html;
-  document.getElementById('cal-detail').style.display='none';
+  renderPersona(ST.calY, ST.calM);
+  if(ST.calSelectedDay) calDay(ST.calSelectedDay);
+  else document.getElementById('cal-detail').style.display='none';
 }
+
+/* ── MONTHLY PERSONA ── วิเคราะห์อารมณ์ทั้งเดือน → archetype (อิง Jungian + emotional dimensions) */
+var PERSONAS = {
+  /* แต่ละ archetype มีเงื่อนไขจาก emotional profile */
+  dreamer:{emoji:'🌙',name:'นักฝัน',sub:'The Dreamer',
+    desc:'เดือนนี้คุณใช้ชีวิตอยู่กับความรู้สึกลึกซึ้งและโหยหา ใจคุณมองไปไกลกว่าปัจจุบัน — เป็นคนที่รับรู้ความงามและความเศร้าได้ละเอียดอ่อน',
+    trait:'ความไวต่อความรู้สึก · จินตนาการสูง',
+    psych:'Carl Jung เรียกสิ่งนี้ว่า "introverted intuition" — การรับรู้โลกผ่านความหมายภายในมากกว่าสิ่งที่เห็น'},
+  sunchild:{emoji:'☀️',name:'เด็กแห่งแสง',sub:'The Optimist',
+    desc:'เดือนนี้หัวใจคุณสว่างไสว เต็มไปด้วยความสุข ความรัก และความหวัง คุณคือคนที่มองเห็นด้านดีและแบ่งปันพลังบวกให้คนรอบข้าง',
+    trait:'มองโลกแง่ดี · พลังบวก',
+    psych:'Barbara Fredrickson เรียกว่า "broaden-and-build" — อารมณ์บวกขยายมุมมองและสร้างทรัพยากรใจในระยะยาว'},
+  sage:{emoji:'🍵',name:'ผู้สงบ',sub:'The Sage',
+    desc:'เดือนนี้คุณอยู่กับความสงบและการยอมรับ ไม่หวั่นไหวไปกับสิ่งรอบตัวมากนัก เป็นคนที่หาสมดุลในใจได้ดี',
+    trait:'มั่นคงทางอารมณ์ · รู้เท่าทันใจ',
+    psych:'Jon Kabat-Zinn — "mindfulness" คือการอยู่กับปัจจุบันโดยไม่ตัดสิน ซึ่งคุณทำได้เป็นธรรมชาติ'},
+  warrior:{emoji:'🔥',name:'นักสู้',sub:'The Warrior',
+    desc:'เดือนนี้คุณรู้สึกเข้มข้น มีทั้งความโกรธ ความกลัว และพลังที่ต้องการทางออก อารมณ์เหล่านี้คือสัญญาณว่าคุณกำลังปกป้องสิ่งที่สำคัญ',
+    trait:'มีพลัง · ปกป้องคุณค่าตัวเอง',
+    psych:'Susan David — "emotional agility" สอนว่าอารมณ์ยากๆ คือข้อมูล ไม่ใช่ศัตรู เรียนรู้ที่จะฟังมัน'},
+  wanderer:{emoji:'🧭',name:'ผู้เดินทาง',sub:'The Seeker',
+    desc:'เดือนนี้คุณผ่านอารมณ์หลากหลาย ขึ้นลงสลับกันไป นี่คือเดือนแห่งการสำรวจและค้นหา คุณกำลังทำความรู้จักตัวเองในหลายมิติ',
+    trait:'เปิดรับประสบการณ์ · ยืดหยุ่น',
+    psych:'Carl Rogers — การเป็น "fully functioning person" คือการเปิดรับทุกอารมณ์ของตัวเองอย่างไม่ปิดกั้น'},
+  empath:{emoji:'💛',name:'ผู้เห็นใจ',sub:'The Empath',
+    desc:'เดือนนี้คุณเต็มไปด้วยความรัก ความกตัญญู และการเชื่อมโยงกับผู้อื่น หัวใจคุณอบอุ่นและใส่ใจคนรอบข้าง',
+    trait:'เห็นอกเห็นใจ · เชื่อมโยงกับผู้อื่น',
+    psych:'Brené Brown — "connection" คือเหตุผลที่เรามีชีวิต และความเปราะบางคือสะพานสู่ความสัมพันธ์ที่แท้จริง'},
+  survivor:{emoji:'🌧',name:'ผู้ผ่านพ้น',sub:'The Survivor',
+    desc:'เดือนนี้ไม่ง่ายเลย คุณผ่านความเศร้า ความเหนื่อย และความโดดเดี่ยวมามาก แต่การที่คุณยังบันทึกความรู้สึก แสดงว่าคุณยังดูแลตัวเองอยู่ และนั่นคือความเข้มแข็ง',
+    trait:'อดทน · กล้าเผชิญความจริง',
+    psych:'Viktor Frankl — "ผู้ที่มีเหตุผลในการมีชีวิต จะทนต่อความทุกข์ได้แทบทุกรูปแบบ" ความหมายคือพลัง'},
+  newborn:{emoji:'🌱',name:'ผู้เริ่มต้น',sub:'The Beginner',
+    desc:'เดือนนี้เพิ่งเริ่มต้นการเดินทางสำรวจอารมณ์ บันทึกต่อไปเรื่อยๆ แล้วเราจะค่อยๆ เห็นภาพว่าคุณเป็นคนแบบไหน',
+    trait:'กำลังเริ่มต้น',
+    psych:'การรู้จักอารมณ์ตัวเอง (emotional granularity) คือทักษะที่ฝึกได้ — ยิ่งบันทึก ยิ่งเข้าใจตัวเอง'}
+};
+
+function renderPersona(year, month){
+  var card=document.getElementById('persona-card');
+  if(!card) return;
+  // collect this month's emotions
+  var ents=ST.hist.filter(function(h){
+    var p=h.date.slice(0,10).split('-');
+    return parseInt(p[0])===year && parseInt(p[1])-1===month;
+  });
+  if(ents.length<3){
+    // not enough data
+    var p=PERSONAS.newborn;
+    card.className='persona-card pc-newborn';
+    card.innerHTML=personaHTML(p, ents.length, 'บันทึกอีก '+(3-ents.length)+' ครั้งเพื่อปลดล็อกบุคลิกประจำเดือน');
+    card.style.display='block';
+    return;
+  }
+  // score emotional dimensions
+  var score={positive:0,deep:0,intense:0,calm:0,connect:0,heavy:0,variety:{}};
+  ents.forEach(function(h){
+    var em=EMOTIONS.filter(function(e){return e.id===h.emotionId;})[0];
+    if(!em) return;
+    score.variety[em.id]=true;
+    var id=em.id;
+    if(['joy','hope','love','gratitude','serenity'].indexOf(id)!==-1) score.positive++;
+    if(['awe','sonder','hiraeth','sehnsucht','melancholy','nostalgia','saudade','mamihlapinatapai','kenopsia','petrichor'].indexOf(id)!==-1) score.deep++;
+    if(['anger','fear'].indexOf(id)!==-1) score.intense++;
+    if(['calm','serenity'].indexOf(id)!==-1) score.calm++;
+    if(['love','gratitude'].indexOf(id)!==-1) score.connect++;
+    if(['sadness','tired','loneliness','fear'].indexOf(id)!==-1) score.heavy++;
+  });
+  var total=ents.length;
+  var varietyCount=Object.keys(score.variety).length;
+  // decide archetype by dominant dimension
+  var key='wanderer';
+  var pct=function(n){return n/total;};
+  if(varietyCount>=6 && pct(Math.max(score.positive,score.deep,score.intense))<0.5){
+    key='wanderer';
+  }else if(pct(score.heavy)>=0.45){
+    key='survivor';
+  }else if(pct(score.intense)>=0.3){
+    key='warrior';
+  }else if(pct(score.connect)>=0.3){
+    key='empath';
+  }else if(pct(score.deep)>=0.4){
+    key='dreamer';
+  }else if(pct(score.calm)>=0.35){
+    key='sage';
+  }else if(pct(score.positive)>=0.45){
+    key='sunchild';
+  }else{
+    key='wanderer';
+  }
+  var p=PERSONAS[key];
+  card.className='persona-card pc-'+key;
+  card.innerHTML=personaHTML(p, total, null);
+  card.style.display='block';
+}
+
+function personaHTML(p, count, lockMsg){
+  var html='<div class="pc-head">'
+    +'<div class="pc-emoji">'+p.emoji+'<\/div>'
+    +'<div class="pc-titles"><div class="pc-tag">บุคลิกประจำเดือน · '+count+' บันทึก<\/div>'
+    +'<div class="pc-name">'+p.name+'<\/div>'
+    +'<div class="pc-sub">'+p.sub+'<\/div><\/div><\/div>';
+  if(lockMsg){
+    html+='<div class="pc-lock">'+lockMsg+'<\/div>';
+  }else{
+    html+='<div class="pc-desc">'+p.desc+'<\/div>'
+      +'<div class="pc-trait">✦ '+p.trait+'<\/div>'
+      +'<div class="pc-psych">💡 '+p.psych+'<\/div>';
+  }
+  return html;
+}
+
 function calDay(d){
+  ST.calSelectedDay=d;
+  // refresh selected highlight
+  document.querySelectorAll('.cal-day').forEach(function(c){c.classList.remove('selected');});
   var ents=ST.hist.filter(function(h){
     var p=h.date.slice(0,10).split('-');
     return parseInt(p[0])===ST.calY&&parseInt(p[1])-1===ST.calM&&parseInt(p[2])===d;
   });
   var det=document.getElementById('cal-detail');
-  if(!ents.length){det.style.display='none';return;}
-  var ms=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  if(!ents.length){
+    det.innerHTML='<div class="cal-ddate">'+d+' '+monShort(ST.calM)+' '+(ST.calY+543)+'<\/div>'
+      +'<div style="font-size:13px;color:var(--dim);text-align:center;padding:10px 0">ยังไม่มีบันทึกในวันนี้<\/div>';
+    det.style.display='block';
+    return;
+  }
+  // sort by time ascending
+  ents.sort(function(a,b){return new Date(a.date)-new Date(b.date);});
   var dotC={common:'var(--common)',uncommon:'var(--uncommon)',rare:'var(--rare)',legendary:'var(--legendary)'};
-  var html='<div class="cal-ddate">'+d+' '+ms[ST.calM]+' '+(ST.calY+543)+'<\/div>';
+  var html='<div class="cal-ddate">'+d+' '+monShort(ST.calM)+' '+(ST.calY+543)+' · '+ents.length+' บันทึก<\/div>';
   ents.forEach(function(h){
     var em=EMOTIONS.filter(function(e){return e.id===h.emotionId;})[0];
     if(!em) return;
     var t=new Date(h.date);
     html+='<div class="cal-ent">'
-      +'<div class="cal-dot" style="background:'+dotC[em.r]+'"><\/div>'
-      +'<div><div class="cal-ent-name">'+em.e+' '+em.th+'<\/div>'
-      +'<div class="cal-ent-time">'+pad(t.getHours())+':'+pad(t.getMinutes())+'<\/div><\/div><\/div>';
+      +'<div class="cal-ent-emoji">'+em.e+'<\/div>'
+      +'<div class="cal-ent-body">'
+      +'<div class="cal-ent-top"><span class="cal-ent-name">'+em.th+'<\/span>'
+      +'<span class="cal-ent-time">'+pad(t.getHours())+':'+pad(t.getMinutes())+'<\/span><\/div>'
+      +(h.text?'<div class="cal-ent-text">'+escapeHtml(h.text)+'<\/div>':'')
+      +'<\/div><\/div>';
   });
   det.innerHTML=html; det.style.display='block';
+}
+
+function renderTimeline(){
+  var box=document.getElementById('timeline-body');
+  if(!box) return;
+  if(!ST.hist.length){
+    box.innerHTML='<div class="tl-empty"><span class="tl-empty-emoji">📔<\/span>ยังไม่มีบันทึกอารมณ์<br>เริ่มบันทึกความรู้สึกแรกที่หน้าหลัก<\/div>';
+    return;
+  }
+  // group by day (hist is newest-first)
+  var groups={};
+  var order=[];
+  ST.hist.forEach(function(h){
+    var dk=h.date.slice(0,10);
+    if(!groups[dk]){ groups[dk]=[]; order.push(dk); }
+    groups[dk].push(h);
+  });
+  var html='';
+  order.forEach(function(dk){
+    var parts=dk.split('-');
+    var dd=parseInt(parts[2]), mm=parseInt(parts[1])-1, yy=parseInt(parts[0]);
+    var list=groups[dk];
+    // sort within day newest-first already; reverse to chronological
+    var dayLabel=relativeDayLabel(dk)+' · '+dd+' '+monShort(mm)+' '+(yy+543);
+    html+='<div class="tl-day">'
+      +'<div class="tl-day-head"><span class="tl-day-date">'+dayLabel+'<\/span>'
+      +'<span class="tl-day-count">'+list.length+' อารมณ์<\/span><\/div>';
+    list.forEach(function(h){
+      var em=EMOTIONS.filter(function(e){return e.id===h.emotionId;})[0];
+      if(!em) return;
+      var t=new Date(h.date);
+      html+='<div class="tl-card"><div class="tl-line"><\/div>'
+        +'<div class="tl-dot">'+em.e+'<\/div>'
+        +'<div class="tl-content">'
+        +'<div class="tl-top"><span class="tl-name">'+em.th+'<\/span>'
+        +'<span class="tl-time">'+pad(t.getHours())+':'+pad(t.getMinutes())+'<\/span><\/div>'
+        +(h.text?'<div class="tl-text">'+escapeHtml(h.text)+'<\/div>':'')
+        +'<\/div><\/div>';
+    });
+    html+='<\/div>';
+  });
+  box.innerHTML=html;
+}
+
+function relativeDayLabel(dk){
+  var today=new Date(); today.setHours(0,0,0,0);
+  var d=new Date(dk+'T00:00:00');
+  var diff=Math.round((today-d)/(24*60*60*1000));
+  if(diff===0) return 'วันนี้';
+  if(diff===1) return 'เมื่อวาน';
+  if(diff>1 && diff<7) return diff+' วันก่อน';
+  return '';
+}
+function monShort(m){
+  var ms=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return ms[m];
+}
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function pad(n){return n<10?'0'+n:String(n);}
 

@@ -1,0 +1,2679 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Puffling Valley 🌿 — Adventure & Cooking</title>
+<style>
+  :root{
+    --cream:#FFF6E9;
+    --ink:#5B4636;
+    --coral:#FF9E80;
+    --mint:#9FE8C0;
+    --sky:#BFEAF5;
+    --sun:#FFD66B;
+    --shadow:rgba(91,70,54,0.18);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{margin:0; padding:0; width:100%; height:100%; overflow:hidden;
+    font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; background:#bfeaf5; color:var(--ink);
+    user-select:none;}
+  #gameCanvas{display:block; width:100%; height:100%;}
+
+  /* ---------- Generic panel ---------- */
+  .panel{
+    background: var(--cream);
+    border-radius: 22px;
+    box-shadow: 0 10px 0 var(--shadow), 0 10px 30px rgba(0,0,0,0.15);
+    border: 3px solid #fff;
+  }
+  .btn{
+    font-family: inherit; font-weight: 700; font-size: 16px;
+    border:none; border-radius: 14px; padding: 12px 22px; cursor:pointer;
+    background: var(--coral); color:#fff;
+    box-shadow: 0 5px 0 #d9785f;
+    transition: transform .08s ease, box-shadow .08s ease;
+  }
+  .btn:active{ transform: translateY(4px); box-shadow:0 1px 0 #d9785f; }
+  .btn.secondary{ background:#fff; color:var(--ink); box-shadow:0 5px 0 #ddd2c0;}
+  .btn.secondary:active{ box-shadow:0 1px 0 #ddd2c0; }
+  .btn:disabled{ opacity:.4; cursor:not-allowed; }
+
+  /* ---------- Character select ---------- */
+  #charSelect{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    background: linear-gradient(180deg, #bfeaf5 0%, #d8f7e0 100%);
+    z-index: 50; padding: 16px; overflow-y:auto;
+  }
+  #charSelect .panel{ width:min(560px, 92vw); max-height:92vh; overflow-y:auto; padding: 24px 22px 0; text-align:center;
+    display:flex; flex-direction:column;}
+  #charSelect h1{ margin:0 0 4px; font-size: 28px; }
+  #charSelect p{ margin:0 0 18px; opacity:.75; font-size:14px;}
+  #charSelect #nameInput{ flex:0 0 auto; }
+  #charSelect #startBtn{ position:sticky; bottom:0; margin: 4px 0 18px; padding:16px;
+    box-shadow:0 -8px 14px rgba(255,246,233,0.95), 0 5px 0 #d9785f; }
+  .charGrid{ display:grid; grid-template-columns: repeat(4,1fr); gap:10px; margin-bottom:18px;}
+  .classGrid{ display:grid; grid-template-columns: repeat(2,1fr); gap:8px; margin-bottom:16px;}
+  .classCard{ display:flex; align-items:center; gap:8px; text-align:left; background:#fff; border:3px solid transparent;
+    border-radius:14px; padding:8px 10px; cursor:pointer; transition: all .15s ease;}
+  .classCard.selected{ border-color: var(--coral); transform:translateY(-2px); box-shadow:0 5px 0 var(--shadow);}
+  .classCard .cic{ font-size:24px; }
+  .classCard .cnm{ font-weight:800; font-size:14px;}
+  .classCard .cdesc{ font-size:10px; opacity:.65; line-height:1.2;}
+  .charCard{
+    border-radius:16px; border:3px solid transparent; padding:10px 6px; cursor:pointer;
+    background:#fff; transition: all .15s ease; text-align:center;
+  }
+  .charCard canvas{ width:100%; aspect-ratio:1/1; display:block; border-radius:10px; background:linear-gradient(180deg,#eaffea,#fff);}
+  .charCard.selected{ border-color: var(--coral); transform: translateY(-4px); box-shadow:0 6px 0 var(--shadow);}
+  .charCard .nm{ font-size:13px; font-weight:700; margin-top:6px;}
+  #nameInput{
+    width:100%; padding:10px 14px; border-radius:14px; border:2px solid #eee0cb;
+    font-size:15px; font-family:inherit; margin-bottom:14px; text-align:center;
+  }
+
+  /* ---------- HUD ---------- */
+  #hud{ position:absolute; top:14px; left:14px; right:14px; display:flex; justify-content:space-between;
+    pointer-events:none; z-index:10; gap:10px;}
+  #statPanel{ pointer-events:auto; padding:10px 16px; min-width:180px;}
+  #statPanel .row{ display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; margin:4px 0;}
+  .bar{ flex:1; height:10px; border-radius:6px; background:#eee0cb; overflow:hidden;}
+  .bar > div{ height:100%; border-radius:6px; }
+  .hpfill{ background: linear-gradient(90deg,#ff9e80,#ff6f61); }
+  .expfill{ background: linear-gradient(90deg,#9fe8c0,#5fd39a); }
+  #zoneLabel{ pointer-events:auto; padding:10px 18px; font-weight:800; font-size:14px; align-self:flex-start;
+    text-align:center; }
+  #zoneLabel small{ display:block; font-weight:500; opacity:.6; font-size:11px;}
+
+  /* ---------- Minimap ---------- */
+  #minimapWrap{ pointer-events:auto; padding:8px; }
+  #minimap{ display:block; border-radius:14px; background:#AEE3A6; }
+  #minimapLabel{ text-align:center; font-size:11px; font-weight:800; margin-top:4px; }
+
+  /* ---------- Full map modal ---------- */
+  #mapModal canvas{ display:block; border-radius:16px; width:100%; height:auto; }
+  #mapModal .legend{ display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; font-size:12px; font-weight:700; }
+  #mapModal .legend span{ display:inline-flex; align-items:center; gap:5px; }
+  #mapModal .legend i{ width:12px; height:12px; border-radius:50%; display:inline-block; }
+
+  /* ---------- Bottom action bar ---------- */
+  #actionBar{ position:absolute; bottom:14px; left:0; right:0; display:flex; justify-content:center; gap:10px;
+    z-index:10; flex-wrap:wrap; padding: 0 10px;}
+  #actionBar .btn{ font-size:14px; padding:10px 16px;}
+
+  /* ---------- Toast / popups ---------- */
+  #toastWrap{ position:absolute; top:70px; left:50%; transform:translateX(-50%); z-index:30;
+    display:flex; flex-direction:column; align-items:center; gap:6px; pointer-events:none;}
+  .toast{ background: rgba(91,70,54,0.85); color:#fff; padding:7px 16px; border-radius:20px; font-size:13px;
+    font-weight:700; animation: fadeUp 2.2s ease forwards; }
+  @keyframes fadeUp{ 0%{opacity:0; transform:translateY(6px);} 15%{opacity:1; transform:translateY(0);} 75%{opacity:1;} 100%{opacity:0; transform:translateY(-8px);} }
+
+  #levelUpPop{ position:absolute; top:40%; left:50%; transform:translate(-50%,-50%) scale(0.5); z-index:40;
+    text-align:center; padding:22px 36px; opacity:0; pointer-events:none; transition: all .35s cubic-bezier(.34,1.56,.64,1);}
+  #levelUpPop.show{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+  #levelUpPop h2{ margin:0; font-size:26px; color:var(--coral);}
+  #levelUpPop p{ margin:4px 0 0; font-size:13px; opacity:.8;}
+
+  /* ---------- Modal (inventory / cooking) ---------- */
+  .modalWrap{ position:absolute; inset:0; background: rgba(91,70,54,0.35); display:none; align-items:center;
+    justify-content:center; z-index:60; }
+  .modalWrap.open{ display:flex; }
+  .modal{ width:min(520px, 92vw); max-height:82vh; overflow-y:auto; padding:20px; }
+  .modal h2{ margin:0 0 4px; font-size:20px;}
+  .modal .sub{ font-size:12px; opacity:.65; margin:0 0 14px;}
+  .closeRow{ display:flex; justify-content:flex-end; }
+
+  .itemGrid{ display:grid; grid-template-columns: repeat(4,1fr); gap:8px; margin-bottom:16px;}
+  .itemSlot{ background:#fff; border-radius:12px; padding:8px 4px; text-align:center; border:2px solid #f1e6d4;}
+  .itemSlot .ic{ font-size:26px; }
+  .itemSlot .ct{ font-size:12px; font-weight:800; }
+  .itemSlot .ic.empty{ opacity:.15; }
+
+  .recipeCard{ display:flex; align-items:center; gap:12px; background:#fff; border-radius:14px;
+    padding:10px 12px; margin-bottom:10px; border:2px solid #f1e6d4;}
+  .recipeCard .ic{ font-size:30px; flex:0 0 auto; }
+  .recipeCard .info{ flex:1; }
+  .recipeCard .info .nm{ font-weight:800; font-size:14px;}
+  .recipeCard .info .need{ font-size:12px; opacity:.65; margin-top:2px;}
+  .recipeCard .info .eff{ font-size:11px; color:#5fa37b; font-weight:700; margin-top:2px;}
+  .recipeCard.locked{ opacity:.45; }
+
+  /* mobile joystick */
+  #joyZone{ position:absolute; left:18px; bottom:90px; width:120px; height:120px; z-index:15; }
+  #joyBase{ position:absolute; inset:0; border-radius:50%; background: rgba(255,255,255,0.35); border:2px solid rgba(255,255,255,0.6);}
+  #joyStick{ position:absolute; width:50px; height:50px; border-radius:50%; background: var(--coral); opacity:.85;
+    left:35px; top:35px; transition: left .05s, top .05s; }
+  @media (min-width: 900px){ #joyZone{ display:none; } }
+
+  #attackBtn{ position:absolute; right:18px; bottom:90px; z-index:15; width:74px; height:74px; border-radius:50%;
+    font-size:26px; }
+  @media (min-width:900px){ #attackBtn{ display:none; } }
+
+  #collectBtn{ position:absolute; right:104px; bottom:90px; z-index:15; width:64px; height:64px; border-radius:50%;
+    font-size:22px; background: var(--mint); box-shadow: 0 5px 0 #6fc99a; }
+  @media (min-width:900px){ #collectBtn{ display:none; } }
+
+  .abilityBtn{ position:absolute; z-index:15; width:62px; height:62px; border-radius:50%; border:none; cursor:pointer;
+    font-size:26px; overflow:hidden; box-shadow:0 5px 0 rgba(0,0,0,0.18); background:linear-gradient(160deg,#5C6BC0,#3949AB); color:#fff;}
+  .abilityBtn.burst{ background:linear-gradient(160deg,#FF8A3D,#E25822); width:70px; height:70px; }
+  #skillBtn{ right:110px; bottom:170px; }
+  #burstBtn{ right:24px; bottom:175px; }
+  .abilityBtn .abIcon{ position:relative; z-index:2; }
+  .abilityBtn .cdSweep{ position:absolute; inset:0; background:rgba(0,0,0,0.55); transform-origin:center;
+    z-index:1; display:none; }
+  .abilityBtn .cdText{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:18px; font-weight:900; z-index:3; }
+  .abilityBtn.cooling{ filter:grayscale(0.6) brightness(0.8); }
+  @media (min-width:900px){ #skillBtn{ right:130px; } #burstBtn{ right:30px; } }
+
+  #hint{ position:absolute; bottom:170px; left:50%; transform:translateX(-50%); z-index:10; pointer-events:none;
+    font-size:12px; background:rgba(255,255,255,0.85); padding:6px 14px; border-radius:20px; font-weight:700; }
+  @media (max-width:899px){ #hint{ display:none; } }
+
+  .dmgNum{ position:absolute; font-weight:900; font-size:20px; pointer-events:none;
+    text-shadow:0 2px 4px rgba(0,0,0,0.4); animation: dmgFloat 0.9s ease-out forwards; transform:translate(-50%,-50%); }
+  .dmgNum.hit{ color:#FFE66D; }
+  .dmgNum.crit{ color:#FF5E5E; font-size:28px; }
+  .dmgNum.hurt{ color:#FF8FA3; }
+  @keyframes dmgFloat{ 0%{opacity:0; transform:translate(-50%,-50%) scale(0.5);} 20%{opacity:1; transform:translate(-50%,-90%) scale(1.15);} 100%{opacity:0; transform:translate(-50%,-180%) scale(1);} }
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+<div id="vignette" style="position:absolute; inset:0; z-index:8; pointer-events:none;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(20,15,10,0.35) 100%);"></div>
+<button id="interactPrompt" style="display:none; position:absolute; left:50%; bottom:250px; transform:translateX(-50%);
+  z-index:20; font-family:inherit; font-weight:800; font-size:15px; border:none; border-radius:16px; padding:12px 22px;
+  background:#FFD66B; color:#5B4636; box-shadow:0 5px 0 #d9b24a; cursor:pointer;"></button>
+
+<!-- ============ BUILDING MODAL ============ -->
+<div class="modalWrap" id="buildingModal">
+  <div class="panel modal">
+    <div class="closeRow"><button class="btn secondary" data-close="buildingModal">ปิด ✕</button></div>
+    <h2 id="bldTitle">ร้านค้า</h2>
+    <p class="sub" id="bldSub"></p>
+    <div id="bldBody"></div>
+  </div>
+</div>
+
+<!-- ============ QUEST MODAL ============ -->
+<div class="modalWrap" id="questModal">
+  <div class="panel modal">
+    <div class="closeRow"><button class="btn secondary" data-close="questModal">ปิด ✕</button></div>
+    <h2>📜 สมุดเควส</h2>
+    <p class="sub">ทำภารกิจให้สำเร็จแล้วกดรับรางวัล</p>
+    <div id="questList"></div>
+  </div>
+</div>
+
+<!-- ============ CHARACTER SELECT ============ -->
+<div id="charSelect">
+  <div class="panel">
+    <h1>🌿 Puffling Valley</h1>
+    <p>เลือกพัฟลิ่ง + อาชีพ แล้วออกผจญภัย!</p>
+    <div style="font-size:13px; font-weight:800; text-align:left; margin-bottom:6px;">1. เลือกตัวละคร</div>
+    <div class="charGrid" id="charGrid"></div>
+    <div style="font-size:13px; font-weight:800; text-align:left; margin:4px 0 6px;">2. เลือกอาชีพ</div>
+    <div class="classGrid" id="classGrid"></div>
+    <input id="nameInput" maxlength="12" placeholder="ตั้งชื่อพัฟลิ่งของคุณ" value="พัฟ">
+    <button class="btn" id="startBtn" style="width:100%;">เริ่มผจญภัย 🐾</button>
+  </div>
+</div>
+
+<!-- ============ HUD ============ -->
+<div id="hud">
+  <div id="statPanel" class="panel">
+    <div style="font-weight:800; font-size:14px;" id="hudName">พัฟ — Lv.1</div>
+    <div class="row">❤️ <div class="bar"><div class="hpfill" id="hpBar" style="width:100%"></div></div></div>
+    <div class="row">⭐ <div class="bar"><div class="expfill" id="expBar" style="width:0%"></div></div></div>
+    <div style="font-weight:800; font-size:13px; margin-top:2px;">🪙 <span id="goldText">0</span> ทอง</div>
+  </div>
+  <div id="zoneLabel" class="panel">หมู่บ้านพัฟ<small>กดปุ่มด้านล่างเพื่อเปิดเมนู</small></div>
+  <div id="minimapWrap" class="panel">
+    <canvas id="minimap" width="120" height="120"></canvas>
+    <div id="minimapLabel">แตะเพื่อดูแผนที่เต็ม</div>
+  </div>
+</div>
+
+<div id="toastWrap"></div>
+<div id="saveIndicator" style="position:absolute; top:14px; left:50%; transform:translateX(-50%); z-index:30;
+  background:rgba(91,70,54,0.85); color:#fff; padding:5px 14px; border-radius:16px; font-size:12px; font-weight:700;
+  opacity:0; transition:opacity .3s; pointer-events:none;">💾 บันทึกแล้ว</div>
+<div id="questTracker" class="panel" style="position:absolute; left:14px; top:160px; z-index:10; padding:8px 12px;
+  max-width:220px; display:none;"></div>
+<div id="dmgLayer" style="position:absolute; inset:0; z-index:25; pointer-events:none; overflow:hidden;"></div>
+<div id="levelUpPop" class="panel"><h2>เลเวลอัพ! 🎉</h2><p id="levelUpText"></p></div>
+<div id="hint">WASD เดิน · Space โจมตี · Q สกิล · R อัลติเมท · E เก็บ · ลาก/ล้อเมาส์ หมุน-ซูมกล้อง</div>
+
+<!-- ============ ACTION BAR ============ -->
+<div id="actionBar">
+  <button class="btn secondary" id="invBtn">🎒 กระเป๋า</button>
+  <button class="btn secondary" id="cookBtn">🍳 ทำอาหาร</button>
+  <button class="btn secondary" id="statBtn">📊 สเตตัส <span id="statPointBadge" style="display:none; background:#FF5E5E; color:#fff; border-radius:10px; padding:0 6px; font-size:11px; margin-left:2px;"></span></button>
+  <button class="btn secondary" id="gearBtn">⚔️ อุปกรณ์</button>
+  <button class="btn secondary" id="questBtn">📜 เควส</button>
+</div>
+
+<!-- mobile controls -->
+<div id="joyZone"><div id="joyBase"></div><div id="joyStick"></div></div>
+<button class="btn" id="attackBtn">⚔️</button>
+<button class="btn" id="collectBtn">🧺</button>
+<button class="abilityBtn" id="skillBtn"><span class="abIcon">🔥</span><span class="cdText" id="skillCdText"></span><span class="cdSweep" id="skillSweep"></span></button>
+<button class="abilityBtn burst" id="burstBtn"><span class="abIcon">🌋</span><span class="cdText" id="burstCdText"></span><span class="cdSweep" id="burstSweep"></span></button>
+
+<!-- ============ INVENTORY MODAL ============ -->
+<div class="modalWrap" id="invModal">
+  <div class="panel modal">
+    <div class="closeRow"><button class="btn secondary" data-close="invModal">ปิด ✕</button></div>
+    <h2>🎒 กระเป๋าของ <span id="invName">พัฟ</span></h2>
+    <p class="sub">วัตถุดิบที่เก็บได้ระหว่างผจญภัย</p>
+    <div class="itemGrid" id="matGrid"></div>
+    <h2 style="font-size:16px;">🍽️ อาหารที่ทำไว้</h2>
+    <div class="itemGrid" id="foodGrid"></div>
+  </div>
+</div>
+
+<!-- ============ COOKING MODAL ============ -->
+<div class="modalWrap" id="cookModal">
+  <div class="panel modal">
+    <div class="closeRow"><button class="btn secondary" data-close="cookModal">ปิด ✕</button></div>
+    <h2>🍳 โต๊ะทำอาหาร</h2>
+    <p class="sub">เลือกสูตรที่มีวัตถุดิบครบเพื่อทำอาหาร — กินเพื่อฮีล HP หรือรับบัฟ</p>
+    <div id="recipeList"></div>
+  </div>
+</div>
+
+<!-- ============ FULL MAP MODAL ============ -->
+<div class="modalWrap" id="mapModal">
+  <div class="panel modal">
+    <div class="closeRow"><button class="btn secondary" data-close="mapModal">ปิด ✕</button></div>
+    <h2>🗺️ แผนที่หุบเขาพัฟลิ่ง</h2>
+    <p class="sub">จุดสีคือตัวคุณ — สำรวจ 3 โซนที่เชื่อมกันด้วยทางเดิน</p>
+    <canvas id="fullMap" width="500" height="500"></canvas>
+    <div class="legend">
+      <span><i style="background:#FCE3A8"></i> หมู่บ้าน (ทำอาหาร)</span>
+      <span><i style="background:#8FD08A"></i> ป่าหิ่งห้อย (สไลม์/เบอร์รี่)</span>
+      <span><i style="background:#F5E1A4"></i> หาดทรายฟอง (ปู/ปลา)</span>
+      <span><i style="background:#FF9E80"></i> คุณ</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STATS MODAL ============ -->
+<div class="modalWrap" id="statModal">
+  <div class="panel modal">
+    <div class="closeRow"><button class="btn secondary" data-close="statModal">ปิด ✕</button></div>
+    <h2>📊 สเตตัสตัวละคร</h2>
+    <p class="sub" id="statClassLine">อาชีพ —</p>
+    <div id="statAllocList"></div>
+    <div id="derivedStats" style="margin-top:14px; font-size:13px; line-height:1.9;"></div>
+  </div>
+</div>
+
+<!-- ============ EQUIPMENT MODAL ============ -->
+<div class="modalWrap" id="gearModal">
+  <div class="panel modal">
+    <div class="closeRow"><button class="btn secondary" data-close="gearModal">ปิด ✕</button></div>
+    <h2>⚔️ อุปกรณ์สวมใส่</h2>
+    <p class="sub">แตะชิ้นในกระเป๋าเพื่อสวม/ถอด — ของหายากให้สเตตัสมากกว่า</p>
+    <div id="equippedRow" style="display:flex; gap:8px; margin-bottom:14px;"></div>
+    <h2 style="font-size:15px;">🎒 คลังอุปกรณ์</h2>
+    <div id="gearList"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* =====================================================================
+   PUFFLING VALLEY — single-file cute low-poly adventure prototype
+   ===================================================================== */
+
+/* ---------------------------------------------------------------
+   DATA: characters, materials, recipes, enemy types
+   --------------------------------------------------------------- */
+const CHAR_DEFS = [
+  { id:'crimson', name:'นักรบแดง',  body:0x9E3B34, accent:0x4A3322 },
+  { id:'steel',   name:'อัศวินเหล็ก', body:0x5E6B78, accent:0x2F3942 },
+  { id:'forest',  name:'พรานเขียว',  body:0x3E6B45, accent:0x5A4326 },
+  { id:'royal',   name:'เวทย์น้ำเงิน', body:0x36497E, accent:0x232C4A },
+  { id:'sand',    name:'ทหารทราย',   body:0xB89B6A, accent:0x6E5A38 },
+  { id:'amber',   name:'จอมพลทอง',   body:0xB57A2E, accent:0x4A3322 },
+  { id:'violet',  name:'ผู้กล้าม่วง', body:0x6B4A8E, accent:0x342645 },
+  { id:'ash',     name:'นักล่าเทา',  body:0x4B4F57, accent:0x2A2D33 },
+];
+
+const MATERIALS = {
+  berry:  { name:'เบอร์รี่ป่า', icon:'🫐', zone:'forest' },
+  mushroom:{ name:'เห็ดน้อย', icon:'🍄', zone:'forest' },
+  wheat:  { name:'ข้าวสาลี', icon:'🌾', zone:'village' },
+  egg:    { name:'ไข่ไก่',   icon:'🥚', zone:'village' },
+  fish:   { name:'ปลาทะเล',  icon:'🐟', zone:'beach' },
+  coconut:{ name:'มะพร้าว', icon:'🥥', zone:'beach' },
+  herb:   { name:'สมุนไพร', icon:'🌿', zone:'forest' },
+  milk:   { name:'นมสด',    icon:'🥛', zone:'village' },
+};
+
+const RECIPES = [
+  { id:'berrytart', name:'ทาร์ตเบอร์รี่', icon:'🥧',
+    need:{berry:3, wheat:1}, heal:30, buff:null, desc:'ฮีล HP 30' },
+  { id:'mushroomsoup', name:'ซุปเห็ด', icon:'🍲',
+    need:{mushroom:2, herb:1, milk:1}, heal:20, buff:{stat:'def', amount:5, duration:60}, desc:'ฮีล 20 + ป้องกัน +5 (60s)' },
+  { id:'grilledfish', name:'ปลาย่าง', icon:'🐠',
+    need:{fish:2, herb:1}, heal:25, buff:{stat:'atk', amount:5, duration:60}, desc:'ฮีล 25 + พลังโจมตี +5 (60s)' },
+  { id:'omelette', name:'ไข่เจียว', icon:'🍳',
+    need:{egg:2, milk:1}, heal:40, buff:null, desc:'ฮีล HP 40' },
+  { id:'coconutcake', name:'เค้กมะพร้าว', icon:'🍰',
+    need:{coconut:2, wheat:1, egg:1}, heal:35, buff:{stat:'speed', amount:1.4, duration:45}, desc:'ฮีล 35 + ความเร็ว +40% (45s)' },
+  { id:'feast', name:'งานเลี้ยงใหญ่', icon:'🍱',
+    need:{berry:2, fish:1, mushroom:1, wheat:1, egg:1, coconut:1}, heal:100,
+    buff:{stat:'all', amount:5, duration:90}, desc:'ฮีลเต็ม + บัฟรวม (90s) [สูตรลับ]' },
+];
+
+const ZONES = {
+  village: { label:'หมู่บ้านพัฟ', sub:'จุดเริ่มต้น & โต๊ะทำอาหาร', color:'#FFE8B6' },
+  forest:  { label:'ป่าหิ่งห้อย', sub:'มอนสเตอร์น้อย & เบอร์รี่/เห็ด', color:'#B6E3B0' },
+  beach:   { label:'หาดทรายฟอง', sub:'ปลา & มะพร้าว', color:'#9FE0EA' },
+};
+
+/* ---------------------------------------------------------------
+   GLOBAL STATE
+   --------------------------------------------------------------- */
+const state = {
+  charDef: null,
+  classId: 'swordsman',
+  playerName: 'พัฟ',
+  level: 1,
+  exp: 0,
+  expNeed: 30,
+  hp: 100,
+  maxHp: 100,
+  baseAtk: 8,
+  baseDef: 2,
+  speed: 6, // units/sec
+  // Ran Online style attributes
+  stats: { str:5, dex:5, vit:5, int:5 },
+  statPoints: 0,
+  materials: {},   // id -> count
+  foods: {},       // recipe id -> count
+  gear: [],        // owned equipment objects
+  equipped: { weapon:null, armor:null, accessory:null },
+  gold: 0,
+  potions: 0,
+  activeBuffs: {}, // stat -> {amount, until}
+  zone: 'village',
+};
+for(const k in MATERIALS) state.materials[k] = 0;
+
+/* ---------------------------------------------------------------
+   CHARACTER SELECT SCREEN
+   --------------------------------------------------------------- */
+let selectedChar = CHAR_DEFS[0];
+
+/* ---------------------------------------------------------------
+   CLASSES (Ran Online style) & EQUIPMENT
+   --------------------------------------------------------------- */
+const CLASS_DEFS = {
+  brawler: { name:'นักสู้', icon:'🥊', desc:'ต่อยประชิด HP สูง · ธาตุไฟ',
+    base:{str:7,dex:4,vit:8,int:2}, atkType:'melee', range:2.4, weaponColor:0xC0392B, weaponName:'นวมเหล็ก',
+    element:'pyro', elementName:'ไฟ', elementIcon:'🔥', elementColor:0xFF6B2C,
+    skill:{name:'หมัดเพลิง', icon:'🔥', radius:5, dmgMult:2.2, cd:6}, burst:{name:'พายุเพลิง', icon:'🌋', radius:9, dmgMult:4.5, cd:16} },
+  swordsman:{ name:'นักดาบ', icon:'⚔️', desc:'ฟันดาบสมดุล · ธาตุสายฟ้า',
+    base:{str:8,dex:5,vit:6,int:2}, atkType:'melee', range:2.8, weaponColor:0x95A5A6, weaponName:'ดาบเหล็ก',
+    element:'electro', elementName:'สายฟ้า', elementIcon:'⚡', elementColor:0xB05CFF,
+    skill:{name:'ฟันสายฟ้า', icon:'⚡', radius:5, dmgMult:2.4, cd:6}, burst:{name:'ดาบอสนีบาต', icon:'🌩️', radius:8.5, dmgMult:5, cd:16} },
+  archer:  { name:'นักธนู', icon:'🏹', desc:'ยิงไกล ว่องไว · ธาตุน้ำแข็ง',
+    base:{str:5,dex:9,vit:4,int:3}, atkType:'ranged', range:13, weaponColor:0x8E6E3C, weaponName:'ธนูไม้', projColor:0x8FE3FF,
+    element:'cryo', elementName:'น้ำแข็ง', elementIcon:'❄️', elementColor:0x6FD3FF,
+    skill:{name:'ลูกศรเยือกแข็ง', icon:'❄️', radius:5, dmgMult:2.2, cd:6}, burst:{name:'พายุหิมะ', icon:'🌨️', radius:9, dmgMult:4.2, cd:16} },
+  mage:    { name:'จอมเวท', icon:'🔮', desc:'เวทย์พื้นที่ · ธาตุน้ำ',
+    base:{str:3,dex:4,vit:4,int:10}, atkType:'magic', range:11, weaponColor:0x8E44AD, weaponName:'ไม้เท้าเวท', projColor:0x4FA8FF,
+    element:'hydro', elementName:'น้ำ', elementIcon:'💧', elementColor:0x3FA8FF,
+    skill:{name:'คลื่นวารี', icon:'💧', radius:5.5, dmgMult:2.3, cd:6}, burst:{name:'มหาสมุทรเดือด', icon:'🌊', radius:9.5, dmgMult:4.6, cd:16} },
+};
+let selectedClass = 'swordsman';
+
+// Equipment slots: weapon, armor, accessory. Each piece adds stats.
+const RARITIES = {
+  common:   { name:'ธรรมดา', color:'#9AA5B1', mult:1 },
+  rare:     { name:'หายาก', color:'#3F8EE0', mult:1.8 },
+  epic:     { name:'เอพิก', color:'#A05CE0', mult:2.8 },
+  legendary:{ name:'ตำนาน', color:'#E0982C', mult:4 },
+};
+
+// Templates for dropped gear by slot
+const GEAR_TEMPLATES = {
+  weapon: [
+    {icon:'🗡️', base:'ดาบ'}, {icon:'🏹', base:'ธนู'}, {icon:'🔨', base:'ค้อน'}, {icon:'🪄', base:'ไม้เท้า'},
+  ],
+  armor: [
+    {icon:'🛡️', base:'เกราะ'}, {icon:'🎽', base:'เสื้อ'}, {icon:'🧥', base:'คลุม'},
+  ],
+  accessory: [
+    {icon:'💍', base:'แหวน'}, {icon:'📿', base:'สร้อย'}, {icon:'🧿', base:'เครื่องราง'},
+  ],
+};
+const GEAR_ADJ = ['เหล็ก','คริสตัล','ทอง','โบราณ','มังกร','จันทรา','พายุ','เปลวไฟ'];
+let gearIdCounter = 1;
+
+function rollGear(enemyLevel){
+  const slots = Object.keys(GEAR_TEMPLATES);
+  const slot = slots[Math.floor(Math.random()*slots.length)];
+  const tmpl = GEAR_TEMPLATES[slot][Math.floor(Math.random()*GEAR_TEMPLATES[slot].length)];
+  // rarity roll
+  const r = Math.random();
+  let rarity = 'common';
+  if(r > 0.97) rarity='legendary';
+  else if(r > 0.85) rarity='epic';
+  else if(r > 0.55) rarity='rare';
+  const mult = RARITIES[rarity].mult;
+  const lv = Math.max(1, enemyLevel);
+  const stats = {};
+  if(slot==='weapon'){ stats.atk = Math.round((3+lv*1.2)*mult); if(Math.random()>0.5) stats.str=Math.round(2*mult); }
+  else if(slot==='armor'){ stats.def = Math.round((2+lv*0.8)*mult); stats.maxHp=Math.round((8+lv*2)*mult); }
+  else { // accessory
+    const pick = ['dex','int','str','vit'][Math.floor(Math.random()*4)];
+    stats[pick]=Math.round((2+lv*0.5)*mult);
+    if(Math.random()>0.6) stats.atk=Math.round(2*mult);
+  }
+  const adj = GEAR_ADJ[Math.floor(Math.random()*GEAR_ADJ.length)];
+  return {
+    id: 'g'+(gearIdCounter++),
+    slot, rarity, icon:tmpl.icon,
+    name: `${tmpl.base}${adj}`,
+    stats,
+    level: lv,
+  };
+}
+
+function makeCharThumb(canvas, def){
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  renderer.setSize(120,120,false);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 10);
+  camera.position.set(0,1.5,4.2);
+  camera.lookAt(0,1.0,0);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+  const dl = new THREE.DirectionalLight(0xffffff,0.5); dl.position.set(2,3,2); scene.add(dl);
+  const puff = buildPuffling(def);
+  scene.add(puff.group);
+  let t=0;
+  function animate(){
+    t+=0.02;
+    puff.group.rotation.y = Math.sin(t*0.6)*0.5 + 0.4;
+    puff.group.position.y = Math.sin(t*2)*0.03;
+    renderer.render(scene,camera);
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+// Build a low-poly humanoid hero. def.body = outfit/tunic color, def.accent = pants/trim.
+// Returns articulated limb groups so the player can be animated (walk/attack).
+function buildPuffling(def){
+  const group = new THREE.Group();
+  const skinMat = new THREE.MeshStandardMaterial({color:0xE3B58A, flatShading:true, roughness:0.85});
+  const hairMat = new THREE.MeshStandardMaterial({color:0x2E2018, flatShading:true, roughness:0.9});
+  const tunicMat= new THREE.MeshStandardMaterial({color:def.body, flatShading:true, roughness:0.7});
+  const pantsMat= new THREE.MeshStandardMaterial({color:def.accent, flatShading:true, roughness:0.75});
+  const bootMat = new THREE.MeshStandardMaterial({color:0x4A3322, flatShading:true, roughness:0.8});
+  const eyeMat  = new THREE.MeshStandardMaterial({color:0x241D18, flatShading:true});
+
+  // ---- Legs (pivot at hip so they can swing) ----
+  function makeLeg(side){
+    const pivot = new THREE.Group();
+    pivot.position.set(0.15*side, 0.86, 0);
+    const thigh = new THREE.Mesh(new THREE.BoxGeometry(0.21,0.48,0.23), pantsMat);
+    thigh.position.y=-0.26; pivot.add(thigh);
+    const shin = new THREE.Mesh(new THREE.BoxGeometry(0.19,0.44,0.21), pantsMat);
+    shin.position.y=-0.64; pivot.add(shin);
+    const boot = new THREE.Mesh(new THREE.BoxGeometry(0.23,0.18,0.34), bootMat);
+    boot.position.set(0,-0.88,0.05); pivot.add(boot);
+    pivot.traverse(o=>{ if(o.isMesh) o.castShadow=true; });
+    return pivot;
+  }
+  const leftLeg = makeLeg(-1), rightLeg = makeLeg(1);
+  group.add(leftLeg, rightLeg);
+
+  // ---- Torso ----
+  const torso = new THREE.Mesh(new THREE.BoxGeometry(0.56,0.62,0.32), tunicMat);
+  torso.position.y=1.16; torso.castShadow=true; group.add(torso);
+  const belt = new THREE.Mesh(new THREE.BoxGeometry(0.58,0.12,0.34), bootMat);
+  belt.position.y=0.9; group.add(belt);
+  // shoulder pauldrons for an armored silhouette
+  for(const s of [-1,1]){
+    const pad = new THREE.Mesh(new THREE.BoxGeometry(0.22,0.2,0.36), tunicMat);
+    pad.position.set(0.33*s,1.41,0); pad.castShadow=true; group.add(pad);
+  }
+
+  // ---- Arms (pivot at shoulder) ----
+  function makeArm(side){
+    const pivot = new THREE.Group();
+    pivot.position.set(0.36*side, 1.42, 0);
+    const upper = new THREE.Mesh(new THREE.BoxGeometry(0.16,0.42,0.18), tunicMat);
+    upper.position.y=-0.22; pivot.add(upper);
+    const fore = new THREE.Mesh(new THREE.BoxGeometry(0.15,0.4,0.16), skinMat);
+    fore.position.y=-0.6; pivot.add(fore);
+    const hand = new THREE.Mesh(new THREE.BoxGeometry(0.16,0.16,0.16), skinMat);
+    hand.position.y=-0.82; pivot.add(hand);
+    pivot.traverse(o=>{ if(o.isMesh) o.castShadow=true; });
+    pivot.userData.hand = hand;
+    return pivot;
+  }
+  const leftArm = makeArm(-1), rightArm = makeArm(1);
+  group.add(leftArm, rightArm);
+
+  // ---- Neck + Head ----
+  const neck = new THREE.Mesh(new THREE.BoxGeometry(0.16,0.1,0.16), skinMat);
+  neck.position.y=1.5; group.add(neck);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.34,0.36,0.32), skinMat);
+  head.position.y=1.74; head.castShadow=true; group.add(head);
+  // hair cap
+  const hair = new THREE.Mesh(new THREE.BoxGeometry(0.38,0.2,0.36), hairMat);
+  hair.position.y=1.9; group.add(hair);
+  const hairBack = new THREE.Mesh(new THREE.BoxGeometry(0.38,0.22,0.1), hairMat);
+  hairBack.position.set(0,1.78,-0.16); group.add(hairBack);
+  // eyes + brow
+  for(const s of [-1,1]){
+    const eye = new THREE.Mesh(new THREE.BoxGeometry(0.05,0.06,0.02), eyeMat);
+    eye.position.set(0.08*s,1.75,0.17); group.add(eye);
+  }
+
+  return {group, body:torso, head, leftLeg, rightLeg, leftArm, rightArm};
+}
+
+function buildCharGrid(){
+  const grid = document.getElementById('charGrid');
+  grid.innerHTML='';
+  CHAR_DEFS.forEach((def,i)=>{
+    const card = document.createElement('div');
+    card.className='charCard' + (i===0?' selected':'');
+    card.innerHTML = `<canvas width="120" height="120"></canvas><div class="nm">${def.name}</div>`;
+    card.addEventListener('click', ()=>{
+      document.querySelectorAll('.charCard').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedChar = def;
+    });
+    grid.appendChild(card);
+    makeCharThumb(card.querySelector('canvas'), def);
+  });
+}
+buildCharGrid();
+
+function buildClassGrid(){
+  const grid = document.getElementById('classGrid');
+  grid.innerHTML='';
+  Object.entries(CLASS_DEFS).forEach(([id,cls],i)=>{
+    const card = document.createElement('div');
+    card.className='classCard' + (id===selectedClass?' selected':'');
+    card.innerHTML = `<div class="cic">${cls.icon}</div><div><div class="cnm">${cls.name}</div><div class="cdesc">${cls.desc}</div></div>`;
+    card.addEventListener('click', ()=>{
+      document.querySelectorAll('.classCard').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedClass = id;
+    });
+    grid.appendChild(card);
+  });
+}
+buildClassGrid();
+
+document.getElementById('startBtn').addEventListener('click', ()=>{
+  const nm = document.getElementById('nameInput').value.trim();
+  state.playerName = nm || 'พัฟ';
+  state.charDef = selectedChar;
+  state.classId = selectedClass;
+  // apply class base attributes
+  const cls = CLASS_DEFS[selectedClass];
+  state.stats = Object.assign({}, cls.base);
+  state.maxHp = getMaxHp();
+  state.hp = state.maxHp;
+  document.getElementById('charSelect').style.display='none';
+  document.getElementById('invName').textContent = state.playerName;
+  initGame();
+});
+
+/* ---------------------------------------------------------------
+   TOAST / LEVEL UP UI
+   --------------------------------------------------------------- */
+function toast(msg){
+  const el = document.createElement('div');
+  el.className='toast';
+  el.textContent = msg;
+  document.getElementById('toastWrap').appendChild(el);
+  setTimeout(()=>el.remove(), 2300);
+}
+
+function floatDamage(worldPos, text, kind){
+  if(!camera) return;
+  const v = worldPos.clone();
+  v.y += 1.2;
+  v.project(camera);
+  const x = (v.x*0.5+0.5)*window.innerWidth;
+  const y = (-v.y*0.5+0.5)*window.innerHeight;
+  if(v.z>1) return; // behind camera
+  const el = document.createElement('div');
+  el.className = 'dmgNum '+kind;
+  el.textContent = text;
+  el.style.left = x+'px';
+  el.style.top = y+'px';
+  document.getElementById('dmgLayer').appendChild(el);
+  setTimeout(()=>el.remove(), 900);
+}
+function showLevelUp(){
+  const pop = document.getElementById('levelUpPop');
+  document.getElementById('levelUpText').textContent =
+    `เลเวล ${state.level} · HP สูงสุด ${state.maxHp} · ATK ${state.baseAtk} · DEF ${state.baseDef}`;
+  pop.classList.add('show');
+  setTimeout(()=>pop.classList.remove('show'), 1800);
+}
+
+/* ---------------------------------------------------------------
+   HUD UPDATES
+   --------------------------------------------------------------- */
+function updateHud(){
+  document.getElementById('hudName').textContent = `${state.playerName} — Lv.${state.level}`;
+  document.getElementById('hpBar').style.width = Math.max(0,(state.hp/state.maxHp*100)) + '%';
+  document.getElementById('expBar').style.width = (state.exp/state.expNeed*100) + '%';
+  const gt = document.getElementById('goldText');
+  if(gt) gt.textContent = state.gold;
+  if(typeof quests!=='undefined' && quests.length) questEvent('gold', state.gold);
+  const z = ZONES[state.zone];
+  document.getElementById('zoneLabel').innerHTML = `${z.label}<small>${z.sub}</small>`;
+}
+
+/* ---------------------------------------------------------------
+   EXP / LEVEL
+   --------------------------------------------------------------- */
+function gainExp(amount){
+  state.exp += amount;
+  toast(`+${amount} EXP`);
+  while(state.exp >= state.expNeed){
+    state.exp -= state.expNeed;
+    state.level++;
+    state.expNeed = Math.round(state.expNeed * 1.35);
+    state.baseAtk += 1;
+    state.baseDef += 0.5;
+    state.statPoints += 5; // Ran Online style: allocate on level up
+    state.maxHp = getMaxHp();
+    state.hp = state.maxHp;
+    showLevelUp();
+    updateStatBadge();
+    questEvent('level', state.level);
+  }
+  updateHud();
+}
+
+function updateStatBadge(){
+  const badge = document.getElementById('statPointBadge');
+  if(!badge) return;
+  if(state.statPoints>0){ badge.style.display='inline-block'; badge.textContent=state.statPoints; }
+  else badge.style.display='none';
+}
+
+/* ---------------------------------------------------------------
+   INVENTORY / COOKING UI
+   --------------------------------------------------------------- */
+function refreshInventoryUI(){
+  const matGrid = document.getElementById('matGrid');
+  matGrid.innerHTML='';
+  Object.entries(MATERIALS).forEach(([id,m])=>{
+    const c = state.materials[id]||0;
+    const slot = document.createElement('div');
+    slot.className='itemSlot';
+    slot.innerHTML = `<div class="ic ${c===0?'empty':''}">${m.icon}</div><div class="ct">${m.name}</div><div class="ct">${c}</div>`;
+    matGrid.appendChild(slot);
+  });
+  const foodGrid = document.getElementById('foodGrid');
+  foodGrid.innerHTML='';
+  let any=false;
+  RECIPES.forEach(r=>{
+    const c = state.foods[r.id]||0;
+    if(c>0){
+      any=true;
+      const slot = document.createElement('div');
+      slot.className='itemSlot';
+      slot.style.cursor='pointer';
+      slot.innerHTML = `<div class="ic">${r.icon}</div><div class="ct">${r.name}</div><div class="ct">x${c}</div>`;
+      slot.addEventListener('click', ()=>eatFood(r.id));
+      foodGrid.appendChild(slot);
+    }
+  });
+  if(state.potions>0){
+    any=true;
+    const slot=document.createElement('div');
+    slot.className='itemSlot'; slot.style.cursor='pointer';
+    slot.innerHTML=`<div class="ic">🧪</div><div class="ct">ยาฟื้น HP</div><div class="ct">x${state.potions}</div>`;
+    slot.addEventListener('click', ()=>{
+      if(state.potions<=0) return;
+      state.potions--; state.hp=Math.min(getMaxHp(), state.hp+60);
+      toast('ใช้ยาฟื้น HP +60'); updateHud(); refreshInventoryUI();
+    });
+    foodGrid.appendChild(slot);
+  }
+  if(!any) foodGrid.innerHTML = `<div style="font-size:12px; opacity:.6; grid-column:1/-1;">ยังไม่มีอาหาร — ลองทำที่โต๊ะอาหารในหมู่บ้านสิ!</div>`;
+}
+
+function eatFood(id){
+  if(!state.foods[id]) return;
+  const r = RECIPES.find(x=>x.id===id);
+  state.foods[id]--;
+  state.hp = Math.min(state.maxHp, state.hp + r.heal);
+  toast(`กิน${r.name}! ฟื้น HP +${r.heal}`);
+  if(r.buff) applyBuff(r.buff);
+  updateHud();
+  refreshInventoryUI();
+}
+
+function applyBuff(buff){
+  const until = performance.now() + buff.duration*1000;
+  if(buff.stat==='all'){
+    state.activeBuffs.atk = {amount:buff.amount, until};
+    state.activeBuffs.def = {amount:buff.amount, until};
+    state.activeBuffs.speed = {amount:1.3, until};
+  } else {
+    state.activeBuffs[buff.stat] = {amount:buff.amount, until};
+  }
+  toast(`✨ ได้รับบัฟ! (${buff.duration}s)`);
+}
+// Sum a raw attribute (str/dex/vit/int) from base allocation + equipment
+function getAttr(attr){
+  let v = state.stats[attr]||0;
+  for(const slot in state.equipped){
+    const g = state.equipped[slot];
+    if(g && g.stats[attr]) v += g.stats[attr];
+  }
+  return v;
+}
+// Sum equipment flat bonuses for atk/def/maxHp
+function gearBonus(key){
+  let v=0;
+  for(const slot in state.equipped){
+    const g = state.equipped[slot];
+    if(g && g.stats[key]) v += g.stats[key];
+  }
+  return v;
+}
+function getMaxHp(){
+  return 100 + (state.level-1)*18 + getAttr('vit')*6 + gearBonus('maxHp');
+}
+function getStat(stat){
+  let base;
+  if(stat==='atk'){
+    const cls = CLASS_DEFS[state.classId];
+    // STR drives physical, INT drives magic; pick the class's main
+    const main = (cls && (cls.atkType==='magic')) ? getAttr('int')*1.6 : getAttr('str')*1.4;
+    base = state.baseAtk + main + gearBonus('atk');
+  } else if(stat==='def'){
+    base = state.baseDef + getAttr('vit')*0.6 + gearBonus('def');
+  } else if(stat==='speed'){
+    base = state.speed + getAttr('dex')*0.04;
+  } else if(stat==='crit'){
+    base = 0.08 + getAttr('dex')*0.012; // crit chance
+  } else base = 0;
+  const buff = state.activeBuffs[stat];
+  if(buff && performance.now() < buff.until){
+    return stat==='speed' ? base*buff.amount : base+buff.amount;
+  }
+  return base;
+}
+
+function refreshRecipeUI(){
+  const list = document.getElementById('recipeList');
+  list.innerHTML='';
+  RECIPES.forEach(r=>{
+    let canMake = true;
+    const needStr = Object.entries(r.need).map(([mid,cnt])=>{
+      const have = state.materials[mid]||0;
+      if(have < cnt) canMake = false;
+      return `${MATERIALS[mid].icon}${cnt} ${have<cnt?`<span style="color:#e08f6f">(มี ${have})</span>`:''}`;
+    }).join('  ');
+    const card = document.createElement('div');
+    card.className = 'recipeCard' + (canMake?'':' locked');
+    card.innerHTML = `
+      <div class="ic">${r.icon}</div>
+      <div class="info">
+        <div class="nm">${r.name}</div>
+        <div class="need">ใช้: ${needStr}</div>
+        <div class="eff">${r.desc}</div>
+      </div>
+      <button class="btn" ${canMake?'':'disabled'} style="font-size:12px; padding:8px 14px;">ทำ</button>
+    `;
+    const btn = card.querySelector('button');
+    btn.addEventListener('click', ()=>{
+      if(!canMake) return;
+      Object.entries(r.need).forEach(([mid,cnt])=> state.materials[mid]-=cnt);
+      state.foods[r.id] = (state.foods[r.id]||0)+1;
+      toast(`ทำ${r.name}สำเร็จ! 🎉`);
+      refreshRecipeUI();
+      refreshInventoryUI();
+    });
+    list.appendChild(card);
+  });
+}
+
+document.getElementById('invBtn').addEventListener('click', ()=>{
+  refreshInventoryUI();
+  document.getElementById('invModal').classList.add('open');
+});
+document.getElementById('cookBtn').addEventListener('click', ()=>{
+  refreshRecipeUI();
+  document.getElementById('cookModal').classList.add('open');
+});
+document.getElementById('statBtn').addEventListener('click', ()=>{
+  refreshStatUI();
+  document.getElementById('statModal').classList.add('open');
+});
+document.getElementById('gearBtn').addEventListener('click', ()=>{
+  refreshGearUI();
+  document.getElementById('gearModal').classList.add('open');
+});
+document.getElementById('questBtn').addEventListener('click', ()=>{
+  refreshQuestUI();
+  document.getElementById('questModal').classList.add('open');
+});
+
+const ATTR_INFO = {
+  str:{name:'พลัง (STR)', icon:'💪', effect:'เพิ่มพลังโจมตีกายภาพ'},
+  dex:{name:'ว่องไว (DEX)', icon:'🎯', effect:'เพิ่มคริติคอล + ความเร็ว'},
+  vit:{name:'อึด (VIT)', icon:'❤️', effect:'เพิ่ม HP สูงสุด + ป้องกัน'},
+  int:{name:'ปัญญา (INT)', icon:'🔮', effect:'เพิ่มพลังเวทย์'},
+};
+function refreshStatUI(){
+  const cls = CLASS_DEFS[state.classId];
+  document.getElementById('statClassLine').textContent =
+    `อาชีพ ${cls.icon} ${cls.name} · Lv.${state.level} · แต้มเหลือ: ${state.statPoints}`;
+  const list = document.getElementById('statAllocList');
+  list.innerHTML='';
+  Object.entries(ATTR_INFO).forEach(([key,info])=>{
+    const row = document.createElement('div');
+    row.style.cssText='display:flex; align-items:center; gap:10px; background:#fff; border-radius:12px; padding:8px 12px; margin-bottom:8px; border:2px solid #f1e6d4;';
+    row.innerHTML = `
+      <div style="font-size:22px;">${info.icon}</div>
+      <div style="flex:1;">
+        <div style="font-weight:800; font-size:14px;">${info.name} — <span style="color:#FF7A5C;">${getAttr(key)}</span>
+          <span style="font-size:11px; opacity:.55;">(ฐาน ${state.stats[key]})</span></div>
+        <div style="font-size:11px; opacity:.6;">${info.effect}</div>
+      </div>
+      <button class="btn" data-attr="${key}" ${state.statPoints>0?'':'disabled'} style="font-size:18px; padding:6px 14px;">+</button>
+    `;
+    row.querySelector('button').addEventListener('click', ()=>{
+      if(state.statPoints<=0) return;
+      state.statPoints--;
+      state.stats[key]++;
+      state.maxHp = getMaxHp();
+      if(key==='vit') state.hp = Math.min(state.maxHp, state.hp+6);
+      updateStatBadge();
+      updateHud();
+      refreshStatUI();
+    });
+    list.appendChild(row);
+  });
+  const cc = Math.round(getStat('crit')*100);
+  document.getElementById('derivedStats').innerHTML = `
+    <b>ค่าที่ได้จริง (รวมอุปกรณ์):</b><br>
+    ⚔️ พลังโจมตี: <b>${Math.round(getStat('atk'))}</b> &nbsp; 🛡️ ป้องกัน: <b>${Math.round(getStat('def'))}</b><br>
+    ❤️ HP สูงสุด: <b>${getMaxHp()}</b> &nbsp; 💨 ความเร็ว: <b>${getStat('speed').toFixed(1)}</b> &nbsp; 🎯 คริติคอล: <b>${cc}%</b>
+  `;
+}
+
+function gearStatStr(g){
+  return Object.entries(g.stats).map(([k,v])=>{
+    const lbl = {atk:'โจมตี',def:'ป้องกัน',maxHp:'HP',str:'STR',dex:'DEX',vit:'VIT',int:'INT'}[k]||k;
+    return `${lbl}+${v}`;
+  }).join(' · ');
+}
+function refreshGearUI(){
+  // equipped row
+  const eq = document.getElementById('equippedRow');
+  eq.innerHTML='';
+  ['weapon','armor','accessory'].forEach(slot=>{
+    const g = state.equipped[slot];
+    const slotName = {weapon:'อาวุธ',armor:'เกราะ',accessory:'เครื่องประดับ'}[slot];
+    const box = document.createElement('div');
+    box.style.cssText='flex:1; background:#fff; border-radius:12px; padding:8px; text-align:center; border:2px solid #f1e6d4; min-height:72px;';
+    if(g){
+      box.style.borderColor = RARITIES[g.rarity].color;
+      box.innerHTML = `<div style="font-size:11px; opacity:.6;">${slotName}</div><div style="font-size:26px;">${g.icon}</div><div style="font-size:10px; font-weight:700; color:${RARITIES[g.rarity].color};">${g.name}</div>`;
+      box.style.cursor='pointer';
+      box.addEventListener('click', ()=>{ state.equipped[slot]=null; state.gear.push(g); state.maxHp=getMaxHp(); updateHud(); refreshGearUI(); });
+    } else {
+      box.innerHTML = `<div style="font-size:11px; opacity:.6;">${slotName}</div><div style="font-size:26px; opacity:.2;">＋</div><div style="font-size:10px; opacity:.4;">ว่าง</div>`;
+    }
+    eq.appendChild(box);
+  });
+  // inventory list
+  const list = document.getElementById('gearList');
+  list.innerHTML='';
+  if(state.gear.length===0){
+    list.innerHTML = `<div style="font-size:12px; opacity:.6;">ยังไม่มีอุปกรณ์ — ปราบมอนสเตอร์เพื่อดรอปของ!</div>`;
+    return;
+  }
+  // sort by rarity then level
+  const order={legendary:0,epic:1,rare:2,common:3};
+  state.gear.slice().sort((a,b)=> (order[a.rarity]-order[b.rarity]) || (b.level-a.level)).forEach(g=>{
+    const card = document.createElement('div');
+    card.className='recipeCard';
+    card.style.borderColor = RARITIES[g.rarity].color;
+    card.innerHTML = `
+      <div class="ic">${g.icon}</div>
+      <div class="info">
+        <div class="nm" style="color:${RARITIES[g.rarity].color};">${g.name} <span style="font-size:10px; background:${RARITIES[g.rarity].color}; color:#fff; padding:1px 6px; border-radius:8px;">${RARITIES[g.rarity].name}</span></div>
+        <div class="need">${gearStatStr(g)}</div>
+        <div class="eff">Lv.${g.level} · ช่อง: ${ {weapon:'อาวุธ',armor:'เกราะ',accessory:'เครื่องประดับ'}[g.slot] }</div>
+      </div>
+      <button class="btn" style="font-size:12px; padding:8px 14px;">สวม</button>
+    `;
+    card.querySelector('button').addEventListener('click', ()=>{
+      // unequip current of that slot back to inventory
+      const cur = state.equipped[g.slot];
+      if(cur) state.gear.push(cur);
+      state.equipped[g.slot] = g;
+      state.gear = state.gear.filter(x=>x.id!==g.id);
+      state.maxHp = getMaxHp();
+      updateHud();
+      toast(`สวม ${g.name}!`);
+      refreshGearUI();
+    });
+    list.appendChild(card);
+  });
+}
+document.querySelectorAll('[data-close]').forEach(b=>{
+  b.addEventListener('click', ()=> document.getElementById(b.dataset.close).classList.remove('open'));
+});
+document.getElementById('minimapWrap').addEventListener('click', ()=>{
+  drawFullMap();
+  document.getElementById('mapModal').classList.add('open');
+});
+
+/* ---------------- Map drawing ---------------- */
+// World layout reference (matches buildWorld): village r18 @ (0,0), forest r28 @ (55,0),
+// beach r26 @ (-55,0), water r22 @ (-68,0), paths along x in [-28,28] width 6.
+function drawMapBase(ctx, w, h, scale, ox, oz){
+  ctx.clearRect(0,0,w,h);
+  // outer world
+  ctx.fillStyle = '#AEE3A6';
+  ctx.beginPath(); ctx.arc(ox, oz, 90*scale, 0, Math.PI*2); ctx.fill();
+  // path
+  ctx.fillStyle = '#EFD8B0';
+  ctx.fillRect(ox-58*scale, oz-3*scale, 116*scale, 6*scale);
+  // beach
+  ctx.fillStyle = '#F5E1A4';
+  ctx.beginPath(); ctx.arc(ox-55*scale, oz, 26*scale, 0, Math.PI*2); ctx.fill();
+  // water
+  ctx.fillStyle = '#6FD7E0';
+  ctx.beginPath(); ctx.arc(ox-68*scale, oz, 22*scale, 0, Math.PI*2); ctx.fill();
+  // forest
+  ctx.fillStyle = '#8FD08A';
+  ctx.beginPath(); ctx.arc(ox+55*scale, oz, 28*scale, 0, Math.PI*2); ctx.fill();
+  // village
+  ctx.fillStyle = '#FCE3A8';
+  ctx.beginPath(); ctx.arc(ox, oz, 18*scale, 0, Math.PI*2); ctx.fill();
+}
+function drawPlayerDot(ctx, scale, ox, oz, size, dirArrow){
+  if(!playerGroup) return;
+  const px = ox + playerGroup.position.x*scale;
+  const pz = oz + playerGroup.position.z*scale;
+  ctx.save();
+  ctx.translate(px,pz);
+  if(dirArrow) ctx.rotate(playerGroup.rotation.y);
+  ctx.fillStyle = '#FF9E80';
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = Math.max(1,size*0.25);
+  ctx.beginPath(); ctx.arc(0,0,size,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  if(dirArrow){
+    ctx.beginPath();
+    ctx.moveTo(0,-size*1.8);
+    ctx.lineTo(size*0.8,0);
+    ctx.lineTo(-size*0.8,0);
+    ctx.closePath();
+    ctx.fillStyle='#fff';
+    ctx.fill();
+  }
+  ctx.restore();
+}
+function drawMinimap(){
+  const canvas = document.getElementById('minimap');
+  const ctx = canvas.getContext('2d');
+  const w=canvas.width, h=canvas.height;
+  const scale = w/200; // world spans ~ -90..90 (180) plus margin
+  drawMapBase(ctx, w, h, scale, w/2, h/2);
+  // enemies as small red dots
+  enemies.forEach(en=>{
+    if(en.hp<=0) return;
+    ctx.fillStyle='#E06A6A';
+    ctx.beginPath();
+    ctx.arc(w/2+en.mesh.position.x*scale, h/2+en.mesh.position.z*scale, 2.2, 0, Math.PI*2);
+    ctx.fill();
+  });
+  drawPlayerDot(ctx, scale, w/2, h/2, 4, true);
+}
+function drawFullMap(){
+  const canvas = document.getElementById('fullMap');
+  const ctx = canvas.getContext('2d');
+  const w=canvas.width, h=canvas.height;
+  const scale = w/200;
+  drawMapBase(ctx, w, h, scale, w/2, h/2);
+  // collectibles
+  collectibles.forEach(c=>{
+    if(c.collected) return;
+    ctx.font = `${Math.max(10,scale*1.4)}px sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(MATERIALS[c.matId].icon, w/2+c.mesh.position.x*scale, h/2+c.mesh.position.z*scale);
+  });
+  // enemies
+  enemies.forEach(en=>{
+    if(en.hp<=0) return;
+    ctx.font = `${Math.max(12,scale*2)}px sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('👾', w/2+en.mesh.position.x*scale, h/2+en.mesh.position.z*scale);
+  });
+  // cooking station
+  if(cookingStation){
+    ctx.font = `${Math.max(12,scale*2.2)}px sans-serif`;
+    ctx.fillText('🍳', w/2+cookingStation.position.x*scale, h/2+cookingStation.position.z*scale);
+  }
+  drawPlayerDot(ctx, scale, w/2, h/2, 6, true);
+  // zone labels
+  ctx.font = `bold ${Math.max(11,scale*2.2)}px sans-serif`;
+  ctx.fillStyle = '#5B4636';
+  ctx.fillText('หมู่บ้าน', w/2, h/2-22*scale);
+  ctx.fillText('ป่าหิ่งห้อย', w/2+55*scale, h/2-30*scale);
+  ctx.fillText('หาดทรายฟอง', w/2-55*scale, h/2-28*scale);
+}
+
+/* =====================================================================
+   3D GAME WORLD
+   ===================================================================== */
+let renderer, scene, camera;
+let player, playerGroup;
+let collectibles = [];
+let enemies = [];
+let projectiles = [];   // class ranged attacks
+let groundDrops = [];   // dropped gear lying on ground
+let cookingStation;
+let waterMesh = null;
+let particles = [];        // hit sparks / dust
+let dustMotes = null;      // ambient floating dust
+let shakeAmount = 0;       // screen shake intensity
+let contactShadowTex = null;
+let player_weaponGroup = null;
+let skillCd = 0, burstCd = 0;  // ability cooldown timers
+let camYaw = 0, camPitch = 0.685, camDist = 14.2;  // orbit camera
+let aoeEffects = [];           // expanding ability visuals
+let buildings = [];            // {x,z,role} interactable houses
+let collidables = []; // {x,z,radius}
+let clock;
+const keys = {};
+let joyVec = {x:0,y:0};
+
+const WORLD_SIZE = 90; // half-extent roughly
+
+function makeSkyGradient(){
+  const canvas = document.createElement('canvas');
+  canvas.width = 2; canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  const g = ctx.createLinearGradient(0,0,0,256);
+  g.addColorStop(0,   '#7FB8E6'); // deep sky blue top
+  g.addColorStop(0.45,'#AED7E8');
+  g.addColorStop(0.8, '#E8F0D8'); // warm horizon
+  g.addColorStop(1,   '#F3E7C8');
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,2,256);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.needsUpdate = true;
+  return tex;
+}
+
+/* ---------------- Production polish helpers ---------------- */
+function makeContactShadowTex(){
+  if(contactShadowTex) return contactShadowTex;
+  const c=document.createElement('canvas'); c.width=c.height=64;
+  const ctx=c.getContext('2d');
+  const g=ctx.createRadialGradient(32,32,2,32,32,30);
+  g.addColorStop(0,'rgba(0,0,0,0.5)');
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g; ctx.fillRect(0,0,64,64);
+  contactShadowTex=new THREE.CanvasTexture(c);
+  return contactShadowTex;
+}
+function attachContactShadow(parent, radius){
+  const m=new THREE.Mesh(
+    new THREE.PlaneGeometry(radius*2,radius*2),
+    new THREE.MeshBasicMaterial({map:makeContactShadowTex(), transparent:true, depthWrite:false})
+  );
+  m.rotation.x=-Math.PI/2;
+  m.position.y=0.03;
+  parent.add(m);
+  return m;
+}
+
+// burst of small particles at a world position
+function spawnParticles(pos, color, count, opts){
+  opts=opts||{};
+  const spd=opts.speed||4;
+  for(let i=0;i<count;i++){
+    const mat=new THREE.MeshBasicMaterial({color});
+    const mesh=new THREE.Mesh(new THREE.TetrahedronGeometry(opts.size||0.1), mat);
+    mesh.position.copy(pos);
+    const ang=Math.random()*Math.PI*2;
+    const up=0.5+Math.random()*1.5;
+    const v=new THREE.Vector3(Math.cos(ang)*(0.5+Math.random()), up, Math.sin(ang)*(0.5+Math.random())).multiplyScalar(spd);
+    scene.add(mesh);
+    particles.push({mesh, v, life:opts.life||0.5, grav:opts.grav!==undefined?opts.grav:-9});
+  }
+}
+function updateParticles(dt){  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.life-=dt;
+    p.v.y+=p.grav*dt;
+    p.mesh.position.addScaledVector(p.v,dt);
+    p.mesh.rotation.x+=dt*10; p.mesh.rotation.y+=dt*8;
+    const s=Math.max(0.01,p.life*2);
+    p.mesh.scale.setScalar(s);
+    if(p.life<=0){ scene.remove(p.mesh); particles.splice(i,1); }
+  }
+}
+
+// ambient floating dust motes
+function makeDustMotes(){
+  const geo=new THREE.BufferGeometry();
+  const N=140; const pos=new Float32Array(N*3);
+  for(let i=0;i<N;i++){
+    pos[i*3]=(Math.random()-0.5)*120;
+    pos[i*3+1]=1+Math.random()*8;
+    pos[i*3+2]=(Math.random()-0.5)*120;
+  }
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const mat=new THREE.PointsMaterial({color:0xffffff, size:0.12, transparent:true, opacity:0.35, depthWrite:false});
+  dustMotes=new THREE.Points(geo,mat);
+  scene.add(dustMotes);
+}
+function updateDust(dt,t){
+  if(!dustMotes) return;
+  const p=dustMotes.geometry.attributes.position;
+  for(let i=0;i<p.count;i++){
+    p.setY(i, p.getY(i)+Math.sin(t*0.5+i)*dt*0.2+dt*0.15);
+    if(p.getY(i)>9) p.setY(i,1);
+  }
+  p.needsUpdate=true;
+}
+
+function shake(amount){ shakeAmount=Math.max(shakeAmount,amount); }
+
+function updateAOE(dt){
+  for(let i=aoeEffects.length-1;i>=0;i--){
+    const e=aoeEffects[i];
+    e.t+=dt;
+    const k=e.t/e.dur;
+    if(e.type==='ring'){
+      const s=0.3 + k*(e.radius/0.5);
+      e.mesh.scale.set(s,s,s);
+      e.mesh.material.opacity=0.8*(1-k);
+    } else if(e.type==='dome'){
+      const s=0.4+k*0.7;
+      e.mesh.scale.set(s,1,s);
+      e.mesh.material.opacity=0.3*(1-k);
+    }
+    if(e.t>=e.dur){ scene.remove(e.mesh); aoeEffects.splice(i,1); }
+  }
+}
+
+function updateCooldowns(dt){
+  if(skillCd>0) skillCd=Math.max(0,skillCd-dt);
+  if(burstCd>0) burstCd=Math.max(0,burstCd-dt);
+  const sBtn=document.getElementById('skillBtn'), bBtn=document.getElementById('burstBtn');
+  if(!sBtn) return;
+  const sTxt=document.getElementById('skillCdText'), bTxt=document.getElementById('burstCdText');
+  if(skillCd>0){ sBtn.classList.add('cooling'); sTxt.textContent=Math.ceil(skillCd); }
+  else { sBtn.classList.remove('cooling'); sTxt.textContent=''; }
+  if(burstCd>0){ bBtn.classList.add('cooling'); bTxt.textContent=Math.ceil(burstCd); }
+  else { bBtn.classList.remove('cooling'); bTxt.textContent=''; }
+}
+
+/* ---------------- Buildings: shop / inn / blacksmith ---------------- */
+let nearBuilding = null;
+function updateBuildings(){
+  const prompt = document.getElementById('interactPrompt');
+  if(!prompt) return;
+  let found=null;
+  for(const b of buildings){
+    const d = Math.hypot(playerGroup.position.x-b.x, playerGroup.position.z-b.z);
+    if(d < 5){ found=b; break; }
+  }
+  nearBuilding = found;
+  if(found){
+    prompt.style.display='block';
+    prompt.textContent = `${found.role.icon} เข้า${found.role.name}`;
+  } else {
+    prompt.style.display='none';
+  }
+}
+function openBuilding(role){
+  document.getElementById('bldTitle').textContent = role.icon+' '+role.name;
+  const body = document.getElementById('bldBody');
+  const sub = document.getElementById('bldSub');
+  body.innerHTML='';
+  if(role.id==='inn'){
+    sub.textContent = 'พักผ่อนเพื่อฟื้นฟู HP เต็ม';
+    const cost = state.level*8;
+    const card = document.createElement('div');
+    card.className='recipeCard';
+    card.innerHTML = `<div class="ic">🛏️</div><div class="info"><div class="nm">พักฟื้นเต็ม HP</div>
+      <div class="need">ราคา ${cost} 🪙</div><div class="eff">ฟื้น HP จาก ${Math.round(state.hp)} → ${getMaxHp()}</div></div>
+      <button class="btn">พัก</button>`;
+    card.querySelector('button').addEventListener('click', ()=>{
+      if(state.gold<cost){ toast('ทองไม่พอ!'); return; }
+      state.gold-=cost; state.hp=getMaxHp();
+      toast('พักผ่อนเต็มอิ่ม! ❤️ เต็ม'); updateHud(); openBuilding(role);
+    });
+    body.appendChild(card);
+  } else if(role.id==='shop'){
+    sub.textContent = `ทองของคุณ: ${state.gold} 🪙 — ซื้อยา หรือ ขายอุปกรณ์`;
+    const pCost=25;
+    const buy=document.createElement('div');
+    buy.className='recipeCard';
+    buy.innerHTML=`<div class="ic">🧪</div><div class="info"><div class="nm">ยาฟื้น HP (มี ${state.potions})</div>
+      <div class="need">ราคา ${pCost} 🪙</div><div class="eff">ฟื้น 60 HP ต่อขวด (ใช้ในกระเป๋า)</div></div><button class="btn">ซื้อ</button>`;
+    buy.querySelector('button').addEventListener('click', ()=>{
+      if(state.gold<pCost){ toast('ทองไม่พอ!'); return; }
+      state.gold-=pCost; state.potions++; toast('ซื้อยาฟื้น HP!'); updateHud(); openBuilding(role);
+    });
+    body.appendChild(buy);
+    const head=document.createElement('div');
+    head.style.cssText='font-weight:800; font-size:14px; margin:10px 0 6px;';
+    head.textContent='ขายอุปกรณ์ในคลัง:';
+    body.appendChild(head);
+    if(state.gear.length===0){
+      const e=document.createElement('div'); e.style.cssText='font-size:12px; opacity:.6;'; e.textContent='ไม่มีอุปกรณ์ให้ขาย';
+      body.appendChild(e);
+    } else {
+      state.gear.slice().forEach(g=>{
+        const val = Math.round((g.level*4) * RARITIES[g.rarity].mult);
+        const row=document.createElement('div');
+        row.className='recipeCard';
+        row.style.borderColor=RARITIES[g.rarity].color;
+        row.innerHTML=`<div class="ic">${g.icon}</div><div class="info"><div class="nm" style="color:${RARITIES[g.rarity].color}">${g.name}</div>
+          <div class="need">${gearStatStr(g)}</div><div class="eff">ขายได้ ${val} 🪙</div></div><button class="btn secondary">ขาย</button>`;
+        row.querySelector('button').addEventListener('click', ()=>{
+          state.gear = state.gear.filter(x=>x.id!==g.id);
+          state.gold+=val; toast(`ขาย ${g.name} +${val}🪙`); updateHud(); openBuilding(role);
+        });
+        body.appendChild(row);
+      });
+    }
+  } else if(role.id==='smith'){
+    sub.textContent = `ทองของคุณ: ${state.gold} 🪙 — อัพเกรดอาวุธที่สวมอยู่`;
+    const w = state.equipped.weapon;
+    if(!w){
+      const e=document.createElement('div'); e.style.cssText='font-size:13px; opacity:.7;';
+      e.textContent='ยังไม่ได้สวมอาวุธ — ไปสวมอาวุธในเมนูอุปกรณ์ก่อน';
+      body.appendChild(e);
+    } else {
+      w.plus = w.plus||0;
+      const cost = (w.plus+1)*30;
+      const card=document.createElement('div');
+      card.className='recipeCard';
+      card.style.borderColor=RARITIES[w.rarity].color;
+      card.innerHTML=`<div class="ic">${w.icon}</div><div class="info">
+        <div class="nm" style="color:${RARITIES[w.rarity].color}">${w.name} +${w.plus}</div>
+        <div class="need">${gearStatStr(w)}</div>
+        <div class="eff">อัพเกรด: โจมตี +3 · ราคา ${cost} 🪙</div></div><button class="btn">ตีเหล็ก</button>`;
+      card.querySelector('button').addEventListener('click', ()=>{
+        if(state.gold<cost){ toast('ทองไม่พอ!'); return; }
+        state.gold-=cost; w.plus++; w.stats.atk=(w.stats.atk||0)+3;
+        state.maxHp=getMaxHp(); toast(`อัพเกรด ${w.name} เป็น +${w.plus}! ⚒️`);
+        updateHud(); openBuilding(role);
+      });
+      body.appendChild(card);
+    }
+  }
+  document.getElementById('buildingModal').classList.add('open');
+}
+
+function initGame(){
+  const canvas = document.getElementById('gameCanvas');
+  renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.82;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+
+  scene = new THREE.Scene();
+  // gradient sky dome instead of flat color
+  scene.background = makeSkyGradient();
+  scene.fog = new THREE.Fog(0xCFE6D8, 70, 230);
+
+  camera = new THREE.PerspectiveCamera(55, window.innerWidth/window.innerHeight, 0.1, 500);
+
+  // lights — warm sun + cool fill for depth
+  const hemi = new THREE.HemisphereLight(0xBFE0FF, 0x4f7a3a, 0.45);
+  scene.add(hemi);
+  const ambient = new THREE.AmbientLight(0xffeedd, 0.22);
+  scene.add(ambient);
+  const sun = new THREE.DirectionalLight(0xFFE7B8, 1.05);
+  sun.position.set(30,50,20);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(1024,1024);
+  sun.shadow.camera.left=-80; sun.shadow.camera.right=80;
+  sun.shadow.camera.top=80; sun.shadow.camera.bottom=-80;
+  scene.add(sun);
+
+  buildWorld();
+  buildPlayer();
+  spawnCollectibles();
+  spawnEnemies();
+  enemies.forEach(en=>{ if(en.boss) drawEnemyBar(en); });
+  makeDustMotes();
+
+  clock = new THREE.Clock();
+  animate();
+
+  window.addEventListener('resize', onResize);
+  window.addEventListener('keydown', e=>keys[e.code]=true);
+  window.addEventListener('keyup', e=>keys[e.code]=false);
+  document.getElementById('attackBtn').addEventListener('click', doAttack);
+  document.getElementById('collectBtn').addEventListener('click', tryCollect);
+  document.getElementById('skillBtn').addEventListener('click', doSkill);
+  document.getElementById('burstBtn').addEventListener('click', doBurst);
+  document.getElementById('interactPrompt').addEventListener('click', ()=>{
+    if(nearBuilding) openBuilding(nearBuilding.role);
+  });
+  // set ability icons per class element
+  const _c = CLASS_DEFS[state.classId];
+  document.querySelector('#skillBtn .abIcon').textContent = _c.skill.icon;
+  document.querySelector('#burstBtn .abIcon').textContent = _c.burst.icon;
+  setupJoystick();
+  setupCameraControls();
+  initQuests();
+  loadGame();
+  // autosave every 10s
+  setInterval(saveGame, 10000);
+}
+
+/* =====================================================================
+   SAVE / LOAD  (uses Artifact persistent storage with localStorage fallback)
+   ===================================================================== */
+const SAVE_KEY = 'puffling_save_v1';
+
+async function storageSet(key, value){
+  try{
+    if(window.storage && window.storage.set){ await window.storage.set(key, value, false); return; }
+  }catch(e){}
+  try{ localStorage.setItem(key, value); }catch(e){}
+}
+async function storageGet(key){
+  try{
+    if(window.storage && window.storage.get){ const r=await window.storage.get(key, false); return r?r.value:null; }
+  }catch(e){}
+  try{ return localStorage.getItem(key); }catch(e){ return null; }
+}
+
+function collectSaveData(){
+  return {
+    v:1,
+    charDef: state.charDef, classId: state.classId, playerName: state.playerName,
+    level: state.level, exp: state.exp, expNeed: state.expNeed,
+    hp: state.hp, maxHp: state.maxHp, baseAtk: state.baseAtk, baseDef: state.baseDef,
+    stats: state.stats, statPoints: state.statPoints,
+    materials: state.materials, foods: state.foods,
+    gear: state.gear, equipped: state.equipped, gold: state.gold, potions: state.potions,
+    quests: quests.map(q=>({id:q.id, progress:q.progress, status:q.status})),
+    pos: playerGroup ? {x:playerGroup.position.x, z:playerGroup.position.z} : null,
+  };
+}
+async function saveGame(){
+  try{
+    await storageSet(SAVE_KEY, JSON.stringify(collectSaveData()));
+    flashSaveIcon();
+  }catch(e){ console.warn('save failed', e); }
+}
+async function loadGame(){
+  let raw=null;
+  try{ raw = await storageGet(SAVE_KEY); }catch(e){}
+  if(!raw) return;
+  let d; try{ d=JSON.parse(raw); }catch(e){ return; }
+  if(!d || d.v!==1) return;
+  // apply
+  state.level=d.level; state.exp=d.exp; state.expNeed=d.expNeed;
+  state.baseAtk=d.baseAtk; state.baseDef=d.baseDef;
+  state.stats=d.stats||state.stats; state.statPoints=d.statPoints||0;
+  state.materials=Object.assign(state.materials, d.materials||{});
+  state.foods=d.foods||{}; state.gear=d.gear||[]; state.equipped=d.equipped||state.equipped;
+  state.gold=d.gold||0; state.potions=d.potions||0;
+  state.maxHp=getMaxHp(); state.hp=Math.min(d.hp||state.maxHp, state.maxHp);
+  // restore quest progress
+  if(d.quests){ d.quests.forEach(sq=>{ const q=quests.find(x=>x.id===sq.id); if(q){ q.progress=sq.progress; q.status=sq.status; } }); }
+  if(d.pos && playerGroup){ playerGroup.position.x=d.pos.x; playerGroup.position.z=d.pos.z; }
+  updateHud(); updateStatBadge(); updateQuestTracker();
+  toast('โหลดเซฟแล้ว ✅');
+}
+function flashSaveIcon(){
+  const el=document.getElementById('saveIndicator');
+  if(!el) return;
+  el.style.opacity='1';
+  setTimeout(()=>{ el.style.opacity='0'; }, 1200);
+}
+
+/* =====================================================================
+   QUESTS
+   ===================================================================== */
+let quests = [];
+const QUEST_DEFS = [
+  { id:'slay5', icon:'🟢', name:'กำจัดสไลม์', desc:'ปราบมอนสเตอร์ทั่วไป 5 ตัว',
+    type:'kill', target:5, reward:{gold:50, exp:30} },
+  { id:'gather10', icon:'🧺', name:'เก็บของป่า', desc:'เก็บวัตถุดิบ 10 ชิ้น',
+    type:'collect', target:10, reward:{gold:40, potions:1} },
+  { id:'reach5', icon:'⭐', name:'นักผจญภัยฝึกหัด', desc:'เลเวลให้ถึง Lv.5',
+    type:'level', target:5, reward:{gold:100, exp:0} },
+  { id:'boss1', icon:'👑', name:'นักล่าบอส', desc:'ปราบบอสตัวใดก็ได้ 1 ตัว',
+    type:'boss', target:1, reward:{gold:200, gear:true} },
+  { id:'gold200', icon:'🪙', name:'พ่อค้าน้อย', desc:'สะสมทองให้ถึง 200',
+    type:'gold', target:200, reward:{gold:0, exp:80, potions:2} },
+];
+function initQuests(){
+  quests = QUEST_DEFS.map(d=>({ ...d, progress:0, status:'active' })); // active | complete | claimed
+}
+function questEvent(type, amount){
+  amount = amount||1;
+  let changed=false;
+  quests.forEach(q=>{
+    if(q.status!=='active' || q.type!==type) return;
+    if(type==='level' || type==='gold'){ q.progress = Math.max(q.progress, amount); }
+    else { q.progress += amount; }
+    if(q.progress >= q.target){ q.progress=q.target; q.status='complete'; toast(`เควสสำเร็จ! ${q.icon} ${q.name} — ไปรับรางวัล`); }
+    changed=true;
+  });
+  if(changed) updateQuestTracker();
+}
+function claimQuest(id){
+  const q = quests.find(x=>x.id===id);
+  if(!q || q.status!=='complete') return;
+  const r=q.reward;
+  if(r.gold) state.gold+=r.gold;
+  if(r.exp) gainExp(r.exp);
+  if(r.potions) state.potions+=r.potions;
+  if(r.gear){ const g=rollGear(state.level+1); state.gear.push(g); toast(`ได้รับ ${g.icon} ${g.name}!`); }
+  q.status='claimed';
+  toast(`รับรางวัลเควส ${q.name}! 🎁`);
+  updateHud(); updateQuestTracker(); refreshQuestUI();
+  saveGame();
+}
+function updateQuestTracker(){
+  const el=document.getElementById('questTracker');
+  if(!el) return;
+  // show first active/complete quest
+  const q = quests.find(x=>x.status==='complete') || quests.find(x=>x.status==='active');
+  if(!q){ el.style.display='none'; return; }
+  el.style.display='block';
+  const done = q.status==='complete';
+  el.innerHTML = `<div style="font-weight:800; font-size:12px;">${q.icon} ${q.name} ${done?'<span style="color:#5fb87a">✓</span>':''}</div>
+    <div style="font-size:11px; opacity:.7;">${q.desc} — ${q.progress}/${q.target}</div>`;
+}
+function refreshQuestUI(){
+  const list=document.getElementById('questList');
+  if(!list) return;
+  list.innerHTML='';
+  quests.forEach(q=>{
+    const card=document.createElement('div');
+    card.className='recipeCard';
+    const rewardStr = [q.reward.gold?`${q.reward.gold}🪙`:'', q.reward.exp?`${q.reward.exp}EXP`:'',
+      q.reward.potions?`${q.reward.potions}🧪`:'', q.reward.gear?'อุปกรณ์':''].filter(Boolean).join(' · ');
+    let btn='';
+    if(q.status==='complete') btn=`<button class="btn">รับรางวัล</button>`;
+    else if(q.status==='claimed') btn=`<span style="font-size:12px; color:#5fb87a; font-weight:800;">✓ สำเร็จ</span>`;
+    else btn=`<span style="font-size:12px; opacity:.6;">${q.progress}/${q.target}</span>`;
+    card.innerHTML=`<div class="ic">${q.icon}</div><div class="info">
+      <div class="nm">${q.name} ${q.status==='claimed'?'<span style="opacity:.5">(เสร็จ)</span>':''}</div>
+      <div class="need">${q.desc}</div><div class="eff">รางวัล: ${rewardStr}</div></div>`;
+    const wrap=document.createElement('div'); wrap.innerHTML=btn; const b=wrap.querySelector('button');
+    card.appendChild(wrap.firstChild || document.createTextNode(''));
+    if(b) b.addEventListener('click', ()=>claimQuest(q.id));
+    if(q.status==='claimed') card.style.opacity='0.6';
+    list.appendChild(card);
+  });
+}
+
+function onResize(){
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+/* ---------------- World geometry ---------------- */
+function flatMat(color, extra={}){ return new THREE.MeshStandardMaterial(Object.assign({color, flatShading:true, roughness:0.85},extra)); }
+
+function buildWorld(){
+  // Ground: village (center) -> forest (east, +x) -> beach (west, -x), connected by a path
+  const groundGroup = new THREE.Group();
+
+  // base grass plane (whole world)
+  const grass = new THREE.Mesh(new THREE.CircleGeometry(WORLD_SIZE, 48), flatMat(0x6FB85C));
+  grass.rotation.x = -Math.PI/2;
+  grass.receiveShadow = true;
+  groundGroup.add(grass);
+
+  // village patch (center)
+  const village = new THREE.Mesh(new THREE.CircleGeometry(18, 32), flatMat(0xD8B872));
+  village.rotation.x = -Math.PI/2;
+  village.position.set(0,0.02,0);
+  village.receiveShadow = true;
+  groundGroup.add(village);
+
+  // forest patch (east)
+  const forest = new THREE.Mesh(new THREE.CircleGeometry(28, 32), flatMat(0x4F9E54));
+  forest.rotation.x = -Math.PI/2;
+  forest.position.set(55,0.02,0);
+  forest.receiveShadow = true;
+  groundGroup.add(forest);
+
+  // beach + water patch (west)
+  const sand = new THREE.Mesh(new THREE.CircleGeometry(26, 32), flatMat(0xE8CE92));
+  sand.rotation.x = -Math.PI/2;
+  sand.position.set(-55,0.015,0);
+  sand.receiveShadow = true;
+  groundGroup.add(sand);
+
+  const water = new THREE.Mesh(new THREE.CircleGeometry(22, 48), flatMat(0x3FAFC4, {transparent:true, opacity:0.92, metalness:0.1, roughness:0.3}));
+  water.rotation.x = -Math.PI/2;
+  waterMesh = water;
+  water.position.set(-68,0.01,0);
+  groundGroup.add(water);
+
+  // simple paths connecting zones
+  function pathTile(x){
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(6,30), flatMat(0xC9A56E));
+    p.rotation.x=-Math.PI/2; p.rotation.z=Math.PI/2;
+    p.position.set(x,0.025,0);
+    groundGroup.add(p);
+  }
+  pathTile(28); pathTile(-28);
+
+  scene.add(groundGroup);
+
+  // scatter grass tufts + flowers for life
+  scatterGrass();
+
+  // village buildings
+  addHouse(8,-6, 0xFFE8B6, 0xFF9E80, {id:'shop', icon:'🛒', name:'ร้านค้า'});
+  addHouse(-6,8, 0xE3D4F5, 0xB28DD9, {id:'inn', icon:'🛏️', name:'โรงแรม'});
+  addHouse(10,8, 0xC7EAC4, 0x8FCB8A, {id:'smith', icon:'⚒️', name:'ช่างตีเหล็ก'});
+  cookingStation = addCookingStation(0,-12);
+
+  // forest trees + rocks
+  for(let i=0;i<26;i++){
+    const a = Math.random()*Math.PI*2;
+    const r = 8+Math.random()*26;
+    const x = 55 + Math.cos(a)*r;
+    const z = Math.sin(a)*r;
+    if(Math.abs(x)<22 && Math.abs(z)<8) continue; // avoid path
+    addTree(x,z);
+  }
+  for(let i=0;i<8;i++){
+    const a = Math.random()*Math.PI*2;
+    const r = 10+Math.random()*25;
+    addRock(55+Math.cos(a)*r, Math.sin(a)*r);
+  }
+
+  // beach palm trees + rocks
+  for(let i=0;i<10;i++){
+    const a = Math.random()*Math.PI*2;
+    const r = 8+Math.random()*16;
+    const x = -55 + Math.cos(a)*r;
+    const z = Math.sin(a)*r;
+    if(Math.abs(x+55) < 22 && Math.abs(z) < 8) continue;
+    addPalm(x,z);
+  }
+
+  // a few decorative clouds
+  for(let i=0;i<14;i++){
+    addCloud((Math.random()-0.5)*200, 24+Math.random()*12, (Math.random()-0.5)*200);
+  }
+
+  buildBackdrop();
+}
+
+function buildBackdrop(){
+  // ring of distant mountains around the world for depth
+  const mtnColors=[0x8FA9B8, 0x7D98A8, 0xA7BCC8];
+  const ringR=135;
+  for(let i=0;i<40;i++){
+    const a=(i/40)*Math.PI*2 + Math.random()*0.05;
+    const r=ringR + (Math.random()-0.5)*18;
+    const h=14+Math.random()*26;
+    const rad=10+Math.random()*10;
+    const m=new THREE.Mesh(new THREE.ConeGeometry(rad,h,5), flatMat(mtnColors[i%mtnColors.length]));
+    m.position.set(Math.cos(a)*r, h/2-2, Math.sin(a)*r);
+    m.rotation.y=Math.random()*Math.PI;
+    // snow cap
+    if(h>26){
+      const cap=new THREE.Mesh(new THREE.ConeGeometry(rad*0.4,h*0.25,5), flatMat(0xF2F6FA));
+      cap.position.set(Math.cos(a)*r, h-4, Math.sin(a)*r);
+      scene.add(cap);
+    }
+    scene.add(m);
+  }
+  // closer rolling hills (a second nearer layer)
+  for(let i=0;i<22;i++){
+    const a=(i/22)*Math.PI*2 + Math.random()*0.1;
+    const r=105 + (Math.random()-0.5)*12;
+    const rad=12+Math.random()*8;
+    const hill=new THREE.Mesh(new THREE.SphereGeometry(rad,8,6,0,Math.PI*2,0,Math.PI/2), flatMat(0x6FAE5A));
+    hill.position.set(Math.cos(a)*r, -2, Math.sin(a)*r);
+    hill.scale.y=0.5;
+    scene.add(hill);
+  }
+  // big warm sun disk on the horizon
+  const sunDisk=new THREE.Mesh(new THREE.CircleGeometry(16,32),
+    new THREE.MeshBasicMaterial({color:0xFFE9A8, transparent:true, opacity:0.9, fog:false}));
+  sunDisk.position.set(40,38,-150);
+  scene.add(sunDisk);
+  const sunGlow=new THREE.Mesh(new THREE.CircleGeometry(26,32),
+    new THREE.MeshBasicMaterial({color:0xFFE9A8, transparent:true, opacity:0.3, fog:false}));
+  sunGlow.position.set(40,38,-151);
+  scene.add(sunGlow);
+}
+
+function scatterGrass(){
+  const bladeMat = flatMat(0x5FA84A);
+  const bladeMat2 = flatMat(0x76C25E);
+  const flowerColors = [0xFF8FA3, 0xFFD166, 0xC79BFF, 0xFF9E80, 0xFFFFFF];
+  // grass tufts across grassland (avoid water area)
+  for(let i=0;i<260;i++){
+    const a = Math.random()*Math.PI*2;
+    const r = Math.random()*WORLD_SIZE;
+    const x = Math.cos(a)*r, z = Math.sin(a)*r;
+    // skip water
+    if(Math.hypot(x+68,z) < 22) continue;
+    // skip village dirt + path roughly
+    const onPath = Math.abs(z)<3.5 && x>-58 && x<58;
+    if(onPath) continue;
+    const tuft = new THREE.Group();
+    const blades = 2+Math.floor(Math.random()*2);
+    for(let b=0;b<blades;b++){
+      const h = 0.4+Math.random()*0.5;
+      const blade = new THREE.Mesh(new THREE.ConeGeometry(0.06, h, 4), Math.random()>0.5?bladeMat:bladeMat2);
+      blade.position.set((Math.random()-0.5)*0.3, h/2, (Math.random()-0.5)*0.3);
+      blade.rotation.z = (Math.random()-0.5)*0.4;
+      tuft.add(blade);
+    }
+    tuft.position.set(x,0,z);
+    scene.add(tuft);
+  }
+  // flowers
+  for(let i=0;i<70;i++){
+    const a = Math.random()*Math.PI*2;
+    const r = Math.random()*WORLD_SIZE;
+    const x = Math.cos(a)*r, z = Math.sin(a)*r;
+    if(Math.hypot(x+68,z) < 22) continue;
+    if(Math.abs(z)<3.5 && x>-58 && x<58) continue;
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,0.4,4), flatMat(0x4F9E54));
+    stem.position.set(x,0.2,z);
+    scene.add(stem);
+    const petal = new THREE.Mesh(new THREE.IcosahedronGeometry(0.13,0), flatMat(flowerColors[Math.floor(Math.random()*flowerColors.length)]));
+    petal.position.set(x,0.45,z);
+    scene.add(petal);
+  }
+}
+
+function addHouse(x,z, wallColor, roofColor, role){
+  const g = new THREE.Group();
+  const wall = new THREE.Mesh(new THREE.BoxGeometry(4,3,4), flatMat(wallColor));
+  wall.position.y=1.5; wall.castShadow=true;
+  g.add(wall);
+  const roof = new THREE.Mesh(new THREE.ConeGeometry(3.4,2.2,4), flatMat(roofColor));
+  roof.position.y=4.1; roof.rotation.y=Math.PI/4; roof.castShadow=true;
+  g.add(roof);
+  const door = new THREE.Mesh(new THREE.BoxGeometry(1,1.6,0.1), flatMat(0x8a5a3c));
+  door.position.set(0,0.8,2.05);
+  g.add(door);
+  // hanging sign with role icon + name
+  if(role){
+    const sign = makeTextSprite(role.icon+' '+role.name, '#FFFFFF');
+    sign.scale.set(3.4,0.66,1);
+    sign.position.set(0,4.4,0);
+    g.add(sign);
+    buildings.push({x,z,role});
+  }
+  g.position.set(x,0,z);
+  scene.add(g);
+  collidables.push({x,z,radius:2.9});
+  return g;
+}
+
+function addCookingStation(x,z){
+  const g = new THREE.Group();
+  const table = new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.8,1,12), flatMat(0xD9B58C));
+  table.position.y=0.5; table.castShadow=true;
+  g.add(table);
+  const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.7,0.9,0.8,12), flatMat(0x6f6f6f));
+  pot.position.y=1.2; pot.castShadow=true;
+  g.add(pot);
+  const steam = new THREE.Mesh(new THREE.ConeGeometry(0.3,0.6,8), flatMat(0xffffff,{transparent:true,opacity:0.6}));
+  steam.position.y=1.9;
+  g.add(steam);
+  g.position.set(x,0,z);
+  g.userData.isCookingStation = true;
+  scene.add(g);
+  collidables.push({x,z,radius:1.9});
+  return g;
+}
+
+function addTree(x,z){
+  const g = new THREE.Group();
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.35,1.6,6), flatMat(0x9C7A52));
+  trunk.position.y=0.8; trunk.castShadow=true;
+  g.add(trunk);
+  const leafColors=[0x7FCB7A,0x6FBF7F,0x8DD68A];
+  for(let i=0;i<3;i++){
+    const leaf = new THREE.Mesh(new THREE.IcosahedronGeometry(0.9-i*0.15,0), flatMat(leafColors[i%leafColors.length]));
+    leaf.position.y = 1.8+i*0.65;
+    leaf.castShadow=true;
+    g.add(leaf);
+  }
+  g.position.set(x,0,z);
+  scene.add(g);
+  collidables.push({x,z,radius:0.6});
+}
+
+function addPalm(x,z){
+  const g = new THREE.Group();
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.28,2.4,6), flatMat(0xC9A877));
+  trunk.position.y=1.2; trunk.rotation.z=0.08; trunk.castShadow=true;
+  g.add(trunk);
+  for(let i=0;i<5;i++){
+    const leaf = new THREE.Mesh(new THREE.ConeGeometry(0.25,1.6,4), flatMat(0x6FBF7F));
+    leaf.position.y=2.5;
+    leaf.rotation.z = Math.PI/2.3;
+    leaf.rotation.y = i*(Math.PI*2/5);
+    leaf.translateY(0.5);
+    g.add(leaf);
+  }
+  g.position.set(x,0,z);
+  scene.add(g);
+  collidables.push({x,z,radius:0.45});
+}
+
+function addRock(x,z){
+  const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.5+Math.random()*0.5,0), flatMat(0xBFBFAE));
+  rock.position.set(x,0.3,z);
+  rock.rotation.set(Math.random(),Math.random(),Math.random());
+  rock.castShadow=true;
+  scene.add(rock);
+  collidables.push({x,z,radius:0.7});
+}
+
+function addCloud(x,y,z){
+  const g = new THREE.Group();
+  for(let i=0;i<3;i++){
+    const c = new THREE.Mesh(new THREE.SphereGeometry(1.2-i*0.2,8,6), flatMat(0xffffff,{transparent:true,opacity:0.85}));
+    c.position.set(i*1.1-1,Math.random()*0.3,0);
+    g.add(c);
+  }
+  g.position.set(x,y,z);
+  scene.add(g);
+}
+
+/* ---------------- Player ---------------- */
+function buildPlayer(){
+  const puff = buildPuffling(state.charDef);
+  playerGroup = puff.group;
+  playerGroup.scale.set(0.95,0.95,0.95);
+  playerGroup.position.set(0,0,6);
+  playerGroup.traverse(o=>{ if(o.isMesh) o.castShadow=true; });
+
+  // class weapon held in right hand (oversized, Genshin-style)
+  const cls = CLASS_DEFS[state.classId];
+  const wMat = flatMat(cls.weaponColor);
+  const hand = puff.rightArm.userData.hand;
+  let weapon;
+  if(state.classId==='swordsman'){
+    weapon = new THREE.Group();
+    // broad two-handed style blade
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.18,1.7,0.05), flatMat(0xD8DEE6));
+    blade.position.y=1.0; weapon.add(blade);
+    const tip = new THREE.Mesh(new THREE.ConeGeometry(0.13,0.32,4), flatMat(0xD8DEE6));
+    tip.position.y=1.95; tip.rotation.y=Math.PI/4; weapon.add(tip);
+    const fuller = new THREE.Mesh(new THREE.BoxGeometry(0.04,1.5,0.06), flatMat(0xAEB6C0));
+    fuller.position.y=1.0; weapon.add(fuller);
+    const guard = new THREE.Mesh(new THREE.BoxGeometry(0.5,0.1,0.1), flatMat(0xC9A24A));
+    guard.position.y=0.16; weapon.add(guard);
+    const gem = new THREE.Mesh(new THREE.IcosahedronGeometry(0.08,0), new THREE.MeshStandardMaterial({color:cls.elementColor||0x8E44AD, emissive:cls.elementColor||0x8E44AD, emissiveIntensity:0.8}));
+    gem.position.y=0.16; gem.position.z=0.08; weapon.add(gem);
+    const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,0.34,6), flatMat(0x3a2a1a));
+    grip.position.y=-0.05; weapon.add(grip);
+  } else if(state.classId==='brawler'){
+    weapon = new THREE.Group();
+    // big armored gauntlet
+    const fist = new THREE.Mesh(new THREE.BoxGeometry(0.34,0.34,0.34), wMat);
+    weapon.add(fist);
+    for(let i=0;i<3;i++){
+      const knuckle = new THREE.Mesh(new THREE.BoxGeometry(0.08,0.08,0.1), flatMat(0xC9A24A));
+      knuckle.position.set(-0.1+i*0.1,0.1,0.2); weapon.add(knuckle);
+    }
+  } else if(state.classId==='archer'){
+    weapon = new THREE.Group();
+    const bow = new THREE.Mesh(new THREE.TorusGeometry(0.6,0.05,8,16,Math.PI*1.2), wMat);
+    bow.rotation.z=Math.PI/2; weapon.add(bow);
+    const string = new THREE.Mesh(new THREE.CylinderGeometry(0.012,0.012,1.0,4), flatMat(0xEEE6D0));
+    string.position.x=0.0; weapon.add(string);
+  } else { // mage
+    weapon = new THREE.Group();
+    const staff = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,1.7,6), wMat);
+    staff.position.y=0.7; weapon.add(staff);
+    const orb = new THREE.Mesh(new THREE.IcosahedronGeometry(0.22,0),
+      new THREE.MeshStandardMaterial({color:cls.elementColor||cls.projColor, emissive:cls.elementColor||cls.projColor, emissiveIntensity:0.9}));
+    orb.position.y=1.6; weapon.add(orb);
+    // floating ring around orb
+    const halo = new THREE.Mesh(new THREE.TorusGeometry(0.3,0.025,6,16), flatMat(0xC9A24A));
+    halo.position.y=1.6; halo.rotation.x=Math.PI/2; weapon.add(halo);
+  }
+  weapon.position.set(0,-0.1,0.06);
+  weapon.scale.setScalar(0.85);
+  weapon.traverse && weapon.traverse(o=>{ if(o.isMesh) o.castShadow=true; });
+  hand.add(weapon);
+  player_weaponGroup = weapon;
+
+  scene.add(playerGroup);
+  attachContactShadow(playerGroup, 0.5);
+  player = {
+    mesh:playerGroup, vy:0, attackCooldown:0, hitFlash:0, weapon,
+    limbs:{ leftLeg:puff.leftLeg, rightLeg:puff.rightLeg, leftArm:puff.leftArm, rightArm:puff.rightArm },
+    walkPhase:0, attackAnim:0,
+  };
+  updateHud();
+}
+
+/* ---------------- Collectibles ---------------- */
+function spawnCollectibles(){
+  const zoneItems = {
+    village: ['wheat','egg','milk'],
+    forest: ['berry','mushroom','herb'],
+    beach: ['fish','coconut'],
+  };
+  function spawnIn(zoneX, zoneR, items){
+    for(let i=0;i<14;i++){
+      const a=Math.random()*Math.PI*2;
+      const r=3+Math.random()*(zoneR-3);
+      const x=zoneX+Math.cos(a)*r;
+      const z=Math.sin(a)*r;
+      const matId = items[Math.floor(Math.random()*items.length)];
+      addCollectible(x,z,matId);
+    }
+  }
+  spawnIn(0,15, zoneItems.village);
+  spawnIn(55,24, zoneItems.forest);
+  spawnIn(-55,22, zoneItems.beach);
+}
+
+function makeEmojiSprite(emoji){
+  const canvas = document.createElement('canvas');
+  canvas.width=64; canvas.height=64;
+  const ctx = canvas.getContext('2d');
+  ctx.font='48px sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(emoji, 32, 36);
+  const tex = new THREE.CanvasTexture(canvas);
+  const mat = new THREE.SpriteMaterial({map:tex, transparent:true});
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(0.9,0.9,0.9);
+  return sprite;
+}
+
+const MAT_COLORS = {
+  berry:0x6B4FB0, mushroom:0xE8806B, wheat:0xE8C547, egg:0xFFF1D0,
+  fish:0x6FC6E0, coconut:0x9C6B3F, herb:0x5FB84A, milk:0xFFFFFF,
+};
+
+// Build a small low-poly model resembling the real material
+function buildMaterialModel(matId){
+  const g = new THREE.Group();
+  const M = (c,extra)=>new THREE.MeshStandardMaterial(Object.assign({color:c, flatShading:true, roughness:0.7},extra||{}));
+  if(matId==='wheat'){
+    const stalkMat=M(0xCBA13C), grainMat=M(0xE8C547);
+    for(let i=0;i<3;i++){
+      const a=(i-1)*0.18;
+      const stalk=new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.5,5), stalkMat);
+      stalk.position.set(a*0.3,0.25,0); stalk.rotation.z=a; g.add(stalk);
+      const head=new THREE.Mesh(new THREE.ConeGeometry(0.07,0.28,6), grainMat);
+      head.position.set(a*0.4,0.55,0); head.rotation.z=a; g.add(head);
+    }
+  } else if(matId==='mushroom'){
+    const stem=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.1,0.24,7), M(0xF3E6D0));
+    stem.position.y=0.12; g.add(stem);
+    const cap=new THREE.Mesh(new THREE.SphereGeometry(0.2,8,6,0,Math.PI*2,0,Math.PI/2), M(0xD9483B));
+    cap.position.y=0.24; g.add(cap);
+    for(let i=0;i<4;i++){ const d=new THREE.Mesh(new THREE.SphereGeometry(0.03,6,5),M(0xffffff)); const a=i*1.57; d.position.set(Math.cos(a)*0.1,0.3,Math.sin(a)*0.1); g.add(d);}
+  } else if(matId==='berry'){
+    const bm=M(0x5B3FA0);
+    for(let i=0;i<5;i++){ const a=i*1.25; const b=new THREE.Mesh(new THREE.IcosahedronGeometry(0.11,0),bm); b.position.set(Math.cos(a)*0.11,0.2+Math.sin(i)*0.05,Math.sin(a)*0.11); g.add(b);}
+    const leaf=new THREE.Mesh(new THREE.ConeGeometry(0.08,0.14,4),M(0x4E9E3A)); leaf.position.y=0.4; g.add(leaf);
+  } else if(matId==='egg'){
+    const e=new THREE.Mesh(new THREE.SphereGeometry(0.2,10,8),M(0xFFF3DE)); e.scale.set(1,1.25,1); e.position.y=0.25; g.add(e);
+  } else if(matId==='fish'){
+    const body=new THREE.Mesh(new THREE.SphereGeometry(0.2,8,6),M(0x4FB4D6)); body.scale.set(1.4,0.8,0.6); body.position.y=0.25; g.add(body);
+    const tail=new THREE.Mesh(new THREE.ConeGeometry(0.14,0.22,4),M(0x3C9FC4)); tail.rotation.z=Math.PI/2; tail.position.set(-0.28,0.25,0); g.add(tail);
+    const eye=new THREE.Mesh(new THREE.SphereGeometry(0.03,6,5),M(0x222222)); eye.position.set(0.18,0.3,0.12); g.add(eye);
+  } else if(matId==='coconut'){
+    const c=new THREE.Mesh(new THREE.IcosahedronGeometry(0.22,0),M(0x7A4F2E)); c.position.y=0.24; g.add(c);
+    for(let i=0;i<3;i++){const a=i*2.1; const dot=new THREE.Mesh(new THREE.SphereGeometry(0.03,6,5),M(0x3A2A1A)); dot.position.set(Math.cos(a)*0.1,0.3,0.2); g.add(dot);}
+  } else if(matId==='herb'){
+    const lm=M(0x4E9E3A);
+    for(let i=0;i<4;i++){ const a=i*1.57; const leaf=new THREE.Mesh(new THREE.ConeGeometry(0.06,0.32,4),lm); leaf.position.set(Math.cos(a)*0.08,0.2,Math.sin(a)*0.08); leaf.rotation.z=Math.cos(a)*0.4; leaf.rotation.x=Math.sin(a)*0.4; g.add(leaf);}
+  } else if(matId==='milk'){
+    const glass=new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.1,0.34,9),M(0xFFFFFF,{transparent:true,opacity:0.85})); glass.position.y=0.2; g.add(glass);
+    const milk=new THREE.Mesh(new THREE.CylinderGeometry(0.115,0.09,0.26,9),M(0xFDFBF5)); milk.position.y=0.18; g.add(milk);
+  } else {
+    const e=new THREE.Mesh(new THREE.IcosahedronGeometry(0.2,0),M(MAT_COLORS[matId]||0xffffff)); e.position.y=0.25; g.add(e);
+  }
+  g.traverse(o=>{ if(o.isMesh) o.castShadow=true; });
+  return g;
+}
+
+function addCollectible(x,z,matId){
+  const m = MATERIALS[matId];
+  const col = MAT_COLORS[matId] || 0xffffff;
+  const mesh = buildMaterialModel(matId);
+  mesh.position.set(x,0.25,z);
+
+  // glowing ground ring to make it pop
+  const ring = new THREE.Mesh(
+    new THREE.RingGeometry(0.45,0.6,16),
+    new THREE.MeshBasicMaterial({color:col, transparent:true, opacity:0.4, side:THREE.DoubleSide})
+  );
+  ring.rotation.x=-Math.PI/2;
+  ring.position.set(x,0.05,z);
+  scene.add(ring);
+
+  scene.add(mesh);
+  collectibles.push({mesh, ring, matId, t:Math.random()*10});
+}
+
+/* ---------------- Enemies (cute slimes) ---------------- */
+function spawnEnemies(){
+  // Forest: 2 packs of slimes
+  spawnPack(48, -8, 4, {});
+  spawnPack(62, 10, 4, {});
+  // lone wanderers
+  for(let i=0;i<3;i++){
+    const a=Math.random()*Math.PI*2, r=10+Math.random()*16;
+    addEnemy(55+Math.cos(a)*r, Math.sin(a)*r, {});
+  }
+  // Beach: pack of crabs
+  spawnPack(-50, 6, 4, {crab:true});
+  for(let i=0;i<2;i++){
+    const a=Math.random()*Math.PI*2, r=8+Math.random()*12;
+    addEnemy(-55+Math.cos(a)*r, Math.sin(a)*r, {crab:true});
+  }
+  // BOSSES
+  addEnemy(68, 0, {boss:true, name:'ราชาสไลม์เขียว', bossColor:0x3E9E4E});
+  addEnemy(-66, -4, {crab:true, boss:true, name:'ปูเฒ่าทะเลลึก', bossColor:0xD84B3A});
+}
+
+function spawnPack(cx,cz,count,opts){
+  for(let i=0;i<count;i++){
+    const a=(i/count)*Math.PI*2;
+    addEnemy(cx+Math.cos(a)*3, cz+Math.sin(a)*3, opts);
+  }
+}
+
+function addEnemy(x,z, opts){
+  opts = opts||{};
+  const crab = !!opts.crab;
+  const boss = !!opts.boss;
+  const g = new THREE.Group();
+  const bodyColor = boss ? opts.bossColor : (crab ? 0xFF8C7A : 0xB7E3A0);
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.5,8,6), flatMat(bodyColor));
+  body.scale.set(1,0.7,1);
+  body.position.y=0.4;
+  body.castShadow=true;
+  g.add(body);
+  for(const side of [-1,1]){
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.08,6,6), flatMat(0x4a3b32));
+    eye.position.set(0.18*side,0.62,0.4);
+    g.add(eye);
+  }
+  // boss crown + bigger scale
+  if(boss){
+    g.scale.set(2.1,2.1,2.1);
+    const crown = new THREE.Mesh(new THREE.ConeGeometry(0.3,0.4,5), flatMat(0xFFD24A));
+    crown.position.set(0,1.0,0);
+    g.add(crown);
+  }
+  g.position.set(x,0,z);
+  scene.add(g);
+  attachContactShadow(g, boss?0.7:0.45);
+  let level;
+  if(boss) level = crab ? 12 : 10;
+  else level = crab ? 3+Math.floor(Math.random()*2) : 1+Math.floor(Math.random()*3);
+
+  // HP bar sprite above enemy
+  const barCanvas = document.createElement('canvas');
+  barCanvas.width=64; barCanvas.height=12;
+  const barTex = new THREE.CanvasTexture(barCanvas);
+  const barMat = new THREE.SpriteMaterial({map:barTex, transparent:true, depthTest:false});
+  const barSprite = new THREE.Sprite(barMat);
+  barSprite.scale.set(boss?1.6:1.3, boss?0.3:0.24, 1);
+  barSprite.position.set(0, boss?0.85:1.3, 0);
+  barSprite.visible = boss; // bosses always show bar
+  g.add(barSprite);
+
+  // boss nameplate
+  let nameSprite=null;
+  if(boss){
+    nameSprite = makeTextSprite(opts.name, '#FFE26B');
+    nameSprite.position.set(0,1.05,0);
+    g.add(nameSprite);
+  }
+
+  const hpMax = boss ? (180+level*30) : (15+level*8);
+  enemies.push({
+    mesh:g, body, home:{x,z}, level, boss, crab,
+    name: opts.name || (crab?'ปูน้อย':'สไลม์'),
+    maxHp: hpMax, hp: hpMax,
+    atk: boss ? (6+level*2) : (2+level*1.5),
+    expReward: boss ? (120+level*20) : (8+level*6),
+    state:'idle', t:Math.random()*10, target:null,
+    barCanvas, barTex, barSprite, nameSprite,
+  });
+}
+
+function makeTextSprite(text, color){
+  const canvas = document.createElement('canvas');
+  canvas.width=256; canvas.height=48;
+  const ctx = canvas.getContext('2d');
+  ctx.font='bold 28px sans-serif';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.lineWidth=5; ctx.strokeStyle='rgba(0,0,0,0.6)';
+  ctx.strokeText(text,128,24);
+  ctx.fillStyle=color;
+  ctx.fillText(text,128,24);
+  const tex=new THREE.CanvasTexture(canvas);
+  const mat=new THREE.SpriteMaterial({map:tex, transparent:true, depthTest:false});
+  const sp=new THREE.Sprite(mat);
+  sp.scale.set(2.6,0.5,1);
+  return sp;
+}
+
+function drawEnemyBar(en){
+  const ctx = en.barCanvas.getContext('2d');
+  ctx.clearRect(0,0,64,12);
+  // bg
+  ctx.fillStyle='rgba(0,0,0,0.5)';
+  ctx.fillRect(0,0,64,12);
+  // fill
+  const pct = Math.max(0,en.hp/en.maxHp);
+  ctx.fillStyle = pct>0.5?'#7BD88A':(pct>0.25?'#FFD166':'#FF5E5E');
+  ctx.fillRect(2,2,(64-4)*pct,8);
+  en.barTex.needsUpdate=true;
+}
+
+/* ---------------- Input: mobile joystick ---------------- */
+function setupCameraControls(){
+  const canvas = document.getElementById('gameCanvas');
+  let dragging=false, lastX=0, lastY=0;
+  let pinchDist=0;
+
+  // ---- touch ----
+  canvas.addEventListener('touchstart', e=>{
+    if(e.touches.length===1){ dragging=true; lastX=e.touches[0].clientX; lastY=e.touches[0].clientY; }
+    else if(e.touches.length===2){
+      dragging=false;
+      pinchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+    }
+  }, {passive:true});
+  canvas.addEventListener('touchmove', e=>{
+    if(e.touches.length===1 && dragging){
+      const dx=e.touches[0].clientX-lastX, dy=e.touches[0].clientY-lastY;
+      lastX=e.touches[0].clientX; lastY=e.touches[0].clientY;
+      rotateCam(dx,dy);
+    } else if(e.touches.length===2){
+      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+      zoomCam((pinchDist-d)*0.05); pinchDist=d;
+    }
+  }, {passive:true});
+  canvas.addEventListener('touchend', ()=>{ dragging=false; });
+
+  // ---- mouse (desktop) ----
+  canvas.addEventListener('mousedown', e=>{ dragging=true; lastX=e.clientX; lastY=e.clientY; });
+  window.addEventListener('mousemove', e=>{
+    if(!dragging) return;
+    const dx=e.clientX-lastX, dy=e.clientY-lastY; lastX=e.clientX; lastY=e.clientY;
+    rotateCam(dx,dy);
+  });
+  window.addEventListener('mouseup', ()=>{ dragging=false; });
+  canvas.addEventListener('wheel', e=>{ zoomCam(e.deltaY*0.01); e.preventDefault(); }, {passive:false});
+}
+function rotateCam(dx,dy){
+  camYaw -= dx*0.006;
+  camPitch = Math.max(0.25, Math.min(1.35, camPitch - dy*0.004));
+}
+function zoomCam(delta){
+  camDist = Math.max(7, Math.min(28, camDist + delta));
+}
+
+function setupJoystick(){
+  const zone=document.getElementById('joyZone');
+  const stick=document.getElementById('joyStick');
+  let active=false, startX=0, startY=0;
+  function reset(){ stick.style.left='35px'; stick.style.top='35px'; joyVec={x:0,y:0}; }
+  function handleMove(clientX,clientY){
+    const rect=zone.getBoundingClientRect();
+    let dx=clientX-(rect.left+rect.width/2);
+    let dy=clientY-(rect.top+rect.height/2);
+    const max=45;
+    const dist=Math.min(Math.hypot(dx,dy),max);
+    const ang=Math.atan2(dy,dx);
+    dx=Math.cos(ang)*dist; dy=Math.sin(ang)*dist;
+    stick.style.left=(35+dx)+'px';
+    stick.style.top=(35+dy)+'px';
+    joyVec={x:dx/max, y:dy/max};
+  }
+  zone.addEventListener('touchstart',e=>{active=true; handleMove(e.touches[0].clientX,e.touches[0].clientY);});
+  zone.addEventListener('touchmove',e=>{ if(active){handleMove(e.touches[0].clientX,e.touches[0].clientY); e.preventDefault();} },{passive:false});
+  zone.addEventListener('touchend',()=>{active=false; reset();});
+}
+
+/* ---------------- Attack ---------------- */
+function doAttack(){
+  if(player.attackCooldown>0) return;
+  player.attackCooldown=0.45;
+  player.attackAnim = 0.25;
+  const cls = CLASS_DEFS[state.classId];
+  const ppos = playerGroup.position;
+
+  if(cls.atkType==='melee'){
+    // hit all enemies within class range
+    let hitAny=false;
+    enemies.forEach(en=>{
+      if(en.hp<=0) return;
+      if(ppos.distanceTo(en.mesh.position) < cls.range){
+        dealDamageToEnemy(en, ppos);
+        hitAny=true;
+      }
+    });
+  } else {
+    // ranged/magic: fire a projectile toward nearest enemy in range (or facing dir)
+    let nearest=null, nd=cls.range;
+    enemies.forEach(en=>{
+      if(en.hp<=0) return;
+      const d=ppos.distanceTo(en.mesh.position);
+      if(d<nd){ nd=d; nearest=en; }
+    });
+    let dir;
+    if(nearest){
+      dir = new THREE.Vector3().subVectors(nearest.mesh.position, ppos).setY(0).normalize();
+    } else {
+      dir = new THREE.Vector3(Math.sin(playerGroup.rotation.y),0,Math.cos(playerGroup.rotation.y));
+    }
+    spawnProjectile(ppos.clone().setY(0.8), dir, cls);
+  }
+}
+
+function spawnProjectile(pos, dir, cls){
+  const isMagic = cls.atkType==='magic';
+  const geo = isMagic ? new THREE.IcosahedronGeometry(0.28,0) : new THREE.SphereGeometry(0.14,8,6);
+  const col = cls.projColor || 0xFFE066;
+  const mat = new THREE.MeshStandardMaterial({color:col, emissive:col, emissiveIntensity:0.7, flatShading:true});
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.copy(pos);
+  scene.add(mesh);
+  projectiles.push({ mesh, dir, speed:22, life:1.2, aoe:isMagic, hit:new Set() });
+}
+
+// Apply one hit of player damage to an enemy (shared by melee + projectile + abilities)
+function dealDamageToEnemy(en, fromPos, mult){
+  mult = mult||1;
+  const isCrit = Math.random() < getStat('crit');
+  let dmg = Math.max(1, Math.round((getStat('atk') - en.level*0.6 + (Math.random()*3-1)) * mult));
+  if(isCrit) dmg = Math.round(dmg*1.8);
+  en.hp -= dmg;
+  en.hitFlash = 0.2;
+  en.state='aggro'; en.aggroT=2.5;
+  if(!en.boss){ en.barSprite.visible=true; en.barShowT=4; }
+  drawEnemyBar(en);
+  floatDamage(en.mesh.position, isCrit?('คริ! '+dmg):(''+dmg), isCrit?'crit':'hit');
+  // hit spark particles
+  const sparkPos = en.mesh.position.clone().setY(0.6);
+  spawnParticles(sparkPos, isCrit?0xFF5E5E:0xFFE066, isCrit?14:7, {speed:isCrit?6:4, size:isCrit?0.14:0.1, life:0.45});
+  if(isCrit) shake(0.4);
+  // knockback (bosses resist)
+  const kbAmt = en.boss?0.12:0.6;
+  const kb = new THREE.Vector3().subVectors(en.mesh.position, fromPos).setY(0).normalize().multiplyScalar(kbAmt);
+  en.mesh.position.add(kb);
+  if(en.hp<=0) killEnemy(en);
+}
+
+/* ---------------- Elemental abilities (Genshin-style) ---------------- */
+function doSkill(){
+  if(skillCd>0) return;
+  const cls = CLASS_DEFS[state.classId];
+  skillCd = cls.skill.cd;
+  castElementalAOE(cls.skill.radius, cls.skill.dmgMult, cls.elementColor, false);
+  toast(`${cls.skill.icon} ${cls.skill.name}!`);
+  // arm raise anim
+  player.attackAnim = 0.3;
+}
+function doBurst(){
+  if(burstCd>0) return;
+  const cls = CLASS_DEFS[state.classId];
+  burstCd = cls.burst.cd;
+  castElementalAOE(cls.burst.radius, cls.burst.dmgMult, cls.elementColor, true);
+  toast(`✨ ${cls.burst.icon} ${cls.burst.name}! ✨`);
+  shake(1.0);
+  player.attackAnim = 0.4;
+}
+
+function castElementalAOE(radius, dmgMult, color, isBurst){
+  const center = playerGroup.position.clone();
+  // expanding shockwave ring
+  const ring = new THREE.Mesh(
+    new THREE.RingGeometry(0.3,0.7,32),
+    new THREE.MeshBasicMaterial({color, transparent:true, opacity:0.8, side:THREE.DoubleSide})
+  );
+  ring.rotation.x=-Math.PI/2;
+  ring.position.copy(center).setY(0.1);
+  scene.add(ring);
+  // dome flash for burst
+  if(isBurst){
+    const dome = new THREE.Mesh(
+      new THREE.SphereGeometry(radius,16,12,0,Math.PI*2,0,Math.PI/2),
+      new THREE.MeshBasicMaterial({color, transparent:true, opacity:0.3, side:THREE.DoubleSide})
+    );
+    dome.position.copy(center).setY(0.1);
+    scene.add(dome);
+    aoeEffects.push({mesh:dome, t:0, dur:0.6, type:'dome', radius});
+  }
+  aoeEffects.push({mesh:ring, t:0, dur:isBurst?0.7:0.5, type:'ring', radius});
+  // element-colored particles
+  spawnParticles(center.clone().setY(0.6), color, isBurst?40:20, {speed:isBurst?10:6, size:0.16, life:0.7, grav:-4});
+  // damage all enemies in radius
+  enemies.forEach(en=>{
+    if(en.hp<=0) return;
+    if(en.mesh.position.distanceTo(center) <= radius){
+      dealDamageToEnemy(en, center, dmgMult);
+    }
+  });
+}
+
+function killEnemy(en){
+  gainExp(en.expReward);
+  toast(`เอาชนะ ${en.name} ได้! 🎉`);
+  en.barSprite.visible=false;
+  // death burst
+  const col = en.crab?0xFF8C7A:(en.boss?0xFFD24A:0xB7E3A0);
+  spawnParticles(en.mesh.position.clone().setY(0.6), col, en.boss?28:12, {speed:en.boss?8:5, size:en.boss?0.2:0.13, life:0.7});
+  if(en.boss) shake(0.8);
+  // material drop
+  const zoneItems = en.mesh.position.x>20 ? ['berry','mushroom','herb'] : (en.mesh.position.x< -20 ? ['fish','coconut'] : ['wheat','egg','milk']);
+  const drop = zoneItems[Math.floor(Math.random()*zoneItems.length)];
+  state.materials[drop] = (state.materials[drop]||0)+1;
+  // gold drop
+  const gold = en.boss ? (80+en.level*10) : (3+Math.floor(Math.random()*en.level*3));
+  state.gold += gold;
+  floatDamage(en.mesh.position.clone().setY(1.2), '🪙+'+gold, 'hit');
+  updateHud();
+  // quest progress
+  if(en.boss) questEvent('boss',1); else questEvent('kill',1);
+  questEvent('gold', state.gold);
+  // gear drop: bosses always drop, normal mobs ~35%
+  if(en.boss || Math.random() < 0.35){
+    const gearCount = en.boss ? 2 : 1;
+    for(let i=0;i<gearCount;i++){
+      const g = rollGear(en.boss ? en.level+2 : en.level);
+      dropGearOnGround(g, en.mesh.position.x + (Math.random()-0.5)*1.5, en.mesh.position.z + (Math.random()-0.5)*1.5);
+    }
+  }
+  // respawn (bosses take longer)
+  setTimeout(()=>respawnEnemy(en), en.boss ? 30000 : 6000);
+  en.mesh.visible=false;
+}
+
+function dropGearOnGround(g, x, z){
+  const col = RARITIES[g.rarity].color;
+  const mesh = new THREE.Mesh(
+    new THREE.BoxGeometry(0.4,0.4,0.4),
+    new THREE.MeshStandardMaterial({color:col, emissive:col, emissiveIntensity:0.5, flatShading:true})
+  );
+  mesh.position.set(x,0.5,z);
+  mesh.castShadow=true;
+  const label = makeEmojiSprite(g.icon);
+  label.position.set(0,0.6,0);
+  mesh.add(label);
+  // beam of light for rare+
+  if(g.rarity!=='common'){
+    const beam = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.25,0.25,4,8,1,true),
+      new THREE.MeshBasicMaterial({color:col, transparent:true, opacity:0.25, side:THREE.DoubleSide})
+    );
+    beam.position.set(0,2,0);
+    mesh.add(beam);
+  }
+  scene.add(mesh);
+  groundDrops.push({mesh, gear:g, t:0});
+  toast(`${g.icon} ${RARITIES[g.rarity].name}: ${g.name} ตกพื้น!`);
+}
+
+function respawnEnemy(en){
+  en.hp = en.maxHp;
+  en.mesh.position.set(en.home.x, 0, en.home.z);
+  en.mesh.visible=true;
+  en.state='idle';
+  if(en.boss) en.barSprite.visible=true;
+  drawEnemyBar(en);
+}
+
+/* ---------------- Movement helper ---------------- */
+function getMoveVector(){
+  let x=0,z=0;
+  if(keys['KeyW']||keys['ArrowUp']) z-=1;
+  if(keys['KeyS']||keys['ArrowDown']) z+=1;
+  if(keys['KeyA']||keys['ArrowLeft']) x-=1;
+  if(keys['KeyD']||keys['ArrowRight']) x+=1;
+  x += joyVec.x; z += joyVec.y;
+  // rotate input by camera yaw so "forward" is away from the camera
+  const cy=Math.cos(camYaw), sy=Math.sin(camYaw);
+  const rx = x*cy + z*sy;
+  const rz = -x*sy + z*cy;
+  x=rx; z=rz;
+  const len=Math.hypot(x,z);
+  if(len>1){x/=len; z/=len;}
+  return {x,z,len: Math.min(len,1)};
+}
+
+/* ---------------- Main loop ---------------- */
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t = clock.elapsedTime;
+
+  updatePlayer(dt,t);
+  updateCollectibles(dt,t);
+  updateEnemies(dt,t);
+  updateProjectiles(dt);
+  updateGroundDrops(dt);
+  updateParticles(dt);
+  updateDust(dt,t);
+  updateAOE(dt);
+  updateCooldowns(dt);
+  updateBuildings();
+  if(waterMesh){ waterMesh.position.y = 0.01 + Math.sin(t*1.2)*0.06; waterMesh.material.opacity = 0.88+Math.sin(t*2)*0.05; }
+  updateCamera(dt);
+  updateZoneLabel();
+  updateBuffExpiry();
+  drawMinimap();
+  if(document.getElementById('mapModal').classList.contains('open')) drawFullMap();
+
+  renderer.render(scene,camera);
+}
+
+function updatePlayer(dt,t){
+  const mv = getMoveVector();
+  const spd = getStat('speed');
+  const moving = mv.len>0.01;
+  if(moving){
+    playerGroup.position.x += mv.x*spd*dt;
+    playerGroup.position.z += mv.z*spd*dt;
+    const targetRot = Math.atan2(mv.x, mv.z);
+    // smooth rotate
+    let cur = playerGroup.rotation.y;
+    let diff = ((targetRot-cur+Math.PI*3)%(Math.PI*2))-Math.PI;
+    playerGroup.rotation.y += diff*Math.min(1,dt*10);
+    // subtle vertical bob with stride
+    const prevPhase = player.walkPhase;
+    player.walkPhase += dt*spd*1.6;
+    playerGroup.position.y = Math.abs(Math.sin(player.walkPhase))*0.06;
+    // footstep dust on stride peaks
+    if(Math.floor(prevPhase/Math.PI) !== Math.floor(player.walkPhase/Math.PI)){
+      spawnParticles(playerGroup.position.clone().setY(0.1), 0xD8C5A0, 4, {speed:1.5, size:0.08, life:0.4, grav:-2});
+    }
+  } else {
+    playerGroup.position.y *= 0.8;
+  }
+
+  // ---- limb animation ----
+  const L = player.limbs;
+  if(moving){
+    const sw = Math.sin(player.walkPhase)*0.7;
+    L.leftLeg.rotation.x = sw;
+    L.rightLeg.rotation.x = -sw;
+    // arms swing opposite to legs (right arm reserved for attack swing)
+    L.leftArm.rotation.x = -sw*0.6;
+    L.rightArm.rotation.x = sw*0.4;
+  } else {
+    // ease limbs back to rest
+    L.leftLeg.rotation.x *= 0.8;
+    L.rightLeg.rotation.x *= 0.8;
+    L.leftArm.rotation.x *= 0.8;
+    L.rightArm.rotation.x *= 0.8;
+  }
+  // collide with houses / rocks / trees / cooking station (push player out)
+  const playerRadius = 0.45;
+  collidables.forEach(c=>{
+    const dx = playerGroup.position.x - c.x;
+    const dz = playerGroup.position.z - c.z;
+    const dist = Math.hypot(dx,dz);
+    const minDist = c.radius + playerRadius;
+    if(dist < minDist && dist > 0.0001){
+      const push = (minDist-dist);
+      playerGroup.position.x += (dx/dist)*push;
+      playerGroup.position.z += (dz/dist)*push;
+    }
+  });
+  // clamp to world
+  const dist = Math.hypot(playerGroup.position.x, playerGroup.position.z);
+  // soft boundary circle around whole world
+  const maxR = WORLD_SIZE-2;
+  if(dist>maxR){
+    const k=maxR/dist;
+    playerGroup.position.x*=k; playerGroup.position.z*=k;
+  }
+  // also avoid water (beach center -68,0)
+  const wdx=playerGroup.position.x+68, wdz=playerGroup.position.z;
+  const wdist=Math.hypot(wdx,wdz);
+  if(wdist<20){
+    const k=20/wdist;
+    playerGroup.position.x = -68+wdx*k;
+    playerGroup.position.z = wdz*k;
+  }
+
+  if(player.attackCooldown>0) player.attackCooldown-=dt;
+  // attack swing on right arm
+  if(player.attackAnim>0){
+    player.attackAnim -= dt;
+    const cls = CLASS_DEFS[state.classId];
+    if(cls.atkType==='melee'){
+      // overhead swing
+      L.rightArm.rotation.x = -2.4 * Math.sin(Math.min(1,player.attackAnim/0.25)*Math.PI);
+    } else {
+      // raise arm to aim/cast
+      L.rightArm.rotation.x = -1.4 * Math.sin(Math.min(1,player.attackAnim/0.25)*Math.PI);
+    }
+  }
+
+  // space attack
+  if(keys['Space']) doAttack();
+  if(keys['KeyQ']) doSkill();
+  if(keys['KeyR']) doBurst();
+  // E collect
+  if(keys['KeyE']) tryCollect();
+  if(keys['KeyE'] && cookingStation && playerGroup.position.distanceTo(cookingStation.position)<3){
+    if(!keys['_cookOpened']){
+      keys['_cookOpened']=true;
+      refreshRecipeUI();
+      document.getElementById('cookModal').classList.add('open');
+    }
+  }
+  if(!keys['KeyE']) keys['_cookOpened']=false;
+
+  // HP regen slowly
+  if(state.hp<state.maxHp){
+    state._regen=(state._regen||0)+dt;
+    if(state._regen>3){ state._regen=0; state.hp=Math.min(state.maxHp,state.hp+1); updateHud(); }
+  }
+}
+
+let lastCollectToast=0;
+function tryCollect(){
+  for(const c of collectibles){
+    if(c.collected) continue;
+    if(playerGroup.position.distanceTo(c.mesh.position)<1.6){
+      c.collected=true;
+      c.mesh.visible=false;
+      if(c.ring) c.ring.visible=false;
+      state.materials[c.matId] = (state.materials[c.matId]||0)+1;
+      const m=MATERIALS[c.matId];
+      const now=performance.now();
+      if(now-lastCollectToast>250){ toast(`ได้รับ ${m.icon} ${m.name} +1`); lastCollectToast=now; }
+      floatDamage(c.mesh.position, '+1 '+m.icon, 'hit');
+      questEvent('collect',1);
+      setTimeout(()=>{ c.collected=false; c.mesh.visible=true; if(c.ring) c.ring.visible=true; }, 15000);
+    }
+  }
+}
+
+function updateProjectiles(dt){
+  for(let i=projectiles.length-1;i>=0;i--){
+    const p = projectiles[i];
+    p.life -= dt;
+    p.mesh.position.addScaledVector(p.dir, p.speed*dt);
+    p.mesh.rotation.x += dt*8; p.mesh.rotation.y += dt*6;
+    let consumed=false;
+    enemies.forEach(en=>{
+      if(en.hp<=0 || p.hit.has(en)) return;
+      const hitR = p.aoe ? 2.2 : 0.8;
+      if(p.mesh.position.distanceTo(en.mesh.position) < hitR){
+        p.hit.add(en);
+        dealDamageToEnemy(en, p.mesh.position);
+        if(!p.aoe) consumed=true; // arrows hit one; magic pierces nearby (aoe)
+      }
+    });
+    if(consumed || p.life<=0){
+      scene.remove(p.mesh);
+      projectiles.splice(i,1);
+    }
+  }
+}
+
+function updateGroundDrops(dt){
+  for(let i=groundDrops.length-1;i>=0;i--){
+    const d = groundDrops[i];
+    d.t += dt;
+    d.mesh.position.y = 0.5 + Math.sin(d.t*3)*0.1;
+    d.mesh.rotation.y += dt*1.5;
+    // auto-pickup when player walks over
+    if(playerGroup.position.distanceTo(d.mesh.position) < 1.4){
+      state.gear.push(d.gear);
+      toast(`เก็บ ${d.gear.icon} ${d.gear.name}!`);
+      floatDamage(d.mesh.position, d.gear.icon+' เก็บ!', 'hit');
+      scene.remove(d.mesh);
+      groundDrops.splice(i,1);
+    }
+  }
+}
+
+function updateCollectibles(dt,t){
+  collectibles.forEach(c=>{
+    c.t+=dt;
+    c.mesh.position.y = 0.2+Math.sin(c.t*2)*0.1;
+    c.mesh.rotation.y += dt*1.2;
+    if(c.ring && c.ring.visible){
+      const s = 1+Math.sin(c.t*3)*0.12;
+      c.ring.scale.set(s,s,s);
+      c.ring.material.opacity = 0.3+Math.sin(c.t*3)*0.12;
+    }
+  });
+}
+
+function updateEnemies(dt,t){
+  enemies.forEach(en=>{
+    if(en.hp<=0) return;
+    en.t+=dt;
+    // hide HP bar after a few seconds without damage
+    if(en.barShowT>0){
+      en.barShowT-=dt;
+      if(en.barShowT<=0) en.barSprite.visible=false;
+    }
+    // hop animation
+    en.mesh.position.y = Math.abs(Math.sin(en.t*3))*0.25;
+    if(en.hitFlash>0){
+      en.hitFlash-=dt;
+      en.body.material.emissive = new THREE.Color(0xff5555);
+      en.body.material.emissiveIntensity = en.hitFlash*3;
+    } else {
+      en.body.material.emissiveIntensity = 0;
+    }
+    const dToPlayer = en.mesh.position.distanceTo(playerGroup.position);
+    if(en.state==='aggro'){
+      en.aggroT -= dt;
+      // move toward player slowly
+      const dir = new THREE.Vector3().subVectors(playerGroup.position, en.mesh.position);
+      dir.y=0;
+      if(dir.length()>1.8){
+        dir.normalize();
+        en.mesh.position.addScaledVector(dir, dt*2.2);
+        en.mesh.lookAt(playerGroup.position.x, en.mesh.position.y, playerGroup.position.z);
+      } else {
+        // attack player if close
+        en._atkCd=(en._atkCd||0)-dt;
+        if(en._atkCd<=0){
+          en._atkCd=1.0;
+          const dmg=Math.max(1, Math.round(en.atk - getStat('def')*0.5));
+          state.hp = Math.max(0, state.hp-dmg);
+          floatDamage(playerGroup.position, '-'+dmg, 'hurt');
+          spawnParticles(playerGroup.position.clone().setY(0.9), 0xFF6B6B, 8, {speed:4, size:0.11, life:0.4});
+          shake(0.5);
+          updateHud();
+        }
+      }
+      if(en.aggroT<=0 && dToPlayer>10) en.state='idle';
+    } else {
+      // wander near home
+      const wobble = Math.sin(en.t*0.7)*1.5;
+      en.mesh.position.x = en.home.x + Math.sin(en.t*0.4)*1.5;
+      en.mesh.position.z = en.home.z + Math.cos(en.t*0.3)*1.5;
+      if(dToPlayer < 5) { en.state='aggro'; en.aggroT=2; }
+    }
+  });
+}
+
+function updateCamera(dt){
+  const target = playerGroup.position;
+  const horiz = Math.cos(camPitch)*camDist;
+  const camOffset = new THREE.Vector3(
+    Math.sin(camYaw)*horiz,
+    Math.sin(camPitch)*camDist,
+    Math.cos(camYaw)*horiz
+  );
+  const desired = target.clone().add(camOffset);
+  camera.position.lerp(desired, Math.min(1,dt*6));
+  // screen shake
+  if(shakeAmount>0.001){
+    camera.position.x += (Math.random()-0.5)*shakeAmount;
+    camera.position.y += (Math.random()-0.5)*shakeAmount;
+    shakeAmount *= 0.85;
+  }
+  camera.lookAt(target.x, target.y+1, target.z);
+}
+
+function updateZoneLabel(){
+  const x=playerGroup.position.x;
+  let zone='village';
+  if(x>25) zone='forest';
+  else if(x<-25) zone='beach';
+  if(zone!==state.zone){
+    state.zone=zone;
+    updateHud();
+    toast(`เข้าสู่: ${ZONES[zone].label}`);
+  }
+}
+
+function updateBuffExpiry(){
+  // nothing visual needed beyond getStat checks; could show indicator later
+}
+
+</script>
+</body>
+</html>

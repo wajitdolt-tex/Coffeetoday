@@ -176,6 +176,7 @@
   .dmgNum.crit{ color:#FF5E5E; font-size:28px; }
   .dmgNum.hurt{ color:#FF8FA3; }
   @keyframes dmgFloat{ 0%{opacity:0; transform:translate(-50%,-50%) scale(0.5);} 20%{opacity:1; transform:translate(-50%,-90%) scale(1.15);} 100%{opacity:0; transform:translate(-50%,-180%) scale(1);} }
+  @keyframes autoPulse{ 0%,100%{opacity:1; transform:scale(1);} 50%{opacity:0.7; transform:scale(0.97);} }
 </style>
 </head>
 <body>
@@ -204,6 +205,16 @@
     <h2>📜 สมุดเควส</h2>
     <p class="sub">ทำภารกิจให้สำเร็จแล้วกดรับรางวัล</p>
     <div id="questList"></div>
+  </div>
+</div>
+
+<!-- ============ WORLD MAP MODAL ============ -->
+<div class="modalWrap" id="worldMapModal">
+  <div class="panel modal">
+    <div class="closeRow"><button class="btn secondary" data-close="worldMapModal">ปิด ✕</button></div>
+    <h2>🗺️ แผนที่โลก — หุบเขาพัฟลิ่ง</h2>
+    <p class="sub" id="wmapSub">เลือกโซนเพื่อเดินทางหรือเปิดโหมดฟาร์ม</p>
+    <div id="wmapGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
   </div>
 </div>
 
@@ -253,6 +264,15 @@
   <button class="btn secondary" id="statBtn">📊 สเตตัส <span id="statPointBadge" style="display:none; background:#FF5E5E; color:#fff; border-radius:10px; padding:0 6px; font-size:11px; margin-left:2px;"></span></button>
   <button class="btn secondary" id="gearBtn">⚔️ อุปกรณ์</button>
   <button class="btn secondary" id="questBtn">📜 เควส</button>
+  <button class="btn secondary" id="worldMapBtn">🗺️ แผนที่โลก</button>
+  <button class="btn secondary" id="autoBtn" style="background:var(--mint); box-shadow:0 5px 0 #6fc99a;">⚡ Auto</button>
+</div>
+
+<!-- auto indicator -->
+<div id="autoIndicator" style="display:none; position:absolute; top:14px; right:14px; z-index:30;
+  background:rgba(50,160,80,0.92); color:#fff; font-weight:800; font-size:13px;
+  padding:6px 14px; border-radius:18px; animation:autoPulse 1.4s ease-in-out infinite;">
+  ⚡ ฟาร์มอัตโนมัติ…
 </div>
 
 <!-- mobile controls -->
@@ -370,11 +390,43 @@ const RECIPES = [
     buff:{stat:'all', amount:5, duration:90}, desc:'ฮีลเต็ม + บัฟรวม (90s) [สูตรลับ]' },
 ];
 
+/* ---- Legacy zone lookup (kept for zone-label HUD) ---- */
 const ZONES = {
-  village: { label:'หมู่บ้านพัฟ', sub:'จุดเริ่มต้น & โต๊ะทำอาหาร', color:'#FFE8B6' },
-  forest:  { label:'ป่าหิ่งห้อย', sub:'มอนสเตอร์น้อย & เบอร์รี่/เห็ด', color:'#B6E3B0' },
-  beach:   { label:'หาดทรายฟอง', sub:'ปลา & มะพร้าว', color:'#9FE0EA' },
+  village: { label:'หมู่บ้านพัฟ',   sub:'Tier 1 · จุดเริ่มต้น', color:'#FFE8B6' },
+  forest:  { label:'ป่าหิ่งห้อย',   sub:'Tier 2 · เบอร์รี่/เห็ด', color:'#B6E3B0' },
+  beach:   { label:'หาดทรายฟอง',  sub:'Tier 3 · ปลา/มะพร้าว', color:'#9FE0EA' },
+  cave:    { label:'ถ้ำโกบลิน',    sub:'Tier 4 · มอนสเตอร์แข็ง', color:'#C4A882' },
+  frost:   { label:'ยอดเขาหิมะ',   sub:'Tier 5 · บอสน้ำแข็ง', color:'#CCE8F5' },
+  dragon:  { label:'ถ้ำมังกร',     sub:'Tier 6 · บอสมังกร', color:'#E8B8C4' },
 };
+
+// Full tier zone defs for world map
+const TIER_ZONES = [
+  { id:'village', tier:1, name:'หมู่บ้านพัฟ',  icon:'🏡', bossName:'สไลม์หัวหน้า', bossIcon:'👑',
+    reqLv:1,  color:'#F5E6B8', darkColor:'#C9A24A', pos:{x:0,z:0},
+    desc:'โซนเริ่มต้น เหมาะสำหรับฝึกหัด มอนสเตอร์อ่อน',
+    killGoal:30, expPerKill:6, goldPerKill:3,   bossKillGoal:5 },
+  { id:'forest',  tier:2, name:'ป่าหิ่งห้อย', icon:'🌲', bossName:'ราชาสไลม์เขียว', bossIcon:'🌿',
+    reqLv:3,  color:'#B8E6C2', darkColor:'#3E8E4A', pos:{x:55,z:0},
+    desc:'ป่าทึบ มีสไลม์ป่าและสัตว์ร้ายหลากชนิด',
+    killGoal:50, expPerKill:10, goldPerKill:5,  bossKillGoal:5 },
+  { id:'beach',   tier:3, name:'หาดทรายฟอง', icon:'🏖️', bossName:'ปูเฒ่าทะเลลึก', bossIcon:'🦀',
+    reqLv:5,  color:'#B8DCF0', darkColor:'#2E8EA8', pos:{x:-55,z:0},
+    desc:'ชายหาดมีปูยักษ์และสัตว์ทะเลดุร้าย',
+    killGoal:60, expPerKill:14, goldPerKill:7,  bossKillGoal:5 },
+  { id:'cave',    tier:4, name:'ถ้ำโกบลิน',  icon:'⛏️', bossName:'โกบลินราชา', bossIcon:'👺',
+    reqLv:8,  color:'#C4A882', darkColor:'#7A5A3A', pos:{x:0,z:55},
+    desc:'ถ้ำมืดลึก โกบลินหลายร้อยตัวซุ่มอยู่',
+    killGoal:80, expPerKill:20, goldPerKill:10, bossKillGoal:5 },
+  { id:'frost',   tier:5, name:'ยอดเขาหิมะ', icon:'❄️', bossName:'ราชาน้ำแข็ง', bossIcon:'🐉',
+    reqLv:14, color:'#CCE8F5', darkColor:'#4A8EB8', pos:{x:0,z:-55},
+    desc:'ยอดเขาสูงปกคลุมด้วยหิมะ ศัตรูแข็งแกร่งมาก',
+    killGoal:100, expPerKill:32, goldPerKill:16, bossKillGoal:5 },
+  { id:'dragon',  tier:6, name:'ถ้ำมังกร',   icon:'🔥', bossName:'มังกรมืดโบราณ', bossIcon:'🐲',
+    reqLv:22, color:'#E8C8B8', darkColor:'#A83A3A', pos:{x:80,z:80},
+    desc:'แดนสุดท้าย มังกรโบราณที่ไม่มีใครเอาชนะได้',
+    killGoal:150, expPerKill:55, goldPerKill:28, bossKillGoal:3 },
+];
 
 /* ---------------------------------------------------------------
    GLOBAL STATE
@@ -402,8 +454,11 @@ const state = {
   potions: 0,
   activeBuffs: {}, // stat -> {amount, until}
   zone: 'village',
+  zoneProgress: {}, // zoneId -> {kills, bossKills}
+  autoBattle: false,
 };
 for(const k in MATERIALS) state.materials[k] = 0;
+TIER_ZONES.forEach(z=>{ state.zoneProgress[z.id]={kills:0,bossKills:0}; });
 
 /* ---------------------------------------------------------------
    CHARACTER SELECT SCREEN
@@ -871,6 +926,11 @@ document.getElementById('questBtn').addEventListener('click', ()=>{
   refreshQuestUI();
   document.getElementById('questModal').classList.add('open');
 });
+document.getElementById('worldMapBtn').addEventListener('click', ()=>{
+  refreshWorldMap();
+  document.getElementById('worldMapModal').classList.add('open');
+});
+document.getElementById('autoBtn').addEventListener('click', toggleAutoBattle);
 
 const ATTR_INFO = {
   str:{name:'พลัง (STR)', icon:'💪', effect:'เพิ่มพลังโจมตีกายภาพ'},
@@ -1268,34 +1328,89 @@ function openBuilding(role){
     });
     body.appendChild(card);
   } else if(role.id==='shop'){
-    sub.textContent = `ทองของคุณ: ${state.gold} 🪙 — ซื้อยา หรือ ขายอุปกรณ์`;
-    const pCost=25;
-    const buy=document.createElement('div');
-    buy.className='recipeCard';
-    buy.innerHTML=`<div class="ic">🧪</div><div class="info"><div class="nm">ยาฟื้น HP (มี ${state.potions})</div>
-      <div class="need">ราคา ${pCost} 🪙</div><div class="eff">ฟื้น 60 HP ต่อขวด (ใช้ในกระเป๋า)</div></div><button class="btn">ซื้อ</button>`;
-    buy.querySelector('button').addEventListener('click', ()=>{
-      if(state.gold<pCost){ toast('ทองไม่พอ!'); return; }
-      state.gold-=pCost; state.potions++; toast('ซื้อยาฟื้น HP!'); updateHud(); openBuilding(role);
+    sub.textContent = `ทองของคุณ: ${state.gold} 🪙 · Lv.${state.level}`;
+
+    // helper to make section header
+    function shopHeader(t){ const h=document.createElement('div'); h.style.cssText='font-weight:900;font-size:14px;margin:12px 0 6px;padding:4px 8px;background:#f1e6d4;border-radius:8px;'; h.textContent=t; body.appendChild(h); }
+    // helper to make a shop row
+    function shopRow(icon, name, desc, cost, owned, canBuy, onBuy){
+      const row=document.createElement('div'); row.className='recipeCard';
+      row.style.borderColor = canBuy?'#f1e6d4':'#ddd';
+      row.innerHTML=`<div class="ic">${icon}</div><div class="info">
+        <div class="nm">${name}${owned!==null?` <span style="opacity:.6;font-size:11px;">(มี ${owned})</span>`:''}</div>
+        <div class="need">${cost} 🪙</div><div class="eff">${desc}</div></div>
+        <button class="btn" ${canBuy?'':'disabled'} style="font-size:12px;padding:8px 12px;">ซื้อ</button>`;
+      row.querySelector('button').addEventListener('click', ()=>{
+        if(state.gold<cost){ toast('ทองไม่พอ!'); return; }
+        state.gold-=cost; onBuy(); updateHud(); openBuilding(role);
+      });
+      body.appendChild(row);
+    }
+
+    // ── ยาและของใช้ ──────────────────────────────
+    shopHeader('🧪 ยาและของใช้');
+    shopRow('🧪','ยาฟื้น HP เล็ก','ฟื้น 60 HP',25, state.potions, state.gold>=25, ()=>{ state.potions++; toast('ซื้อยาฟื้น HP!'); });
+    shopRow('💊','ยาฟื้น HP กลาง','ฟื้น 200 HP',80, null, state.gold>=80, ()=>{ state.hp=Math.min(state.maxHp,state.hp+200); toast('ดื่มยาขนาดกลาง +200 HP!'); });
+    shopRow('❤️','ยาฟื้น HP เต็ม','ฟื้น HP เต็มทั้งหมด',200, null, state.gold>=200, ()=>{ state.hp=state.maxHp; toast('ฟื้น HP เต็มร้อย!'); });
+    shopRow('⚡','ยาบัฟโจมตี','เพิ่ม ATK +10 นาน 60s',60, null, state.gold>=60, ()=>{ applyBuff({stat:'atk',amount:10,duration:60}); toast('บัฟโจมตี +10 (60s)!'); });
+    shopRow('🛡️','ยาบัฟป้องกัน','เพิ่ม DEF +8 นาน 60s',60, null, state.gold>=60, ()=>{ applyBuff({stat:'def',amount:8,duration:60}); toast('บัฟป้องกัน +8 (60s)!'); });
+    shopRow('💨','ยาบัฟความเร็ว','เพิ่มความเร็ว ×1.5 นาน 45s',50, null, state.gold>=50, ()=>{ applyBuff({stat:'speed',amount:1.5,duration:45}); toast('บัฟความเร็ว (45s)!'); });
+    shopRow('🌟','ยาบัฟรวม','ATK+8 DEF+5 SPD+1.3 นาน 90s',150, null, state.gold>=150, ()=>{ applyBuff({stat:'all',amount:8,duration:90}); toast('บัฟรวมทุกสเตต (90s)!'); });
+
+    // ── ม้วนคาถาเพิ่มแอทริบิวต์ ─────────────────
+    shopHeader('📜 ม้วนคาถา (เพิ่มแอทริบิวต์ถาวร)');
+    const scrollCost = 120 + state.level*15;
+    shopRow('💪','ม้วน STR','เพิ่ม STR +1 ถาวร',scrollCost, null, state.gold>=scrollCost, ()=>{ state.stats.str++; state.maxHp=getMaxHp(); toast('STR +1!'); });
+    shopRow('🎯','ม้วน DEX','เพิ่ม DEX +1 ถาวร',scrollCost, null, state.gold>=scrollCost, ()=>{ state.stats.dex++; toast('DEX +1!'); });
+    shopRow('❤️','ม้วน VIT','เพิ่ม VIT +1 ถาวร',scrollCost, null, state.gold>=scrollCost, ()=>{ state.stats.vit++; state.maxHp=getMaxHp(); toast('VIT +1!'); });
+    shopRow('🔮','ม้วน INT','เพิ่ม INT +1 ถาวร',scrollCost, null, state.gold>=scrollCost, ()=>{ state.stats.int++; toast('INT +1!'); });
+
+    // ── กล่องอุปกรณ์ ─────────────────────────────
+    shopHeader('📦 กล่องอุปกรณ์');
+    shopRow('📦','กล่องธรรมดา','สุ่มอุปกรณ์ common/rare',80, null, state.gold>=80, ()=>{
+      const g=rollGear(Math.max(1,state.level-2)); state.gear.push(g);
+      toast(`เปิดกล่อง! ได้ ${g.icon} ${g.name} (${RARITIES[g.rarity].name})`);
     });
-    body.appendChild(buy);
-    const head=document.createElement('div');
-    head.style.cssText='font-weight:800; font-size:14px; margin:10px 0 6px;';
-    head.textContent='ขายอุปกรณ์ในคลัง:';
-    body.appendChild(head);
+    shopRow('🎁','กล่องพิเศษ','สุ่มอุปกรณ์ rare/epic (เลเวลสูงขึ้น)',250, null, state.gold>=250, ()=>{
+      const g=rollGear(state.level+2); state.gear.push(g);
+      toast(`เปิดกล่องพิเศษ! ได้ ${g.icon} ${g.name} (${RARITIES[g.rarity].name})`);
+    });
+    shopRow('👑','กล่องตำนาน','มีโอกาสได้ Legendary สูง',800, null, state.gold>=800, ()=>{
+      // bias toward epic/legendary
+      const r=Math.random(); let rarity='epic';
+      if(r>0.65) rarity='legendary'; else if(r<0.15) rarity='rare';
+      const g=rollGear(state.level+4); g.rarity=rarity;
+      state.gear.push(g);
+      toast(`✨ เปิดกล่องตำนาน! ได้ ${g.icon} ${g.name} (${RARITIES[rarity].name})!`);
+    });
+
+    // ── แลกวัตถุดิบ ──────────────────────────────
+    shopHeader('🌾 ซื้อวัตถุดิบ');
+    [['wheat','🌾','ข้าวสาลี',8],['egg','🥚','ไข่ไก่',8],['milk','🥛','นมสด',10],
+     ['berry','🫐','เบอร์รี่',12],['mushroom','🍄','เห็ด',12],['herb','🌿','สมุนไพร',14],
+     ['fish','🐟','ปลา',16],['coconut','🥥','มะพร้าว',16]].forEach(([id,ic,nm,cost])=>{
+      shopRow(ic, nm, `เพิ่ม ${nm} ×1 ในกระเป๋า`, cost, state.materials[id]||0, state.gold>=cost, ()=>{
+        state.materials[id]=(state.materials[id]||0)+1; toast(`ซื้อ ${ic} ${nm}!`);
+      });
+    });
+
+    // ── ขายอุปกรณ์ ────────────────────────────────
+    shopHeader('💰 ขายอุปกรณ์ในคลัง');
     if(state.gear.length===0){
-      const e=document.createElement('div'); e.style.cssText='font-size:12px; opacity:.6;'; e.textContent='ไม่มีอุปกรณ์ให้ขาย';
+      const e=document.createElement('div'); e.style.cssText='font-size:12px;opacity:.6;margin:4px 0 8px;'; e.textContent='ไม่มีอุปกรณ์ให้ขาย — ปราบมอนเพื่อดรอปของ';
       body.appendChild(e);
     } else {
-      state.gear.slice().forEach(g=>{
+      const order={legendary:0,epic:1,rare:2,common:3};
+      state.gear.slice().sort((a,b)=>order[a.rarity]-order[b.rarity]).forEach(g=>{
         const val = Math.round((g.level*4) * RARITIES[g.rarity].mult);
-        const row=document.createElement('div');
-        row.className='recipeCard';
+        const row=document.createElement('div'); row.className='recipeCard';
         row.style.borderColor=RARITIES[g.rarity].color;
-        row.innerHTML=`<div class="ic">${g.icon}</div><div class="info"><div class="nm" style="color:${RARITIES[g.rarity].color}">${g.name}</div>
-          <div class="need">${gearStatStr(g)}</div><div class="eff">ขายได้ ${val} 🪙</div></div><button class="btn secondary">ขาย</button>`;
+        row.innerHTML=`<div class="ic">${g.icon}</div><div class="info">
+          <div class="nm" style="color:${RARITIES[g.rarity].color}">${g.name} <span style="background:${RARITIES[g.rarity].color};color:#fff;border-radius:6px;padding:1px 5px;font-size:10px;">${RARITIES[g.rarity].name}</span></div>
+          <div class="need">${gearStatStr(g)}</div><div class="eff">ขายได้ ${val} 🪙</div></div>
+          <button class="btn secondary" style="font-size:11px;padding:6px 10px;">ขาย</button>`;
         row.querySelector('button').addEventListener('click', ()=>{
-          state.gear = state.gear.filter(x=>x.id!==g.id);
+          state.gear=state.gear.filter(x=>x.id!==g.id);
           state.gold+=val; toast(`ขาย ${g.name} +${val}🪙`); updateHud(); openBuilding(role);
         });
         body.appendChild(row);
@@ -1421,6 +1536,7 @@ function collectSaveData(){
     materials: state.materials, foods: state.foods,
     gear: state.gear, equipped: state.equipped, gold: state.gold, potions: state.potions,
     quests: quests.map(q=>({id:q.id, progress:q.progress, status:q.status})),
+    zoneProgress: state.zoneProgress,
     pos: playerGroup ? {x:playerGroup.position.x, z:playerGroup.position.z} : null,
   };
 }
@@ -1446,10 +1562,173 @@ async function loadGame(){
   state.maxHp=getMaxHp(); state.hp=Math.min(d.hp||state.maxHp, state.maxHp);
   // restore quest progress
   if(d.quests){ d.quests.forEach(sq=>{ const q=quests.find(x=>x.id===sq.id); if(q){ q.progress=sq.progress; q.status=sq.status; } }); }
+  if(d.zoneProgress){ Object.assign(state.zoneProgress, d.zoneProgress); }
   if(d.pos && playerGroup){ playerGroup.position.x=d.pos.x; playerGroup.position.z=d.pos.z; }
   updateHud(); updateStatBadge(); updateQuestTracker();
   toast('โหลดเซฟแล้ว ✅');
 }
+/* =====================================================================
+   WORLD MAP & ZONE TRAVEL
+   ===================================================================== */
+function refreshWorldMap(){
+  document.getElementById('wmapSub').textContent =
+    `Lv.${state.level} · ทอง ${state.gold}🪙 · โซนปัจจุบัน: ${ZONES[state.zone].label}`;
+  const grid = document.getElementById('wmapGrid');
+  grid.innerHTML='';
+  TIER_ZONES.forEach(tz=>{
+    const prog = state.zoneProgress[tz.id] || {kills:0,bossKills:0};
+    const locked = state.level < tz.reqLv;
+    const killPct = Math.min(100, Math.round(prog.kills/tz.killGoal*100));
+    const bossPct = Math.min(100, Math.round(prog.bossKills/tz.bossKillGoal*100));
+    const isCurrent = state.zone === tz.id;
+
+    const card = document.createElement('div');
+    card.style.cssText=`background:${locked?'#e8e4de':tz.color}; border-radius:16px; padding:12px;
+      border:3px solid ${isCurrent?tz.darkColor:'transparent'};
+      opacity:${locked?0.6:1}; position:relative; transition:.15s;`;
+
+    card.innerHTML=`
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+        <span style="font-size:22px;">${tz.icon}</span>
+        <div>
+          <div style="font-weight:900;font-size:14px;">${tz.name}</div>
+          <div style="font-size:10px;opacity:.7;">Tier ${tz.tier} · Lv.${tz.reqLv}+</div>
+        </div>
+        ${locked?`<span style="margin-left:auto;font-size:18px;">🔒</span>`:''}
+        ${isCurrent?`<span style="margin-left:auto;font-size:11px;font-weight:800;color:${tz.darkColor};">▶ ที่นี่</span>`:''}
+      </div>
+      <div style="font-size:11px;opacity:.65;margin-bottom:6px;">${tz.desc}</div>
+      <!-- kill bar -->
+      <div style="font-size:10px;font-weight:700;margin-bottom:2px;">⚔️ กำจัด ${prog.kills}/${tz.killGoal}</div>
+      <div style="height:7px;border-radius:4px;background:rgba(0,0,0,0.12);margin-bottom:5px;">
+        <div style="height:100%;border-radius:4px;background:${tz.darkColor};width:${killPct}%;transition:.4s;"></div></div>
+      <!-- boss bar -->
+      <div style="font-size:10px;font-weight:700;margin-bottom:2px;">${tz.bossIcon} บอส ${prog.bossKills}/${tz.bossKillGoal}</div>
+      <div style="height:7px;border-radius:4px;background:rgba(0,0,0,0.12);margin-bottom:8px;">
+        <div style="height:100%;border-radius:4px;background:#E05050;width:${bossPct}%;transition:.4s;"></div></div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn" data-tz="${tz.id}" data-action="travel" ${locked?'disabled':''} style="flex:1;font-size:12px;padding:7px;">🚀 เดินทาง</button>
+        <button class="btn" data-tz="${tz.id}" data-action="auto" ${locked?'disabled':''} style="flex:1;font-size:12px;padding:7px;background:var(--mint);box-shadow:0 4px 0 #6fc99a;">⚡ Auto</button>
+      </div>`;
+
+    card.querySelectorAll('button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const tzId = btn.dataset.tz;
+        const action = btn.dataset.action;
+        if(action==='travel'){ travelToZone(tzId); document.getElementById('worldMapModal').classList.remove('open'); }
+        else { travelToZone(tzId); startAutoBattle(); document.getElementById('worldMapModal').classList.remove('open'); }
+      });
+    });
+    grid.appendChild(card);
+  });
+}
+
+// Zone spawn points in 3D world (village=0,0 | forest=55,0 | beach=-55,0 | cave=new zones)
+const ZONE_SPAWN = {
+  village:{x:0, z:8},
+  forest: {x:52, z:3},
+  beach:  {x:-50, z:3},
+  cave:   {x:0,  z:52},
+  frost:  {x:0,  z:-52},
+  dragon: {x:75, z:75},
+};
+function travelToZone(zoneId){
+  if(!playerGroup) return;
+  const sp = ZONE_SPAWN[zoneId] || {x:0,z:8};
+  playerGroup.position.set(sp.x, 0, sp.z);
+  state.zone = zoneId;
+  updateHud();
+  toast(`✈️ เดินทางไป ${ZONES[zoneId].label}!`);
+  // Respawn enemies appropriate to this zone
+  spawnEnemiesForZone(zoneId);
+  enemies.forEach(en=>{ if(en.boss) drawEnemyBar(en); });
+}
+
+/* =====================================================================
+   AUTO-BATTLE
+   ===================================================================== */
+let autoTarget = null;
+let autoCollectTimer = 0;
+let autoPotionCooldown = 0;
+
+function toggleAutoBattle(){
+  state.autoBattle = !state.autoBattle;
+  const btn = document.getElementById('autoBtn');
+  const ind = document.getElementById('autoIndicator');
+  if(state.autoBattle){
+    btn.style.background='#32A050'; btn.style.boxShadow='0 5px 0 #1d6e33'; btn.textContent='⚡ Auto ON';
+    ind.style.display='block';
+    toast('⚡ เริ่มฟาร์มอัตโนมัติ!');
+  } else {
+    btn.style.background='var(--mint)'; btn.style.boxShadow='0 5px 0 #6fc99a'; btn.textContent='⚡ Auto';
+    ind.style.display='none';
+    toast('หยุดฟาร์มอัตโนมัติ');
+    autoTarget=null;
+  }
+}
+function startAutoBattle(){
+  if(!state.autoBattle) toggleAutoBattle();
+}
+
+function updateAutoBattle(dt){
+  if(!state.autoBattle || !playerGroup) return;
+  autoPotionCooldown = Math.max(0, autoPotionCooldown-dt);
+
+  // Auto-heal: use potion when HP < 40%
+  if(state.hp < state.maxHp*0.40 && state.potions>0 && autoPotionCooldown<=0){
+    state.potions--; state.hp=Math.min(state.maxHp, state.hp+60);
+    toast('🧪 Auto ใช้ยา'); updateHud(); autoPotionCooldown=4;
+  }
+
+  // Find nearest live enemy in current zone
+  let nearest=null, nd=99999;
+  enemies.forEach(en=>{
+    if(en.hp<=0 || !en.mesh.visible) return;
+    // check enemy is roughly in the right zone
+    const d=playerGroup.position.distanceTo(en.mesh.position);
+    if(d<nd){ nd=d; nearest=en; }
+  });
+
+  if(!nearest){
+    // No enemies nearby — wander slightly toward zone center
+    const sp=ZONE_SPAWN[state.zone]||{x:0,z:8};
+    const dx=sp.x-playerGroup.position.x, dz=sp.z-playerGroup.position.z;
+    const dl=Math.hypot(dx,dz);
+    if(dl>5){
+      playerGroup.position.x += (dx/dl)*getStat('speed')*dt;
+      playerGroup.position.z += (dz/dl)*getStat('speed')*dt;
+    }
+    return;
+  }
+
+  const dist = playerGroup.position.distanceTo(nearest.mesh.position);
+  const cls = CLASS_DEFS[state.classId];
+  const attackRange = cls.atkType==='melee' ? cls.range*0.9 : cls.range*0.6;
+
+  if(dist > attackRange*0.85){
+    // Move toward target
+    const dir=new THREE.Vector3().subVectors(nearest.mesh.position, playerGroup.position).setY(0).normalize();
+    playerGroup.position.addScaledVector(dir, getStat('speed')*dt);
+    const targetRot=Math.atan2(dir.x,dir.z);
+    playerGroup.rotation.y+=(((targetRot-playerGroup.rotation.y+Math.PI*3)%(Math.PI*2))-Math.PI)*Math.min(1,dt*8);
+    // walk animation
+    player.walkPhase+=dt*getStat('speed')*1.6;
+    playerGroup.position.y=Math.abs(Math.sin(player.walkPhase))*0.06;
+    const sw=Math.sin(player.walkPhase)*0.7;
+    if(player.limbs){ player.limbs.leftLeg.rotation.x=sw; player.limbs.rightLeg.rotation.x=-sw; }
+  } else {
+    // Attack!
+    if(player.attackCooldown<=0) doAttack();
+  }
+
+  // Auto-collect nearby drops
+  autoCollectTimer+=dt;
+  if(autoCollectTimer>0.3){ autoCollectTimer=0; tryCollect(); }
+
+  // Auto-skill every CD
+  if(skillCd<=0 && dist<20) doSkill();
+}
+
 function flashSaveIcon(){
   const el=document.getElementById('saveIndicator');
   if(!el) return;
@@ -1992,25 +2271,55 @@ function addCollectible(x,z,matId){
 }
 
 /* ---------------- Enemies (cute slimes) ---------------- */
-function spawnEnemies(){
-  // Forest: 2 packs of slimes
-  spawnPack(48, -8, 4, {});
-  spawnPack(62, 10, 4, {});
-  // lone wanderers
-  for(let i=0;i<3;i++){
-    const a=Math.random()*Math.PI*2, r=10+Math.random()*16;
-    addEnemy(55+Math.cos(a)*r, Math.sin(a)*r, {});
-  }
-  // Beach: pack of crabs
-  spawnPack(-50, 6, 4, {crab:true});
-  for(let i=0;i<2;i++){
-    const a=Math.random()*Math.PI*2, r=8+Math.random()*12;
-    addEnemy(-55+Math.cos(a)*r, Math.sin(a)*r, {crab:true});
-  }
-  // BOSSES
-  addEnemy(68, 0, {boss:true, name:'ราชาสไลม์เขียว', bossColor:0x3E9E4E});
-  addEnemy(-66, -4, {crab:true, boss:true, name:'ปูเฒ่าทะเลลึก', bossColor:0xD84B3A});
+/* ---- Per-zone enemy type definitions ---- */
+const ZONE_ENEMY_TYPES = {
+  village:{ name:'สไลม์น้อย',   bodyCol:0x9FD88A, eyeCol:0x2A2A2A, scale:0.9,  bossName:'หัวหน้าสไลม์',  bossCol:0x5AB84A, bossScale:2.2 },
+  forest: { name:'หมาป่า',       bodyCol:0x7BA05A, eyeCol:0xFF4444, scale:1.05, bossName:'ราชาสไลม์เขียว',bossCol:0x3A8A3A, bossScale:2.5 },
+  beach:  { name:'ปูทะเล',       bodyCol:0xFF9060, eyeCol:0x220000, scale:1.0,  bossName:'ปูเฒ่าทะเลลึก', bossCol:0xCC3A18, bossScale:2.6 },
+  cave:   { name:'โกบลิน',       bodyCol:0x7BAA52, eyeCol:0xFF6600, scale:1.1,  bossName:'โกบลินราชา',    bossCol:0x3A6A28, bossScale:2.8 },
+  frost:  { name:'มอนสเตอร์หิมะ',bodyCol:0xAAD8F5, eyeCol:0x0044AA, scale:1.15, bossName:'ราชาน้ำแข็ง',   bossCol:0x4488CC, bossScale:3.0 },
+  dragon: { name:'มังกรน้อย',    bodyCol:0xD04030, eyeCol:0xFFAA00, scale:1.2,  bossName:'มังกรมืดโบราณ', bossCol:0x880000, bossScale:3.4 },
+};
+
+function clearEnemies(){
+  enemies.forEach(en=>{ if(en.mesh) scene.remove(en.mesh); });
+  enemies.length=0;
 }
+
+function spawnEnemiesForZone(zoneId){
+  clearEnemies();
+  const tz = TIER_ZONES.find(z=>z.id===zoneId);
+  const pos = tz ? tz.pos : {x:0,z:0};
+  const baseLv = tz ? tz.reqLv : 1;
+  const et = ZONE_ENEMY_TYPES[zoneId] || ZONE_ENEMY_TYPES.village;
+
+  // Spawn 3 packs + some loners + 1 boss
+  const packCount = 3;
+  for(let p=0; p<packCount; p++){
+    const pa = (p/packCount)*Math.PI*2 + Math.random()*0.4;
+    const pr = 8+Math.random()*12;
+    const cx = pos.x+Math.cos(pa)*pr, cz = pos.z+Math.sin(pa)*pr;
+    const packSize = 3+Math.floor(Math.random()*3);
+    for(let i=0;i<packSize;i++){
+      const a=(i/packSize)*Math.PI*2, r=2+Math.random()*2;
+      const lv = baseLv + Math.floor(Math.random()*3);
+      addEnemy(cx+Math.cos(a)*r, cz+Math.sin(a)*r, {zoneId, level:lv, et});
+    }
+  }
+  // lone wanderers
+  for(let i=0;i<4;i++){
+    const a=Math.random()*Math.PI*2, r=6+Math.random()*18;
+    const lv = baseLv + Math.floor(Math.random()*4);
+    addEnemy(pos.x+Math.cos(a)*r, pos.z+Math.sin(a)*r, {zoneId, level:lv, et});
+  }
+  // Boss
+  const bossX = pos.x + (Math.random()>0.5?1:-1)*(14+Math.random()*6);
+  const bossZ = pos.z + (Math.random()>0.5?1:-1)*(14+Math.random()*6);
+  addEnemy(bossX, bossZ, {zoneId, level:baseLv+4, et, boss:true,
+    name:et.bossName, bossColor:et.bossCol, bossScale:et.bossScale});
+}
+
+function spawnEnemies(){ spawnEnemiesForZone('village'); }
 
 function spawnPack(cx,cz,count,opts){
   for(let i=0;i<count;i++){
@@ -2021,61 +2330,115 @@ function spawnPack(cx,cz,count,opts){
 
 function addEnemy(x,z, opts){
   opts = opts||{};
-  const crab = !!opts.crab;
   const boss = !!opts.boss;
+  const et = opts.et || ZONE_ENEMY_TYPES.village;
+  const level = opts.level || 1;
+  const sc = boss ? (opts.bossScale||et.bossScale||2.4) : (et.scale||1);
+  const bodyCol = boss ? (opts.bossColor||et.bossCol) : et.bodyCol;
+
   const g = new THREE.Group();
-  const bodyColor = boss ? opts.bossColor : (crab ? 0xFF8C7A : 0xB7E3A0);
-  const body = new THREE.Mesh(new THREE.SphereGeometry(0.5,8,6), flatMat(bodyColor));
-  body.scale.set(1,0.7,1);
-  body.position.y=0.4;
-  body.castShadow=true;
-  g.add(body);
+
+  // Body — shape varies per zone
+  const zoneId = opts.zoneId||'village';
+  let body;
+  if(zoneId==='beach'){
+    // Crab: flat oval body
+    body = new THREE.Mesh(new THREE.SphereGeometry(0.52,8,6), flatMat(bodyCol));
+    body.scale.set(1.3,0.55,1.1); body.position.y=0.3;
+  } else if(zoneId==='cave'){
+    // Goblin: box body
+    body = new THREE.Mesh(new THREE.BoxGeometry(0.7,0.7,0.55), flatMat(bodyCol));
+    body.position.y=0.42;
+  } else if(zoneId==='frost'){
+    // Ice golem: icosahedron
+    body = new THREE.Mesh(new THREE.IcosahedronGeometry(0.5,0), flatMat(bodyCol));
+    body.position.y=0.5;
+  } else if(zoneId==='dragon'){
+    // Dragon: elongated body
+    body = new THREE.Mesh(new THREE.SphereGeometry(0.5,8,6), flatMat(bodyCol));
+    body.scale.set(1.1,1.0,1.5); body.position.y=0.5;
+  } else {
+    // Default slime / wolf
+    body = new THREE.Mesh(new THREE.SphereGeometry(0.5,8,6), flatMat(bodyCol));
+    body.scale.set(1,0.7,1); body.position.y=0.4;
+  }
+  body.castShadow=true; g.add(body);
+
+  // Eyes
   for(const side of [-1,1]){
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.08,6,6), flatMat(0x4a3b32));
-    eye.position.set(0.18*side,0.62,0.4);
-    g.add(eye);
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.072,6,6), flatMat(et.eyeCol||0x2A2A2A));
+    eye.position.set(0.18*side, 0.62, 0.38); g.add(eye);
   }
-  // boss crown + bigger scale
+
+  // Zone-specific details
+  if(zoneId==='beach'){
+    for(const s of [-1,1]){
+      const claw=new THREE.Mesh(new THREE.BoxGeometry(0.18,0.1,0.35), flatMat(bodyCol));
+      claw.position.set(0.55*s,0.22,0.1); g.add(claw);
+    }
+  } else if(zoneId==='frost'){
+    for(let i=0;i<5;i++){
+      const sp=new THREE.Mesh(new THREE.ConeGeometry(0.06,0.28,4), flatMat(0xE0F4FF));
+      sp.position.set((Math.random()-0.5)*0.5, 0.7+Math.random()*0.3, (Math.random()-0.5)*0.5);
+      sp.rotation.z=(Math.random()-0.5)*0.5; g.add(sp);
+    }
+  } else if(zoneId==='dragon'){
+    const wing1=new THREE.Mesh(new THREE.ConeGeometry(0.3,0.6,4), flatMat(0x882020));
+    wing1.position.set(-0.5,0.6,-0.2); wing1.rotation.z=1.2; g.add(wing1);
+    const wing2=new THREE.Mesh(new THREE.ConeGeometry(0.3,0.6,4), flatMat(0x882020));
+    wing2.position.set(0.5,0.6,-0.2); wing2.rotation.z=-1.2; g.add(wing2);
+    const horn=new THREE.Mesh(new THREE.ConeGeometry(0.06,0.3,5), flatMat(0xFFCC00));
+    horn.position.set(0,0.85,0.1); g.add(horn);
+  } else if(zoneId==='cave'){
+    const ear1=new THREE.Mesh(new THREE.ConeGeometry(0.1,0.24,4), flatMat(0xBBDD88));
+    ear1.position.set(-0.28,0.82,0); ear1.rotation.z=0.4; g.add(ear1);
+    const ear2=ear1.clone(); ear2.position.set(0.28,0.82,0); ear2.rotation.z=-0.4; g.add(ear2);
+  }
+
+  // Boss crown/aura
   if(boss){
-    g.scale.set(2.1,2.1,2.1);
-    const crown = new THREE.Mesh(new THREE.ConeGeometry(0.3,0.4,5), flatMat(0xFFD24A));
-    crown.position.set(0,1.0,0);
-    g.add(crown);
+    g.scale.setScalar(sc);
+    const crown=new THREE.Mesh(new THREE.ConeGeometry(0.28,0.38,6), flatMat(0xFFD24A));
+    crown.position.set(0,1.0,0); g.add(crown);
+    // glowing aura ring
+    const aura=new THREE.Mesh(new THREE.RingGeometry(0.55,0.75,16),
+      new THREE.MeshBasicMaterial({color:bodyCol, transparent:true, opacity:0.5, side:THREE.DoubleSide}));
+    aura.rotation.x=-Math.PI/2; aura.position.y=0.05; g.add(aura);
   }
+
   g.position.set(x,0,z);
   scene.add(g);
-  attachContactShadow(g, boss?0.7:0.45);
-  let level;
-  if(boss) level = crab ? 12 : 10;
-  else level = crab ? 3+Math.floor(Math.random()*2) : 1+Math.floor(Math.random()*3);
+  attachContactShadow(g, boss?0.7:0.42);
 
-  // HP bar sprite above enemy
-  const barCanvas = document.createElement('canvas');
-  barCanvas.width=64; barCanvas.height=12;
-  const barTex = new THREE.CanvasTexture(barCanvas);
-  const barMat = new THREE.SpriteMaterial({map:barTex, transparent:true, depthTest:false});
-  const barSprite = new THREE.Sprite(barMat);
-  barSprite.scale.set(boss?1.6:1.3, boss?0.3:0.24, 1);
-  barSprite.position.set(0, boss?0.85:1.3, 0);
-  barSprite.visible = boss; // bosses always show bar
+  // Level badge sprite
+  const lvLabel = makeTextSprite(`Lv.${level}`, boss?'#FFD24A':'#FFFFFF');
+  lvLabel.scale.set(1.6,0.32,1);
+  lvLabel.position.set(0, boss?1.2:1.05, 0);
+  g.add(lvLabel);
+
+  // HP bar
+  const barCanvas=document.createElement('canvas'); barCanvas.width=64; barCanvas.height=12;
+  const barTex=new THREE.CanvasTexture(barCanvas);
+  const barSprite=new THREE.Sprite(new THREE.SpriteMaterial({map:barTex, transparent:true, depthTest:false}));
+  barSprite.scale.set(boss?1.6:1.3, boss?0.3:0.22, 1);
+  barSprite.position.set(0, boss?1.4:1.26, 0);
+  barSprite.visible=boss;
   g.add(barSprite);
 
-  // boss nameplate
   let nameSprite=null;
   if(boss){
-    nameSprite = makeTextSprite(opts.name, '#FFE26B');
-    nameSprite.position.set(0,1.05,0);
-    g.add(nameSprite);
+    nameSprite=makeTextSprite(opts.name||et.bossName,'#FFE26B');
+    nameSprite.position.set(0,1.62,0); g.add(nameSprite);
   }
 
-  const hpMax = boss ? (180+level*30) : (15+level*8);
+  const hpMax = boss ? Math.round((200+level*40)*sc*0.6) : Math.round(15+level*9);
   enemies.push({
-    mesh:g, body, home:{x,z}, level, boss, crab,
-    name: opts.name || (crab?'ปูน้อย':'สไลม์'),
-    maxHp: hpMax, hp: hpMax,
-    atk: boss ? (6+level*2) : (2+level*1.5),
-    expReward: boss ? (120+level*20) : (8+level*6),
-    state:'idle', t:Math.random()*10, target:null,
+    mesh:g, body, home:{x,z}, level, boss, zoneId,
+    name: boss ? (opts.name||et.bossName) : et.name,
+    maxHp:hpMax, hp:hpMax,
+    atk: boss ? Math.round(8+level*2.5) : Math.round(2+level*1.8),
+    expReward: boss ? Math.round(150+level*25) : Math.round(8+level*7),
+    state:'idle', t:Math.random()*10,
     barCanvas, barTex, barSprite, nameSprite,
   });
 }
@@ -2311,13 +2674,19 @@ function killEnemy(en){
   const drop = zoneItems[Math.floor(Math.random()*zoneItems.length)];
   state.materials[drop] = (state.materials[drop]||0)+1;
   // gold drop
-  const gold = en.boss ? (80+en.level*10) : (3+Math.floor(Math.random()*en.level*3));
+  const tz = TIER_ZONES.find(z=>z.id===en.zoneId) || TIER_ZONES[0];
+  const gold = en.boss
+    ? Math.round(tz.goldPerKill * 20 + en.level*6)
+    : Math.round(tz.goldPerKill * (0.6+Math.random()*0.8));
   state.gold += gold;
   floatDamage(en.mesh.position.clone().setY(1.2), '🪙+'+gold, 'hit');
   updateHud();
   // quest progress
   if(en.boss) questEvent('boss',1); else questEvent('kill',1);
   questEvent('gold', state.gold);
+  // zone progress
+  const zp = state.zoneProgress[state.zone];
+  if(zp){ if(en.boss) zp.bossKills=Math.min(zp.bossKills+1,99); else zp.kills=Math.min(zp.kills+1,999); }
   // gear drop: bosses always drop, normal mobs ~35%
   if(en.boss || Math.random() < 0.35){
     const gearCount = en.boss ? 2 : 1;
@@ -2399,6 +2768,7 @@ function animate(){
   updateAOE(dt);
   updateCooldowns(dt);
   updateBuildings();
+  updateAutoBattle(dt);
   if(waterMesh){ waterMesh.position.y = 0.01 + Math.sin(t*1.2)*0.06; waterMesh.material.opacity = 0.88+Math.sin(t*2)*0.05; }
   updateCamera(dt);
   updateZoneLabel();
@@ -2659,14 +3029,19 @@ function updateCamera(dt){
 }
 
 function updateZoneLabel(){
-  const x=playerGroup.position.x;
-  let zone='village';
-  if(x>25) zone='forest';
-  else if(x<-25) zone='beach';
-  if(zone!==state.zone){
-    state.zone=zone;
+  // Find nearest zone by distance to spawn point
+  let nearest='village', nd=9999;
+  for(const id in ZONE_SPAWN){
+    const sp=ZONE_SPAWN[id];
+    const d=Math.hypot(playerGroup.position.x-sp.x, playerGroup.position.z-sp.z);
+    if(d<nd){ nd=d; nearest=id; }
+  }
+  if(nearest!==state.zone){
+    state.zone=nearest;
     updateHud();
-    toast(`เข้าสู่: ${ZONES[zone].label}`);
+    toast(`เข้าสู่: ${ZONES[nearest].label}`);
+    spawnEnemiesForZone(nearest);
+    enemies.forEach(en=>{ if(en.boss) drawEnemyBar(en); });
   }
 }
 

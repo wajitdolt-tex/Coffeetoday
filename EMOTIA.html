@@ -29,6 +29,33 @@
   --font-d:   Georgia, serif;
   --font-b:   -apple-system, 'Helvetica Neue', Arial, sans-serif;
   --r:        20px;
+  --white:    #FFFFFF;
+  --shadow:   rgba(0,0,0,0.08);
+  --shadow2:  rgba(0,0,0,0.05);
+}
+[data-theme="dark"] {
+  --cream:    #1A1612;
+  --paper:    #221C16;
+  --soft:     #3A3028;
+  --warm:     #2A221A;
+  --ink:      #F0E6D8;
+  --ink2:     #C8B8A4;
+  --dim:      #8A7864;
+  --border:   rgba(180,140,100,0.2);
+  --coral:    #E8856E;
+  --coral2:   #D45A40;
+  --peach:    #D89870;
+  --mint:     #7AB89A;
+  --sky:      #7A9EC8;
+  --lavender: #A892C8;
+  --gold:     #D4B048;
+  --common:   #7AB89A;
+  --uncommon: #7A9EC8;
+  --rare:     #A892C8;
+  --legendary:#D4B048;
+  --white:    #2A221A;
+  --shadow:   rgba(0,0,0,0.4);
+  --shadow2:  rgba(0,0,0,0.3);
 }
 
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -80,7 +107,7 @@ body{
   color:var(--coral);letter-spacing:3px;text-transform:uppercase;
 }
 .lv-pill{
-  background:white;border:1.5px solid var(--coral);
+  background:var(--white);border:1.5px solid var(--coral);
   border-radius:20px;padding:5px 14px;
   font-size:11px;color:var(--coral);font-weight:600;
   box-shadow:0 2px 8px rgba(232,114,90,0.15);
@@ -109,7 +136,7 @@ body{
 .alpaca-svg:active{animation:none;transform:scale(0.93);}
 .mood-pill{
   margin-top:6px;
-  background:white;border:1.5px solid var(--soft);
+  background:var(--white);border:1.5px solid var(--soft);
   border-radius:20px;padding:5px 16px;
   font-size:11px;color:var(--dim);
   box-shadow:0 2px 6px rgba(0,0,0,0.06);
@@ -118,7 +145,7 @@ body{
 /* feel input card — gachapon machine style */
 .feel-section{padding:0 18px 14px;}
 .feel-machine{
-  background:white;
+  background:var(--white);
   border-radius:24px;
   border:2px solid var(--soft);
   overflow:hidden;
@@ -164,7 +191,7 @@ body{
 .coin-btn{
   border:1.5px solid var(--soft);border-radius:8px;
   padding:4px 10px;font-size:9px;color:var(--dim);
-  background:white;letter-spacing:1px;
+  background:var(--white);letter-spacing:1px;
 }
 .knob{
   width:28px;height:28px;border-radius:50%;
@@ -178,9 +205,9 @@ body{
 /* ── DAILY QUEST PANEL ── */
 .quest-panel{
   margin:0 18px 14px;
-  background:white;border:2px solid var(--soft);
+  background:var(--white);border:2px solid var(--soft);
   border-radius:20px;padding:14px 16px;
-  box-shadow:0 3px 14px rgba(0,0,0,0.06);
+  box-shadow:0 3px 14px var(--shadow2);
 }
 .quest-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 .quest-title{font-family:var(--font-d);font-size:14px;color:var(--ink);font-weight:600;}
@@ -250,14 +277,14 @@ body{
 .card-btn{flex:1;border:none;border-radius:20px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;transition:transform 0.15s;}
 .card-btn:active{transform:scale(0.95);}
 .card-share{background:var(--coral);color:white;box-shadow:0 3px 10px rgba(232,114,90,0.35);}
-.card-close{background:white;color:var(--ink2);border:1.5px solid var(--soft);}
+.card-close{background:var(--white);color:var(--ink2);border:1.5px solid var(--soft);}
 
 /* ── WEEKLY RECAP ── */
 .recap-panel{
   margin:0 18px 14px;
-  background:white;border:2px solid var(--soft);
+  background:var(--white);border:2px solid var(--soft);
   border-radius:20px;padding:14px 16px;
-  box-shadow:0 3px 14px rgba(0,0,0,0.06);
+  box-shadow:0 3px 14px var(--shadow2);
   display:none;
 }
 .recap-head{margin-bottom:10px;}
@@ -279,11 +306,11 @@ body{
 /* result card */
 .result-wrap{padding:0 18px 14px;}
 .result-card{
-  background:white;border-radius:24px;
+  background:var(--white);border-radius:24px;
   border:2px solid var(--soft);
   padding:20px 18px;display:none;
   animation:popUp 0.4s cubic-bezier(.22,1,.36,1);
-  box-shadow:0 4px 20px rgba(0,0,0,0.08);
+  box-shadow:0 4px 20px var(--shadow);
 }
 .result-card.show{display:block;}
 @keyframes popUp{from{opacity:0;transform:scale(0.94) translateY(10px)}to{opacity:1;transform:none}}
@@ -312,9 +339,9 @@ body{
 /* stats */
 .stats-row{display:flex;gap:10px;padding:0 18px 14px;}
 .stat{
-  flex:1;background:white;border:1.5px solid var(--soft);
+  flex:1;background:var(--white);border:1.5px solid var(--soft);
   border-radius:18px;padding:14px 8px;text-align:center;
-  box-shadow:0 2px 8px rgba(0,0,0,0.05);
+  box-shadow:0 2px 8px var(--shadow2);
 }
 .stat-n{font-family:var(--font-d);font-size:22px;color:var(--ink);}
 .stat-l{font-size:10px;color:var(--dim);margin-top:3px;}
@@ -322,10 +349,10 @@ body{
 /* chat teaser */
 .izakaya-teaser{
   margin:0 18px 18px;border-radius:24px;
-  background:white;border:2px solid var(--soft);
+  background:var(--white);border:2px solid var(--soft);
   padding:16px 18px;cursor:pointer;position:relative;overflow:hidden;
   transition:transform 0.18s,box-shadow 0.2s;
-  box-shadow:0 4px 16px rgba(0,0,0,0.07);
+  box-shadow:0 4px 16px var(--shadow2);
 }
 .izakaya-teaser:active{transform:scale(0.97);}
 .iz-glow{
@@ -335,7 +362,19 @@ body{
   pointer-events:none;
 }
 .iz-title{font-family:var(--font-d);font-size:15px;color:var(--coral);margin-bottom:4px;font-weight:600;}
-.iz-desc{font-size:12px;color:var(--dim);line-height:1.6;}
+.iz-desc{font-size:12px;color:var(--dim);line-height:1.6;margin-bottom:10px;}
+.iz-preview-chars{
+  display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;
+}
+.iz-prev-char{
+  display:flex;align-items:center;gap:4px;
+  background:var(--cream);border:1px solid var(--soft);
+  border-radius:12px;padding:4px 9px;
+  font-size:11px;color:var(--ink2);
+  transition:all 0.15s;
+}
+.iz-prev-char span{font-size:10px;}
+.iz-current-time{font-size:11px;color:var(--coral);font-weight:600;}
 
 /* dots loader */
 .dots{display:inline-flex;gap:4px;vertical-align:middle;}
@@ -411,6 +450,15 @@ body{
   overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
 }
 .iz-map::-webkit-scrollbar{display:none;}
+.iz-time-pill{
+  flex-shrink:0;display:flex;align-items:center;
+  background:rgba(255,255,255,0.22);
+  border:1.5px solid rgba(255,255,255,0.45);
+  border-radius:20px;padding:5px 12px;
+  font-size:11px;color:white;font-weight:700;
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  white-space:nowrap;letter-spacing:0.5px;
+}
 .iz-map-btn{
   flex-shrink:0;background:rgba(255,255,255,0.15);
   border:1px solid rgba(255,255,255,0.2);
@@ -424,52 +472,62 @@ body{
 .iz-map-name{font-size:10px;color:rgba(255,255,255,0.75);white-space:nowrap;}
 .iz-map-btn.active .iz-map-name{color:white;font-weight:600;}
 .iz-chat{
-  position:absolute;left:0;right:0;bottom:0;height:54%;z-index:8;
+  position:absolute;left:0;right:0;bottom:0;
+  /* height calculated: full screen minus top bar area */
+  height:60%;z-index:8;
   overflow-y:auto;-webkit-overflow-scrolling:touch;
-  padding:16px 16px 130px;
+  /* bottom padding = input(60px) + menu(52px) + buffer(16px) */
+  padding:16px 16px 140px;
   display:flex;flex-direction:column;gap:8px;
-  background:linear-gradient(0deg,rgba(0,0,0,0.7) 0%,rgba(0,0,0,0.35) 65%,transparent 100%);
+  background:linear-gradient(0deg,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.4) 60%,transparent 100%);
+  /* always scroll to bottom when new msg */
+  scroll-behavior:smooth;
 }
 .iz-msg{
-  max-width:78%;font-size:13px;line-height:1.7;
-  animation:msgUp 0.28s ease;border-radius:16px;padding:10px 14px;
+  max-width:80%;font-size:14px;line-height:1.7;
+  animation:msgUp 0.28s ease;border-radius:18px;padding:11px 15px;
+  /* never let message go behind input/menu */
+  flex-shrink:0;
 }
-@keyframes msgUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes msgUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .iz-msg.ai{
-  align-self:flex-start;border-bottom-left-radius:3px;
-  background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);
-  color:rgba(255,255,255,0.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  align-self:flex-start;border-bottom-left-radius:4px;
+  background:rgba(20,12,8,0.7);border:1px solid rgba(255,255,255,0.18);
+  color:rgba(255,255,255,0.95);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
 }
 .iz-msg.user{
-  align-self:flex-end;border-bottom-right-radius:3px;
-  background:rgba(255,255,255,0.22);border:1px solid rgba(255,255,255,0.35);
+  align-self:flex-end;border-bottom-right-radius:4px;
+  background:rgba(232,114,90,0.3);border:1px solid rgba(232,114,90,0.5);
   color:white;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
 }
-/* ── FOOD MENU BAR ── */
+/* ── FOOD MENU BAR ── sits right above input bar */
 .iz-menu{
-  position:absolute;bottom:60px;left:0;right:0;z-index:11;
+  position:absolute;bottom:62px;left:0;right:0;z-index:11;
   display:flex;gap:8px;padding:8px 14px;
   overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
-  background:linear-gradient(0deg,rgba(0,0,0,0.5) 0%,transparent 100%);
+  /* fade from bottom (input bar) upward */
+  background:linear-gradient(0deg,rgba(0,0,0,0.55) 0%,transparent 100%);
+  flex-shrink:0;
 }
 .iz-menu::-webkit-scrollbar{display:none;}
 .menu-item{
   flex-shrink:0;display:flex;align-items:center;gap:5px;
-  background:rgba(255,255,255,0.18);
-  border:1px solid rgba(255,255,255,0.3);
-  border-radius:18px;padding:6px 12px 6px 8px;cursor:pointer;
+  background:rgba(255,255,255,0.16);
+  border:1px solid rgba(255,255,255,0.28);
+  border-radius:20px;padding:7px 13px 7px 9px;cursor:pointer;
   -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
   transition:transform 0.15s,background 0.2s;
 }
 .menu-item:active{transform:scale(0.92);background:rgba(255,255,255,0.3);}
-.menu-emoji{font-size:18px;line-height:1;}
+.menu-emoji{font-size:17px;line-height:1;}
 .menu-name{font-size:12px;color:white;white-space:nowrap;font-weight:500;}
 
 .iz-input-bar{
   position:absolute;bottom:0;left:0;right:0;z-index:12;
-  display:flex;gap:10px;padding:10px 14px 14px;
-  background:rgba(0,0,0,0.7);border-top:1px solid rgba(255,255,255,0.08);
-  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  display:flex;gap:10px;
+  padding:10px 14px max(14px, env(safe-area-inset-bottom));
+  background:rgba(0,0,0,0.8);border-top:1px solid rgba(255,255,255,0.1);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
 }
 .iz-input{
   flex:1;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);
@@ -481,7 +539,7 @@ body{
 .iz-input::placeholder{color:rgba(255,255,255,0.35);}
 .iz-send{
   width:40px;height:40px;border-radius:50%;flex-shrink:0;
-  background:white;border:none;cursor:pointer;
+  background:var(--white);border:none;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   font-size:18px;font-weight:700;color:var(--coral);
   box-shadow:0 2px 10px rgba(0,0,0,0.3);transition:transform 0.15s;
@@ -501,7 +559,7 @@ body{
   background:var(--cream);z-index:5;border-bottom:1.5px solid var(--soft);
 }
 .cal-tab{
-  flex:1;border:1.5px solid var(--soft);background:white;
+  flex:1;border:1.5px solid var(--soft);background:var(--white);
   border-radius:14px;padding:9px;font-size:13px;color:var(--dim);
   cursor:pointer;font-family:var(--font-b);font-weight:600;
   transition:all 0.18s;box-shadow:0 1px 4px rgba(0,0,0,0.05);
@@ -512,7 +570,7 @@ body{
   padding:12px 20px 8px;
 }
 .cal-nav-btn{
-  background:white;border:1.5px solid var(--soft);
+  background:var(--white);border:1.5px solid var(--soft);
   color:var(--ink);border-radius:10px;
   padding:6px 14px;cursor:pointer;font-size:16px;
   box-shadow:0 2px 6px rgba(0,0,0,0.06);
@@ -523,8 +581,8 @@ body{
 /* ── MONTHLY PERSONA CARD ── */
 .persona-card{
   margin:10px 16px 4px;border-radius:20px;
-  background:white;border:2px solid var(--soft);
-  padding:16px;box-shadow:0 3px 16px rgba(0,0,0,0.07);
+  background:var(--white);border:2px solid var(--soft);
+  padding:16px;box-shadow:0 3px 16px var(--shadow2);
   position:relative;overflow:hidden;
 }
 .persona-card::before{
@@ -568,7 +626,7 @@ body{
   transition:background 0.15s;
 }
 .cal-day:active{background:var(--soft);}
-.cal-day.today{background:white;border:1.5px solid var(--coral);}
+.cal-day.today{background:var(--white);border:1.5px solid var(--coral);}
 .cal-day.today .cal-dn{color:var(--coral);font-weight:700;}
 .cal-day.selected{background:var(--warm);border:1.5px solid var(--peach);}
 .cal-dn{font-size:11px;color:var(--dim);margin-bottom:1px;}
@@ -578,8 +636,8 @@ body{
 .cal-day.has-e .cal-dn{color:var(--ink);font-weight:600;}
 .cal-detail{
   margin:12px 16px 16px;padding:16px;border-radius:20px;
-  background:white;border:1.5px solid var(--soft);
-  box-shadow:0 2px 10px rgba(0,0,0,0.06);
+  background:var(--white);border:1.5px solid var(--soft);
+  box-shadow:0 2px 10px var(--shadow2);
 }
 .cal-ddate{font-family:var(--font-d);font-size:15px;color:var(--coral);margin-bottom:12px;font-weight:600;}
 .cal-ent{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--soft);}
@@ -612,9 +670,9 @@ body{
 .tl-dot{
   width:22px;height:22px;border-radius:50%;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
-  font-size:14px;background:white;border:2px solid var(--soft);z-index:1;
+  font-size:14px;background:var(--white);border:2px solid var(--soft);z-index:1;
 }
-.tl-content{flex:1;min-width:0;background:white;border:1.5px solid var(--soft);border-radius:16px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
+.tl-content{flex:1;min-width:0;background:var(--white);border:1.5px solid var(--soft);border-radius:16px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
 .tl-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
 .tl-name{font-size:14px;color:var(--ink);font-weight:600;}
 .tl-time{font-size:11px;color:var(--dim);}
@@ -641,7 +699,7 @@ body{
 .codex-tab{
   flex-shrink:0;border-radius:20px;padding:6px 14px;font-size:11px;
   cursor:pointer;border:1.5px solid var(--soft);
-  background:white;color:var(--dim);font-family:var(--font-b);
+  background:var(--white);color:var(--dim);font-family:var(--font-b);
   transition:all 0.18s;box-shadow:0 1px 4px rgba(0,0,0,0.05);
 }
 .codex-tab.on{background:var(--cream);}
@@ -653,7 +711,7 @@ body{
 .codex-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px 20px;}
 .cx-card{
   border-radius:20px;border:2px solid var(--soft);
-  background:white;padding:16px 14px;
+  background:var(--white);padding:16px 14px;
   position:relative;overflow:hidden;cursor:pointer;
   transition:transform 0.18s,box-shadow 0.2s;
   box-shadow:0 2px 10px rgba(0,0,0,0.05);
@@ -679,7 +737,7 @@ body{
 /* ── BOTTOM NAV ── */
 .bnav{
   width:100%;height:var(--tab-h);min-height:var(--tab-h);flex-shrink:0;
-  background:white;border-top:1.5px solid var(--soft);
+  background:var(--white);border-top:1.5px solid var(--soft);
   display:flex;align-items:center;justify-content:space-around;z-index:30;
   box-shadow:0 -2px 12px rgba(0,0,0,0.06);
 }
@@ -722,7 +780,7 @@ body{
 .toast{
   position:fixed;top:24px;left:50%;
   transform:translateX(-50%) translateY(-70px);
-  background:white;border:1.5px solid var(--soft);
+  background:var(--white);border:1.5px solid var(--soft);
   border-radius:24px;padding:12px 24px;
   font-size:13px;color:var(--ink);
   z-index:200;pointer-events:none;
@@ -755,9 +813,269 @@ body{
   100%{opacity:0;bottom:105%;transform:translateX(15px);}
 }
 
+/* ── FORTUNE / GACHA ── */
+.fortune-section{margin:0 18px 14px;}
+.fortune-head{margin-bottom:10px;}
+.fortune-label{font-family:var(--font-d);font-size:14px;color:var(--ink);font-weight:600;display:block;margin-bottom:8px;}
+.fortune-types{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;}
+.fortune-types::-webkit-scrollbar{display:none;}
+.ft-btn{
+  flex-shrink:0;border:1.5px solid var(--soft);background:var(--white);
+  border-radius:16px;padding:5px 12px;font-size:11px;color:var(--dim);
+  cursor:pointer;font-family:var(--font-b);font-weight:600;transition:all 0.18s;
+}
+.ft-btn.on{background:var(--coral);color:#fff;border-color:var(--coral);}
+.fortune-card{
+  background:linear-gradient(150deg,var(--white),var(--warm));
+  border:2px solid var(--soft);border-radius:22px;
+  padding:22px 20px;min-height:110px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 18px var(--shadow);margin-bottom:12px;
+  position:relative;overflow:hidden;
+}
+.fortune-card::before{
+  content:'';position:absolute;top:-30px;right:-30px;
+  width:100px;height:100px;border-radius:50%;
+  background:radial-gradient(circle,rgba(232,196,96,0.15),transparent 70%);
+  pointer-events:none;
+}
+.fortune-inner{text-align:center;position:relative;z-index:1;}
+.fortune-type-label{font-size:10px;letter-spacing:2px;color:var(--dim);margin-bottom:8px;}
+.fortune-text{
+  font-family:var(--font-d);font-size:16px;color:var(--ink);line-height:1.8;
+  transition:opacity 0.3s;
+}
+.fortune-attr{font-size:11px;color:var(--dim);margin-top:8px;font-style:italic;}
+.fortune-card.spinning .fortune-text{opacity:0.2;}
+.fortune-actions{display:flex;gap:10px;}
+.fortune-spin{
+  flex:1;background:var(--coral);border:none;border-radius:20px;
+  padding:13px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 3px 12px rgba(232,114,90,0.35);transition:transform 0.15s;
+}
+.fortune-spin:active{transform:scale(0.95);}
+.fortune-spin:disabled{opacity:0.5;}
+.spin-knob{font-size:18px;animation:none;display:inline-block;}
+.fortune-spin:active .spin-knob{animation:spinKnob 0.4s ease;}
+@keyframes spinKnob{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+.fortune-ai{
+  background:var(--white);border:1.5px solid var(--soft);
+  border-radius:20px;padding:13px 16px;font-size:13px;
+  font-weight:600;color:var(--ink2);cursor:pointer;transition:all 0.18s;
+  white-space:nowrap;
+}
+.fortune-ai:active{background:var(--warm);}
+.fortune-ai:disabled{opacity:0.45;}
+
+/* ── home top right ── */
+.home-top-right{display:flex;align-items:center;gap:8px;}
+.icon-btn{
+  width:34px;height:34px;border-radius:50%;border:1.5px solid var(--soft);
+  background:var(--white);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 6px var(--shadow2);transition:transform 0.15s;
+}
+.icon-btn:active{transform:scale(0.9);}
+.daily-reminder{
+  margin:0 18px 14px;padding:12px 16px;border-radius:16px;
+  background:linear-gradient(135deg,rgba(232,114,90,0.12),rgba(245,168,130,0.1));
+  border:1.5px dashed var(--coral);cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+}
+.dr-emoji{font-size:18px;}
+.dr-text{font-size:12.5px;color:var(--ink2);line-height:1.5;}
+.ql-link{color:var(--coral);font-weight:700;cursor:pointer;text-decoration:underline;}
+.ql-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:160;display:none;align-items:flex-end;justify-content:center;}
+.ql-overlay.show{display:flex;}
+.ql-backdrop{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(40,25,15,0.5);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}
+.ql-modal{
+  position:relative;z-index:1;width:100%;max-width:430px;
+  background:var(--cream);border-radius:28px 28px 0 0;
+  padding:22px 20px calc(22px + env(safe-area-inset-bottom));
+  animation:slideUpModal 0.35s cubic-bezier(.22,1,.36,1);
+  max-height:80vh;overflow-y:auto;
+}
+@keyframes slideUpModal{from{transform:translateY(100%)}to{transform:none}}
+.ql-title{font-family:var(--font-d);font-size:18px;color:var(--ink);font-weight:600;margin-bottom:3px;}
+.ql-sub{font-size:12px;color:var(--dim);margin-bottom:16px;}
+.ql-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.ql-item{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  background:var(--white);border:1.5px solid var(--soft);border-radius:14px;
+  padding:10px 4px;cursor:pointer;transition:transform 0.15s,border-color 0.2s;
+}
+.ql-item:active{transform:scale(0.93);border-color:var(--coral);}
+.ql-emoji{font-size:24px;line-height:1;}
+.ql-name{font-size:10px;color:var(--ink2);text-align:center;line-height:1.2;}
+.ql-textarea{
+  width:100%;background:var(--white);border:1.5px solid var(--soft);border-radius:14px;
+  padding:12px;font-family:var(--font-b);font-size:14px;color:var(--ink);
+  outline:none;resize:none;margin-bottom:12px;
+}
+.ql-close{
+  width:100%;background:var(--soft);border:none;border-radius:16px;
+  padding:13px;font-size:14px;font-weight:600;color:var(--ink2);cursor:pointer;
+}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--soft);}
+.set-info{flex:1;}
+.set-name{font-size:14px;color:var(--ink);font-weight:600;margin-bottom:2px;}
+.set-desc{font-size:11px;color:var(--dim);line-height:1.4;}
+.set-btn{
+  background:var(--coral);border:none;border-radius:14px;padding:8px 18px;
+  font-size:13px;font-weight:700;color:#fff;cursor:pointer;flex-shrink:0;
+  box-shadow:0 2px 8px rgba(232,114,90,0.3);
+}
+.set-note{font-size:11px;color:var(--dim);line-height:1.6;margin:14px 0;padding:10px;background:var(--warm);border-radius:12px;}
+.ms-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:170;display:none;align-items:center;justify-content:center;padding:24px;}
+.ms-overlay.show{display:flex;}
+.ms-modal{
+  position:relative;z-index:1;width:100%;max-width:300px;text-align:center;
+  background:linear-gradient(160deg,var(--white),var(--warm));
+  border:2px solid var(--gold);border-radius:28px;padding:32px 24px 24px;
+  box-shadow:0 16px 48px rgba(0,0,0,0.35);
+  animation:cardPop 0.4s cubic-bezier(.22,1,.36,1);
+}
+.ms-emoji{font-size:64px;line-height:1;margin-bottom:12px;animation:alpFloat 2.5s ease-in-out infinite;}
+.ms-title{font-family:var(--font-d);font-size:24px;color:var(--ink);font-weight:600;margin-bottom:8px;}
+.ms-msg{font-size:14px;color:var(--ink2);line-height:1.7;margin-bottom:20px;}
+.ms-btn{background:var(--gold);border:none;border-radius:20px;padding:13px 32px;font-size:15px;font-weight:700;color:var(--ink);cursor:pointer;box-shadow:0 3px 12px rgba(232,196,96,0.4);}
+
+/* ── FORTUNE SHARE CARD — Pastel Minimalist ── */
+.fcard-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;z-index:180;
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+.fcard-overlay.show{display:flex;}
+.fcard-overlay .ql-backdrop{background:rgba(60,40,20,0.35);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
+.fcard-modal{
+  position:relative;z-index:1;width:100%;max-width:340px;
+  animation:cardPop 0.4s cubic-bezier(.22,1,.36,1);
+}
+/* THE CARD */
+.fcard{
+  position:relative;border-radius:28px;
+  background:#FDF8F3;
+  border:1.5px solid rgba(200,170,130,0.25);
+  padding:32px 26px 24px;
+  box-shadow:0 8px 40px rgba(100,60,20,0.12),0 2px 8px rgba(100,60,20,0.06);
+  overflow:hidden;min-height:240px;
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+/* subtle texture */
+.fcard::after{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(255,230,200,0.4),transparent 70%);
+  pointer-events:none;
+}
+/* type tints */
+.fcard.t-cheer{background:linear-gradient(160deg,#FFF5F0,#FDF0EA);}
+.fcard.t-quote{background:linear-gradient(160deg,#F0F4FF,#EAF0FD);}
+.fcard.t-poem{background:linear-gradient(160deg,#F5F0FF,#EEE8FC);}
+.fcard.t-food{background:linear-gradient(160deg,#F0FBF4,#E8F8EE);}
+/* corner ornaments — thin delicate lines */
+.fcard-corner{
+  position:absolute;width:16px;height:16px;
+  border-color:rgba(180,140,100,0.4);border-style:solid;
+}
+.fcard.t-quote .fcard-corner{border-color:rgba(100,130,200,0.35);}
+.fcard.t-poem .fcard-corner{border-color:rgba(150,100,200,0.35);}
+.fcard.t-food .fcard-corner{border-color:rgba(80,160,110,0.35);}
+.fcard-corner.tl{top:14px;left:14px;border-width:1.5px 0 0 1.5px;border-radius:4px 0 0 0;}
+.fcard-corner.tr{top:14px;right:14px;border-width:1.5px 1.5px 0 0;border-radius:0 4px 0 0;}
+.fcard-corner.bl{bottom:14px;left:14px;border-width:0 0 1.5px 1.5px;border-radius:0 0 0 4px;}
+.fcard-corner.br{bottom:14px;right:14px;border-width:0 1.5px 1.5px 0;border-radius:0 0 4px 0;}
+/* badge */
+.fcard-type-badge{
+  position:absolute;top:16px;left:50%;transform:translateX(-50%);
+  font-size:9px;letter-spacing:2px;
+  color:rgba(140,100,60,0.6);text-transform:uppercase;white-space:nowrap;
+}
+.fcard.t-quote .fcard-type-badge{color:rgba(80,110,180,0.6);}
+.fcard.t-poem .fcard-type-badge{color:rgba(120,80,180,0.6);}
+.fcard.t-food .fcard-type-badge{color:rgba(60,140,90,0.6);}
+/* main content */
+.fcard-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 4px 16px;text-align:center;position:relative;z-index:1;}
+.fcard-deco-top{font-size:10px;color:rgba(180,140,100,0.4);letter-spacing:5px;margin-bottom:18px;}
+.fcard.t-quote .fcard-deco-top{color:rgba(100,130,200,0.35);}
+.fcard.t-poem .fcard-deco-top{color:rgba(150,100,200,0.35);}
+.fcard.t-food .fcard-deco-top{color:rgba(80,160,110,0.35);}
+.fcard-text{
+  font-family:var(--font-d);font-size:18px;line-height:1.85;
+  color:#3D2B1A;white-space:pre-line;text-align:center;
+}
+.fcard.t-quote .fcard-text{color:#1A2840;}
+.fcard.t-poem .fcard-text{color:#2A1840;}
+.fcard.t-food .fcard-text{color:#0E2818;}
+.fcard-divider{
+  width:40px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(180,140,100,0.35),transparent);
+  margin:18px auto;
+}
+.fcard.t-quote .fcard-divider{background:linear-gradient(90deg,transparent,rgba(100,130,200,0.3),transparent);}
+.fcard.t-poem .fcard-divider{background:linear-gradient(90deg,transparent,rgba(150,100,200,0.3),transparent);}
+.fcard.t-food .fcard-divider{background:linear-gradient(90deg,transparent,rgba(80,160,110,0.3),transparent);}
+.fcard-source-wrap{text-align:center;}
+.fcard-source{font-size:12px;color:rgba(140,100,60,0.75);font-style:italic;margin-bottom:2px;font-family:var(--font-d);}
+.fcard-ref{font-size:10px;color:rgba(140,100,60,0.45);letter-spacing:0.3px;}
+.fcard.t-quote .fcard-source{color:rgba(80,110,180,0.7);}
+.fcard.t-quote .fcard-ref{color:rgba(80,110,180,0.4);}
+.fcard.t-poem .fcard-source{color:rgba(120,80,180,0.7);}
+.fcard.t-poem .fcard-ref{color:rgba(120,80,180,0.4);}
+.fcard.t-food .fcard-source{color:rgba(60,140,90,0.7);}
+.fcard.t-food .fcard-ref{color:rgba(60,140,90,0.4);}
+/* footer */
+.fcard-footer{
+  text-align:center;font-size:10px;letter-spacing:2px;
+  color:rgba(180,140,100,0.4);position:relative;z-index:1;
+}
+.fcard.t-quote .fcard-footer{color:rgba(100,130,200,0.35);}
+.fcard.t-poem .fcard-footer{color:rgba(150,100,200,0.35);}
+.fcard.t-food .fcard-footer{color:rgba(80,160,110,0.35);}
+/* action buttons */
+.fcard-actions{display:flex;gap:8px;margin-top:14px;}
+.fcard-share-btn{
+  flex:2;background:var(--coral);border:none;border-radius:20px;
+  padding:14px;font-size:14px;font-weight:700;color:white;cursor:pointer;
+  box-shadow:0 3px 12px rgba(232,114,90,0.3);transition:transform 0.15s;
+}
+.fcard-share-btn:active{transform:scale(0.95);}
+.fcard-spin-btn{
+  flex:1;background:white;border:1.5px solid var(--soft);
+  border-radius:20px;padding:14px 8px;font-size:13px;font-weight:600;
+  color:var(--ink2);cursor:pointer;transition:all 0.15s;
+}
+.fcard-spin-btn:active{background:var(--warm);}
+.fcard-close-btn{
+  width:46px;flex-shrink:0;background:white;
+  border:1.5px solid var(--soft);border-radius:20px;
+  font-size:18px;color:var(--dim);cursor:pointer;
+}
+.tl-search-bar{padding:10px 16px 6px;}
+.tl-search{
+  width:100%;background:var(--white);border:1.5px solid var(--soft);border-radius:16px;
+  padding:10px 14px;font-family:var(--font-b);font-size:13px;color:var(--ink);outline:none;
+}
+.tl-search:focus{border-color:var(--coral);}
+.tl-filters{display:flex;gap:6px;padding:0 16px 10px;overflow-x:auto;scrollbar-width:none;}
+.tl-filters::-webkit-scrollbar{display:none;}
+.tl-filter{
+  flex-shrink:0;border:1.5px solid var(--soft);background:var(--white);
+  border-radius:16px;padding:5px 12px;font-size:11px;color:var(--dim);
+  cursor:pointer;font-family:var(--font-b);transition:all 0.18s;
+}
+.tl-filter.on{background:var(--coral);color:#fff;border-color:var(--coral);}
+.tl-acts{display:flex;gap:6px;margin-top:8px;}
+.tl-act{
+  font-size:11px;color:var(--dim);background:var(--cream);
+  border:1px solid var(--soft);border-radius:10px;padding:4px 10px;
+  cursor:pointer;font-family:var(--font-b);transition:all 0.15s;
+}
+.tl-act:active{transform:scale(0.92);}
+.tl-del:active{background:rgba(232,114,90,0.15);color:var(--coral);}
+
 /* helpers */
 .c-c{color:#3A8A70;}.c-u{color:#3A6A9A;}.c-r{color:#7A5A9A;}.c-l{color:#9A7A20;}
-::-webkit-scrollbar{width:3px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--soft);border-radius:2px;}
 </style>
@@ -789,12 +1107,22 @@ body{
 
   <div class="home-top">
     <div class="home-brand">EMOTIA</div>
-    <div class="lv-pill" id="lv-pill">LV. 1</div>
+    <div class="home-top-right">
+      <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="ธีม">🌙</button>
+      <button class="icon-btn" onclick="openSettings()" title="ตั้งค่า">⚙️</button>
+      <div class="lv-pill" id="lv-pill">LV. 1</div>
+    </div>
   </div>
 
   <div class="exp-row">
     <div class="exp-bar"><div class="exp-fill" id="exp-fill" style="width:0%"></div></div>
     <div class="exp-txt" id="exp-txt">0 / 50 EXP</div>
+  </div>
+
+  <!-- daily reminder -->
+  <div class="daily-reminder" id="daily-reminder" style="display:none" onclick="document.getElementById('feel-in').focus()">
+    <span class="dr-emoji">✦</span>
+    <span class="dr-text">วันนี้ยังไม่ได้บันทึกอารมณ์เลยนะ — มาเล่าให้ฟังหน่อยสิ</span>
   </div>
 
   <!-- Daily Quest panel -->
@@ -846,7 +1174,7 @@ body{
         <textarea class="feel-textarea" id="feel-in" rows="3"
           placeholder="วันนี้รู้สึกอย่างไรบ้าง..."></textarea>
         <div class="feel-footer">
-          <span class="feel-hint">✦ AI วิเคราะห์อารมณ์</span>
+          <span class="feel-hint">✦ AI วิเคราะห์ · <a class="ql-link" onclick="openQuickLog()">บันทึกเอง</a></span>
           <button class="feel-btn" id="feel-btn" onclick="analyze()">
             <span class="sh"></span>ค้นพบ
           </button>
@@ -880,6 +1208,32 @@ body{
     <div class="stat"><div class="stat-n" id="st-str">0</div><div class="stat-l">วันต่อเนื่อง</div></div>
   </div>
 
+  <!-- ── GACHA FORTUNE ── -->
+  <div class="fortune-section">
+    <div class="fortune-head">
+      <span class="fortune-label">🎰 กาชาปองกำลังใจ</span>
+      <div class="fortune-types">
+        <button class="ft-btn on" data-t="cheer" onclick="setFortuneType('cheer',this)">🌸 กำลังใจ</button>
+        <button class="ft-btn" data-t="quote" onclick="setFortuneType('quote',this)">📜 คำคม</button>
+        <button class="ft-btn" data-t="poem" onclick="setFortuneType('poem',this)">🌙 บทกวี</button>
+        <button class="ft-btn" data-t="food" onclick="setFortuneType('food',this)">🍜 อาหาร</button>
+      </div>
+    </div>
+    <div class="fortune-card" id="fortune-card">
+      <div class="fortune-inner" id="fortune-inner">
+        <div class="fortune-type-label" id="fortune-type-lbl">🌸 กำลังใจ</div>
+        <div class="fortune-text" id="fortune-text">กดหมุนเพื่อรับข้อความ ✦</div>
+        <div class="fortune-attr" id="fortune-attr"></div>
+      </div>
+    </div>
+    <div class="fortune-actions">
+      <button class="fortune-spin" id="fortune-spin" onclick="spinFortune()">
+        <span class="spin-knob">🎰</span> หมุน
+      </button>
+      <button class="fortune-ai" onclick="spinFortuneAI()" id="fortune-ai-btn">✨ AI สร้างให้</button>
+    </div>
+  </div>
+
   <!-- Weekly recap -->
   <div class="recap-panel" id="recap-panel">
     <div class="recap-head">
@@ -891,7 +1245,17 @@ body{
   <div class="izakaya-teaser" onclick="goTab('pub')">
     <div class="iz-glow"></div>
     <div class="iz-title">🏮 พูดคุยกับตัวละคร</div>
-    <div class="iz-desc">7 ฉาก 7 บุคลิก — เลือกบรรยากาศที่ใช่แล้วพูดคุย</div>
+    <div class="iz-desc">7 ฉาก · ปรับตามเวลา · สั่งอาหารได้จริง</div>
+    <div class="iz-preview-chars">
+      <div class="iz-prev-char">🏮<span>ป้าโยโกะ</span></div>
+      <div class="iz-prev-char">🍸<span>แมค</span></div>
+      <div class="iz-prev-char">☕<span>มินต์</span></div>
+      <div class="iz-prev-char">🍜<span>ลุงเท็ตสึ</span></div>
+      <div class="iz-prev-char">🌊<span>ป้าแดง</span></div>
+      <div class="iz-prev-char">🌲<span>ลุงโต</span></div>
+      <div class="iz-prev-char">🌃<span>นภา</span></div>
+    </div>
+    <div class="iz-current-time" id="iz-current-scene-hint"></div>
   </div>
 
   <!-- floating deco -->
@@ -954,6 +1318,16 @@ body{
 
   <!-- TIMELINE VIEW -->
   <div id="cal-timeline-view" style="display:none">
+    <div class="tl-search-bar">
+      <input class="tl-search" id="tl-search" placeholder="🔍 ค้นหาบันทึก..." oninput="tlSearchInput(this.value)">
+    </div>
+    <div class="tl-filters">
+      <button class="tl-filter on" data-f="all" onclick="tlSetFilter('all')">ทั้งหมด</button>
+      <button class="tl-filter" data-f="common" onclick="tlSetFilter('common')">Common</button>
+      <button class="tl-filter" data-f="uncommon" onclick="tlSetFilter('uncommon')">Uncommon</button>
+      <button class="tl-filter" data-f="rare" onclick="tlSetFilter('rare')">Rare</button>
+      <button class="tl-filter" data-f="legendary" onclick="tlSetFilter('legendary')">Legendary</button>
+    </div>
     <div class="timeline-body" id="timeline-body"></div>
   </div>
 </div>
@@ -1237,6 +1611,84 @@ body{
   </div>
 </div>
 
+<!-- QUICK LOG OVERLAY -->
+<div class="ql-overlay" id="quicklog-overlay">
+  <div class="ql-backdrop" onclick="closeQuickLog()"></div>
+  <div class="ql-modal">
+    <div class="ql-title">บันทึกอารมณ์เอง</div>
+    <div class="ql-sub">เลือกอารมณ์ที่ตรงกับใจตอนนี้</div>
+    <div class="ql-grid" id="ql-grid"></div>
+    <textarea class="ql-textarea" id="ql-text" rows="2" placeholder="เพิ่มข้อความ (ไม่บังคับ)..."></textarea>
+    <button class="ql-close" onclick="closeQuickLog()">ปิด</button>
+  </div>
+</div>
+
+<!-- SETTINGS OVERLAY -->
+<div class="ql-overlay" id="settings-overlay">
+  <div class="ql-backdrop" onclick="closeSettings()"></div>
+  <div class="ql-modal">
+    <div class="ql-title">⚙️ ตั้งค่า</div>
+    <div class="set-row">
+      <div class="set-info"><div class="set-name">🌙 ธีมมืด</div><div class="set-desc">สลับโหมดสว่าง/มืด</div></div>
+      <button class="set-btn" onclick="toggleTheme()">สลับ</button>
+    </div>
+    <div class="set-row">
+      <div class="set-info"><div class="set-name">💾 สำรองข้อมูล</div><div class="set-desc">ดาวน์โหลดบันทึกทั้งหมดเป็นไฟล์</div></div>
+      <button class="set-btn" onclick="exportData()">Export</button>
+    </div>
+    <div class="set-row">
+      <div class="set-info"><div class="set-name">📥 นำเข้าข้อมูล</div><div class="set-desc">กู้คืนจากไฟล์สำรอง</div></div>
+      <button class="set-btn" onclick="importData()">Import</button>
+    </div>
+    <div class="set-note">⚠️ ข้อมูลเก็บในเบราว์เซอร์นี้เท่านั้น แนะนำให้สำรองเป็นระยะ</div>
+    <button class="ql-close" onclick="closeSettings()">ปิด</button>
+  </div>
+</div>
+
+<!-- MILESTONE OVERLAY -->
+<div class="ms-overlay" id="milestone-overlay">
+  <div class="ql-backdrop" onclick="closeMilestone()"></div>
+  <div class="ms-modal">
+    <div class="ms-emoji" id="ms-emoji">🌱</div>
+    <div class="ms-title" id="ms-title"></div>
+    <div class="ms-msg" id="ms-msg"></div>
+    <button class="ms-btn" onclick="closeMilestone()">เยี่ยม! ✦</button>
+  </div>
+</div>
+
+<input type="file" id="import-file" accept="application/json" style="display:none" onchange="handleImport(event)">
+
+<!-- FORTUNE CARD OVERLAY (shareable) -->
+<div class="fcard-overlay" id="fcard-overlay">
+  <div class="ql-backdrop" onclick="closeFCard()"></div>
+  <div class="fcard-modal" id="fcard-modal">
+    <!-- card design -->
+    <div class="fcard" id="fcard">
+      <div class="fcard-corner tl"></div>
+      <div class="fcard-corner tr"></div>
+      <div class="fcard-corner bl"></div>
+      <div class="fcard-corner br"></div>
+      <div class="fcard-type-badge" id="fcard-type-badge">🌸 กำลังใจ</div>
+      <div class="fcard-main">
+        <div class="fcard-deco-top">✦ ✦ ✦</div>
+        <div class="fcard-text" id="fcard-text"></div>
+        <div class="fcard-divider"></div>
+        <div class="fcard-source-wrap">
+          <div class="fcard-source" id="fcard-source"></div>
+          <div class="fcard-ref" id="fcard-ref"></div>
+        </div>
+      </div>
+      <div class="fcard-footer">— EMOTIA 🦙 —</div>
+    </div>
+    <!-- actions -->
+    <div class="fcard-actions">
+      <button class="fcard-share-btn" onclick="shareFCard()">📤 แชร์การ์ด</button>
+      <button class="fcard-spin-btn" onclick="spinFromCard()">🎰 หมุนใหม่</button>
+      <button class="fcard-close-btn" onclick="closeFCard()">✕</button>
+    </div>
+  </div>
+</div>
+
 <!-- BOTTOM NAV -->
 <div class="bnav">
   <button class="bnav-btn on" onclick="goTab('home')" id="nav-home">
@@ -1391,37 +1843,37 @@ var SCENES = [
   {id:'izakaya',name:'ร้านอิซากายะ',short:'IZAKAYA',title:'ร้านอิซากายะ ป้าโยโกะ',sub:'เลิกงานแล้ว แวะมานั่งพักสักหน่อย',e:'🏮',bg:'bg-izakaya',
    who:'ป้าโยโกะ — เจ้าของร้าน ใจดี อายุ 52',
    greet:'อ้าว มาแล้วเหรอ! วันนี้ดูเหนื่อยๆ นะ นั่งก่อนๆ เดี๋ยวป้าเอาน้ำชาอุ่นๆ มาให้ จะสั่งอะไรกินไหม? ของอร่อยทั้งนั้นเลยนะวันนี้',
-   menu:[{n:'ราเมงร้อนๆ',e:'🍜'},{n:'เกี๊ยวซ่า',e:'🥟'},{n:'สาเกอุ่น',e:'🍶'},{n:'ไก่ย่างเสียบไม้',e:'🍢'},{n:'ชาเขียว',e:'🍵'}],
+   menu:[{n:'ราเมงร้อนๆ',e:'🍜'},{n:'เกี๊ยวซ่า',e:'🥟'},{n:'สาเกอุ่น',e:'🍶'},{n:'ไก่ย่างเสียบไม้',e:'🍢'},{n:'ชาเขียว',e:'🍵'},{n:'ทาโกยากิ',e:'🐙'},{n:'ข้าวปั้น',e:'🍙'},{n:'เอดามาเมะ',e:'🫛'}],
    sys:'คุณคือป้าโยโกะ เจ้าของร้านอิซากายะเล็กๆ อายุ 52 ปี ลูกค้าเพิ่งเลิกงานมาเหนื่อยๆ มานั่งพักผ่อนที่ร้าน บุคลิก: ใจดีแบบแม่ อบอุ่น เป็นกันเอง ห่วงใยลูกค้าเหมือนลูกหลาน ชอบชวนกินข้าว ถามไถ่เรื่องงาน รับฟังด้วยความเข้าใจ บางทีเล่าเรื่องร้านหรือเมนูเด็ดให้ฟังเพื่อให้บรรยากาศผ่อนคลาย ถ้าลูกค้าสั่งอาหาร ให้ตอบสนองอย่างอบอุ่น เช่น "ได้เลย! เดี๋ยวจัดให้ร้อนๆ" แล้วบรรยายอาหารนิดหน่อย สไตล์: 2-4 ประโยค ภาษาไทยพูดแบบเป็นกันเอง อบอุ่น ใช้คำว่า "ลูก" หรือ "หนู" เรียกลูกค้าได้ ห้ามใช้ markdown ห้ามใส่ชื่อตัวเองนำหน้า'},
   {id:'midnight',name:'บาร์เงียบ',short:'BAR',title:'บาร์เล็กๆ ปลายซอย',sub:'ดึกแล้ว แต่ยังไม่อยากกลับ',e:'🍸',bg:'bg-midnight',
    who:'แมค — บาร์เทนเดอร์มือเก่า อายุ 45',
    greet:'(เช็ดแก้วช้าๆ) มาดึกนะคืนนี้... วันหนักเหรอ? นั่งเลย จะเอาอะไรดี เบียร์เย็นๆ หรือค็อกเทลอุ่นใจ?',
-   menu:[{n:'เบียร์สด',e:'🍺'},{n:'วิสกี้',e:'🥃'},{n:'ค็อกเทล',e:'🍸'},{n:'ถั่วทอด',e:'🥜'},{n:'มันฝรั่งทอด',e:'🍟'}],
+   menu:[{n:'เบียร์สด',e:'🍺'},{n:'วิสกี้',e:'🥃'},{n:'ค็อกเทลคืนนี้',e:'🍸'},{n:'ถั่วทอด',e:'🥜'},{n:'มันฝรั่ง',e:'🍟'},{n:'ไวน์แดง',e:'🍷'},{n:'โซดามะนาว',e:'🍋'},{n:'เบอร์เกอร์กลางดึก',e:'🍔'}],
    sys:'คุณคือแมค บาร์เทนเดอร์มือเก่าอายุ 45 ในบาร์เล็กๆ ปลายซอย ลูกค้าเลิกงานดึกมานั่งพักก่อนกลับ บุคลิก: เท่ๆ พูดน้อยแต่ได้ใจความ ฟังเก่ง เคยเห็นคนมานั่งบาร์มาแล้วทุกแบบ ไม่ตัดสิน บางทีถามคำถามที่ทำให้คิด มีอารมณ์ขันแห้งๆ ถ้าลูกค้าสั่งเครื่องดื่ม ให้ผสมให้พร้อมบรรยายสั้นๆ เช่น "วิสกี้ใส่น้ำแข็งก้อนเดียว...นะ" สไตล์: 2-3 ประโยค ภาษาไทย ผู้ชาย ไม่เป็นทางการ ผ่อนคลาย ห้ามใช้ markdown'},
   {id:'cafe',name:'คาเฟ่อุ่น',short:'CAFE',title:'คาเฟ่มุมเงียบ',sub:'พักสายตา จิบกาแฟ ฟังเพลงเบาๆ',e:'☕',bg:'bg-sakura',
    who:'มินต์ — บาริสต้าสาว ร่าเริง อายุ 24',
    greet:'สวัสดีค่ะ~ ยินดีต้อนรับนะคะ! วันนี้เหนื่อยมาเลยใช่ไหมคะ เดี๋ยวมินต์ชงกาแฟอุ่นๆ ให้ นั่งพักตรงมุมโซฟานุ่มๆ ได้เลยค่า',
-   menu:[{n:'ลาเต้ร้อน',e:'☕'},{n:'มัทฉะ',e:'🍵'},{n:'เค้กช็อกโกแลต',e:'🍰'},{n:'ครัวซองต์',e:'🥐'},{n:'โกโก้',e:'🍫'}],
+   menu:[{n:'ลาเต้ร้อน',e:'☕'},{n:'มัทฉะลาเต้',e:'🍵'},{n:'เค้กช็อกโกแลต',e:'🍰'},{n:'ครัวซองต์',e:'🥐'},{n:'โกโก้ร้อน',e:'🍫'},{n:'ชาเย็นนม',e:'🧋'},{n:'สโคน',e:'🧁'},{n:'อเมริกาโน่',e:'☕'}],
    sys:'คุณคือมินต์ บาริสต้าสาวอายุ 24 ในคาเฟ่อบอุ่น ลูกค้าแวะมาพักผ่อนหลังเลิกงาน บุคลิก: ร่าเริง สดใส เป็นกันเอง พูดเพราะ ใส่ใจรายละเอียด ชอบแนะนำเมนู ทำให้ลูกค้ารู้สึกสบายใจ ถ้าลูกค้าสั่งเครื่องดื่ม ให้ตอบสดใสพร้อมบรรยายความอร่อย เช่น "ลาเต้ร้อนๆ มาแล้วค่า ลายหัวใจด้วยนะ!" สไตล์: 2-4 ประโยค ภาษาไทย ผู้หญิง สดใส ลงท้าย ค่ะ/ค่า/นะคะ ห้ามใช้ markdown'},
   {id:'ramen',name:'ร้านราเมง',short:'RAMEN',title:'ร้านราเมงข้างทาง',sub:'ไอร้อนลอยขึ้น กลิ่นน้ำซุปหอม',e:'🍜',bg:'bg-forest',
    who:'ลุงเท็ตสึ — เชฟราเมง พูดน้อย อายุ 60',
    greet:'(ยกมือทักทาย) เลิกงานมาเหรอ... นั่งเลย ราเมงชามนึงเดี๋ยวจัดให้ ซุปเคี่ยวมาทั้งวัน รับรองหายเหนื่อย',
-   menu:[{n:'โชยุราเมง',e:'🍜'},{n:'มิโซะราเมง',e:'🍲'},{n:'ไข่ต้มยางมะตูม',e:'🥚'},{n:'หมูชาชู',e:'🥩'},{n:'เกี๊ยว',e:'🥟'}],
+   menu:[{n:'โชยุราเมง',e:'🍜'},{n:'มิโซะราเมง',e:'🍲'},{n:'ซิโอราเมง',e:'🍜'},{n:'ไข่ยางมะตูม',e:'🥚'},{n:'หมูชาชู',e:'🥩'},{n:'เกี๊ยว',e:'🥟'},{n:'ข้าวผัดไข่',e:'🍳'},{n:'ชาเขียวร้อน',e:'🍵'}],
    sys:'คุณคือลุงเท็ตสึ เชฟราเมงอายุ 60 ร้านข้างทาง ลูกค้าเลิกงานมากินราเมงอุ่นๆ บุคลิก: พูดน้อย ใจดี ภูมิใจในราเมงของตัวเอง ดูแลลูกค้าผ่านอาหารมากกว่าคำพูด บางทีแค่พยักหน้าแล้วเสิร์ฟ ถ้าลูกค้าสั่ง ให้ตอบสั้นๆ พร้อมบรรยายความอร่อยของราเมง เช่น "โชยุราเมง...ซุปใส แต่กลมกล่อม กินสิ" สไตล์: 1-3 ประโยคสั้น ภาษาไทย ผู้ชายสูงวัย อบอุ่นแบบเงียบๆ ห้ามใช้ markdown'},
   {id:'beach',name:'ร้านริมเล',short:'BEACH',title:'ร้านอาหารริมทะเล',sub:'ลมทะเลเย็นๆ เสียงคลื่นเบาๆ',e:'🌊',bg:'bg-beach',
    who:'ป้าแดง — เจ้าของร้านซีฟู้ด อายุ 55',
    greet:'มาแล้วเหรอลูก! วันนี้คลื่นสวยนะ นั่งโต๊ะริมทะเลเลย เดี๋ยวป้าทำกับข้าวอร่อยๆ ให้ กินไปชมวิวไป หายเหนื่อยเลย',
-   menu:[{n:'กุ้งเผา',e:'🦐'},{n:'ปลาหมึกย่าง',e:'🦑'},{n:'ต้มยำ',e:'🍲'},{n:'น้ำมะพร้าว',e:'🥥'},{n:'ข้าวผัดปู',e:'🍚'}],
+   menu:[{n:'กุ้งเผา',e:'🦐'},{n:'ปลาหมึกย่าง',e:'🦑'},{n:'ต้มยำทะเล',e:'🍲'},{n:'น้ำมะพร้าว',e:'🥥'},{n:'ข้าวผัดปู',e:'🍚'},{n:'หอยแมลงภู่',e:'🦪'},{n:'ปลาเผาเกลือ',e:'🐟'},{n:'ส้มตำ',e:'🥗'}],
    sys:'คุณคือป้าแดง เจ้าของร้านอาหารทะเลริมหาดอายุ 55 ลูกค้าเลิกงานมานั่งพักกินข้าวชมทะเล บุคลิก: ใจดีแบบแม่ อบอุ่น เปิดใจ ฟังด้วยความรัก ชอบทำอาหารให้กิน พูดตรงแต่ไม่เจ็บ ถ้าลูกค้าสั่ง ให้ตอบอบอุ่นพร้อมบรรยายความสด เช่น "กุ้งเผาตัวโตๆ เพิ่งได้มาสดๆ เลย!" สไตล์: 2-4 ประโยค ภาษาไทยพูด อบอุ่น เรียก "ลูก/หนู" ห้ามใช้ markdown'},
   {id:'forest',name:'กระท่อมป่า',short:'CABIN',title:'กระท่อมกลางป่า',sub:'หนีความวุ่นวาย มาฟังเสียงธรรมชาติ',e:'🌲',bg:'bg-forest',
    who:'ลุงโต — ชายแก่ผู้รู้ป่า อายุ 70',
    greet:'(ก่อไฟอยู่) มาถึงตรงนี้ได้ก็ดีแล้ว... นั่งข้างกองไฟสิ ป่ามันเงียบ ช่วยให้ใจสงบ จะดื่มชาสมุนไพรไหม',
-   menu:[{n:'ชาสมุนไพร',e:'🍵'},{n:'ซุปเห็ด',e:'🍄'},{n:'ขนมปังปิ้ง',e:'🍞'},{n:'น้ำผึ้งป่า',e:'🍯'}],
+   menu:[{n:'ชาสมุนไพร',e:'🍵'},{n:'ซุปเห็ดป่า',e:'🍄'},{n:'ขนมปังปิ้ง',e:'🍞'},{n:'น้ำผึ้งป่า',e:'🍯'},{n:'ผลไม้ป่า',e:'🫐'},{n:'ชาขิงอุ่น',e:'🫚'},{n:'ถั่วคั่ว',e:'🥜'},{n:'ข้าวโพดย่าง',e:'🌽'}],
    sys:'คุณคือลุงโต ชายแก่อายุ 70 อาศัยในกระท่อมกลางป่า ลูกค้าหนีความวุ่นวายมาพักใจ บุคลิก: พูดช้า ใช้คำน้อย ทุกคำมีน้ำหนัก ใช้อุปมาจากป่า ธรรมชาติ ช่วยให้คนเห็นภาพใหญ่ ถ้าแขกขอเครื่องดื่ม/อาหาร ให้เสิร์ฟพร้อมคำพูดสงบๆ เช่น "ชาสมุนไพร...ดื่มช้าๆ นะ" สไตล์: 1-3 ประโยค สงบ ภาษาไทยเรียบง่ายแบบผู้เฒ่า ห้ามใช้ markdown'},
   {id:'rooftop',name:'ดาดฟ้า',short:'ROOFTOP',title:'บาร์ดาดฟ้ายามค่ำ',sub:'แสงเมืองเบื้องล่าง ลมเย็นพัดผ่าน',e:'🌃',bg:'bg-cosmos',
    who:'นภา — เจ้าของบาร์ดาดฟ้า อายุ 35',
    greet:'มาทันพระอาทิตย์ตกพอดีเลย นั่งริมระเบียงสิ แสงเมืองสวยมากตอนนี้ เลิกงานมาเหรอ เอาเครื่องดื่มเย็นๆ ไหม',
-   menu:[{n:'ไวน์แดง',e:'🍷'},{n:'ม็อกเทล',e:'🍹'},{n:'ชีสแพลตเตอร์',e:'🧀'},{n:'พิซซ่า',e:'🍕'},{n:'น้ำผลไม้',e:'🧃'}],
+   menu:[{n:'ไวน์แดง',e:'🍷'},{n:'ม็อกเทลดอกไม้',e:'🍹'},{n:'ชีสแพลตเตอร์',e:'🧀'},{n:'พิซซ่า',e:'🍕'},{n:'น้ำผลไม้สด',e:'🧃'},{n:'ฟัวกราส์',e:'🫙'},{n:'ช็อกโกแลตฟองดู',e:'🍫'},{n:'แชมเปญ',e:'🥂'}],
    sys:'คุณคือนภา เจ้าของบาร์บนดาดฟ้าอายุ 35 ลูกค้าเลิกงานมานั่งชมวิวเมืองพักผ่อน บุคลิก: ฉลาด ช่างสังเกต มองโลกกว้าง พูดจาดี อบอุ่นแต่มีระดับ ชอบเชื่อมเรื่องราวกับวิวเมืองหรือดวงดาว ถ้าลูกค้าสั่ง ให้ตอบพร้อมบรรยายบรรยากาศ เช่น "ไวน์แดงแก้วนึง จิบไปชมไฟเมืองไป" สไตล์: 2-4 ประโยค ภาษาไทย ผู้หญิง อบอุ่นมีระดับ ห้ามใช้ markdown'}
 ];
 
@@ -1455,7 +1907,8 @@ var ST = {
   mood:null, scene:'izakaya', chatHist:[],
   calY:new Date().getFullYear(), calM:new Date().getMonth(),
   cxFilter:'all', chatInited:false,
-  quests:{}, questDate:'', lastEmotion:null
+  quests:{}, questDate:'', lastEmotion:null,
+  theme:'light', tlSearch:'', tlFilter:'all'
 };
 
 /* ── DAILY QUESTS ── */
@@ -1601,7 +2054,15 @@ function load(){
     if(o) ST.onboarded=true;
     if(q) ST.quests=JSON.parse(q);
     if(qd) ST.questDate=qd;
+    var th=localStorage.getItem('em_theme');
+    if(th) ST.theme=th;
   }catch(e){}
+  // migrate: ensure every hist entry has a unique id
+  var changed=false;
+  ST.hist.forEach(function(h){
+    if(!h.id){ h.id='h'+(h.date||Date.now())+'_'+Math.random().toString(36).slice(2,7); changed=true; }
+  });
+  if(changed) save();
 }
 function save(){
   try{
@@ -1610,8 +2071,21 @@ function save(){
     localStorage.setItem('em_hist',JSON.stringify(ST.hist));
     localStorage.setItem('em_quests',JSON.stringify(ST.quests));
     localStorage.setItem('em_qdate',ST.questDate);
+    localStorage.setItem('em_theme',ST.theme);
     if(ST.onboarded) localStorage.setItem('em_onb','1');
   }catch(e){}
+}
+
+/* ── THEME ── */
+function applyTheme(){
+  if(ST.theme==='dark') document.documentElement.setAttribute('data-theme','dark');
+  else document.documentElement.removeAttribute('data-theme');
+  var btn=document.getElementById('theme-btn');
+  if(btn) btn.textContent = ST.theme==='dark' ? '☀️' : '🌙';
+}
+function toggleTheme(){
+  ST.theme = ST.theme==='dark' ? 'light' : 'dark';
+  applyTheme(); save();
 }
 
 /* ═══════════════ ONBOARD ═══════════════ */
@@ -1647,6 +2121,13 @@ function hud(){
   document.getElementById('st-exp').textContent=ST.xp;
   document.getElementById('st-str').textContent=streak();
   updateAlpacaEvo();
+  // update pub teaser hint
+  var hint=document.getElementById('iz-current-scene-hint');
+  if(hint){
+    var ts=getTimeScene();
+    var sc=SCENES.filter(function(s){return s.id===ts.id;})[0];
+    hint.textContent=getTimeLabel()+' — ตอนนี้ควรไปที่ '+(sc?sc.name:'ร้านอิซากายะ');
+  }
 }
 
 /* ── ALPACA EVOLUTION ── accessory based on dominant emotion category */
@@ -1816,7 +2297,7 @@ function showResult(em,reason,inputTxt,insight){
   ST.disc[em.id]=(ST.disc[em.id]||0)+1;
   ST.xp+=gain;
   ST.lastEmotion={em:em,reason:reason||em.d,insight:insight||'',date:new Date().toISOString()};
-  ST.hist.unshift({date:new Date().toISOString(),emotionId:em.id,text:inputTxt});
+  ST.hist.unshift({id:'h'+Date.now()+'_'+Math.random().toString(36).slice(2,7),date:new Date().toISOString(),emotionId:em.id,text:inputTxt});
   if(ST.hist.length>200) ST.hist.length=200;
   save(); hud(); setMood(em.id);
 
@@ -1850,6 +2331,8 @@ function showResult(em,reason,inputTxt,insight){
   if(shareBtn) shareBtn.style.display='inline-flex';
   document.getElementById('feel-in').value='';
   if(isNew) setTimeout(function(){toast(em.e+' '+em.th+' — ค้นพบแล้ว!');},350);
+  checkDailyReminder();
+  checkMilestone();
 }
 
 /* ── EMOTION CARD (shareable) ── */
@@ -1903,17 +2386,54 @@ function shareCard(){
 }
 
 /* ═══════════════ IZAKAYA CHAT ═══════════════ */
+/* ── TIME-AWARE SCENE ── */
+/* แต่ละช่วงเวลามีฉากและบรรยากาศของตัวเอง */
+var TIME_SCENES=[
+  {h0:5, h1:8,  id:'cafe',     title:'คาเฟ่ตอนเช้า',      sub:'กลิ่นกาแฟ แสงอรุณ เริ่มวันใหม่',      greet:'สวัสดีตอนเช้าค่า! ลาเต้ร้อนๆ ใช่เลยใช่มั้ยคะช่วงเช้าแบบนี้ ☀️ วันนี้มีแผนอะไรบ้างคะ?'},
+  {h0:8, h1:12, id:'ramen',    title:'ร้านราเมงช่วงสาย',   sub:'กลิ่นซุป เสียงครัว ชั่วโมงทำงาน',     greet:'(ยกมือทักทาย) มาสายแล้วนะ... จะกินข้าวก่อนเที่ยงไหม ราเมงหม้อใหม่พอดีเลย'},
+  {h0:12,h1:14, id:'cafe',     title:'คาเฟ่พักเที่ยง',     sub:'พักเบรก หายใจ ชาร้อนสักแก้ว',         greet:'ช่วงพักเที่ยงแวะมาแล้วค่า! วันนี้งานเป็นยังไงบ้างคะ นั่งพักสักครู่ก่อนนะ มินต์ชงให้ค่า ☕'},
+  {h0:14,h1:17, id:'cafe',     title:'บ่ายสาม คาเฟ่',      sub:'แสงบ่าย กาแฟแก้วที่สอง โมเมนต์เล็กๆ',  greet:'ชั่วโมงบ่าย 3 ช่วงที่ง่วงที่สุดเลยนะคะ ลาเต้เย็นช่วยได้ค่า หรือจะลองมัทฉะก็ดีนะ~ 🍵'},
+  {h0:17,h1:20, id:'izakaya',  title:'อิซากายะยามเย็น',    sub:'เลิกงานแล้ว นั่งพักสักหน่อย',          greet:'อ้าว มาแล้วเหรอลูก! ดูเหนื่อยเลยนะ นั่งก่อนๆ เดี๋ยวป้าเอาชาอุ่นมาให้ วันนี้เป็นยังไงบ้าง?'},
+  {h0:20,h1:23, id:'beach',    title:'ริมทะเลยามค่ำ',       sub:'ลมทะเลเย็น เสียงคลื่น แสงดาว',         greet:'มาคนเดียวเหรอลูก? นั่งตรงนี้เลย คืนนี้ดาวสวยมากเลย ลมก็เย็นพอดี อยากคุยอะไรป้าฟังนะ 🌊'},
+  {h0:23,h1:24, id:'midnight', title:'บาร์ดึก ปลายซอย',    sub:'ดึกแล้ว แต่ยังไม่นอน',                greet:'(เช็ดแก้วช้าๆ) มาดึกนะ... นั่งเลย จะเอาอะไร?'},
+  {h0:0, h1:5,  id:'midnight', title:'บาร์กลางดึก',        sub:'ตี 0 โลกเงียบ แค่เราสองคน',            greet:'(มองขึ้นมา) ยังไม่นอนเหรอ... มีอะไรในหัวหรือเปล่า นั่งคุยได้'}
+];
+
+function getTimeScene(){
+  var h=new Date().getHours();
+  for(var i=0;i<TIME_SCENES.length;i++){
+    var ts=TIME_SCENES[i];
+    if(h>=ts.h0 && h<ts.h1) return ts;
+  }
+  return TIME_SCENES[6]; /* default midnight */
+}
+
+function getTimeLabel(){
+  var h=new Date().getHours();
+  if(h>=5&&h<8)   return '🌄 รุ่งสาง';
+  if(h>=8&&h<12)  return '☀️ ช่วงเช้า';
+  if(h>=12&&h<14) return '🌤 เที่ยง';
+  if(h>=14&&h<17) return '🌞 บ่าย';
+  if(h>=17&&h<20) return '🌆 เย็น';
+  if(h>=20&&h<23) return '🌙 ค่ำ';
+  return '🌌 ดึก';
+}
+
 function initIz(){
   if(ST.chatInited) return;
   ST.chatInited=true;
+  /* auto-select scene by time of day */
+  var ts=getTimeScene();
+  ST.scene=ts.id;
   buildSceneMap();
-  setScene(ST.scene);
-  var sc=SCENES.filter(function(s){return s.id===ST.scene;})[0];
-  addMsg('ai', sc ? sc.greet : 'ยินดีต้อนรับ 🏮');
+  setScene(ST.scene, ts);
+  addMsg('ai', ts.greet);
 }
 
 function buildSceneMap(){
   var html='';
+  /* show time indicator first */
+  html+='<div class="iz-time-pill">'+getTimeLabel()+'<\/div>';
   SCENES.forEach(function(s){
     html+='<div class="iz-map-btn'+(s.id===ST.scene?' active':'')+'" onclick="setScene(\''+s.id+'\')" id="sb-'+s.id+'">'
       +'<span class="iz-map-emoji">'+s.e+'<\/span>'
@@ -1925,29 +2445,45 @@ function buildSceneMap(){
 
 /* SCENE ROOM backgrounds — full SVG per scene */
 var SCENE_BG = {
-  izakaya:'linear-gradient(180deg,#2A0E04 0%,#1C0A02 50%,#120802 100%)',
-  sakura:'linear-gradient(180deg,#200C20 0%,#180A18 50%,#100810 100%)',
-  midnight:'linear-gradient(180deg,#040816 0%,#06080E 50%,#040608 100%)',
-  forest:'linear-gradient(180deg,#04100A 0%,#060E08 50%,#041008 100%)',
-  cosmos:'linear-gradient(180deg,#040412 0%,#060416 50%,#040410 100%)',
-  beach:'linear-gradient(180deg,#080C20 0%,#060A18 50%,#040810 100%)',
-  mountain:'linear-gradient(180deg,#040612 0%,#06080E 50%,#08060E 100%)'
+  izakaya:'linear-gradient(180deg,#180804 0%,#0E0402 60%,#080200 100%)',
+  sakura:'linear-gradient(180deg,#8090A8 0%,#B8A0B8 50%,#C8A888 100%)',
+  midnight:'linear-gradient(180deg,#02020C 0%,#04060E 60%,#060408 100%)',
+  forest:'linear-gradient(180deg,#020806 0%,#040C06 60%,#020804 100%)',
+  cosmos:'linear-gradient(180deg,#010208 0%,#020410 60%,#040818 100%)',
+  beach:'linear-gradient(180deg,#03060F 0%,#060C1A 60%,#0A1428 100%)',
+  mountain:'linear-gradient(180deg,#3060A0 0%,#6090C0 40%,#C09060 100%)'
 };
 
+/* Override bg based on time of day for the auto-selected scene */
+function getTimeBG(sceneId){
+  var h=new Date().getHours();
+  if(sceneId==='cafe'){
+    if(h>=5&&h<8)  return 'linear-gradient(180deg,#6080A0 0%,#9890A8 50%,#C0A878 100%)';
+    if(h>=8&&h<17) return 'linear-gradient(180deg,#8090A8 0%,#B8A0B8 50%,#C8A888 100%)';
+  }
+  if(sceneId==='beach'){
+    if(h>=20&&h<23) return 'linear-gradient(180deg,#03060F 0%,#060C1A 60%,#0A1428 100%)';
+  }
+  if(sceneId==='ramen'){
+    return 'linear-gradient(180deg,#020806 0%,#040C06 60%,#020804 100%)';
+  }
+  return SCENE_BG[SCENE_ALIAS[sceneId]||sceneId]||'#0A0806';
+}
+
 var ROOMS = {
-izakaya:'<svg viewBox="0 0 480 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><rect x="0" y="300" width="480" height="200" fill="#1A0C04"/><rect x="0" y="300" width="480" height="3" fill="#2A1408" opacity="0.8"/><line x1="0" y1="350" x2="480" y2="350" stroke="#221008" stroke-width="2"/><line x1="0" y1="400" x2="480" y2="400" stroke="#221008" stroke-width="1"/><rect x="0" y="0" width="480" height="305" fill="#2A1205"/><rect x="0" y="200" width="480" height="105" fill="#3D1A08"/><rect x="0" y="200" width="480" height="4" fill="#1A0802"/><line x1="80" y1="200" x2="80" y2="305" stroke="#1A0802" stroke-width="1.5" opacity="0.5"/><line x1="160" y1="200" x2="160" y2="305" stroke="#1A0802" stroke-width="1.5" opacity="0.5"/><line x1="240" y1="200" x2="240" y2="305" stroke="#1A0802" stroke-width="1.5" opacity="0.5"/><line x1="320" y1="200" x2="320" y2="305" stroke="#1A0802" stroke-width="1.5" opacity="0.5"/><line x1="400" y1="200" x2="400" y2="305" stroke="#1A0802" stroke-width="1.5" opacity="0.5"/><rect x="0" y="258" width="260" height="50" rx="3" fill="#5A2E0C"/><rect x="0" y="255" width="265" height="8" rx="2" fill="#7A4020"/><rect x="0" y="308" width="260" height="100" fill="#3D1A06"/><rect x="10" y="256" width="240" height="2" rx="1" fill="rgba(255,200,100,0.12)"/><ellipse cx="80" cy="300" rx="22" ry="8" fill="#4A2808"/><rect x="74" y="300" width="12" height="60" rx="3" fill="#3A2008"/><ellipse cx="80" cy="360" rx="18" ry="5" fill="#2A1808"/><ellipse cx="160" cy="300" rx="22" ry="8" fill="#4A2808"/><rect x="154" y="300" width="12" height="60" rx="3" fill="#3A2008"/><ellipse cx="160" cy="360" rx="18" ry="5" fill="#2A1808"/><rect x="0" y="120" width="180" height="8" rx="2" fill="#5A2E0C"/><rect x="0" y="80" width="180" height="8" rx="2" fill="#5A2E0C"/><rect x="15" y="88" width="12" height="32" rx="4" fill="#2A5A8A"/><rect x="35" y="92" width="10" height="28" rx="4" fill="#6A2A08"/><rect x="52" y="88" width="12" height="32" rx="4" fill="#8A9A2A"/><rect x="70" y="90" width="11" height="30" rx="4" fill="#3A6A2A"/><rect x="88" y="86" width="13" height="34" rx="4" fill="#8A4A2A"/><rect x="108" y="89" width="10" height="31" rx="4" fill="#2A5A4A"/><rect x="125" y="91" width="11" height="29" rx="4" fill="#5A2A8A"/><rect x="143" y="88" width="12" height="32" rx="4" fill="#8A6A2A"/><rect x="115" y="240" width="16" height="20" rx="2" fill="#8B9EB5" opacity="0.5"/><rect x="115" y="238" width="16" height="4" rx="1" fill="#A0B4C8" opacity="0.4"/><ellipse cx="165" cy="257" rx="9" ry="4" fill="#D4C8B0" opacity="0.6"/><rect x="156" y="245" width="18" height="12" rx="3" fill="#D4C8B0" opacity="0.5"/><line x1="300" y1="0" x2="300" y2="40" stroke="#8B6040" stroke-width="1.5"/><ellipse cx="300" cy="55" rx="18" ry="26" fill="#D4400A" opacity="0.85"/><ellipse cx="300" cy="30" rx="6" ry="4" fill="#8B4020"/><ellipse cx="300" cy="80" rx="6" ry="4" fill="#8B4020"/><ellipse cx="300" cy="55" rx="16" ry="1" fill="#C03808" opacity="0.6"/><ellipse cx="300" cy="62" rx="16" ry="1" fill="#C03808" opacity="0.6"/><ellipse cx="300" cy="55" rx="50" ry="50" fill="rgba(212,80,10,0.08)"/><line x1="420" y1="0" x2="420" y2="30" stroke="#8B6040" stroke-width="1.5"/><ellipse cx="420" cy="45" rx="15" ry="21" fill="#D4400A" opacity="0.7"/><ellipse cx="420" cy="24" rx="5" ry="3" fill="#8B4020"/><ellipse cx="420" cy="66" rx="5" ry="3" fill="#8B4020"/><ellipse cx="420" cy="55" rx="40" ry="40" fill="rgba(212,80,10,0.06)"/><rect x="270" y="0" width="80" height="60" rx="0" fill="#8B2020" opacity="0.9"/><rect x="270" y="0" width="38" height="60" rx="0" fill="#6B1818" opacity="0.95"/><text x="295" y="40" font-size="14" fill="rgba(245,220,180,0.7)" text-anchor="middle" font-family="serif">&#23621;<\/text><text x="333" y="40" font-size="14" fill="rgba(245,220,180,0.7)" text-anchor="middle" font-family="serif">&#37202;<\/text><ellipse cx="200" cy="350" rx="200" ry="80" fill="rgba(212,100,20,0.06)"/><\/svg>',
+izakaya:'<svg viewBox="0 0 480 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><!-- sky/wall --><defs><radialGradient id="iz-lamp1" cx="30%" cy="20%" r="55%"><stop offset="0%" stop-color="#FFD080" stop-opacity="0.35"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><radialGradient id="iz-lamp2" cx="75%" cy="18%" r="45%"><stop offset="0%" stop-color="#FF9040" stop-opacity="0.28"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><linearGradient id="iz-floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3D1A06"/><stop offset="100%" stop-color="#1A0A02"/></linearGradient></defs><!-- back wall --><rect width="480" height="700" fill="#1E0E04"/><!-- warm wall panels --><rect x="0" y="0" width="480" height="420" fill="#2A1208"/><rect x="0" y="0" width="480" height="420" fill="url(#iz-lamp1)"/><rect x="0" y="0" width="480" height="420" fill="url(#iz-lamp2)"/><!-- horizontal wood beams --><rect x="0" y="90" width="480" height="12" fill="#5A2A0A" rx="2"/><rect x="0" y="88" width="480" height="3" fill="#8A4A18" rx="1"/><rect x="0" y="200" width="480" height="8" fill="#4A2208" rx="1"/><rect x="0" y="280" width="480" height="6" fill="#3A1A06" rx="1"/><!-- vertical wall planks --><rect x="60" y="0" width="3" height="420" fill="#1A0A02" opacity="0.5"/><rect x="140" y="0" width="3" height="420" fill="#1A0A02" opacity="0.5"/><rect x="220" y="0" width="3" height="420" fill="#1A0A02" opacity="0.4"/><rect x="300" y="0" width="3" height="420" fill="#1A0A02" opacity="0.4"/><rect x="380" y="0" width="3" height="420" fill="#1A0A02" opacity="0.3"/><!-- lanterns hanging --><line x1="140" y1="0" x2="140" y2="55" stroke="#8B6040" stroke-width="2"/><ellipse cx="140" cy="72" rx="18" ry="26" fill="#E84010" opacity="0.92"/><ellipse cx="140" cy="50" rx="7" ry="4" fill="#6B3010"/><ellipse cx="140" cy="94" rx="7" ry="4" fill="#6B3010"/><line x1="140" y1="48" x2="140" y2="98" stroke="#C03010" stroke-width="1" opacity="0.6"/><ellipse cx="140" cy="68" rx="15" ry="1.5" fill="#B02808" opacity="0.7"/><ellipse cx="140" cy="75" rx="15" ry="1.5" fill="#B02808" opacity="0.7"/><ellipse cx="140" cy="82" rx="15" ry="1.5" fill="#B02808" opacity="0.7"/><ellipse cx="140" cy="72" rx="60" ry="55" fill="#FF8030" opacity="0.08"/><!-- second lantern --><line x1="320" y1="0" x2="320" y2="42" stroke="#8B6040" stroke-width="2"/><ellipse cx="320" cy="58" rx="15" ry="22" fill="#E84010" opacity="0.85"/><ellipse cx="320" cy="40" rx="6" ry="3.5" fill="#6B3010"/><ellipse cx="320" cy="76" rx="6" ry="3.5" fill="#6B3010"/><ellipse cx="320" cy="55" rx="45" ry="45" fill="#FF8030" opacity="0.07"/><!-- noren curtain --><rect x="200" y="88" width="80" height="55" fill="#8B2020" rx="2" opacity="0.95"/><rect x="200" y="88" width="38" height="55" fill="#6B1818" opacity="0.98"/><text x="224" y="122" font-size="13" fill="rgba(245,220,180,0.8)" text-anchor="middle" font-family="serif">居</text><text x="262" y="122" font-size="13" fill="rgba(245,220,180,0.8)" text-anchor="middle" font-family="serif">酒</text><!-- shelf with bottles --><rect x="0" y="105" width="190" height="10" fill="#7A4020" rx="2"/><rect x="0" y="103" width="190" height="4" fill="#A06030" rx="1"/><rect x="12" y="70" width="11" height="35" rx="3" fill="#2A4A7A"/><rect x="14" y="68" width="7" height="5" rx="1" fill="#1A3060"/><rect x="32" y="74" width="9" height="31" rx="3" fill="#6A2A08"/><rect x="34" y="72" width="5" height="4" rx="1" fill="#4A1A05"/><rect x="50" y="68" width="10" height="37" rx="3" fill="#7A9A1A"/><rect x="52" y="66" width="6" height="5" rx="1" fill="#5A7A10"/><rect x="70" y="72" width="9" height="33" rx="3" fill="#2A5A3A"/><rect x="88" y="66" width="12" height="39" rx="3" fill="#8A3A1A"/><rect x="108" y="70" width="10" height="35" rx="3" fill="#1A4A5A"/><rect x="128" y="73" width="9" height="32" rx="3" fill="#6A4A1A"/><rect x="148" y="68" width="11" height="37" rx="3" fill="#9A2A2A"/><rect x="166" y="71" width="10" height="34" rx="3" fill="#3A2A6A"/><!-- counter bar --><rect x="0" y="370" width="300" height="70" fill="#7A4020" rx="4"/><rect x="0" y="366" width="305" height="10" rx="3" fill="#A06030"/><rect x="0" y="366" width="305" height="3" fill="#C08050" opacity="0.6"/><!-- counter shine --><rect x="5" y="368" width="290" height="2" rx="1" fill="rgba(255,220,160,0.15)"/><!-- bar stools --><ellipse cx="60" cy="430" rx="22" ry="7" fill="#5A3010"/><rect x="52" y="430" width="16" height="50" rx="3" fill="#4A2808"/><ellipse cx="60" cy="480" rx="18" ry="5" fill="#3A1A08"/><ellipse cx="160" cy="430" rx="22" ry="7" fill="#5A3010"/><rect x="152" y="430" width="16" height="50" rx="3" fill="#4A2808"/><ellipse cx="160" cy="480" rx="18" ry="5" fill="#3A1A08"/><!-- sake cups on counter --><ellipse cx="80" cy="368" rx="10" ry="3.5" fill="#D4C8A8" opacity="0.7"/><rect x="74" y="352" width="12" height="16" rx="4" fill="#D4C8A8" opacity="0.65"/><ellipse cx="110" cy="368" rx="8" ry="3" fill="#C8BCA0" opacity="0.6"/><!-- floor --><rect x="0" y="440" width="480" height="260" fill="url(#iz-floor)"/><rect x="0" y="440" width="480" height="5" fill="#6A3010" opacity="0.8"/><!-- floor wood lines --><line x1="0" y1="480" x2="480" y2="480" stroke="#2A1008" stroke-width="1.5" opacity="0.5"/><line x1="0" y1="520" x2="480" y2="520" stroke="#2A1008" stroke-width="1.5" opacity="0.4"/><line x1="0" y1="560" x2="480" y2="560" stroke="#2A1008" stroke-width="1" opacity="0.3"/><line x1="0" y1="600" x2="480" y2="600" stroke="#2A1008" stroke-width="1" opacity="0.25"/><!-- ambient glow on floor --><ellipse cx="140" cy="500" rx="100" ry="40" fill="#FF8030" opacity="0.05"/><ellipse cx="320" cy="480" rx="80" ry="35" fill="#FF6020" opacity="0.04"/><!-- right side kitchen hint --><rect x="360" y="200" width="120" height="240" fill="#1A0804" opacity="0.9"/><rect x="358" y="200" width="4" height="240" fill="#5A2A0A"/><rect x="370" y="210" width="100" height="140" rx="4" fill="#0A0402" opacity="0.8"/><circle cx="420" cy="320" r="25" fill="#FF6010" opacity="0.6"/><circle cx="420" cy="320" r="18" fill="#FF8020" opacity="0.7"/><circle cx="420" cy="320" r="10" fill="#FFAA40" opacity="0.8"/><circle cx="420" cy="320" r="60" fill="#FF6010" opacity="0.07"/><!-- steam --><path d="M415 290 Q418 275 412 262" stroke="rgba(255,255,255,0.18)" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M425 288 Q428 273 422 258" stroke="rgba(255,255,255,0.14)" stroke-width="2" fill="none" stroke-linecap="round"/><!-- window right --><rect x="390" y="120" width="80" height="60" rx="3" fill="#0A1828" opacity="0.9"/><rect x="388" y="118" width="84" height="64" rx="4" fill="none" stroke="#7A5020" stroke-width="3"/><line x1="430" y1="118" x2="430" y2="182" stroke="#7A5020" stroke-width="2"/><line x1="388" y1="150" x2="472" y2="150" stroke="#7A5020" stroke-width="2"/><!-- night glow through window --><ellipse cx="430" cy="150" rx="50" ry="40" fill="#2040A0" opacity="0.08"/></svg>',
 
-sakura:'<svg viewBox="0 0 480 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><rect width="480" height="500" fill="#1A0820"/><ellipse cx="240" cy="420" rx="280" ry="100" fill="#1A0C14"/><rect x="0" y="380" width="480" height="120" fill="#140A10"/><rect x="30" y="80" width="28" height="350" rx="12" fill="#2A1818"/><line x1="44" y1="180" x2="160" y2="100" stroke="#2A1818" stroke-width="12" stroke-linecap="round"/><line x1="44" y1="220" x2="180" y2="200" stroke="#2A1818" stroke-width="10" stroke-linecap="round"/><line x1="44" y1="150" x2="0" y2="80" stroke="#2A1818" stroke-width="8" stroke-linecap="round"/><rect x="420" y="120" width="22" height="320" rx="10" fill="#2A1818"/><line x1="431" y1="200" x2="340" y2="140" stroke="#2A1818" stroke-width="9" stroke-linecap="round"/><ellipse cx="80" cy="100" rx="55" ry="45" fill="#D4708A" opacity="0.55"/><ellipse cx="150" cy="80" rx="50" ry="40" fill="#E890AA" opacity="0.5"/><ellipse cx="50" cy="140" rx="40" ry="35" fill="#D4708A" opacity="0.45"/><ellipse cx="170" cy="130" rx="45" ry="38" fill="#C06080" opacity="0.4"/><ellipse cx="100" cy="60" rx="38" ry="30" fill="#E090A8" opacity="0.5"/><ellipse cx="380" cy="130" rx="55" ry="42" fill="#D4708A" opacity="0.5"/><ellipse cx="440" cy="100" rx="42" ry="36" fill="#E890AA" opacity="0.45"/><ellipse cx="350" cy="160" rx="40" ry="32" fill="#C06080" opacity="0.4"/><rect x="200" y="320" width="24" height="40" rx="2" fill="#6A6050"/><rect x="196" y="318" width="32" height="8" rx="2" fill="#7A7060"/><rect x="202" y="316" width="20" height="6" rx="1" fill="#8A8070"/><rect x="198" y="358" width="28" height="5" fill="#6A6050"/><ellipse cx="212" cy="336" rx="10" ry="10" fill="rgba(255,200,80,0.25)"/><rect x="140" y="355" width="160" height="25" rx="4" fill="#3A2820"/><rect x="148" y="380" width="8" height="30" rx="2" fill="#2A1A10"/><rect x="284" y="380" width="8" height="30" rx="2" fill="#2A1A10"/><ellipse cx="212" cy="356" rx="12" ry="5" fill="#8A6040" opacity="0.7"/><rect x="200" y="346" width="24" height="10" rx="5" fill="#9A7050" opacity="0.7"/><circle cx="380" cy="60" r="30" fill="rgba(255,230,200,0.15)"/><circle cx="380" cy="60" r="22" fill="rgba(255,220,180,0.2)"/><\/svg>',
+sakura:'<svg viewBox="0 0 480 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="sk-sun" cx="50%" cy="15%" r="70%"><stop offset="0%" stop-color="#FFE8B0" stop-opacity="0.45"/><stop offset="60%" stop-color="#FFAA60" stop-opacity="0.12"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><linearGradient id="sk-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#B0C8E8"/><stop offset="100%" stop-color="#D8B8D0"/></linearGradient><linearGradient id="sk-floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#C8A898"/><stop offset="100%" stop-color="#8A6858"/></linearGradient></defs><!-- sky --><rect width="480" height="700" fill="url(#sk-sky)"/><!-- sun glow --><rect width="480" height="700" fill="url(#sk-sun)"/><!-- clouds soft --><ellipse cx="80" cy="60" rx="90" ry="28" fill="white" opacity="0.3"/><ellipse cx="200" cy="40" rx="70" ry="20" fill="white" opacity="0.25"/><ellipse cx="380" cy="70" rx="85" ry="25" fill="white" opacity="0.28"/><!-- sakura trees --><rect x="20" y="80" width="28" height="340" rx="10" fill="#5A3020"/><rect x="14" y="80" width="12" height="200" rx="6" fill="#4A2818"/><ellipse cx="60" cy="130" rx="90" ry="75" fill="#F090B0" opacity="0.82"/><ellipse cx="30" cy="100" rx="60" ry="50" fill="#F0A0C0" opacity="0.75"/><ellipse cx="80" cy="90" rx="70" ry="55" fill="#E878A8" opacity="0.78"/><!-- petals falling --><ellipse cx="120" cy="180" rx="5" ry="3" fill="#FFB8D0" opacity="0.7" transform="rotate(-20 120 180)"/><ellipse cx="200" cy="220" rx="4" ry="2.5" fill="#FFAAC8" opacity="0.6" transform="rotate(15 200 220)"/><ellipse cx="280" cy="160" rx="5" ry="3" fill="#F0A0C0" opacity="0.65" transform="rotate(-30 280 160)"/><ellipse cx="350" cy="200" rx="4" ry="2.5" fill="#FFB0CC" opacity="0.6" transform="rotate(25 350 200)"/><ellipse cx="90" cy="300" rx="4" ry="2.5" fill="#FFBCD4" opacity="0.5" transform="rotate(-10 90 300)"/><ellipse cx="320" cy="130" rx="5" ry="3" fill="#F8A8C0" opacity="0.55" transform="rotate(40 320 130)"/><!-- right sakura tree --><rect x="430" y="100" width="24" height="320" rx="10" fill="#5A3020"/><ellipse cx="430" cy="150" rx="80" ry="70" fill="#F090B0" opacity="0.8"/><ellipse cx="460" cy="120" rx="65" ry="55" fill="#E878A8" opacity="0.75"/><!-- cafe building facade --><rect x="80" y="240" width="320" height="460" fill="#F0E8DC" rx="4"/><rect x="78" y="238" width="324" height="6" rx="2" fill="#C8A878"/><!-- window left --><rect x="100" y="270" width="90" height="80" rx="6" fill="#A8C8E8" opacity="0.85"/><rect x="98" y="268" width="94" height="84" rx="7" fill="none" stroke="#B8906A" stroke-width="3"/><line x1="145" y1="268" x2="145" y2="352" stroke="#B8906A" stroke-width="2"/><line x1="98" y1="310" x2="192" y2="310" stroke="#B8906A" stroke-width="2"/><!-- warm light through left window --><rect x="100" y="270" width="90" height="80" rx="6" fill="#FFE8A0" opacity="0.18"/><!-- window right --><rect x="290" y="270" width="90" height="80" rx="6" fill="#A8C8E8" opacity="0.85"/><rect x="288" y="268" width="94" height="84" rx="7" fill="none" stroke="#B8906A" stroke-width="3"/><line x1="335" y1="268" x2="335" y2="352" stroke="#B8906A" stroke-width="2"/><line x1="288" y1="310" x2="382" y2="310" stroke="#B8906A" stroke-width="2"/><!-- cafe door --><rect x="190" y="320" width="100" height="160" rx="6" fill="#8B6040"/><rect x="188" y="318" width="104" height="164" rx="7" fill="none" stroke="#B8906A" stroke-width="3"/><ellipse cx="280" cy="402" rx="5" ry="5" fill="#C8A050"/><!-- sign board --><rect x="160" y="255" width="160" height="36" rx="6" fill="#7A5030"/><text x="240" y="278" font-size="13" fill="#FFE8C0" text-anchor="middle" font-family="serif" letter-spacing="2">CAFÉ</text><!-- flower boxes under windows --><rect x="95" y="348" width="100" height="18" rx="4" fill="#C8603A"/><ellipse cx="115" cy="344" rx="8" ry="10" fill="#E85070" opacity="0.9"/><ellipse cx="135" cy="342" rx="8" ry="10" fill="#F07090" opacity="0.85"/><ellipse cx="155" cy="344" rx="8" ry="10" fill="#E85070" opacity="0.9"/><ellipse cx="175" cy="343" rx="7" ry="9" fill="#F07090" opacity="0.85"/><!-- floor / path --><rect x="0" y="580" width="480" height="120" fill="url(#sk-floor)"/><rect x="0" y="578" width="480" height="5" fill="#D0A878" opacity="0.8"/><!-- stone path --><ellipse cx="240" cy="600" rx="60" ry="12" fill="#C8B8A0" opacity="0.6"/><ellipse cx="240" cy="620" rx="50" ry="10" fill="#C0B098" opacity="0.5"/><!-- ambient warm --><ellipse cx="240" cy="400" rx="180" ry="100" fill="#FFE8A0" opacity="0.06"/></svg>',
 
-midnight:'<svg viewBox="0 0 480 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><rect width="480" height="500" fill="#050818"/><rect x="0" y="320" width="480" height="180" fill="#080C18"/><rect x="0" y="320" width="480" height="3" fill="#0A1020"/><rect x="0" y="323" width="480" height="30" fill="rgba(80,120,200,0.04)"/><rect x="0" y="0" width="480" height="323" fill="#0A0E1E"/><rect x="100" y="30" width="200" height="50" rx="6" fill="rgba(80,40,120,0.3)" stroke="rgba(160,80,220,0.4)" stroke-width="1"/><text x="200" y="62" font-size="20" fill="rgba(180,100,255,0.85)" text-anchor="middle" font-family="serif" style="letter-spacing:4px">BAR<\/text><ellipse cx="200" cy="55" rx="120" ry="40" fill="rgba(140,60,220,0.06)"/><rect x="310" y="50" width="130" height="100" rx="4" fill="rgba(20,40,80,0.6)" stroke="rgba(60,80,140,0.4)" stroke-width="2"/><line x1="375" y1="50" x2="375" y2="150" stroke="rgba(60,80,140,0.4)" stroke-width="1.5"/><line x1="310" y1="100" x2="440" y2="100" stroke="rgba(60,80,140,0.4)" stroke-width="1.5"/><circle cx="330" cy="70" r="3" fill="rgba(255,200,80,0.5)"/><circle cx="360" cy="60" r="2" fill="rgba(200,80,80,0.5)"/><circle cx="390" cy="75" r="2.5" fill="rgba(80,200,255,0.4)"/><rect x="0" y="262" width="300" height="62" rx="0" fill="#0E1628"/><rect x="0" y="260" width="305" height="8" rx="2" fill="#1A2040"/><rect x="0" y="324" width="300" height="80" fill="#080C1A"/><ellipse cx="80" cy="264" rx="20" ry="7" fill="#0E1628"/><rect x="73" y="264" width="14" height="55" rx="3" fill="#0A1020"/><ellipse cx="80" cy="319" rx="16" ry="5" fill="#080C18"/><ellipse cx="175" cy="264" rx="20" ry="7" fill="#0E1628"/><rect x="168" y="264" width="14" height="55" rx="3" fill="#0A1020"/><ellipse cx="175" cy="319" rx="16" ry="5" fill="#080C18"/><rect x="0" y="150" width="200" height="6" rx="2" fill="#1A2040"/><rect x="0" y="110" width="200" height="6" rx="2" fill="#1A2040"/><rect x="15" y="116" width="10" height="34" rx="3" fill="#2A3A6A"/><rect x="30" y="120" width="9" height="30" rx="3" fill="#4A1A1A"/><rect x="45" y="116" width="10" height="34" rx="3" fill="#1A4A3A"/><rect x="60" y="118" width="10" height="32" rx="3" fill="#3A1A5A"/><rect x="78" y="116" width="11" height="34" rx="3" fill="#5A3A1A"/><rect x="95" y="120" width="9" height="30" rx="3" fill="#2A4A1A"/><rect x="110" y="116" width="10" height="34" rx="3" fill="#1A2A5A"/><rect x="128" y="118" width="10" height="32" rx="3" fill="#4A2A1A"/><path d="M130 240 L135 265 L155 265 L160 240 Z" fill="rgba(140,160,200,0.3)"/><rect x="130" y="238" width="30" height="5" rx="1" fill="rgba(160,180,220,0.25)"/><\/svg>',
+midnight:'<svg viewBox="0 0 480 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="mn-neon1" cx="25%" cy="35%" r="40%"><stop offset="0%" stop-color="#8040FF" stop-opacity="0.3"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><radialGradient id="mn-neon2" cx="75%" cy="30%" r="35%"><stop offset="0%" stop-color="#FF4080" stop-opacity="0.25"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><linearGradient id="mn-floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1A1828"/><stop offset="100%" stop-color="#0A0810"/></linearGradient></defs><!-- night wall --><rect width="480" height="700" fill="#08060E"/><!-- brick texture hint --><rect x="0" y="0" width="480" height="500" fill="#0C0A16"/><!-- neon glow layers --><rect width="480" height="700" fill="url(#mn-neon1)"/><rect width="480" height="700" fill="url(#mn-neon2)"/><!-- neon sign BAR --><rect x="140" y="50" width="200" height="60" rx="8" fill="#0A0818" opacity="0.9" stroke="#6020C0" stroke-width="1.5"/><text x="240" y="93" font-size="32" fill="none" stroke="#A040FF" stroke-width="2" text-anchor="middle" font-family="serif" letter-spacing="6">BAR</text><text x="240" y="93" font-size="32" fill="#C060FF" text-anchor="middle" font-family="serif" letter-spacing="6" opacity="0.7">BAR</text><!-- neon sign glow --><ellipse cx="240" cy="80" rx="130" ry="50" fill="#8040FF" opacity="0.08"/><!-- windows cityscape --><rect x="20" y="100" width="120" height="200" rx="4" fill="#0A1828" opacity="0.9"/><rect x="18" y="98" width="124" height="204" rx="5" fill="none" stroke="#2A3040" stroke-width="2"/><!-- city buildings in window --><rect x="30" y="170" width="20" height="130" fill="#050A14"/><rect x="55" y="150" width="25" height="150" fill="#060C18"/><rect x="85" y="160" width="18" height="140" fill="#050A14"/><rect x="108" y="140" width="22" height="160" fill="#060C18"/><!-- city lights --><rect x="34" y="185" width="4" height="3" fill="#FFD060" opacity="0.8"/><rect x="42" y="192" width="4" height="3" fill="#FFD060" opacity="0.7"/><rect x="60" y="165" width="4" height="3" fill="#A0C0FF" opacity="0.8"/><rect x="68" y="178" width="4" height="3" fill="#FFD060" opacity="0.7"/><rect x="90" y="175" width="4" height="3" fill="#FFD060" opacity="0.75"/><rect x="112" y="155" width="4" height="3" fill="#A0C0FF" opacity="0.8"/><!-- wet street reflection in window --><rect x="20" y="260" width="120" height="40" rx="2" fill="#0A1828" opacity="0.9"/><!-- right window --><rect x="340" y="120" width="120" height="180" rx="4" fill="#0A1828" opacity="0.9"/><rect x="338" y="118" width="124" height="184" rx="5" fill="none" stroke="#2A3040" stroke-width="2"/><!-- more city --><rect x="350" y="170" width="25" height="130" fill="#060C18"/><rect x="380" y="150" width="20" height="150" fill="#050A14"/><rect x="405" y="165" width="28" height="135" fill="#060C18"/><rect x="356" y="188" width="4" height="3" fill="#FF80A0" opacity="0.8"/><rect x="364" y="200" width="4" height="3" fill="#FFD060" opacity="0.7"/><rect x="385" y="170" width="4" height="3" fill="#A0C0FF" opacity="0.8"/><rect x="410" y="180" width="4" height="3" fill="#FFD060" opacity="0.75"/><!-- bar counter --><rect x="0" y="400" width="280" height="80" fill="#1A1428" rx="3"/><rect x="0" y="396" width="285" height="10" rx="3" fill="#2A2038"/><!-- counter shine --><rect x="0" y="398" width="282" height="3" rx="1" fill="rgba(150,100,255,0.15)"/><!-- bottles backlit --><rect x="0" y="280" width="270" height="8" fill="#1A1428" rx="2"/><!-- back bar shelf glow --><rect x="0" y="260" width="270" height="22" fill="#0A0818" opacity="0.9"/><rect x="0" y="258" width="270" height="6" fill="#2A1840" rx="1"/><!-- backlit bottles --><rect x="15" y="222" width="10" height="38" rx="4" fill="#402080" opacity="0.85"/><ellipse cx="20" cy="220" rx="5" ry="3" fill="#5030A0" opacity="0.9"/><rect x="32" y="218" width="12" height="42" rx="4" fill="#FF2060" opacity="0.7"/><ellipse cx="38" cy="216" rx="6" ry="3.5" fill="#FF4080" opacity="0.8"/><rect x="52" y="225" width="10" height="35" rx="4" fill="#1040A0" opacity="0.8"/><rect x="68" y="220" width="11" height="40" rx="4" fill="#20A060" opacity="0.75"/><rect x="86" y="216" width="12" height="44" rx="4" fill="#A04000" opacity="0.8"/><rect x="105" y="222" width="10" height="38" rx="4" fill="#8000C0" opacity="0.75"/><rect x="122" y="218" width="11" height="42" rx="4" fill="#C04020" opacity="0.8"/><rect x="140" y="224" width="10" height="36" rx="4" fill="#004080" opacity="0.8"/><!-- shelf glow from bottles --><ellipse cx="90" cy="255" rx="100" ry="20" fill="#4020A0" opacity="0.1"/><!-- bar stools --><ellipse cx="70" cy="460" rx="22" ry="7" fill="#2A2038"/><rect x="62" y="460" width="16" height="50" rx="3" fill="#1A1428"/><ellipse cx="180" cy="460" rx="22" ry="7" fill="#2A2038"/><rect x="172" y="460" width="16" height="50" rx="3" fill="#1A1428"/><!-- glass on counter --><path d="M60 400 L65 420 L75 420 L80 400 Z" fill="rgba(180,160,255,0.25)"/><rect x="60" y="398" width="20" height="4" rx="1" fill="rgba(200,180,255,0.2)"/><!-- floor --><rect x="0" y="510" width="480" height="190" fill="url(#mn-floor)"/><rect x="0" y="508" width="480" height="5" fill="#2A2438" opacity="0.8"/><!-- wet floor reflection --><ellipse cx="140" cy="540" rx="120" ry="25" fill="#6020C0" opacity="0.08"/><ellipse cx="380" cy="560" rx="80" ry="18" fill="#FF2060" opacity="0.06"/><!-- ambient glow bottom --><ellipse cx="140" cy="420" rx="140" ry="80" fill="#6020C0" opacity="0.06"/></svg>',
 
-forest:'<svg viewBox="0 0 480 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><rect width="480" height="500" fill="#050E06"/><ellipse cx="240" cy="450" rx="300" ry="80" fill="#0A1408"/><rect x="0" y="380" width="480" height="120" fill="#081008"/><ellipse cx="240" cy="200" rx="80" ry="300" fill="rgba(200,220,180,0.04)"/><circle cx="240" cy="40" r="28" fill="rgba(220,230,200,0.25)"/><circle cx="240" cy="40" r="20" fill="rgba(220,230,200,0.3)"/><rect x="0" y="50" width="35" height="400" rx="8" fill="#0A1A0A"/><ellipse cx="18" cy="100" rx="60" ry="80" fill="#0C2010" opacity="0.9"/><ellipse cx="18" cy="160" rx="70" ry="90" fill="#0A1C0A"/><rect x="445" y="80" width="35" height="380" rx="8" fill="#0A1A0A"/><ellipse cx="462" cy="130" rx="60" ry="80" fill="#0C2010" opacity="0.9"/><ellipse cx="462" cy="200" rx="65" ry="85" fill="#0A1C0A"/><rect x="380" y="150" width="22" height="300" rx="6" fill="#0C1A0C"/><ellipse cx="391" cy="200" rx="50" ry="70" fill="#0E2010"/><rect x="70" y="170" width="20" height="280" rx="6" fill="#0C1A0C"/><ellipse cx="80" cy="220" rx="48" ry="65" fill="#0E2010"/><ellipse cx="80" cy="400" rx="60" ry="20" fill="#0C1A0C"/><ellipse cx="380" cy="410" rx="55" ry="18" fill="#0C1A0C"/><ellipse cx="240" cy="430" rx="80" ry="25" fill="#0A1808"/><ellipse cx="200" cy="365" rx="55" ry="18" fill="#2A1A08"/><rect x="150" y="365" width="100" height="30" rx="4" fill="#2A1A08"/><ellipse cx="200" cy="365" rx="50" ry="14" fill="#3A2210"/><ellipse cx="190" cy="355" rx="9" ry="4" fill="#5A3A20" opacity="0.8"/><rect x="181" y="346" width="18" height="9" rx="4" fill="#6A4A28" opacity="0.8"/><circle cx="150" cy="200" r="2.5" fill="rgba(200,230,80,0.5)"/><circle cx="320" cy="250" r="2" fill="rgba(200,230,80,0.4)"/><circle cx="200" cy="180" r="1.5" fill="rgba(200,230,80,0.35)"/><circle cx="150" cy="200" r="12" fill="rgba(200,230,80,0.05)"/><circle cx="320" cy="250" r="10" fill="rgba(200,230,80,0.04)"/><\/svg>',
+forest:'<svg viewBox="0 0 480 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="fr-moon" cx="70%" cy="12%" r="30%"><stop offset="0%" stop-color="#E8F0C0" stop-opacity="0.5"/><stop offset="60%" stop-color="#A0B870" stop-opacity="0.1"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><linearGradient id="fr-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#040C08"/><stop offset="100%" stop-color="#0C1A0C"/></linearGradient><linearGradient id="fr-floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1A2A0E"/><stop offset="100%" stop-color="#080E06"/></linearGradient></defs><!-- night forest sky --><rect width="480" height="700" fill="url(#fr-sky)"/><!-- moon --><circle cx="340" cy="70" r="35" fill="#F0ECC0" opacity="0.85"/><circle cx="340" cy="70" r="28" fill="#F8F4D0" opacity="0.9"/><circle cx="328" cy="62" r="6" fill="#D8D4A8" opacity="0.4"/><circle cx="348" cy="80" r="4" fill="#D8D4A8" opacity="0.35"/><rect width="480" height="700" fill="url(#fr-moon)"/><!-- stars --><circle cx="40" cy="30" r="1.5" fill="white" opacity="0.9"/><circle cx="80" cy="15" r="1" fill="white" opacity="0.8"/><circle cx="150" cy="40" r="1.5" fill="white" opacity="0.85"/><circle cx="220" cy="25" r="1" fill="white" opacity="0.7"/><circle cx="60" cy="80" r="1" fill="white" opacity="0.65"/><circle cx="130" cy="60" r="1.5" fill="white" opacity="0.8"/><circle cx="400" cy="35" r="1" fill="white" opacity="0.75"/><circle cx="440" cy="55" r="1.5" fill="white" opacity="0.8"/><!-- back trees --><rect x="0" y="60" width="35" height="580" rx="14" fill="#0A1A08"/><ellipse cx="18" cy="120" rx="75" ry="90" fill="#0C2010" opacity="0.95"/><ellipse cx="18" cy="180" rx="85" ry="100" fill="#0A1C0C"/><!-- right back tree --><rect x="440" y="80" width="40" height="560" rx="14" fill="#0A1A08"/><ellipse cx="458" cy="140" rx="75" ry="85" fill="#0C2010" opacity="0.95"/><!-- mid trees --><rect x="50" y="200" width="22" height="440" rx="8" fill="#142810"/><ellipse cx="62" cy="260" rx="60" ry="75" fill="#162E12" opacity="0.95"/><rect x="390" y="180" width="22" height="460" rx="8" fill="#142810"/><ellipse cx="401" cy="240" rx="58" ry="70" fill="#162E12"/><!-- fire pit / cabin --><rect x="140" y="400" width="200" height="200" rx="8" fill="#2A1A0C" opacity="0.95"/><rect x="138" y="398" width="204" height="8" rx="3" fill="#5A3A18"/><!-- cabin window --><rect x="160" y="420" width="60" height="50" rx="4" fill="#4A2A08" opacity="0.8"/><rect x="158" y="418" width="64" height="54" rx="5" fill="none" stroke="#8A5A28" stroke-width="3"/><line x1="190" y1="418" x2="190" y2="472" stroke="#8A5A28" stroke-width="2"/><line x1="158" y1="445" x2="222" y2="445" stroke="#8A5A28" stroke-width="2"/><!-- warm light in cabin window --><rect x="160" y="420" width="60" height="50" rx="4" fill="#FF9030" opacity="0.25"/><!-- cabin window right --><rect x="260" y="420" width="60" height="50" rx="4" fill="#4A2A08" opacity="0.8"/><rect x="258" y="418" width="64" height="54" rx="5" fill="none" stroke="#8A5A28" stroke-width="3"/><line x1="290" y1="418" x2="290" y2="472" stroke="#8A5A28" stroke-width="2"/><line x1="258" y1="445" x2="322" y2="445" stroke="#8A5A28" stroke-width="2"/><rect x="260" y="420" width="60" height="50" rx="4" fill="#FF9030" opacity="0.22"/><!-- cabin door --><rect x="210" y="490" width="60" height="110" rx="4" fill="#5A3A18"/><rect x="208" y="488" width="64" height="114" rx="5" fill="none" stroke="#8A5A28" stroke-width="3"/><circle cx="264" cy="548" r="4" fill="#C09040"/><!-- fire / campfire --><ellipse cx="100" cy="580" rx="28" ry="8" fill="#3A1A08" opacity="0.9"/><ellipse cx="100" cy="575" rx="22" ry="6" fill="#4A2A08"/><!-- fire flame --><path d="M88 575 Q92 545 100 530 Q108 545 112 575 Z" fill="#FF8010" opacity="0.9"/><path d="M92 575 Q96 550 100 538 Q104 550 108 575 Z" fill="#FFAA30" opacity="0.95"/><path d="M95 575 Q98 555 100 548 Q102 555 105 575 Z" fill="#FFD060" opacity="0.9"/><!-- fire glow --><ellipse cx="100" cy="565" rx="60" ry="50" fill="#FF6010" opacity="0.14"/><ellipse cx="100" cy="580" rx="100" ry="30" fill="#FF8020" opacity="0.08"/><!-- ground grass --><rect x="0" y="600" width="480" height="100" fill="url(#fr-floor)"/><rect x="0" y="598" width="480" height="6" fill="#203A10" opacity="0.8"/><!-- firefly dots --><circle cx="200" cy="460" r="2.5" fill="#C0FF80" opacity="0.6"/><circle cx="300" cy="420" r="2" fill="#A0FF60" opacity="0.5"/><circle cx="350" cy="480" r="2.5" fill="#C0FF80" opacity="0.55"/><!-- moonlight on ground --><ellipse cx="340" cy="640" rx="80" ry="20" fill="#E8F0A0" opacity="0.08"/></svg>',
 
-cosmos:'<svg viewBox="0 0 480 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><rect width="480" height="500" fill="#040412"/><circle cx="40" cy="30" r="1" fill="rgba(255,255,255,0.8)"/><circle cx="120" cy="15" r="1.5" fill="rgba(255,255,255,0.7)"/><circle cx="200" cy="40" r="1" fill="rgba(255,255,255,0.6)"/><circle cx="280" cy="20" r="1" fill="rgba(255,255,255,0.9)"/><circle cx="360" cy="35" r="1.5" fill="rgba(255,255,255,0.7)"/><circle cx="440" cy="18" r="1" fill="rgba(255,255,255,0.8)"/><circle cx="80" cy="80" r="1" fill="rgba(255,255,255,0.5)"/><circle cx="180" cy="90" r="1.5" fill="rgba(255,255,255,0.6)"/><circle cx="300" cy="70" r="1" fill="rgba(255,255,255,0.7)"/><circle cx="50" cy="140" r="1" fill="rgba(255,255,255,0.4)"/><circle cx="240" cy="130" r="2" fill="rgba(255,255,255,0.8)"/><ellipse cx="350" cy="100" rx="120" ry="80" fill="rgba(100,60,180,0.12)"/><ellipse cx="100" cy="160" rx="100" ry="60" fill="rgba(60,100,180,0.08)"/><ellipse cx="240" cy="280" rx="180" ry="120" fill="#0C0E1E"/><ellipse cx="240" cy="200" rx="180" ry="100" fill="#0E1228"/><rect x="210" y="100" width="60" height="200" rx="5" fill="#050812" opacity="0.9"/><rect x="195" y="240" width="30" height="80" rx="4" fill="#1A2040" transform="rotate(-20 210 280)"/><circle cx="218" cy="248" r="18" fill="none" stroke="#2A3060" stroke-width="3"/><circle cx="218" cy="248" r="14" fill="#080C20"/><line x1="215" y1="320" x2="185" y2="370" stroke="#1A2040" stroke-width="4" stroke-linecap="round"/><line x1="215" y1="320" x2="245" y2="370" stroke="#1A2040" stroke-width="4" stroke-linecap="round"/><ellipse cx="240" cy="430" rx="280" ry="60" fill="#080C1A"/><rect x="0" y="390" width="480" height="110" fill="#060A16"/><rect x="30" y="310" width="140" height="20" rx="3" fill="#1A2040"/><rect x="32" y="308" width="136" height="5" rx="2" fill="#222848"/><rect x="35" y="330" width="10" height="50" rx="2" fill="#141C34"/><rect x="150" y="330" width="10" height="50" rx="2" fill="#141C34"/><rect x="40" y="298" width="18" height="12" rx="2" fill="#2A3060"/><rect x="62" y="295" width="18" height="15" rx="2" fill="#3A2040"/><\/svg>',
+cosmos:'<svg viewBox="0 0 480 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="cs-glow" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#4060C0" stop-opacity="0.2"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><linearGradient id="cs-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#020410"/><stop offset="50%" stop-color="#060A1E"/><stop offset="100%" stop-color="#0A1028"/></linearGradient></defs><!-- deep night sky --><rect width="480" height="700" fill="url(#cs-sky)"/><!-- nebula/galaxy hint --><ellipse cx="300" cy="200" rx="200" ry="120" fill="#2030A0" opacity="0.12"/><ellipse cx="200" cy="250" rx="160" ry="90" fill="#6020A0" opacity="0.08"/><rect width="480" height="700" fill="url(#cs-glow)"/><!-- stars many --><circle cx="30" cy="20" r="1.5" fill="white" opacity="0.9"/><circle cx="70" cy="45" r="1" fill="white" opacity="0.8"/><circle cx="120" cy="25" r="1.5" fill="white" opacity="0.85"/><circle cx="170" cy="60" r="1" fill="white" opacity="0.7"/><circle cx="250" cy="30" r="2" fill="white" opacity="0.9"/><circle cx="310" cy="50" r="1" fill="white" opacity="0.75"/><circle cx="380" cy="20" r="1.5" fill="white" opacity="0.85"/><circle cx="440" cy="55" r="1" fill="white" opacity="0.8"/><circle cx="55" cy="90" r="1" fill="white" opacity="0.65"/><circle cx="140" cy="80" r="1.5" fill="white" opacity="0.8"/><circle cx="220" cy="95" r="1" fill="white" opacity="0.7"/><circle cx="360" cy="75" r="1.5" fill="white" opacity="0.8"/><circle cx="420" cy="100" r="1" fill="white" opacity="0.7"/><circle cx="90" cy="140" r="1" fill="#A0C0FF" opacity="0.8"/><circle cx="200" cy="130" r="1.5" fill="#FFC080" opacity="0.75"/><circle cx="350" cy="120" r="1" fill="#A0C0FF" opacity="0.8"/><!-- city skyline far --><rect x="0" y="380" width="60" height="320" fill="#080C18"/><rect x="55" y="340" width="45" height="360" fill="#06080E"/><rect x="95" y="360" width="35" height="340" fill="#080C18"/><rect x="125" y="330" width="50" height="370" fill="#060A14"/><rect x="170" y="350" width="40" height="350" fill="#080C18"/><rect x="205" y="310" width="55" height="390" fill="#06080E"/><!-- city lights right --><rect x="260" y="320" width="50" height="380" fill="#080C18"/><rect x="305" y="340" width="40" height="360" fill="#060A14"/><rect x="340" y="360" width="55" height="340" fill="#080C18"/><rect x="390" y="330" width="45" height="370" fill="#06080E"/><rect x="430" y="350" width="50" height="350" fill="#080C18"/><!-- building windows glow --><rect x="10" y="395" width="5" height="4" fill="#FFD060" opacity="0.7"/><rect x="22" y="410" width="5" height="4" fill="#FFD060" opacity="0.6"/><rect x="62" y="360" width="5" height="4" fill="#A0C0FF" opacity="0.8"/><rect x="75" y="375" width="5" height="4" fill="#FFD060" opacity="0.65"/><rect x="100" y="380" width="5" height="4" fill="#FFD060" opacity="0.7"/><rect x="132" y="348" width="5" height="4" fill="#A0C0FF" opacity="0.75"/><rect x="145" y="362" width="5" height="4" fill="#FFD060" opacity="0.65"/><rect x="180" y="368" width="5" height="4" fill="#FFD060" opacity="0.7"/><rect x="215" y="328" width="5" height="4" fill="#FFA040" opacity="0.8"/><rect x="228" y="342" width="5" height="4" fill="#A0C0FF" opacity="0.7"/><rect x="268" y="338" width="5" height="4" fill="#FFD060" opacity="0.65"/><rect x="312" y="358" width="5" height="4" fill="#FFD060" opacity="0.7"/><rect x="350" y="375" width="5" height="4" fill="#A0C0FF" opacity="0.75"/><rect x="398" y="348" width="5" height="4" fill="#FFD060" opacity="0.65"/><rect x="435" y="368" width="5" height="4" fill="#FFA040" opacity="0.7"/><!-- rooftop floor / terrace --><rect x="0" y="500" width="480" height="200" fill="#0E1220"/><rect x="0" y="498" width="480" height="6" fill="#1A2038"/><!-- railing --><rect x="0" y="500" width="480" height="4" fill="#2A3050"/><line x1="40" y1="500" x2="40" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="80" y1="500" x2="80" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="120" y1="500" x2="120" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="160" y1="500" x2="160" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="200" y1="500" x2="200" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="240" y1="500" x2="240" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="280" y1="500" x2="280" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="320" y1="500" x2="320" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="360" y1="500" x2="360" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="400" y1="500" x2="400" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="440" y1="500" x2="440" y2="540" stroke="#2A3050" stroke-width="3"/><!-- city glow on floor --><ellipse cx="240" cy="510" rx="280" ry="30" fill="#A0C0FF" opacity="0.05"/><!-- telescope --><rect x="310" y="450" width="12" height="55" rx="4" fill="#2A3050" transform="rotate(-30 316 477)"/><ellipse cx="295" cy="472" rx="14" ry="9" fill="#3A4060" transform="rotate(-30 295 472)"/><!-- string lights --><path d="M0 520 Q120 508 240 515 Q360 522 480 510" stroke="#FFD080" stroke-width="1.5" fill="none" opacity="0.4"/><circle cx="60" cy="512" r="3" fill="#FFD080" opacity="0.7"/><circle cx="120" cy="509" r="3" fill="#FFE8A0" opacity="0.65"/><circle cx="180" cy="513" r="3" fill="#FFD080" opacity="0.7"/><circle cx="240" cy="515" r="3" fill="#FFC060" opacity="0.7"/><circle cx="300" cy="513" r="3" fill="#FFD080" opacity="0.65"/><circle cx="360" cy="510" r="3" fill="#FFE8A0" opacity="0.7"/><circle cx="420" cy="509" r="3" fill="#FFD080" opacity="0.65"/><!-- city glow ambient --><ellipse cx="240" cy="380" rx="280" ry="80" fill="#4060C0" opacity="0.06"/></svg>',
 
-beach:'<svg viewBox="0 0 480 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><rect width="480" height="500" fill="#0A1828"/><rect x="0" y="240" width="480" height="160" fill="#062030" opacity="0.95"/><rect x="0" y="240" width="480" height="8" fill="#0A2838" opacity="0.8"/><path d="M0 255 Q60 248 120 255 Q180 262 240 255 Q300 248 360 255 Q420 262 480 255" stroke="rgba(80,140,180,0.3)" stroke-width="2" fill="none"/><ellipse cx="240" cy="240" rx="300" ry="30" fill="rgba(200,140,80,0.08)"/><circle cx="380" cy="60" r="24" fill="rgba(240,220,180,0.25)"/><circle cx="380" cy="60" r="16" fill="rgba(240,220,180,0.3)"/><ellipse cx="380" cy="280" rx="20" ry="50" fill="rgba(240,220,180,0.05)"/><ellipse cx="240" cy="480" rx="320" ry="90" fill="#2A1A08"/><rect x="0" y="400" width="480" height="100" fill="#221408"/><rect x="0" y="400" width="480" height="8" fill="#2A1A10" opacity="0.8"/><ellipse cx="200" cy="405" rx="100" ry="18" fill="#3A2010" opacity="0.8"/><rect x="105" y="395" width="190" height="12" rx="3" fill="#4A2818" opacity="0.7"/><rect x="80" y="300" width="10" height="100" rx="3" fill="#3A2010" transform="rotate(5 85 350)"/><ellipse cx="85" cy="295" rx="22" ry="18" fill="#2A4A20" opacity="0.9"/><circle cx="78" cy="298" r="8" fill="#4A2808" opacity="0.9"/><circle cx="96" cy="302" r="7" fill="#4A2808" opacity="0.9"/><rect x="130" y="375" width="100" height="22" rx="3" fill="#2A1808"/><rect x="133" y="373" width="94" height="5" rx="2" fill="#3A2210"/><rect x="138" y="397" width="8" height="25" rx="2" fill="#1A1008"/><rect x="212" y="397" width="8" height="25" rx="2" fill="#1A1008"/><circle cx="168" cy="367" r="14" fill="#4A2808" opacity="0.85"/><line x1="174" y1="360" x2="178" y2="340" stroke="#F5E8C0" stroke-width="2"/><circle cx="80" cy="30" r="1" fill="rgba(255,255,255,0.6)"/><circle cx="160" cy="20" r="1.5" fill="rgba(255,255,255,0.5)"/><circle cx="260" cy="40" r="1" fill="rgba(255,255,255,0.7)"/><circle cx="340" cy="25" r="1" fill="rgba(255,255,255,0.5)"/><\/svg>',
+beach:'<svg viewBox="0 0 480 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="bc-moon" cx="75%" cy="15%" r="25%"><stop offset="0%" stop-color="#F0F8E0" stop-opacity="0.55"/><stop offset="50%" stop-color="#C0D8A0" stop-opacity="0.12"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><linearGradient id="bc-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#060C1E"/><stop offset="50%" stop-color="#0A1428"/><stop offset="100%" stop-color="#102040"/></linearGradient><linearGradient id="bc-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0A2040"/><stop offset="100%" stop-color="#061428"/></linearGradient><linearGradient id="bc-sand" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#C8A870"/><stop offset="100%" stop-color="#A08050"/></linearGradient></defs><!-- night sky --><rect width="480" height="700" fill="url(#bc-sky)"/><!-- moon --><circle cx="360" cy="80" r="30" fill="#EEF8D8" opacity="0.88"/><circle cx="360" cy="80" r="23" fill="#F4FBE4" opacity="0.9"/><rect width="480" height="700" fill="url(#bc-moon)"/><!-- stars --><circle cx="20" cy="30" r="1.5" fill="white" opacity="0.85"/><circle cx="60" cy="15" r="1" fill="white" opacity="0.8"/><circle cx="110" cy="35" r="1.5" fill="white" opacity="0.9"/><circle cx="170" cy="20" r="1" fill="white" opacity="0.75"/><circle cx="220" cy="45" r="1.5" fill="white" opacity="0.85"/><circle cx="280" cy="25" r="1" fill="white" opacity="0.8"/><circle cx="430" cy="40" r="1" fill="white" opacity="0.75"/><circle cx="50" cy="70" r="1" fill="white" opacity="0.65"/><circle cx="140" cy="60" r="1.5" fill="white" opacity="0.8"/><!-- sea --><rect x="0" y="280" width="480" height="260" fill="url(#bc-sea)"/><!-- waves --><path d="M0 285 Q60 275 120 285 Q180 295 240 285 Q300 275 360 285 Q420 295 480 285" stroke="#1A4060" stroke-width="2.5" fill="none" opacity="0.7"/><path d="M0 300 Q70 292 140 300 Q210 308 280 300 Q350 292 420 300 Q450 305 480 300" stroke="#1A4060" stroke-width="2" fill="none" opacity="0.5"/><path d="M0 320 Q80 312 160 320 Q240 328 320 320 Q400 312 480 320" stroke="#204870" stroke-width="1.5" fill="none" opacity="0.4"/><!-- moonlight on sea --><ellipse cx="360" cy="340" rx="80" ry="200" fill="#C0D8B0" opacity="0.08" transform="rotate(5 360 340)"/><!-- fishing boats far --><path d="M60 292 L50 310 L90 310 L80 292 Z" fill="#1A3050" opacity="0.7"/><rect x="70" y="288" width="2" height="18" fill="#2A4060" opacity="0.8"/><path d="M64 296 L70 292 L76 296 Z" fill="#304060" opacity="0.65"/><!-- beach --><rect x="0" y="530" width="480" height="170" fill="url(#bc-sand)"/><rect x="0" y="528" width="480" height="6" fill="#D0B880" opacity="0.9"/><!-- sea foam at shore --><path d="M0 535 Q120 530 240 535 Q360 540 480 535" stroke="rgba(255,255,255,0.25)" stroke-width="3" fill="none"/><!-- beach items --><ellipse cx="80" cy="570" rx="25" ry="10" fill="#B09060" opacity="0.8"/><ellipse cx="80" cy="566" rx="22" ry="8" fill="#C0A070" opacity="0.9"/><!-- coconut palm tree --><rect x="360" y="300" width="16" height="240" rx="6" fill="#5A3A10" transform="rotate(-8 368 540)"/><ellipse cx="330" cy="300" rx="70" ry="35" fill="#1A5010" opacity="0.9"/><ellipse cx="370" cy="285" rx="65" ry="30" fill="#1E6014" opacity="0.88"/><ellipse cx="350" cy="295" rx="55" ry="28" fill="#228018" opacity="0.85"/><!-- coconuts --><circle cx="340" cy="315" r="8" fill="#5A3010" opacity="0.9"/><circle cx="355" cy="318" r="7" fill="#4A2808" opacity="0.85"/><!-- lanterns string --><path d="M0 550 Q120 543 240 548 Q360 553 480 545" stroke="#8A6040" stroke-width="1.5" fill="none" opacity="0.6"/><!-- lanterns hanging --><ellipse cx="80" cy="553" rx="7" ry="10" fill="#E84010" opacity="0.85"/><ellipse cx="160" cy="550" rx="7" ry="10" fill="#E84010" opacity="0.8"/><ellipse cx="240" cy="553" rx="7" ry="10" fill="#FF8010" opacity="0.85"/><ellipse cx="320" cy="551" rx="7" ry="10" fill="#E84010" opacity="0.8"/><ellipse cx="400" cy="549" rx="7" ry="10" fill="#FF8010" opacity="0.85"/><!-- glow from lanterns --><ellipse cx="80" cy="560" rx="25" ry="15" fill="#FF6010" opacity="0.1"/><ellipse cx="240" cy="560" rx="25" ry="15" fill="#FF8010" opacity="0.09"/><ellipse cx="400" cy="557" rx="25" ry="15" fill="#FF6010" opacity="0.09"/><!-- sea ambient glow --><ellipse cx="240" cy="400" rx="300" ry="80" fill="#1040A0" opacity="0.06"/></svg>',
 
-mountain:'<svg viewBox="0 0 480 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><rect width="480" height="500" fill="#04060E"/><polygon points="0,280 80,140 160,240 240,100 320,200 400,130 480,220 480,500 0,500" fill="#0A0E1A" opacity="0.7"/><polygon points="-20,500 100,180 220,500" fill="#0C1020"/><polygon points="260,500 380,160 500,500" fill="#0A0E1C"/><polygon points="100,180 120,220 80,220" fill="rgba(200,210,230,0.4)"/><polygon points="380,160 400,200 360,200" fill="rgba(200,210,230,0.35)"/><ellipse cx="240" cy="300" rx="320" ry="50" fill="rgba(160,180,200,0.06)"/><ellipse cx="240" cy="360" rx="320" ry="40" fill="rgba(160,180,200,0.08)"/><rect x="80" y="330" width="320" height="20" rx="3" fill="#1A1A28"/><rect x="90" y="326" width="300" height="8" rx="2" fill="#22223A"/><rect x="100" y="290" width="16" height="38" rx="2" fill="#2A2A3A"/><rect x="96" y="288" width="24" height="6" rx="2" fill="#3A3A4A"/><ellipse cx="108" cy="306" rx="7" ry="7" fill="rgba(255,180,80,0.3)"/><ellipse cx="108" cy="306" rx="16" ry="16" fill="rgba(255,180,80,0.06)"/><rect x="364" y="290" width="16" height="38" rx="2" fill="#2A2A3A"/><rect x="360" y="288" width="24" height="6" rx="2" fill="#3A3A4A"/><ellipse cx="372" cy="306" rx="7" ry="7" fill="rgba(255,180,80,0.3)"/><line x1="140" y1="270" x2="340" y2="260" stroke="#8A6040" stroke-width="1.5"/><rect x="152" y="262" width="16" height="10" rx="1" fill="#C04020" opacity="0.7"/><rect x="180" y="260" width="16" height="10" rx="1" fill="#E0D020" opacity="0.7"/><rect x="208" y="258" width="16" height="10" rx="1" fill="#2060A0" opacity="0.7"/><rect x="236" y="260" width="16" height="10" rx="1" fill="#20A040" opacity="0.7"/><rect x="264" y="262" width="16" height="10" rx="1" fill="#C04020" opacity="0.7"/><ellipse cx="200" cy="350" rx="45" ry="12" fill="#4A3020" opacity="0.8"/><rect x="158" y="342" width="84" height="8" rx="3" fill="#5A3A28" opacity="0.7"/><rect x="195" y="320" width="3" height="22" rx="1" fill="#8A6040" opacity="0.7"/><circle cx="196" cy="320" r="3" fill="rgba(255,150,50,0.4)"/><circle cx="60" cy="40" r="1.5" fill="rgba(255,255,255,0.7)"/><circle cx="140" cy="25" r="1" fill="rgba(255,255,255,0.6)"/><circle cx="240" cy="50" r="1" fill="rgba(255,255,255,0.5)"/><circle cx="340" cy="30" r="1.5" fill="rgba(255,255,255,0.7)"/><circle cx="420" cy="45" r="1" fill="rgba(255,255,255,0.6)"/><\/svg>'
+mountain:'<svg viewBox="0 0 480 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="mt-sun" cx="50%" cy="25%" r="50%"><stop offset="0%" stop-color="#FFD080" stop-opacity="0.6"/><stop offset="40%" stop-color="#FF9030" stop-opacity="0.2"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><linearGradient id="mt-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4080C0"/><stop offset="40%" stop-color="#80B0E0"/><stop offset="100%" stop-color="#E0B880"/></linearGradient><linearGradient id="mt-mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E8F0F8" stop-opacity="0.0"/><stop offset="100%" stop-color="#C0D8F0" stop-opacity="0.35"/></linearGradient></defs><!-- dawn sky --><rect width="480" height="700" fill="url(#mt-sky)"/><!-- sun glow --><rect width="480" height="700" fill="url(#mt-sun)"/><!-- sun disc --><circle cx="240" cy="160" r="40" fill="#FFE080" opacity="0.75"/><circle cx="240" cy="160" r="28" fill="#FFF0A0" opacity="0.85"/><!-- sun rays --><line x1="240" y1="108" x2="240" y2="90" stroke="#FFD060" stroke-width="2" opacity="0.5"/><line x1="272" y1="118" x2="286" y2="104" stroke="#FFD060" stroke-width="2" opacity="0.4"/><line x1="292" y1="148" x2="312" y2="144" stroke="#FFD060" stroke-width="1.5" opacity="0.4"/><line x1="208" y1="118" x2="194" y2="104" stroke="#FFD060" stroke-width="2" opacity="0.4"/><line x1="188" y1="148" x2="168" y2="144" stroke="#FFD060" stroke-width="1.5" opacity="0.4"/><!-- clouds dawn pink --><ellipse cx="80" cy="120" rx="100" ry="28" fill="#FFB8A0" opacity="0.45"/><ellipse cx="380" cy="140" rx="90" ry="22" fill="#FFB0A8" opacity="0.4"/><ellipse cx="200" cy="100" rx="80" ry="20" fill="#FFC8B0" opacity="0.38"/><!-- mountains back --><polygon points="0,350 120,150 240,350" fill="#506080" opacity="0.65"/><polygon points="120,350 240,160 360,350" fill="#4A5878" opacity="0.7"/><polygon points="240,350 360,170 480,350" fill="#506080" opacity="0.65"/><!-- snow caps --><polygon points="120,218 140,150 160,218" fill="white" opacity="0.7"/><polygon points="240,228 260,160 280,228" fill="white" opacity="0.72"/><!-- mountains mid --><polygon points="-20,500 120,280 260,500" fill="#384858" opacity="0.85"/><polygon points="220,500 360,260 500,500" fill="#3A4A5A" opacity="0.85"/><!-- mist layer --><rect x="0" y="440" width="480" height="80" fill="url(#mt-mist)"/><ellipse cx="240" cy="450" rx="280" ry="40" fill="white" opacity="0.18"/><!-- temple/shrine structure --><rect x="160" y="460" width="160" height="180" fill="#3A3028"/><rect x="155" y="455" width="170" height="14" rx="3" fill="#6A5038"/><!-- roof --><polygon points="130,460 240,400 350,460" fill="#5A3820"/><polygon points="140,464 240,408 340,464" fill="#6A4828" opacity="0.8"/><!-- roof ridge --><rect x="235" y="398" width="10" height="18" rx="3" fill="#8A6840"/><!-- columns --><rect x="180" y="460" width="16" height="180" rx="3" fill="#4A3A28"/><rect x="284" y="460" width="16" height="180" rx="3" fill="#4A3A28"/><!-- temple door --><rect x="210" y="530" width="60" height="110" rx="4" fill="#2A1808"/><rect x="208" y="528" width="64" height="114" rx="5" fill="none" stroke="#6A4828" stroke-width="3"/><!-- bell --><ellipse cx="240" cy="450" rx="14" ry="18" fill="#C8A040" opacity="0.85"/><ellipse cx="240" cy="438" rx="9" ry="6" fill="#A08030"/><!-- lanterns temple --><line x1="190" y1="455" x2="190" y2="482" stroke="#8A6040" stroke-width="1.5"/><ellipse cx="190" cy="492" rx="10" ry="14" fill="#E84010" opacity="0.85"/><line x1="290" y1="455" x2="290" y2="482" stroke="#8A6040" stroke-width="1.5"/><ellipse cx="290" cy="492" rx="10" ry="14" fill="#E84010" opacity="0.85"/><!-- warm glow --><ellipse cx="190" cy="500" rx="30" ry="20" fill="#FF6010" opacity="0.1"/><ellipse cx="290" cy="500" rx="30" ry="20" fill="#FF6010" opacity="0.1"/><!-- stone steps --><rect x="205" y="638" width="70" height="10" rx="2" fill="#5A5048"/><rect x="195" y="648" width="90" height="10" rx="2" fill="#4A4038"/><rect x="185" y="658" width="110" height="10" rx="2" fill="#3A3028"/><!-- ground --><rect x="0" y="640" width="480" height="60" fill="#2A3040"/><!-- mist ground --><ellipse cx="240" cy="645" rx="280" ry="25" fill="white" opacity="0.12"/></svg>'
 };
 
 /* ── CHARACTER SVGs stored in hidden HTML divs, read at runtime ── */
@@ -1962,29 +2498,33 @@ function initChars(){
 
 /* map new scene ids → existing room/char/bg assets */
 var SCENE_ALIAS = {
-  izakaya:'izakaya', midnight:'midnight', beach:'beach', forest:'forest',
-  cafe:'sakura', ramen:'forest', rooftop:'cosmos'
+  izakaya:'izakaya',
+  midnight:'midnight',
+  beach:'beach',
+  forest:'forest',
+  cafe:'sakura',
+  ramen:'forest',
+  rooftop:'cosmos'
 };
 
-function setScene(id){
+function setScene(id, ts){
+  /* ts = optional TIME_SCENES entry: overrides title + greet */
   var prevScene=ST.scene;
   ST.scene=id;
   var sc=SCENES.filter(function(s){return s.id===id;})[0];
   if(!sc) return;
   var asset=SCENE_ALIAS[id]||id;
   var bgEl=document.getElementById('iz-fullbg');
-  if(bgEl) bgEl.style.background=SCENE_BG[asset]||'#0A0806';
+  if(bgEl) bgEl.style.background=(ts?getTimeBG(id):(SCENE_BG[asset]||'#0A0806'));
   var roomEl=document.getElementById('iz-room');
   if(roomEl && ROOMS[asset]) roomEl.innerHTML=ROOMS[asset];
   document.getElementById('iz-sname').textContent=sc.short;
-  document.getElementById('iz-stitle').textContent=sc.title;
+  document.getElementById('iz-stitle').textContent=(ts&&ts.title)||sc.title;
   var whoEl=document.getElementById('iz-who');
   if(whoEl) whoEl.textContent='\u{1F464} '+sc.who;
   var charEl=document.getElementById('iz-char');
   if(charEl && CHARS[id]) charEl.innerHTML=CHARS[id];
-  // render order menu for this scene
   renderMenu(sc);
-  // atmosphere: light rays + dust, varies per scene
   var atmos=document.getElementById('iz-atmos');
   if(atmos){
     var rayColor={
@@ -1996,7 +2536,6 @@ function setScene(id){
     var rc=rayColor[asset]||'rgba(255,220,150,0.08)';
     var ah='<div class="iz-ray" style="left:18%;background:linear-gradient(180deg,'+rc+',transparent 70%)"></div>';
     ah+='<div class="iz-ray" style="left:52%;width:50px;background:linear-gradient(180deg,'+rc+',transparent 65%)"></div>';
-    // dust particles
     var dustN=(asset==='cosmos')?10:6;
     for(var di=0;di<dustN;di++){
       var dl=Math.random()*100, dd=Math.random()*12, ds=8+Math.random()*8;
@@ -2010,11 +2549,9 @@ function setScene(id){
   if(ST.chatInited && prevScene !== id){
     ST.chatHist=[];
     var chat=document.getElementById('iz-chat');
-    var divider=document.createElement('div');
-    divider.style.cssText='text-align:center;font-size:10px;color:rgba(245,239,228,0.35);padding:8px 0 4px;letter-spacing:1.5px;';
-    divider.textContent='\u2014 '+sc.title+' \u2014';
-    chat.appendChild(divider);
-    addMsg('ai', sc.greet);
+    /* clear ALL previous messages - fresh start for new scene */
+    chat.innerHTML='';
+    addMsg('ai', (ts&&ts.greet)||sc.greet);
   }
 }
 
@@ -2305,6 +2842,8 @@ function calDay(d){
       +'<div class="cal-ent-top"><span class="cal-ent-name">'+em.th+'<\/span>'
       +'<span class="cal-ent-time">'+pad(t.getHours())+':'+pad(t.getMinutes())+'<\/span><\/div>'
       +(h.text?'<div class="cal-ent-text">'+escapeHtml(h.text)+'<\/div>':'')
+      +'<div class="tl-acts"><button class="tl-act" onclick="editEntry(\''+h.id+'\')">✏️ แก้<\/button>'
+      +'<button class="tl-act tl-del" onclick="deleteEntry(\''+h.id+'\')">🗑 ลบ<\/button><\/div>'
       +'<\/div><\/div>';
   });
   det.innerHTML=html; det.style.display='block';
@@ -2317,10 +2856,25 @@ function renderTimeline(){
     box.innerHTML='<div class="tl-empty"><span class="tl-empty-emoji">📔<\/span>ยังไม่มีบันทึกอารมณ์<br>เริ่มบันทึกความรู้สึกแรกที่หน้าหลัก<\/div>';
     return;
   }
-  // group by day (hist is newest-first)
-  var groups={};
-  var order=[];
-  ST.hist.forEach(function(h){
+  // apply search + filter
+  var q=ST.tlSearch||'';
+  var f=ST.tlFilter||'all';
+  var filtered=ST.hist.filter(function(h){
+    var em=EMOTIONS.filter(function(e){return e.id===h.emotionId;})[0];
+    if(!em) return false;
+    if(f!=='all' && em.r!==f) return false;
+    if(q){
+      var hay=(em.th+' '+em.en+' '+(h.text||'')).toLowerCase();
+      if(hay.indexOf(q)===-1) return false;
+    }
+    return true;
+  });
+  if(!filtered.length){
+    box.innerHTML='<div class="tl-empty"><span class="tl-empty-emoji">🔍<\/span>ไม่พบบันทึกที่ตรงกับการค้นหา<\/div>';
+    return;
+  }
+  var groups={}, order=[];
+  filtered.forEach(function(h){
     var dk=h.date.slice(0,10);
     if(!groups[dk]){ groups[dk]=[]; order.push(dk); }
     groups[dk].push(h);
@@ -2330,7 +2884,6 @@ function renderTimeline(){
     var parts=dk.split('-');
     var dd=parseInt(parts[2]), mm=parseInt(parts[1])-1, yy=parseInt(parts[0]);
     var list=groups[dk];
-    // sort within day newest-first already; reverse to chronological
     var dayLabel=relativeDayLabel(dk)+' · '+dd+' '+monShort(mm)+' '+(yy+543);
     html+='<div class="tl-day">'
       +'<div class="tl-day-head"><span class="tl-day-date">'+dayLabel+'<\/span>'
@@ -2345,6 +2898,8 @@ function renderTimeline(){
         +'<div class="tl-top"><span class="tl-name">'+em.th+'<\/span>'
         +'<span class="tl-time">'+pad(t.getHours())+':'+pad(t.getMinutes())+'<\/span><\/div>'
         +(h.text?'<div class="tl-text">'+escapeHtml(h.text)+'<\/div>':'')
+        +'<div class="tl-acts"><button class="tl-act" onclick="editEntry(\''+h.id+'\')">✏️ แก้<\/button>'
+        +'<button class="tl-act tl-del" onclick="deleteEntry(\''+h.id+'\')">🗑 ลบ<\/button><\/div>'
         +'<\/div><\/div>';
     });
     html+='<\/div>';
@@ -2424,12 +2979,351 @@ function toast(msg){
 }
 
 /* ═══════════════ INIT ═══════════════ */
+/* ── QUICK LOG (บันทึกเองไม่ผ่าน AI) ── */
+function openQuickLog(){
+  var ov=document.getElementById('quicklog-overlay');
+  var grid=document.getElementById('ql-grid');
+  var visible=EMOTIONS.filter(function(e){ return !e.hidden || condMet(e.cond); });
+  var html='';
+  visible.forEach(function(em){
+    html+='<button class="ql-item" onclick="quickLogPick(\''+em.id+'\')">'
+      +'<span class="ql-emoji">'+em.e+'<\/span>'
+      +'<span class="ql-name">'+em.th+'<\/span><\/button>';
+  });
+  grid.innerHTML=html;
+  document.getElementById('ql-text').value='';
+  ov.classList.add('show');
+}
+function closeQuickLog(){ document.getElementById('quicklog-overlay').classList.remove('show'); }
+function openSettings(){ document.getElementById('settings-overlay').classList.add('show'); }
+function closeSettings(){ document.getElementById('settings-overlay').classList.remove('show'); }
+function quickLogPick(id){
+  var em=EMOTIONS.filter(function(e){return e.id===id;})[0];
+  if(!em) return;
+  var note=document.getElementById('ql-text').value.trim();
+  closeQuickLog();
+  showResult(em, note||em.d, note, '');
+  toast(em.e+' บันทึกแล้ว ✦');
+}
+
+/* ── EDIT / DELETE ENTRY ── */
+function deleteEntry(id){
+  if(!confirm('ลบบันทึกนี้?')) return;
+  var idx=-1;
+  for(var i=0;i<ST.hist.length;i++){ if(ST.hist[i].id===id){idx=i;break;} }
+  if(idx<0) return;
+  var removed=ST.hist[idx];
+  ST.hist.splice(idx,1);
+  // recalc discovered count for that emotion
+  recalcDisc();
+  save(); hud();
+  toast('ลบแล้ว');
+  // refresh current view
+  if(ST.calView==='timeline') renderTimeline(); else { renderCal(); }
+}
+function recalcDisc(){
+  var d={};
+  ST.hist.forEach(function(h){ d[h.emotionId]=(d[h.emotionId]||0)+1; });
+  ST.disc=d;
+}
+function editEntry(id){
+  var h=null;
+  for(var i=0;i<ST.hist.length;i++){ if(ST.hist[i].id===id){h=ST.hist[i];break;} }
+  if(!h) return;
+  var cur=h.text||'';
+  var nv=prompt('แก้ไขบันทึก:', cur);
+  if(nv===null) return;
+  h.text=nv.trim();
+  save();
+  if(ST.calView==='timeline') renderTimeline(); else renderCal();
+  toast('แก้ไขแล้ว ✦');
+}
+
+/* ── BACKUP / EXPORT / IMPORT ── */
+function exportData(){
+  var data={
+    v:1, exported:new Date().toISOString(),
+    disc:ST.disc, xp:ST.xp, hist:ST.hist
+  };
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  var ds=new Date().toISOString().slice(0,10);
+  a.href=url; a.download='emotia-backup-'+ds+'.json';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  toast('สำรองข้อมูลแล้ว ✦');
+}
+function importData(){
+  var inp=document.getElementById('import-file');
+  inp.value='';
+  inp.click();
+}
+function handleImport(ev){
+  var file=ev.target.files[0];
+  if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result);
+      if(!data.hist || !Array.isArray(data.hist)) throw new Error('ไฟล์ไม่ถูกต้อง');
+      if(!confirm('นำเข้าข้อมูล '+data.hist.length+' บันทึก? (ข้อมูลปัจจุบันจะถูกแทนที่)')) return;
+      ST.hist=data.hist;
+      ST.xp=data.xp||0;
+      ST.disc=data.disc||{};
+      // ensure ids
+      ST.hist.forEach(function(h){ if(!h.id) h.id='h'+(h.date||Date.now())+'_'+Math.random().toString(36).slice(2,7); });
+      recalcDisc();
+      save(); hud(); renderRecap();
+      toast('นำเข้าสำเร็จ ✦');
+    }catch(err){ toast('นำเข้าไม่ได้: '+err.message); }
+  };
+  reader.readAsText(file);
+}
+
+/* ── TIMELINE SEARCH/FILTER ── */
+function tlSearchInput(v){ ST.tlSearch=v.toLowerCase(); renderTimeline(); }
+function tlSetFilter(f){
+  ST.tlFilter=f;
+  document.querySelectorAll('.tl-filter').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-f')===f);});
+  renderTimeline();
+}
+
+/* ── DAILY REMINDER (home) ── */
+function checkDailyReminder(){
+  var el=document.getElementById('daily-reminder');
+  if(!el) return;
+  var tk=todayKey();
+  var loggedToday=ST.hist.some(function(h){ return h.date.slice(0,10)===tk; });
+  el.style.display = loggedToday ? 'none' : 'block';
+}
+
+/* ── STREAK MILESTONES ── */
+var MILESTONES=[
+  {d:3,e:'🌱',t:'3 วันต่อเนื่อง',m:'เริ่มเป็นนิสัยแล้ว!'},
+  {d:7,e:'⭐',t:'1 สัปดาห์',m:'เยี่ยมมาก ทำต่อไปนะ'},
+  {d:14,e:'🌙',t:'2 สัปดาห์',m:'คุณรู้จักตัวเองมากขึ้นแล้ว'},
+  {d:30,e:'🏆',t:'1 เดือนเต็ม',m:'นี่คือความมุ่งมั่นที่แท้จริง'},
+  {d:100,e:'👑',t:'100 วัน',m:'คุณคือตำนาน ✦'}
+];
+function checkMilestone(){
+  var s=streak();
+  var hit=null;
+  MILESTONES.forEach(function(ms){ if(ms.d===s) hit=ms; });
+  if(hit){
+    var seen=localStorage.getItem('em_ms_'+hit.d);
+    if(!seen){
+      localStorage.setItem('em_ms_'+hit.d,'1');
+      setTimeout(function(){ showMilestone(hit); }, 800);
+    }
+  }
+}
+function showMilestone(ms){
+  var ov=document.getElementById('milestone-overlay');
+  document.getElementById('ms-emoji').textContent=ms.e;
+  document.getElementById('ms-title').textContent=ms.t;
+  document.getElementById('ms-msg').textContent=ms.m;
+  ov.classList.add('show');
+}
+function closeMilestone(){ document.getElementById('milestone-overlay').classList.remove('show'); }
+
+/* ══════════════════════════════════════
+   FORTUNE / GACHA กาชาปองกำลังใจ
+══════════════════════════════════════ */
+var FORTUNE_TYPE='cheer';
+
+var FORTUNES={
+  cheer:[
+    {t:'วันนี้เหนื่อยแค่ไหน\nพรุ่งนี้ยังมีให้ได้ลอง',s:'',a:''},
+    {t:'ความรู้สึกที่เจ็บปวดไม่ได้มาเพื่ออยู่ถาวร\nมันมาเพื่อสอนบางอย่าง',s:'',a:''},
+    {t:'ไม่ต้องเก่งทุกวัน\nวันไหนอยู่รอดได้ก็นับว่าชนะแล้ว',s:'',a:''},
+    {t:'ใจของคุณผ่านมาหลายวันที่หนัก\nแล้วก็ยังมาถึงวันนี้ได้',s:'',a:''},
+    {t:'บางทีการพักก็คือการก้าวหน้า',s:'',a:''},
+    {t:'คุณไม่ต้องมีคำตอบสำหรับทุกอย่าง\nแค่หายใจต่อไปก็พอ',s:'',a:''},
+    {t:'ดอกไม้ไม่ได้แข่งกัน\nทุกดอกบานในเวลาของตัวเอง',s:'',a:''},
+    {t:'ความเมตตาต่อตัวเองก็สำคัญ\nไม่แพ้ความเมตตาต่อผู้อื่น',s:'',a:''},
+    {t:'วันนี้อาจไม่สมบูรณ์\nแต่คุณยังอยู่ที่นี่ นั่นก็พอแล้ว',s:'',a:''},
+    {t:'ไม่เป็นไร\nให้เวลาตัวเองบ้าง',s:'',a:''},
+    {t:'คุณดูแลคนอื่นมาตลอด\nลองดูแลตัวเองบ้างวันนี้',s:'',a:''},
+    {t:'ทุกก้าวเล็กๆ ยังคือการเดินหน้า',s:'',a:''}
+  ],
+  quote:[
+    {t:'ชีวิตที่ไม่ได้ตรวจสอบ ไม่คู่ควรกับการดำรงอยู่',s:'โสกราตีส',a:'จาก Plato, Apology, 38a, 399 ปีก่อน ค.ศ.'},
+    {t:'ความเปราะบางไม่ใช่จุดอ่อน\nมันคือความกล้าที่แท้จริง',s:'Brené Brown',a:'Daring Greatly, 2012'},
+    {t:'ผู้ที่มีเหตุผลในการมีชีวิต\nจะทนต่อความทุกข์ได้แทบทุกรูปแบบ',s:'Viktor Frankl',a:'Man\'s Search for Meaning, 1946'},
+    {t:'ระหว่างสิ่งเร้าและการตอบสนอง\nมีพื้นที่อยู่ ในพื้นที่นั้นคือเสรีภาพของเรา',s:'Viktor Frankl',a:'Man\'s Search for Meaning, 1946'},
+    {t:'ชีวิตสมบูรณ์ที่สุดเมื่อเราเป็นตัวเอง',s:'Carl Rogers',a:'On Becoming a Person, 1961'},
+    {t:'ไม่มีทางออกในความมืด\nคุณต้องเดินออกมาเอง',s:'Ursula K. Le Guin',a:'The Dispossessed, 1974'},
+    {t:'เราทนทุกข์ทรมานไม่ใช่เพราะเหตุการณ์\nแต่เพราะความคิดที่เรามีต่อเหตุการณ์',s:'Epictetus',a:'Enchiridion, ศตวรรษที่ 2'},
+    {t:'ความมืดไม่สามารถขับไล่ความมืดได้\nมีแค่แสงเท่านั้น',s:'Martin Luther King Jr.',a:'Strength to Love, 1963'},
+    {t:'เราทุกคนกำลังต่อสู้กับบางอย่างที่คนอื่นมองไม่เห็น\nจงใจดีเสมอ',s:'Plato',a:'อ้างจากงานวรรณกรรม Hellenistic'},
+    {t:'อารมณ์ที่กดทับจะไม่หายไป\nมันฝังลึกลงไปแล้วโผล่มาในรูปแบบที่แย่กว่า',s:'Sigmund Freud',a:'The Psychopathology of Everyday Life, 1901'},
+    {t:'ความสุขที่ยั่งยืนไม่ได้มาจากการได้สิ่งที่ต้องการ\nแต่จากการต้องการสิ่งที่มีอยู่',s:'Kristin Neff',a:'Self-Compassion, 2011'},
+    {t:'ตัวตนแท้จริงของคุณไม่ได้อยู่ใน ego\nแต่อยู่ในพื้นที่ที่เงียบกว่านั้น',s:'Carl Jung',a:'The Undiscovered Self, 1957'}
+  ],
+  poem:[
+    {t:'ฝนที่ตกทุกวัน\nสักวันก็ต้องหยุด\nหัวใจที่เจ็บปวด\nสักวันก็ต้องหาย',s:'',a:'บทกวีไทยร่วมสมัย'},
+    {t:'แม้ดอกไม้จะร่วงโรย\nรากยังหยั่งลึก\nแม้วันนี้จะเหนื่อย\nพรุ่งนี้ยังมา',s:'',a:'บทกวีไทยร่วมสมัย'},
+    {t:'ฉันไม่รู้ว่าพรุ่งนี้จะเป็นอย่างไร\nแต่รู้ว่าวันนี้ฉันยังอยู่ที่นี่\nและนั่นก็พอ',s:'',a:'บทกวีไทยร่วมสมัย'},
+    {t:'ทะเลที่โกรธจัด\nก็ยังมีก้นที่สงบ\nหัวใจที่ร้อนรน\nก็ยังมีส่วนที่เย็น',s:'',a:'อิงจากภาพเปรียบเชิงพุทธ'},
+    {t:'เมล็ดพันธุ์ไม่รู้ว่า\nตัวเองจะกลายเป็นต้นไม้\nแต่มันก็งอกงามอยู่ดี',s:'',a:'บทกวีไทยร่วมสมัย'},
+    {t:'แม่น้ำไม่เคยถามว่า\nทำไมต้องไหล\nมันแค่ไหล ผ่านทุกอย่าง\nไปสู่ทะเล',s:'',a:'อิงจากปรัชญาเต๋า'},
+    {t:'ความโดดเดี่ยวไม่ใช่ศัตรู\nบางครั้งมันคือพื้นที่\nที่ใจได้หายใจ',s:'',a:'บทกวีไทยร่วมสมัย'},
+    {t:'Do not go gentle\ninto that good night\nRage, rage against\nthe dying of the light',s:'Dylan Thomas',a:'Do Not Go Gentle into That Good Night, 1951'},
+    {t:'ฉันวัดชีวิตด้วยช้อนกาแฟ',s:'T.S. Eliot',a:'The Love Song of J. Alfred Prufrock, 1915 (แปลเสรี)'},
+    {t:'หลังความมืด ย่อมมีรุ่งอรุณ\nหลังฤดูหนาว ย่อมมีฤดูใบไม้ผลิ\nหลังความโศก ย่อมมีความชื่นบาน',s:'ซุนจื่อ',a:'อิงปรัชญาขงจื๊อ'},
+    {t:'ฉันไม่ต้องการอะไรมาก\nแค่วันที่รู้สึกเพียงพอ\nและวันนี้อาจเป็นวันนั้น',s:'',a:'บทกวีไทยร่วมสมัย'}
+  ],
+  food:[
+    {t:'🍜 ราเมงร้อนๆ ยามเย็น\nซุปที่เคี่ยวมาทั้งวัน\nบางทีความอบอุ่นก็มาในชามเดียว',s:'',a:''},
+    {t:'☕ กาแฟถ้วยแรกตอนเช้า\nก่อนโลกจะวุ่นวาย\nเป็นของคุณคนเดียวสักครู่',s:'',a:''},
+    {t:'🍵 ชาเขียวร้อนๆ\nจิบช้าๆ ไม่รีบ\nสอนให้รู้ว่าบางอย่าง\nต้องใช้เวลา',s:'',a:'อิงจาก Japanese tea ceremony wabi-sabi'},
+    {t:'🥟 เกี๊ยวซ่าหน้าร้านเล็กๆ\nกรอบนอกนุ่มใน\nความสุขที่ไม่ต้องซับซ้อน',s:'',a:''},
+    {t:'🥥 น้ำมะพร้าวสดริมทะเล\nเย็นอย่างที่ใจอยากเป็น\nอ่อนโยนอย่างที่ควรมีต่อตัวเอง',s:'',a:''},
+    {t:'🍰 เค้กชิ้นเล็กๆ\nในวันธรรมดา\nความสุขไม่ต้องรอโอกาสพิเศษ',s:'',a:''},
+    {t:'🍲 อาหารที่แม่ทำ\nไม่ใช่แค่รสชาติ\nแต่คือความรัก\nที่มีสูตรที่ลอกไม่ได้',s:'',a:''},
+    {t:'🍞 ขนมปังปิ้งยามเช้า\nกลิ่นที่ทำให้โลกดูดีขึ้น\nบางทีแค่นี้ก็พอ',s:'',a:''},
+    {t:'🧋 ชานมไข่มุก\nหวาน หนัก เต็มปาก\nบางวันก็ต้องให้รางวัลตัวเอง',s:'',a:''},
+    {t:'🍳 ไข่ดาวง่ายๆ ทำเอง\nสิ่งธรรมดาที่ทำด้วยรัก\nก็อร่อยกว่า',s:'',a:'อิงจาก "The Art of Simple Food" - Alice Waters'}
+  ]
+};
+
+
+var FORTUNE_TYPE_LABELS={
+  cheer:{e:'🌸',n:'กำลังใจ'},
+  quote:{e:'📜',n:'คำคม'},
+  poem:{e:'🌙',n:'บทกวี'},
+  food:{e:'🍜',n:'อาหารจิตใจ'}
+};
+
+function setFortuneType(t,btn){
+  FORTUNE_TYPE=t;
+  document.querySelectorAll('.ft-btn').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  showFortuneIdle();
+}
+
+function showFortuneIdle(){
+  var lbl=FORTUNE_TYPE_LABELS[FORTUNE_TYPE];
+  document.getElementById('fortune-type-lbl').textContent=lbl.e+' '+lbl.n;
+  document.getElementById('fortune-text').textContent='กดหมุนเพื่อรับข้อความ ✦';
+  document.getElementById('fortune-attr').textContent='';
+}
+
+/* current fortune item for sharing */
+var ST_FORTUNE = {item:null, type:'cheer'};
+
+function spinFortune(){
+  var btn=document.getElementById('fortune-spin');
+  var card=document.getElementById('fortune-card');
+  btn.disabled=true;
+  card.classList.add('spinning');
+  var pool=FORTUNES[FORTUNE_TYPE]||FORTUNES.cheer;
+  var item=pool[Math.floor(Math.random()*pool.length)];
+  var lbl=FORTUNE_TYPE_LABELS[FORTUNE_TYPE];
+  ST_FORTUNE={item:item, type:FORTUNE_TYPE};
+  setTimeout(function(){
+    card.classList.remove('spinning');
+    document.getElementById('fortune-type-lbl').textContent=lbl.e+' '+lbl.n;
+    document.getElementById('fortune-text').textContent=item.t;
+    document.getElementById('fortune-attr').textContent=(item.s?'— '+item.s:'')+(item.a?' · '+item.a:'');
+    btn.disabled=false;
+    // auto-open card overlay for wow effect
+    openFCard(item, FORTUNE_TYPE);
+  },380);
+}
+
+/* ── FORTUNE CARD OVERLAY ── */
+function openFCard(item, type){
+  if(!item) return;
+  var lbl=FORTUNE_TYPE_LABELS[type];
+  var fc=document.getElementById('fcard');
+  // set rarity tint class
+  fc.className='fcard t-'+type;
+  document.getElementById('fcard-type-badge').textContent=lbl.e+' '+lbl.n;
+  document.getElementById('fcard-text').textContent=item.t;
+  document.getElementById('fcard-source').textContent=item.s?'— '+item.s:'';
+  document.getElementById('fcard-ref').textContent=item.a||'';
+  document.getElementById('fcard-overlay').classList.add('show');
+}
+function closeFCard(){
+  document.getElementById('fcard-overlay').classList.remove('show');
+}
+function spinFromCard(){
+  /* spin a new card while overlay is open */
+  closeFCard();
+  setTimeout(spinFortune, 200);
+}
+function shareFCard(){
+  var item=ST_FORTUNE.item;
+  if(!item) return;
+  var txt=item.t.replace(/\\n/g,'\n');
+  if(item.s) txt+='\n\n— '+item.s;
+  if(item.a) txt+=' ('+item.a+')';
+  txt+='\n\n✦ EMOTIA 🦙 emotia.app';
+  if(navigator.share){
+    navigator.share({text:txt}).catch(function(){});
+  }else{
+    try{
+      var ta=document.createElement('textarea');
+      ta.value=txt; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      toast('คัดลอกแล้ว — แคปหน้าจอการ์ดเพื่อแชร์ได้เลย ✦');
+    }catch(e){ toast('แคปหน้าจอการ์ดเพื่อแชร์ได้เลย ✦'); }
+  }
+}
+
+function spinFortuneAI(){
+  if(!aiEnabled()){ toast('AI ยังไม่ได้ตั้งค่า'); return; }
+  var aiBtn=document.getElementById('fortune-ai-btn');
+  var card=document.getElementById('fortune-card');
+  aiBtn.disabled=true;
+  aiBtn.textContent='⏳ กำลังสร้าง...';
+  card.classList.add('spinning');
+  var lbl=FORTUNE_TYPE_LABELS[FORTUNE_TYPE];
+  // context from last emotion
+  var emotionCtx='';
+  if(ST.lastEmotion && ST.lastEmotion.em){
+    emotionCtx=' (ผู้ใช้เพิ่งค้นพบอารมณ์ "'+ST.lastEmotion.em.th+'" — ให้เข้ากับบรรยากาศนั้น)';
+  }
+  var typePrompt={
+    cheer:'ข้อความกำลังใจอบอุ่น ภาษาไทย 2-3 บรรทัด ไม่ซ้ำกับประโยคทั่วไป',
+    quote:'คำคมหรืออ้างอิงจากบุคคลจริง (ใส่ชื่อผู้พูด) แปลเป็นภาษาไทย 1-2 บรรทัด',
+    poem:'บทกวีสั้นภาษาไทย 4-5 บรรทัด มีจังหวะ อารมณ์งดงาม',
+    food:'เรื่องราวเกี่ยวกับอาหารหรือเครื่องดื่ม + ข้อคิดเล็กน้อย ภาษาไทย 2-3 บรรทัด'
+  };
+  var prompt='สร้าง'+typePrompt[FORTUNE_TYPE]+emotionCtx+'\nตอบเฉพาะข้อความ ไม่ต้องมีคำนำ ไม่ใช้ markdown'
+    +(FORTUNE_TYPE==='quote'?'\nรูปแบบ: "ข้อความ" — ชื่อ':'');
+  aiCall({messages:[{role:'user',content:prompt}],raw:true,max_tokens:200},function(res,err){
+    card.classList.remove('spinning');
+    aiBtn.disabled=false;
+    aiBtn.textContent='✨ AI สร้างให้';
+    if(err||!res){ toast('เชื่อมต่อไม่ได้ ลองใหม่นะ'); return; }
+    var text=res.trim();
+    // parse quote attribution if present
+    var attr='', m=text.match(/^[""](.+)[""][^—–-]*[—–-]\s*(.+)$/s);
+    if(m){ text='"'+m[1]+'"'; attr='— '+m[2].trim(); }
+    document.getElementById('fortune-type-lbl').textContent=lbl.e+' '+lbl.n+' ✦ AI';
+    document.getElementById('fortune-text').textContent=text;
+    document.getElementById('fortune-attr').textContent=attr;
+    // open card overlay
+    var aiItem={t:text, s:attr.replace(/^— /,'').split(' · ')[0], a:''};
+    ST_FORTUNE={item:aiItem, type:FORTUNE_TYPE};
+    openFCard(aiItem, FORTUNE_TYPE);
+  });
+}
+
 function init(){
-  load(); hud();
+  load();
+  applyTheme();
+  hud();
   initChars();
   rollQuests();
   renderQuests();
   renderRecap();
+  checkDailyReminder();
+  checkMilestone();
   var ob=document.getElementById('onboard');
   if(ST.onboarded){ob.style.display='none';ob.classList.add('hidden');}
   else{ob.style.display='';ob.classList.remove('hidden');}

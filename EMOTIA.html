@@ -90,7 +90,7 @@ body{
 .deco:nth-child(5){animation-delay:2.2s;font-size:12px;}
 @keyframes decoFloat{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-8px) rotate(5deg)}}
 
-/* ══ HOME SCREEN ══ */
+/* == HOME SCREEN == */
 .home-wrap{
   display:-webkit-box;display:flex;
   flex-direction:column;
@@ -383,7 +383,7 @@ body{
 @keyframes bop{0%,80%,100%{transform:scale(0.6);opacity:0.4}40%{transform:scale(1);opacity:1}}
 .dots-coral span{background:var(--coral);}
 
-/* ══ IZAKAYA / CHAT ══ */
+/* == IZAKAYA / CHAT == */
 .iz-fullbg{position:absolute;top:0;left:0;right:0;bottom:0;transition:background 1.4s ease;z-index:0;}
 .iz-room{position:absolute;top:0;left:0;right:0;bottom:0;z-index:1;pointer-events:none;overflow:hidden;}
 /* atmospheric depth + vignette for realism */
@@ -473,14 +473,12 @@ body{
 .iz-map-btn.active .iz-map-name{color:white;font-weight:600;}
 .iz-chat{
   position:absolute;left:0;right:0;bottom:0;
-  /* height calculated: full screen minus top bar area */
-  height:60%;z-index:8;
+  height:65%;z-index:8;
   overflow-y:auto;-webkit-overflow-scrolling:touch;
-  /* bottom padding = input(60px) + menu(52px) + buffer(16px) */
-  padding:16px 16px 140px;
+  /* bottom padding = input(62px) + menu(50px) + safe buffer(30px) */
+  padding:20px 16px 90px;
   display:flex;flex-direction:column;gap:8px;
-  background:linear-gradient(0deg,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.4) 60%,transparent 100%);
-  /* always scroll to bottom when new msg */
+  background:linear-gradient(0deg,rgba(0,0,0,0.8) 0%,rgba(0,0,0,0.5) 55%,transparent 100%);
   scroll-behavior:smooth;
 }
 .iz-msg{
@@ -500,27 +498,63 @@ body{
   background:rgba(232,114,90,0.3);border:1px solid rgba(232,114,90,0.5);
   color:white;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
 }
-/* ── FOOD MENU BAR ── sits right above input bar */
-.iz-menu{
-  position:absolute;bottom:62px;left:0;right:0;z-index:11;
-  display:flex;gap:8px;padding:8px 14px;
-  overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;
-  /* fade from bottom (input bar) upward */
-  background:linear-gradient(0deg,rgba(0,0,0,0.55) 0%,transparent 100%);
-  flex-shrink:0;
-}
-.iz-menu::-webkit-scrollbar{display:none;}
-.menu-item{
-  flex-shrink:0;display:flex;align-items:center;gap:5px;
-  background:rgba(255,255,255,0.16);
-  border:1px solid rgba(255,255,255,0.28);
-  border-radius:20px;padding:7px 13px 7px 9px;cursor:pointer;
+/* ── FOOD MENU TOGGLE BUTTON ── */
+.iz-menu-toggle{
+  flex-shrink:0;width:42px;height:42px;border-radius:50%;
+  background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.28);
+  font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
   -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
   transition:transform 0.15s,background 0.2s;
 }
-.menu-item:active{transform:scale(0.92);background:rgba(255,255,255,0.3);}
-.menu-emoji{font-size:17px;line-height:1;}
-.menu-name{font-size:12px;color:white;white-space:nowrap;font-weight:500;}
+.iz-menu-toggle:active{transform:scale(0.9);background:rgba(255,255,255,0.3);}
+/* ── FOOD MENU POPUP ── */
+.iz-menu-pop{
+  position:absolute;top:0;left:0;right:0;bottom:0;z-index:40;
+  display:none;align-items:flex-end;justify-content:center;
+}
+.iz-menu-pop.show{display:flex;}
+.iz-menu-backdrop{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+}
+.iz-menu-sheet{
+  position:relative;z-index:1;width:100%;max-width:480px;
+  background:linear-gradient(180deg,#2A1E14,#1A120A);
+  border-radius:28px 28px 0 0;
+  border-top:1px solid rgba(255,200,120,0.2);
+  padding:10px 18px calc(20px + env(safe-area-inset-bottom));
+  animation:slideUpModal 0.32s cubic-bezier(.22,1,.36,1);
+  max-height:70%;overflow-y:auto;
+  box-shadow:0 -8px 32px rgba(0,0,0,0.5);
+}
+.iz-menu-handle{
+  width:40px;height:4px;border-radius:2px;
+  background:rgba(255,255,255,0.25);margin:4px auto 14px;
+}
+.iz-menu-title{
+  font-family:var(--font-d);font-size:17px;color:#FFE8C0;
+  text-align:center;margin-bottom:16px;font-weight:600;
+}
+.iz-menu-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;
+}
+.iz-menu-card{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.16);
+  border-radius:16px;padding:14px 6px;cursor:pointer;
+  transition:transform 0.15s,background 0.2s,border-color 0.2s;
+}
+.iz-menu-card:active{transform:scale(0.93);background:rgba(255,200,120,0.18);border-color:rgba(255,200,120,0.4);}
+.iz-menu-emoji{font-size:28px;line-height:1;}
+.iz-menu-name{font-size:11.5px;color:rgba(255,245,230,0.92);text-align:center;line-height:1.3;}
+.iz-menu-empty{text-align:center;color:rgba(255,255,255,0.5);padding:30px;font-size:14px;}
+.iz-menu-close{
+  width:100%;background:rgba(255,255,255,0.1);border:none;
+  border-radius:16px;padding:13px;font-size:14px;font-weight:600;
+  color:rgba(255,255,255,0.85);cursor:pointer;
+}
 
 .iz-input-bar{
   position:absolute;bottom:0;left:0;right:0;z-index:12;
@@ -546,7 +580,7 @@ body{
 }
 .iz-send:active{transform:scale(0.88);}
 
-/* ══ CALENDAR / DIARY ══ */
+/* == CALENDAR / DIARY == */
 .cal-head{
   padding:18px 20px 10px;
   position:-webkit-sticky;position:sticky;top:0;
@@ -680,7 +714,7 @@ body{
 .tl-empty{text-align:center;padding:60px 30px;color:var(--dim);font-size:14px;line-height:1.8;}
 .tl-empty-emoji{font-size:48px;display:block;margin-bottom:12px;opacity:0.5;}
 
-/* ══ CODEX ══ */
+/* == CODEX == */
 .codex-top{
   padding:18px 20px 8px;
   position:-webkit-sticky;position:sticky;top:0;
@@ -1097,7 +1131,7 @@ body{
 
 <div class="toast" id="toast"></div>
 
-<!-- ══ HOME ══ -->
+<!-- == HOME == -->
 <div class="screen active" id="screen-home">
 <div class="home-particles" aria-hidden="true">
   <span></span><span></span><span></span><span></span>
@@ -1267,7 +1301,7 @@ body{
 </div>
 </div>
 
-<!-- ══ IZAKAYA / CHAT ══ -->
+<!-- == IZAKAYA / CHAT == -->
 <div class="screen" id="screen-pub">
   <div class="iz-fullbg" id="iz-fullbg"></div>
   <div class="iz-room" id="iz-room"></div>
@@ -1287,14 +1321,24 @@ body{
   </div>
   <div class="iz-map" id="iz-map"></div>
   <div class="iz-chat" id="iz-chat"></div>
-  <div class="iz-menu" id="iz-menu"></div>
   <div class="iz-input-bar">
+    <button class="iz-menu-toggle" onclick="openIzMenu()" title="เมนูอาหาร">🍽️</button>
     <input class="iz-input" id="iz-in" placeholder="พูดคุยกับพนักงาน..." onkeypress="izEnter(event)">
     <button class="iz-send" onclick="sendIz()">↑</button>
   </div>
+  <!-- food menu popup -->
+  <div class="iz-menu-pop" id="iz-menu-pop">
+    <div class="iz-menu-backdrop" onclick="closeIzMenu()"></div>
+    <div class="iz-menu-sheet">
+      <div class="iz-menu-handle"></div>
+      <div class="iz-menu-title" id="iz-menu-title">เมนูของร้าน</div>
+      <div class="iz-menu-grid" id="iz-menu-grid"></div>
+      <button class="iz-menu-close" onclick="closeIzMenu()">ปิด</button>
+    </div>
+  </div>
 </div>
 
-<!-- ══ CALENDAR / DIARY ══ -->
+<!-- == CALENDAR / DIARY == -->
 <div class="screen" id="screen-cal">
   <div class="cal-head">
     <div class="cal-title">📔 ไดอารี่อารมณ์</div>
@@ -1332,7 +1376,7 @@ body{
   </div>
 </div>
 
-<!-- ══ CODEX ══ -->
+<!-- == CODEX == -->
 <div class="screen" id="screen-codex">
   <div class="codex-top">
     <div class="codex-title">📖 สมุดอารมณ์</div>
@@ -1585,7 +1629,7 @@ body{
 </div>
 
 
-<!-- ══ EMOTION CARD OVERLAY ══ -->
+<!-- == EMOTION CARD OVERLAY == -->
 <div class="card-overlay" id="card-overlay">
   <div class="card-backdrop" onclick="closeCard()"></div>
   <div class="card-modal">
@@ -1707,7 +1751,7 @@ body{
 
 <script>
 
-/* ═══════════════ CONFIG ═══════════════ */
+/* =============== CONFIG =============== */
 /* ── API MODE ──
    'direct' = เรียก api.anthropic.com ตรง (ใช้ได้เฉพาะในแชต Claude เท่านั้น สำหรับทดสอบ)
    'fin'    = เรียก chat-proxy ของ Fin (OpenRouter) — ใช้ตอน deploy บนเว็บจริง
@@ -1793,7 +1837,7 @@ function aiCall(payload, cb){
   });
 }
 
-/* ═══════════════ DATA ═══════════════ */
+/* =============== DATA =============== */
 var EMOTIONS = [
   {id:'joy',th:'ความสุข',en:'Joy',r:'common',xp:10,e:'😊',d:'ความรู้สึกสว่างไสวที่พุ่งขึ้นมาจากข้างใน เบา โล่ง อยากแบ่งปัน'},
   {id:'sadness',th:'ความเศร้า',en:'Sadness',r:'common',xp:10,e:'😔',d:'ความหนักในอก บางครั้งก็จำเป็น เพื่อให้รู้ว่าอะไรสำคัญ'},
@@ -1901,7 +1945,7 @@ var MOODS = {
   kenopsia:{a:'#80808A',b:'rgba(128,128,138,0.3)',l:'เคนอปเซีย'}
 };
 
-/* ═══════════════ STATE ═══════════════ */
+/* =============== STATE =============== */
 var ST = {
   disc:{}, xp:0, hist:[], onboarded:false,
   mood:null, scene:'izakaya', chatHist:[],
@@ -2088,14 +2132,14 @@ function toggleTheme(){
   applyTheme(); save();
 }
 
-/* ═══════════════ ONBOARD ═══════════════ */
+/* =============== ONBOARD =============== */
 function startGame(){
   ST.onboarded=true; save();
   var el=document.getElementById('onboard');
   el.style.display='none'; el.classList.add('hidden');
 }
 
-/* ═══════════════ NAV ═══════════════ */
+/* =============== NAV =============== */
 var TABS=['home','pub','cal','codex'];
 function goTab(t){
   TABS.forEach(function(id){
@@ -2110,7 +2154,7 @@ function goTab(t){
   if(t==='home'){ renderQuests(); renderRecap(); }
 }
 
-/* ═══════════════ HUD ═══════════════ */
+/* =============== HUD =============== */
 function hud(){
   var lv=Math.floor(ST.xp/50)+1;
   var inLv=ST.xp%50;
@@ -2189,7 +2233,7 @@ function streak(){
   return n;
 }
 
-/* ═══════════════ ALPACA ═══════════════ */
+/* =============== ALPACA =============== */
 function setMood(id){
   ST.mood=id;
   var m=MOODS[id]; if(!m) return;
@@ -2211,7 +2255,7 @@ function wiggleEars(){
 }
 function tapAlpaca(){ wiggleEars(); }
 
-/* ═══════════════ ANALYZE ═══════════════ */
+/* =============== ANALYZE =============== */
 function analyze(){
   var txt=document.getElementById('feel-in').value.trim();
   if(!txt){toast('เล่าให้ฟังก่อนนะ 🦙');return;}
@@ -2371,21 +2415,144 @@ function closeCard(){
 function shareCard(){
   if(!ST.lastEmotion){return;}
   var em=ST.lastEmotion.em;
-  var text='วันนี้ฉันรู้สึก "'+em.th+'" ('+em.en+') ✦ ค้นพบใน EMOTIA 🦙';
-  if(navigator.share){
-    navigator.share({text:text}).catch(function(){});
-  }else{
-    // fallback: copy
-    try{
-      var ta=document.createElement('textarea');
-      ta.value=text; document.body.appendChild(ta); ta.select();
-      document.execCommand('copy'); document.body.removeChild(ta);
-      toast('คัดลอกข้อความแล้ว ✦');
-    }catch(e){ toast('แคปหน้าจอเพื่อแชร์ได้เลย ✦'); }
+  var reason=ST.lastEmotion.reason||'';
+  var insight=ST.lastEmotion.insight||'';
+  var rarColors={common:'#5AB07A',uncommon:'#5A78D4',rare:'#8A5AD4',legendary:'#C8A038'};
+  var rarBg={common:['#F0FBF4','#E2F8EA'],uncommon:['#F0F4FF','#E4ECFF'],rare:['#F5F0FF','#EBE4FF'],legendary:['#FFFAF0','#FFF2DC']};
+  var accent=rarColors[em.r]||'#5AB07A';
+  var bg=rarBg[em.r]||rarBg.common;
+
+  var d=new Date(ST.lastEmotion.date);
+  var thMonths=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  var dateStr=d.getDate()+' '+thMonths[d.getMonth()]+' '+(d.getFullYear()+543);
+
+  var W=600,H=860;
+  var canvas=document.createElement('canvas');
+  canvas.width=W; canvas.height=H;
+  var ctx=canvas.getContext('2d');
+
+  /* bg gradient */
+  var grad=ctx.createLinearGradient(0,0,W,H);
+  grad.addColorStop(0,bg[0]); grad.addColorStop(1,bg[1]);
+  ctx.fillStyle=grad;
+  ctx.beginPath(); roundRect(ctx,0,0,W,H,40); ctx.fill();
+  /* inner panel */
+  ctx.fillStyle='rgba(255,255,255,0.35)';
+  ctx.beginPath(); roundRect(ctx,20,20,W-40,H-40,32); ctx.fill();
+
+  /* corner ornaments */
+  ctx.strokeStyle=accent+'66'; ctx.lineWidth=1.5;
+  var co=38,cs=20;
+  ctx.beginPath(); ctx.moveTo(co,co+cs); ctx.lineTo(co,co); ctx.lineTo(co+cs,co); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W-co-cs,co); ctx.lineTo(W-co,co); ctx.lineTo(W-co,co+cs); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(co,H-co-cs); ctx.lineTo(co,H-co); ctx.lineTo(co+cs,H-co); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W-co-cs,H-co); ctx.lineTo(W-co,H-co); ctx.lineTo(W-co,H-co-cs); ctx.stroke();
+
+  /* rarity + date row */
+  ctx.fillStyle=accent;
+  ctx.font='bold 13px -apple-system,sans-serif';
+  ctx.textAlign='left';
+  ctx.fillText((em.r||'').toUpperCase(),60,72);
+  ctx.fillStyle='rgba(140,110,70,0.6)';
+  ctx.font='13px -apple-system,sans-serif';
+  ctx.textAlign='right';
+  ctx.fillText(dateStr,W-60,72);
+
+  /* emoji */
+  ctx.font='90px -apple-system,sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText(em.e,W/2,180);
+
+  /* emotion name */
+  ctx.fillStyle='#2A1A0E';
+  ctx.font='bold 40px Georgia,serif';
+  ctx.fillText(em.th,W/2,250);
+  ctx.fillStyle='rgba(120,90,50,0.7)';
+  ctx.font='18px Georgia,serif';
+  ctx.fillText(em.en,W/2,280);
+
+  /* divider */
+  drawDivider(ctx,W/2,308,accent);
+
+  /* reason text - word wrapped */
+  ctx.fillStyle='#3D2B1A';
+  ctx.font='19px Georgia,serif';
+  ctx.textAlign='center';
+  var y=345;
+  y=wrapText(ctx,reason,W/2,y,W-130,30);
+
+  /* insight box (psychology quote) */
+  if(insight){
+    y+=20;
+    var boxY=y;
+    /* measure insight height first */
+    ctx.font='italic 16px Georgia,serif';
+    var insightLines=measureWrap(ctx,'💡 '+insight,W-160);
+    var boxH=insightLines*26+36;
+    ctx.fillStyle=accent+'18';
+    ctx.beginPath(); roundRect(ctx,50,boxY,W-100,boxH,18); ctx.fill();
+    ctx.fillStyle=accent+'CC';
+    ctx.font='italic 16px Georgia,serif';
+    ctx.textAlign='center';
+    wrapText(ctx,'💡 '+insight,W/2,boxY+30,W-160,26);
+    y=boxY+boxH;
   }
+
+  /* footer */
+  ctx.fillStyle=accent+'88';
+  ctx.font='13px -apple-system,sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText('— EMOTIA  —',W/2,H-46);
+
+  /* save / share */
+  try{
+    canvas.toBlob(function(blob){
+      if(!blob){ toast('สร้างรูปไม่ได้'); return; }
+      var url=URL.createObjectURL(blob);
+      if(navigator.share && navigator.canShare){
+        var file=new File([blob],'emotia-emotion.png',{type:'image/png'});
+        if(navigator.canShare({files:[file]})){
+          navigator.share({files:[file],title:'EMOTIA'}).catch(function(){ downloadCard(url); });
+          return;
+        }
+      }
+      downloadCard(url);
+    },'image/png');
+  }catch(err){ toast('แคปหน้าจอเพื่อแชร์ได้เลย ✦'); }
 }
 
-/* ═══════════════ IZAKAYA CHAT ═══════════════ */
+/* canvas text helpers */
+function drawDivider(ctx,cx,y,accent){
+  var dg=ctx.createLinearGradient(cx-60,y,cx+60,y);
+  dg.addColorStop(0,'transparent'); dg.addColorStop(0.5,accent+'88'); dg.addColorStop(1,'transparent');
+  ctx.strokeStyle=dg; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(cx-60,y); ctx.lineTo(cx+60,y); ctx.stroke();
+}
+function wrapText(ctx,text,cx,y,maxW,lineH){
+  var words=(text||'').split(' ');
+  var line=''; var yy=y;
+  for(var i=0;i<words.length;i++){
+    var test=line+words[i]+' ';
+    if(ctx.measureText(test).width>maxW && line!==''){
+      ctx.fillText(line.trim(),cx,yy);
+      line=words[i]+' '; yy+=lineH;
+    }else{ line=test; }
+  }
+  if(line.trim()!==''){ ctx.fillText(line.trim(),cx,yy); yy+=lineH; }
+  return yy;
+}
+function measureWrap(ctx,text,maxW){
+  var words=(text||'').split(' ');
+  var line=''; var lines=1;
+  for(var i=0;i<words.length;i++){
+    var test=line+words[i]+' ';
+    if(ctx.measureText(test).width>maxW && line!==''){ lines++; line=words[i]+' '; }
+    else{ line=test; }
+  }
+  return lines;
+}
+
+/* =============== IZAKAYA CHAT =============== */
 /* ── TIME-AWARE SCENE ── */
 /* แต่ละช่วงเวลามีฉากและบรรยากาศของตัวเอง */
 var TIME_SCENES=[
@@ -2445,56 +2612,41 @@ function buildSceneMap(){
 
 /* SCENE ROOM backgrounds — full SVG per scene */
 var SCENE_BG = {
-  izakaya:'linear-gradient(180deg,#180804 0%,#0E0402 60%,#080200 100%)',
-  sakura:'linear-gradient(180deg,#8090A8 0%,#B8A0B8 50%,#C8A888 100%)',
-  midnight:'linear-gradient(180deg,#02020C 0%,#04060E 60%,#060408 100%)',
-  forest:'linear-gradient(180deg,#020806 0%,#040C06 60%,#020804 100%)',
-  cosmos:'linear-gradient(180deg,#010208 0%,#020410 60%,#040818 100%)',
-  beach:'linear-gradient(180deg,#03060F 0%,#060C1A 60%,#0A1428 100%)',
-  mountain:'linear-gradient(180deg,#3060A0 0%,#6090C0 40%,#C09060 100%)'
+  izakaya:'#1A1008',
+  sakura: '#D8D0C8',
+  midnight:'#06040E',
+  forest: '#0A1018',
+  cosmos: '#060C18',
+  beach:  '#060C1C',
+  mountain:'#060C18'
 };
 
 /* Override bg based on time of day for the auto-selected scene */
 function getTimeBG(sceneId){
   var h=new Date().getHours();
   if(sceneId==='cafe'){
-    if(h>=5&&h<8)  return 'linear-gradient(180deg,#6080A0 0%,#9890A8 50%,#C0A878 100%)';
-    if(h>=8&&h<17) return 'linear-gradient(180deg,#8090A8 0%,#B8A0B8 50%,#C8A888 100%)';
+    if(h>=5&&h<8)   return '#E8DFD8'; /* dawn warm */
+    if(h>=8&&h<17)  return '#D8D0C8'; /* day neutral */
   }
-  if(sceneId==='beach'){
-    if(h>=20&&h<23) return 'linear-gradient(180deg,#03060F 0%,#060C1A 60%,#0A1428 100%)';
-  }
-  if(sceneId==='ramen'){
-    return 'linear-gradient(180deg,#020806 0%,#040C06 60%,#020804 100%)';
-  }
+  if(sceneId==='ramen') return '#0A1018';
   return SCENE_BG[SCENE_ALIAS[sceneId]||sceneId]||'#0A0806';
 }
 
 var ROOMS = {
-izakaya:'<svg viewBox="0 0 480 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><!-- sky/wall --><defs><radialGradient id="iz-lamp1" cx="30%" cy="20%" r="55%"><stop offset="0%" stop-color="#FFD080" stop-opacity="0.35"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><radialGradient id="iz-lamp2" cx="75%" cy="18%" r="45%"><stop offset="0%" stop-color="#FF9040" stop-opacity="0.28"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><linearGradient id="iz-floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3D1A06"/><stop offset="100%" stop-color="#1A0A02"/></linearGradient></defs><!-- back wall --><rect width="480" height="700" fill="#1E0E04"/><!-- warm wall panels --><rect x="0" y="0" width="480" height="420" fill="#2A1208"/><rect x="0" y="0" width="480" height="420" fill="url(#iz-lamp1)"/><rect x="0" y="0" width="480" height="420" fill="url(#iz-lamp2)"/><!-- horizontal wood beams --><rect x="0" y="90" width="480" height="12" fill="#5A2A0A" rx="2"/><rect x="0" y="88" width="480" height="3" fill="#8A4A18" rx="1"/><rect x="0" y="200" width="480" height="8" fill="#4A2208" rx="1"/><rect x="0" y="280" width="480" height="6" fill="#3A1A06" rx="1"/><!-- vertical wall planks --><rect x="60" y="0" width="3" height="420" fill="#1A0A02" opacity="0.5"/><rect x="140" y="0" width="3" height="420" fill="#1A0A02" opacity="0.5"/><rect x="220" y="0" width="3" height="420" fill="#1A0A02" opacity="0.4"/><rect x="300" y="0" width="3" height="420" fill="#1A0A02" opacity="0.4"/><rect x="380" y="0" width="3" height="420" fill="#1A0A02" opacity="0.3"/><!-- lanterns hanging --><line x1="140" y1="0" x2="140" y2="55" stroke="#8B6040" stroke-width="2"/><ellipse cx="140" cy="72" rx="18" ry="26" fill="#E84010" opacity="0.92"/><ellipse cx="140" cy="50" rx="7" ry="4" fill="#6B3010"/><ellipse cx="140" cy="94" rx="7" ry="4" fill="#6B3010"/><line x1="140" y1="48" x2="140" y2="98" stroke="#C03010" stroke-width="1" opacity="0.6"/><ellipse cx="140" cy="68" rx="15" ry="1.5" fill="#B02808" opacity="0.7"/><ellipse cx="140" cy="75" rx="15" ry="1.5" fill="#B02808" opacity="0.7"/><ellipse cx="140" cy="82" rx="15" ry="1.5" fill="#B02808" opacity="0.7"/><ellipse cx="140" cy="72" rx="60" ry="55" fill="#FF8030" opacity="0.08"/><!-- second lantern --><line x1="320" y1="0" x2="320" y2="42" stroke="#8B6040" stroke-width="2"/><ellipse cx="320" cy="58" rx="15" ry="22" fill="#E84010" opacity="0.85"/><ellipse cx="320" cy="40" rx="6" ry="3.5" fill="#6B3010"/><ellipse cx="320" cy="76" rx="6" ry="3.5" fill="#6B3010"/><ellipse cx="320" cy="55" rx="45" ry="45" fill="#FF8030" opacity="0.07"/><!-- noren curtain --><rect x="200" y="88" width="80" height="55" fill="#8B2020" rx="2" opacity="0.95"/><rect x="200" y="88" width="38" height="55" fill="#6B1818" opacity="0.98"/><text x="224" y="122" font-size="13" fill="rgba(245,220,180,0.8)" text-anchor="middle" font-family="serif">居</text><text x="262" y="122" font-size="13" fill="rgba(245,220,180,0.8)" text-anchor="middle" font-family="serif">酒</text><!-- shelf with bottles --><rect x="0" y="105" width="190" height="10" fill="#7A4020" rx="2"/><rect x="0" y="103" width="190" height="4" fill="#A06030" rx="1"/><rect x="12" y="70" width="11" height="35" rx="3" fill="#2A4A7A"/><rect x="14" y="68" width="7" height="5" rx="1" fill="#1A3060"/><rect x="32" y="74" width="9" height="31" rx="3" fill="#6A2A08"/><rect x="34" y="72" width="5" height="4" rx="1" fill="#4A1A05"/><rect x="50" y="68" width="10" height="37" rx="3" fill="#7A9A1A"/><rect x="52" y="66" width="6" height="5" rx="1" fill="#5A7A10"/><rect x="70" y="72" width="9" height="33" rx="3" fill="#2A5A3A"/><rect x="88" y="66" width="12" height="39" rx="3" fill="#8A3A1A"/><rect x="108" y="70" width="10" height="35" rx="3" fill="#1A4A5A"/><rect x="128" y="73" width="9" height="32" rx="3" fill="#6A4A1A"/><rect x="148" y="68" width="11" height="37" rx="3" fill="#9A2A2A"/><rect x="166" y="71" width="10" height="34" rx="3" fill="#3A2A6A"/><!-- counter bar --><rect x="0" y="370" width="300" height="70" fill="#7A4020" rx="4"/><rect x="0" y="366" width="305" height="10" rx="3" fill="#A06030"/><rect x="0" y="366" width="305" height="3" fill="#C08050" opacity="0.6"/><!-- counter shine --><rect x="5" y="368" width="290" height="2" rx="1" fill="rgba(255,220,160,0.15)"/><!-- bar stools --><ellipse cx="60" cy="430" rx="22" ry="7" fill="#5A3010"/><rect x="52" y="430" width="16" height="50" rx="3" fill="#4A2808"/><ellipse cx="60" cy="480" rx="18" ry="5" fill="#3A1A08"/><ellipse cx="160" cy="430" rx="22" ry="7" fill="#5A3010"/><rect x="152" y="430" width="16" height="50" rx="3" fill="#4A2808"/><ellipse cx="160" cy="480" rx="18" ry="5" fill="#3A1A08"/><!-- sake cups on counter --><ellipse cx="80" cy="368" rx="10" ry="3.5" fill="#D4C8A8" opacity="0.7"/><rect x="74" y="352" width="12" height="16" rx="4" fill="#D4C8A8" opacity="0.65"/><ellipse cx="110" cy="368" rx="8" ry="3" fill="#C8BCA0" opacity="0.6"/><!-- floor --><rect x="0" y="440" width="480" height="260" fill="url(#iz-floor)"/><rect x="0" y="440" width="480" height="5" fill="#6A3010" opacity="0.8"/><!-- floor wood lines --><line x1="0" y1="480" x2="480" y2="480" stroke="#2A1008" stroke-width="1.5" opacity="0.5"/><line x1="0" y1="520" x2="480" y2="520" stroke="#2A1008" stroke-width="1.5" opacity="0.4"/><line x1="0" y1="560" x2="480" y2="560" stroke="#2A1008" stroke-width="1" opacity="0.3"/><line x1="0" y1="600" x2="480" y2="600" stroke="#2A1008" stroke-width="1" opacity="0.25"/><!-- ambient glow on floor --><ellipse cx="140" cy="500" rx="100" ry="40" fill="#FF8030" opacity="0.05"/><ellipse cx="320" cy="480" rx="80" ry="35" fill="#FF6020" opacity="0.04"/><!-- right side kitchen hint --><rect x="360" y="200" width="120" height="240" fill="#1A0804" opacity="0.9"/><rect x="358" y="200" width="4" height="240" fill="#5A2A0A"/><rect x="370" y="210" width="100" height="140" rx="4" fill="#0A0402" opacity="0.8"/><circle cx="420" cy="320" r="25" fill="#FF6010" opacity="0.6"/><circle cx="420" cy="320" r="18" fill="#FF8020" opacity="0.7"/><circle cx="420" cy="320" r="10" fill="#FFAA40" opacity="0.8"/><circle cx="420" cy="320" r="60" fill="#FF6010" opacity="0.07"/><!-- steam --><path d="M415 290 Q418 275 412 262" stroke="rgba(255,255,255,0.18)" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M425 288 Q428 273 422 258" stroke="rgba(255,255,255,0.14)" stroke-width="2" fill="none" stroke-linecap="round"/><!-- window right --><rect x="390" y="120" width="80" height="60" rx="3" fill="#0A1828" opacity="0.9"/><rect x="388" y="118" width="84" height="64" rx="4" fill="none" stroke="#7A5020" stroke-width="3"/><line x1="430" y1="118" x2="430" y2="182" stroke="#7A5020" stroke-width="2"/><line x1="388" y1="150" x2="472" y2="150" stroke="#7A5020" stroke-width="2"/><!-- night glow through window --><ellipse cx="430" cy="150" rx="50" ry="40" fill="#2040A0" opacity="0.08"/></svg>',
+izakaya:'<svg viewBox="0 0 420 560" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="iz-glow" cx="65%" cy="55%" r="40%"><stop offset="0%" stop-color="#FFB050" stop-opacity="0.5"/><stop offset="100%" stop-color="#FF7020" stop-opacity="0"/></radialGradient><radialGradient id="iz-inner" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFCC80" stop-opacity="0.6"/><stop offset="100%" stop-color="#FF9040" stop-opacity="0"/></radialGradient></defs><!-- sky night dark --><rect width="420" height="560" fill="#1A1008"/><!-- roof tile area --><rect x="0" y="0" width="420" height="80" fill="#2A2018"/><!-- roof tiles --><rect x="0" y="55" width="420" height="28" rx="0" fill="#221810"/><rect x="0" y="52" width="420" height="6" fill="#3A2C1C"/><rect x="0" y="56" width="420" height="3" fill="#4A3820"/><!-- tile rows --><g fill="#1E1A14" opacity="0.6"><rect x="0" y="56" width="14" height="7" rx="7"/><rect x="14" y="56" width="14" height="7" rx="7"/><rect x="28" y="56" width="14" height="7" rx="7"/><rect x="42" y="56" width="14" height="7" rx="7"/><rect x="56" y="56" width="14" height="7" rx="7"/><rect x="70" y="56" width="14" height="7" rx="7"/><rect x="84" y="56" width="14" height="7" rx="7"/><rect x="98" y="56" width="14" height="7" rx="7"/><rect x="112" y="56" width="14" height="7" rx="7"/><rect x="126" y="56" width="14" height="7" rx="7"/><rect x="140" y="56" width="14" height="7" rx="7"/><rect x="154" y="56" width="14" height="7" rx="7"/><rect x="168" y="56" width="14" height="7" rx="7"/><rect x="182" y="56" width="14" height="7" rx="7"/><rect x="196" y="56" width="14" height="7" rx="7"/><rect x="210" y="56" width="14" height="7" rx="7"/><rect x="224" y="56" width="14" height="7" rx="7"/><rect x="238" y="56" width="14" height="7" rx="7"/><rect x="252" y="56" width="14" height="7" rx="7"/><rect x="266" y="56" width="14" height="7" rx="7"/><rect x="280" y="56" width="14" height="7" rx="7"/><rect x="294" y="56" width="14" height="7" rx="7"/><rect x="308" y="56" width="14" height="7" rx="7"/><rect x="322" y="56" width="14" height="7" rx="7"/><rect x="336" y="56" width="14" height="7" rx="7"/><rect x="350" y="56" width="14" height="7" rx="7"/><rect x="364" y="56" width="14" height="7" rx="7"/><rect x="378" y="56" width="14" height="7" rx="7"/><rect x="392" y="56" width="14" height="7" rx="7"/><rect x="406" y="56" width="14" height="7" rx="7"/></g><!-- wall dark wood --><rect x="0" y="80" width="420" height="380" fill="#3A2410"/><!-- wood grain lines --><line x1="0" y1="100" x2="420" y2="100" stroke="#2E1C08" stroke-width="1" opacity="0.4"/><line x1="0" y1="130" x2="420" y2="130" stroke="#2E1C08" stroke-width="1" opacity="0.3"/><line x1="0" y1="160" x2="420" y2="160" stroke="#2E1C08" stroke-width="1" opacity="0.3"/><!-- lantern rope --><line x1="10" y1="88" x2="410" y2="88" stroke="#6B4020" stroke-width="2"/><!-- 5 lanterns --><g><!-- lantern 1 --><line x1="35" y1="88" x2="35" y2="102" stroke="#8B5030" stroke-width="1.5"/><ellipse cx="35" cy="118" rx="14" ry="20" fill="#D43010" opacity="0.95"/><ellipse cx="35" cy="102" rx="6" ry="4" fill="#8B3010"/><ellipse cx="35" cy="136" rx="6" ry="4" fill="#8B3010"/><line x1="35" y1="104" x2="35" y2="134" stroke="#B02808" stroke-width="1"/><ellipse cx="35" cy="112" rx="12" ry="1.5" fill="#B02808" opacity="0.6"/><ellipse cx="35" cy="118" rx="12" ry="1.5" fill="#B02808" opacity="0.6"/><ellipse cx="35" cy="124" rx="12" ry="1.5" fill="#B02808" opacity="0.6"/><text x="35" y="122" font-size="9" fill="rgba(255,240,200,0.9)" text-anchor="middle" font-family="serif">Osake</text><!-- lantern glow --><ellipse cx="35" cy="118" rx="30" ry="30" fill="#FF8030" opacity="0.12"/></g><g><!-- lantern 2 --><line x1="95" y1="88" x2="95" y2="102" stroke="#8B5030" stroke-width="1.5"/><ellipse cx="95" cy="118" rx="14" ry="20" fill="#D43010" opacity="0.95"/><ellipse cx="95" cy="102" rx="6" ry="4" fill="#8B3010"/><ellipse cx="95" cy="136" rx="6" ry="4" fill="#8B3010"/><line x1="95" y1="104" x2="95" y2="134" stroke="#B02808" stroke-width="1"/><ellipse cx="95" cy="112" rx="12" ry="1.5" fill="#B02808" opacity="0.6"/><ellipse cx="95" cy="118" rx="12" ry="1.5" fill="#B02808" opacity="0.6"/><ellipse cx="95" cy="124" rx="12" ry="1.5" fill="#B02808" opacity="0.6"/><text x="95" y="122" font-size="9" fill="rgba(255,240,200,0.9)" text-anchor="middle" font-family="serif">Osake</text><ellipse cx="95" cy="118" rx="30" ry="30" fill="#FF8030" opacity="0.12"/></g><g><!-- lantern 3 center --><line x1="180" y1="88" x2="180" y2="100" stroke="#8B5030" stroke-width="1.5"/><ellipse cx="180" cy="116" rx="14" ry="20" fill="#D43010" opacity="0.95"/><ellipse cx="180" cy="100" rx="6" ry="4" fill="#8B3010"/><ellipse cx="180" cy="134" rx="6" ry="4" fill="#8B3010"/><ellipse cx="180" cy="110" rx="12" ry="1.5" fill="#B02808" opacity="0.6"/><ellipse cx="180" cy="116" rx="12" ry="1.5" fill="#B02808" opacity="0.6"/><ellipse cx="180" cy="122" rx="12" ry="1.5" fill="#B02808" opacity="0.6"/><text x="180" y="120" font-size="9" fill="rgba(255,240,200,0.9)" text-anchor="middle" font-family="serif">Beer</text><ellipse cx="180" cy="116" rx="30" ry="30" fill="#FF8030" opacity="0.12"/></g><g><!-- lantern 4 --><line x1="295" y1="88" x2="295" y2="102" stroke="#8B5030" stroke-width="1.5"/><ellipse cx="295" cy="118" rx="14" ry="20" fill="#D43010" opacity="0.95"/><ellipse cx="295" cy="102" rx="6" ry="4" fill="#8B3010"/><ellipse cx="295" cy="136" rx="6" ry="4" fill="#8B3010"/><ellipse cx="295" cy="112" rx="12" ry="1.5" fill="#B02808" opacity="0.6"/><ellipse cx="295" cy="118" rx="12" ry="1.5" fill="#B02808" opacity="0.6"/><ellipse cx="295" cy="124" rx="12" ry="1.5" fill="#B02808" opacity="0.6"/><text x="295" y="122" font-size="9" fill="rgba(255,240,200,0.9)" text-anchor="middle" font-family="serif">Yakitori</text><ellipse cx="295" cy="118" rx="30" ry="30" fill="#FF8030" opacity="0.12"/></g><g><!-- lantern 5 right --><line x1="390" y1="88" x2="390" y2="102" stroke="#8B5030" stroke-width="1.5"/><ellipse cx="390" cy="118" rx="14" ry="20" fill="#D43010" opacity="0.95"/><ellipse cx="390" cy="102" rx="6" ry="4" fill="#8B3010"/><ellipse cx="390" cy="136" rx="6" ry="4" fill="#8B3010"/><ellipse cx="390" cy="112" rx="12" ry="1.5" fill="#B02808" opacity="0.6"/><ellipse cx="390" cy="118" rx="12" ry="1.5" fill="#B02808" opacity="0.6"/><ellipse cx="390" cy="124" rx="12" ry="1.5" fill="#B02808" opacity="0.6"/><text x="390" y="122" font-size="9" fill="rgba(255,240,200,0.9)" text-anchor="middle" font-family="serif">Yakitori</text><ellipse cx="390" cy="118" rx="30" ry="30" fill="#FF8030" opacity="0.12"/></g><!-- sign board red --><rect x="240" y="90" width="140" height="55" rx="4" fill="#C82010" opacity="0.95"/><rect x="238" y="88" width="144" height="59" rx="5" fill="none" stroke="#8B1808" stroke-width="2"/><text x="248" y="118" font-size="11" fill="rgba(255,240,200,0.9)" font-family="serif"></text><text x="310" y="118" font-size="11" fill="rgba(255,240,200,0.9)" font-family="serif"></text><text x="248" y="136" font-size="18" fill="#FFE8A0" font-family="serif" font-weight="bold">Honobono</text><!-- left door area - noren curtain --><rect x="20" y="148" width="165" height="250" fill="#2A1810"/><!-- door frame --><rect x="18" y="146" width="169" height="254" rx="3" fill="none" stroke="#5A3818" stroke-width="3"/><!-- door open dark inside with warm glow --><rect x="22" y="150" width="80" height="242" fill="#1A0E08"/><rect x="22" y="150" width="80" height="242" fill="url(#iz-inner)" opacity="0.6"/><!-- people silhouettes inside --><ellipse cx="55" cy="310" rx="12" ry="18" fill="#0A0604" opacity="0.7"/><rect x="43" y="310" width="24" height="60" rx="4" fill="#0A0604" opacity="0.7"/><ellipse cx="85" cy="320" rx="10" ry="16" fill="#0A0604" opacity="0.6"/><rect x="46" y="340" width="40" height="8" rx="2" fill="#5A3818" opacity="0.8"/><!-- stool --><rect x="52" y="368" width="10" height="24" rx="2" fill="#4A2810"/><!-- noren blue curtain --><rect x="102" y="148" width="40" height="120" rx="2" fill="#2A3870" opacity="0.95"/><rect x="143" y="148" width="40" height="110" rx="2" fill="#1E2C60" opacity="0.95"/><!-- noren text --><text x="122" y="200" font-size="14" fill="rgba(200,220,255,0.9)" text-anchor="middle" font-family="serif">Izakaya</text><text x="158" y="200" font-size="11" fill="rgba(200,220,255,0.8)" text-anchor="middle" font-family="serif">Nihonshu</text><!-- right window with warm glow --><rect x="200" y="148" width="208" height="180" fill="#1A0E08"/><rect x="198" y="146" width="212" height="184" rx="3" fill="none" stroke="#5A3818" stroke-width="3"/><!-- window inner warm light --><rect x="202" y="150" width="204" height="176" fill="#FF9030" opacity="0.15"/><!-- window bars --><line x1="304" y1="146" x2="304" y2="330" stroke="#5A3818" stroke-width="2"/><line x1="200" y1="238" x2="410" y2="238" stroke="#5A3818" stroke-width="2"/><!-- bottles on shelf in window --><rect x="210" y="155" width="1" height="80" fill="#5A3818" opacity="0.4"/><!-- shelf line --><rect x="204" y="160" width="100" height="3" fill="#7A5030" opacity="0.7"/><!-- sake bottles in window --><rect x="208" y="163" width="11" height="30" rx="3" fill="#2A4A1A" opacity="0.85"/><rect x="221" y="163" width="11" height="30" rx="3" fill="#3A5A2A" opacity="0.85"/><rect x="234" y="163" width="11" height="30" rx="3" fill="#2A4A3A" opacity="0.8"/><rect x="248" y="163" width="11" height="30" rx="3" fill="#4A6A2A" opacity="0.8"/><rect x="262" y="163" width="11" height="30" rx="3" fill="#3A5020" opacity="0.85"/><!-- right shelf bottles amber --><rect x="315" y="155" width="95" height="3" fill="#7A5030" opacity="0.7"/><rect x="318" y="158" width="9" height="28" rx="3" fill="#8A5020" opacity="0.85"/><rect x="330" y="158" width="9" height="28" rx="3" fill="#7A4818" opacity="0.85"/><rect x="342" y="158" width="9" height="28" rx="3" fill="#9A6028" opacity="0.85"/><rect x="354" y="158" width="9" height="28" rx="3" fill="#8A5020" opacity="0.8"/><rect x="366" y="158" width="9" height="28" rx="3" fill="#7A4818" opacity="0.85"/><!-- cooking steam in window --><path d="M280 240 Q283 225 278 212" stroke="rgba(255,255,255,0.2)" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M292 240 Q295 224 290 210" stroke="rgba(255,255,255,0.15)" stroke-width="2.5" fill="none" stroke-linecap="round"/><!-- chef silhouette --><ellipse cx="300" cy="270" rx="14" ry="14" fill="#0A0604" opacity="0.6"/><rect x="286" y="276" width="28" height="40" rx="4" fill="#0A0604" opacity="0.6"/><!-- floor platform --><rect x="0" y="460" width="420" height="100" fill="#2A1A08"/><rect x="0" y="458" width="420" height="6" fill="#4A3018"/><!-- MENU board --><rect x="205" y="380" width="90" height="70" rx="3" fill="#1A1208" opacity="0.95"/><rect x="203" y="378" width="94" height="74" rx="4" fill="none" stroke="#5A4028" stroke-width="2"/><text x="250" y="400" font-size="10" fill="rgba(200,220,180,0.9)" text-anchor="middle" font-family="sans-serif">MENU</text><line x1="210" y1="408" x2="290" y2="408" stroke="rgba(200,200,180,0.3)" stroke-width="1"/><line x1="210" y1="420" x2="290" y2="420" stroke="rgba(200,200,180,0.2)" stroke-width="1"/><line x1="210" y1="432" x2="290" y2="432" stroke="rgba(200,200,180,0.2)" stroke-width="1"/><!-- barrel right --><ellipse cx="365" cy="395" rx="28" ry="10" fill="#5A3818"/><rect x="337" y="395" width="56" height="50" rx="3" fill="#6A4820"/><ellipse cx="365" cy="445" rx="28" ry="10" fill="#4A2E10"/><line x1="337" y1="415" x2="393" y2="415" stroke="#4A2E10" stroke-width="2"/><line x1="337" y1="430" x2="393" y2="430" stroke="#4A2E10" stroke-width="2"/><!-- warm glow overlay --><rect x="0" y="0" width="420" height="560" fill="url(#iz-glow)"/><!-- floor wood lines --><line x1="0" y1="480" x2="420" y2="480" stroke="#3A2810" stroke-width="1.5" opacity="0.6"/><line x1="0" y1="500" x2="420" y2="500" stroke="#3A2810" stroke-width="1" opacity="0.4"/></svg>',
 
-sakura:'<svg viewBox="0 0 480 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="sk-sun" cx="50%" cy="15%" r="70%"><stop offset="0%" stop-color="#FFE8B0" stop-opacity="0.45"/><stop offset="60%" stop-color="#FFAA60" stop-opacity="0.12"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><linearGradient id="sk-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#B0C8E8"/><stop offset="100%" stop-color="#D8B8D0"/></linearGradient><linearGradient id="sk-floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#C8A898"/><stop offset="100%" stop-color="#8A6858"/></linearGradient></defs><!-- sky --><rect width="480" height="700" fill="url(#sk-sky)"/><!-- sun glow --><rect width="480" height="700" fill="url(#sk-sun)"/><!-- clouds soft --><ellipse cx="80" cy="60" rx="90" ry="28" fill="white" opacity="0.3"/><ellipse cx="200" cy="40" rx="70" ry="20" fill="white" opacity="0.25"/><ellipse cx="380" cy="70" rx="85" ry="25" fill="white" opacity="0.28"/><!-- sakura trees --><rect x="20" y="80" width="28" height="340" rx="10" fill="#5A3020"/><rect x="14" y="80" width="12" height="200" rx="6" fill="#4A2818"/><ellipse cx="60" cy="130" rx="90" ry="75" fill="#F090B0" opacity="0.82"/><ellipse cx="30" cy="100" rx="60" ry="50" fill="#F0A0C0" opacity="0.75"/><ellipse cx="80" cy="90" rx="70" ry="55" fill="#E878A8" opacity="0.78"/><!-- petals falling --><ellipse cx="120" cy="180" rx="5" ry="3" fill="#FFB8D0" opacity="0.7" transform="rotate(-20 120 180)"/><ellipse cx="200" cy="220" rx="4" ry="2.5" fill="#FFAAC8" opacity="0.6" transform="rotate(15 200 220)"/><ellipse cx="280" cy="160" rx="5" ry="3" fill="#F0A0C0" opacity="0.65" transform="rotate(-30 280 160)"/><ellipse cx="350" cy="200" rx="4" ry="2.5" fill="#FFB0CC" opacity="0.6" transform="rotate(25 350 200)"/><ellipse cx="90" cy="300" rx="4" ry="2.5" fill="#FFBCD4" opacity="0.5" transform="rotate(-10 90 300)"/><ellipse cx="320" cy="130" rx="5" ry="3" fill="#F8A8C0" opacity="0.55" transform="rotate(40 320 130)"/><!-- right sakura tree --><rect x="430" y="100" width="24" height="320" rx="10" fill="#5A3020"/><ellipse cx="430" cy="150" rx="80" ry="70" fill="#F090B0" opacity="0.8"/><ellipse cx="460" cy="120" rx="65" ry="55" fill="#E878A8" opacity="0.75"/><!-- cafe building facade --><rect x="80" y="240" width="320" height="460" fill="#F0E8DC" rx="4"/><rect x="78" y="238" width="324" height="6" rx="2" fill="#C8A878"/><!-- window left --><rect x="100" y="270" width="90" height="80" rx="6" fill="#A8C8E8" opacity="0.85"/><rect x="98" y="268" width="94" height="84" rx="7" fill="none" stroke="#B8906A" stroke-width="3"/><line x1="145" y1="268" x2="145" y2="352" stroke="#B8906A" stroke-width="2"/><line x1="98" y1="310" x2="192" y2="310" stroke="#B8906A" stroke-width="2"/><!-- warm light through left window --><rect x="100" y="270" width="90" height="80" rx="6" fill="#FFE8A0" opacity="0.18"/><!-- window right --><rect x="290" y="270" width="90" height="80" rx="6" fill="#A8C8E8" opacity="0.85"/><rect x="288" y="268" width="94" height="84" rx="7" fill="none" stroke="#B8906A" stroke-width="3"/><line x1="335" y1="268" x2="335" y2="352" stroke="#B8906A" stroke-width="2"/><line x1="288" y1="310" x2="382" y2="310" stroke="#B8906A" stroke-width="2"/><!-- cafe door --><rect x="190" y="320" width="100" height="160" rx="6" fill="#8B6040"/><rect x="188" y="318" width="104" height="164" rx="7" fill="none" stroke="#B8906A" stroke-width="3"/><ellipse cx="280" cy="402" rx="5" ry="5" fill="#C8A050"/><!-- sign board --><rect x="160" y="255" width="160" height="36" rx="6" fill="#7A5030"/><text x="240" y="278" font-size="13" fill="#FFE8C0" text-anchor="middle" font-family="serif" letter-spacing="2">CAFÉ</text><!-- flower boxes under windows --><rect x="95" y="348" width="100" height="18" rx="4" fill="#C8603A"/><ellipse cx="115" cy="344" rx="8" ry="10" fill="#E85070" opacity="0.9"/><ellipse cx="135" cy="342" rx="8" ry="10" fill="#F07090" opacity="0.85"/><ellipse cx="155" cy="344" rx="8" ry="10" fill="#E85070" opacity="0.9"/><ellipse cx="175" cy="343" rx="7" ry="9" fill="#F07090" opacity="0.85"/><!-- floor / path --><rect x="0" y="580" width="480" height="120" fill="url(#sk-floor)"/><rect x="0" y="578" width="480" height="5" fill="#D0A878" opacity="0.8"/><!-- stone path --><ellipse cx="240" cy="600" rx="60" ry="12" fill="#C8B8A0" opacity="0.6"/><ellipse cx="240" cy="620" rx="50" ry="10" fill="#C0B098" opacity="0.5"/><!-- ambient warm --><ellipse cx="240" cy="400" rx="180" ry="100" fill="#FFE8A0" opacity="0.06"/></svg>',
+sakura:'<svg viewBox="0 0 420 560" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="sk-warm" cx="60%" cy="55%" r="50%"><stop offset="0%" stop-color="#FFE8A0" stop-opacity="0.55"/><stop offset="100%" stop-color="#FFB050" stop-opacity="0"/></radialGradient></defs><!-- soft morning sky --><rect width="420" height="560" fill="#E8EFF8"/><!-- building wall --><rect x="30" y="100" width="360" height="420" fill="#C8BCA8"/><!-- roof --><rect x="10" y="70" width="400" height="40" rx="3" fill="#8A7A68"/><!-- roof tiles texture --><rect x="10" y="68" width="400" height="8" fill="#9A8A76"/><g fill="#7A6A58" opacity="0.5"><rect x="10" y="70" width="12" height="6" rx="6"/><rect x="24" y="70" width="12" height="6" rx="6"/><rect x="38" y="70" width="12" height="6" rx="6"/><rect x="52" y="70" width="12" height="6" rx="6"/><rect x="66" y="70" width="12" height="6" rx="6"/><rect x="80" y="70" width="12" height="6" rx="6"/><rect x="94" y="70" width="12" height="6" rx="6"/><rect x="108" y="70" width="12" height="6" rx="6"/><rect x="122" y="70" width="12" height="6" rx="6"/><rect x="136" y="70" width="12" height="6" rx="6"/><rect x="150" y="70" width="12" height="6" rx="6"/><rect x="164" y="70" width="12" height="6" rx="6"/><rect x="178" y="70" width="12" height="6" rx="6"/><rect x="192" y="70" width="12" height="6" rx="6"/><rect x="206" y="70" width="12" height="6" rx="6"/><rect x="220" y="70" width="12" height="6" rx="6"/><rect x="234" y="70" width="12" height="6" rx="6"/><rect x="248" y="70" width="12" height="6" rx="6"/><rect x="262" y="70" width="12" height="6" rx="6"/><rect x="276" y="70" width="12" height="6" rx="6"/><rect x="290" y="70" width="12" height="6" rx="6"/><rect x="304" y="70" width="12" height="6" rx="6"/><rect x="318" y="70" width="12" height="6" rx="6"/><rect x="332" y="70" width="12" height="6" rx="6"/><rect x="346" y="70" width="12" height="6" rx="6"/><rect x="360" y="70" width="12" height="6" rx="6"/><rect x="374" y="70" width="12" height="6" rx="6"/><rect x="388" y="70" width="12" height="6" rx="6"/></g><!-- green-white awning stripes --><path d="M25 108 L25 148 Q210 160 395 148 L395 108 Z" fill="#4A8A4A"/><!-- stripes --><line x1="55" y1="108" x2="52" y2="150" stroke="white" stroke-width="14" opacity="0.7"/><line x1="95" y1="108" x2="92" y2="150" stroke="white" stroke-width="14" opacity="0.7"/><line x1="135" y1="108" x2="132" y2="150" stroke="white" stroke-width="14" opacity="0.7"/><line x1="175" y1="108" x2="172" y2="150" stroke="white" stroke-width="14" opacity="0.7"/><line x1="215" y1="108" x2="212" y2="150" stroke="white" stroke-width="14" opacity="0.7"/><line x1="255" y1="108" x2="252" y2="150" stroke="white" stroke-width="14" opacity="0.7"/><line x1="295" y1="108" x2="292" y2="150" stroke="white" stroke-width="14" opacity="0.7"/><line x1="335" y1="108" x2="332" y2="150" stroke="white" stroke-width="14" opacity="0.7"/><line x1="375" y1="108" x2="372" y2="150" stroke="white" stroke-width="14" opacity="0.7"/><!-- awning scallop bottom --><path d="M25 148 Q45 158 65 148 Q85 158 105 148 Q125 158 145 148 Q165 158 185 148 Q205 158 225 148 Q245 158 265 148 Q285 158 305 148 Q325 158 345 148 Q365 158 385 148 L395 148 L395 150 Q375 162 355 150 Q335 162 315 150 Q295 162 275 150 Q255 162 235 150 Q215 162 195 150 Q175 162 155 150 Q135 162 115 150 Q95 162 75 150 Q55 162 35 150 L25 150 Z" fill="#3A7A3A"/><!-- ivy left --><rect x="5" y="70" width="30" height="360" rx="4" fill="#3A7A2A" opacity="0.4"/><!-- ivy leaves left --><ellipse cx="8" cy="120" rx="18" ry="12" fill="#4A9A3A" opacity="0.85" transform="rotate(-20 8 120)"/><ellipse cx="5" cy="155" rx="20" ry="13" fill="#3A8A2A" opacity="0.8" transform="rotate(15 5 155)"/><ellipse cx="12" cy="190" rx="18" ry="12" fill="#4A9A3A" opacity="0.85" transform="rotate(-10 12 190)"/><ellipse cx="6" cy="225" rx="20" ry="13" fill="#3A8A2A" opacity="0.8" transform="rotate(20 6 225)"/><ellipse cx="10" cy="260" rx="18" ry="12" fill="#4A9A3A" opacity="0.85" transform="rotate(-15 10 260)"/><ellipse cx="4" cy="295" rx="20" ry="13" fill="#3A8A2A" opacity="0.8" transform="rotate(10 4 295)"/><!-- ivy right --><rect x="385" y="70" width="30" height="360" rx="4" fill="#3A7A2A" opacity="0.4"/><ellipse cx="412" cy="120" rx="18" ry="12" fill="#4A9A3A" opacity="0.85" transform="rotate(20 412 120)"/><ellipse cx="415" cy="155" rx="20" ry="13" fill="#3A8A2A" opacity="0.8" transform="rotate(-15 415 155)"/><ellipse cx="408" cy="190" rx="18" ry="12" fill="#4A9A3A" opacity="0.85" transform="rotate(10 408 190)"/><ellipse cx="414" cy="225" rx="20" ry="13" fill="#3A8A2A" opacity="0.8" transform="rotate(-20 414 225)"/><ellipse cx="410" cy="260" rx="18" ry="12" fill="#4A9A3A" opacity="0.85" transform="rotate(15 410 260)"/><!-- door left --><rect x="40" y="160" width="100" height="280" rx="4" fill="#D8C8A8"/><rect x="38" y="158" width="104" height="284" rx="5" fill="none" stroke="#8A7A60" stroke-width="3"/><!-- door inner warm --><rect x="42" y="162" width="96" height="274" fill="#FFE8A0" opacity="0.18"/><!-- door handle --><circle cx="134" cy="302" r="5" fill="#C0A050"/><!-- OPEN sign --><rect x="58" y="185" width="42" height="20" rx="3" fill="#F8F4E8"/><rect x="56" y="183" width="46" height="24" rx="4" fill="none" stroke="#8A7A60" stroke-width="1.5"/><text x="79" y="198" font-size="9" fill="#3A2A10" text-anchor="middle" font-family="sans-serif">OPEN</text><!-- person silhouette in door --><ellipse cx="80" cy="300" rx="10" ry="12" fill="#2A1A08" opacity="0.4"/><rect x="70" y="312" width="20" height="50" rx="4" fill="#2A1A08" opacity="0.4"/><!-- big window right --><rect x="150" y="160" width="240" height="200" fill="#1A1208"/><rect x="148" y="158" width="244" height="204" rx="3" fill="none" stroke="#6A5A40" stroke-width="3"/><!-- window warm glow --><rect x="152" y="162" width="236" height="196" fill="#FFB840" opacity="0.18"/><!-- window bars --><line x1="270" y1="158" x2="270" y2="362" stroke="#6A5A40" stroke-width="2.5"/><line x1="150" y1="240" x2="392" y2="240" stroke="#6A5A40" stroke-width="2"/><!-- shelves inside --><rect x="155" y="175" width="232" height="3" fill="#8A7050" opacity="0.7"/><rect x="155" y="198" width="232" height="3" fill="#8A7050" opacity="0.6"/><!-- coffee items on shelf --><rect x="160" y="178" width="12" height="18" rx="3" fill="#8A5A30" opacity="0.8"/><rect x="175" y="180" width="10" height="16" rx="3" fill="#7A4A28" opacity="0.8"/><rect x="188" y="176" width="14" height="20" rx="3" fill="#9A6A38" opacity="0.8"/><ellipse cx="210" cy="192" rx="8" ry="6" fill="#6A4A28" opacity="0.75"/><ellipse cx="225" cy="190" rx="7" ry="5" fill="#7A5A30" opacity="0.75"/><!-- pendant lights --><line x1="220" y1="162" x2="220" y2="200" stroke="#8A7050" stroke-width="1.5"/><circle cx="220" cy="203" r="8" fill="#FFE8A0" opacity="0.8"/><ellipse cx="220" cy="218" rx="12" ry="5" fill="#FFB050" opacity="0.15"/><!-- barista and customers --><ellipse cx="230" cy="280" rx="12" ry="14" fill="#3A2010" opacity="0.6"/><rect x="218" y="280" width="24" height="45" rx="4" fill="#3A2010" opacity="0.6"/><!-- customer 1 --><ellipse cx="310" cy="290" rx="11" ry="13" fill="#2A1A08" opacity="0.55"/><rect x="299" y="290" width="22" height="42" rx="4" fill="#2A1A08" opacity="0.55"/><!-- customer 2 --><ellipse cx="355" cy="295" rx="11" ry="13" fill="#1A1008" opacity="0.5"/><rect x="344" y="295" width="22" height="42" rx="4" fill="#1A1008" opacity="0.5"/><!-- coffee cups on counter --><ellipse cx="285" cy="362" rx="8" ry="3" fill="#8A6A40" opacity="0.7"/><ellipse cx="300" cy="362" rx="7" ry="3" fill="#7A5A30" opacity="0.65"/><!-- coffee machine --><rect x="155" y="245" width="50" height="40" rx="3" fill="#4A3A28" opacity="0.7"/><!-- potted plants bottom --><ellipse cx="200" cy="458" rx="20" ry="8" fill="#6A4820"/><rect x="185" y="420" width="30" height="38" rx="4" fill="#7A5830"/><!-- plant --><ellipse cx="200" cy="408" rx="22" ry="25" fill="#4A8A3A" opacity="0.9"/><ellipse cx="185" cy="415" rx="14" ry="18" fill="#3A7A2A" opacity="0.85"/><ellipse cx="220" cy="418" rx="14" ry="16" fill="#4A8A3A" opacity="0.8"/><!-- pot 2 --><ellipse cx="310" cy="455" rx="18" ry="7" fill="#5A3A18"/><rect x="295" y="420" width="30" height="35" rx="4" fill="#6A4828"/><!-- plant 2 --><ellipse cx="310" cy="408" rx="20" ry="22" fill="#3A8A3A" opacity="0.9"/><ellipse cx="295" cy="412" rx="12" ry="16" fill="#2A7A2A" opacity="0.85"/><!-- pot 3 tall --><ellipse cx="370" cy="452" rx="16" ry="6" fill="#6A4820"/><rect x="357" y="390" width="26" height="62" rx="4" fill="#7A5830"/><!-- tall plant --><ellipse cx="370" cy="378" rx="18" ry="20" fill="#4A9A3A" opacity="0.9"/><ellipse cx="358" cy="385" rx="12" ry="16" fill="#3A8A2A" opacity="0.85"/><!-- MENU chalkboard --><rect x="30" y="370" width="75" height="105" rx="3" fill="#1A2010" opacity="0.95"/><rect x="28" y="368" width="79" height="109" rx="4" fill="none" stroke="#4A3820" stroke-width="2"/><!-- chalkboard legs --><line x1="45" y1="475" x2="35" y2="510" stroke="#4A3820" stroke-width="3"/><line x1="90" y1="475" x2="100" y2="510" stroke="#4A3820" stroke-width="3"/><!-- chalkboard text --><text x="67" y="390" font-size="10" fill="rgba(200,230,200,0.9)" text-anchor="middle" font-family="sans-serif">* MENU *</text><text x="67" y="408" font-size="7.5" fill="rgba(180,210,180,0.8)" text-anchor="middle">DRINKS:</text><text x="67" y="425" font-size="7.5" fill="rgba(180,210,180,0.7)" text-anchor="middle">FOOD:</text><text x="67" y="442" font-size="7.5" fill="rgba(180,210,180,0.7)" text-anchor="middle">DESSERT:</text><!-- floor --><rect x="0" y="460" width="420" height="100" fill="#C0B098"/><!-- warm glow --><rect x="0" y="0" width="420" height="560" fill="url(#sk-warm)"/></svg>',
 
-midnight:'<svg viewBox="0 0 480 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="mn-neon1" cx="25%" cy="35%" r="40%"><stop offset="0%" stop-color="#8040FF" stop-opacity="0.3"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><radialGradient id="mn-neon2" cx="75%" cy="30%" r="35%"><stop offset="0%" stop-color="#FF4080" stop-opacity="0.25"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><linearGradient id="mn-floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1A1828"/><stop offset="100%" stop-color="#0A0810"/></linearGradient></defs><!-- night wall --><rect width="480" height="700" fill="#08060E"/><!-- brick texture hint --><rect x="0" y="0" width="480" height="500" fill="#0C0A16"/><!-- neon glow layers --><rect width="480" height="700" fill="url(#mn-neon1)"/><rect width="480" height="700" fill="url(#mn-neon2)"/><!-- neon sign BAR --><rect x="140" y="50" width="200" height="60" rx="8" fill="#0A0818" opacity="0.9" stroke="#6020C0" stroke-width="1.5"/><text x="240" y="93" font-size="32" fill="none" stroke="#A040FF" stroke-width="2" text-anchor="middle" font-family="serif" letter-spacing="6">BAR</text><text x="240" y="93" font-size="32" fill="#C060FF" text-anchor="middle" font-family="serif" letter-spacing="6" opacity="0.7">BAR</text><!-- neon sign glow --><ellipse cx="240" cy="80" rx="130" ry="50" fill="#8040FF" opacity="0.08"/><!-- windows cityscape --><rect x="20" y="100" width="120" height="200" rx="4" fill="#0A1828" opacity="0.9"/><rect x="18" y="98" width="124" height="204" rx="5" fill="none" stroke="#2A3040" stroke-width="2"/><!-- city buildings in window --><rect x="30" y="170" width="20" height="130" fill="#050A14"/><rect x="55" y="150" width="25" height="150" fill="#060C18"/><rect x="85" y="160" width="18" height="140" fill="#050A14"/><rect x="108" y="140" width="22" height="160" fill="#060C18"/><!-- city lights --><rect x="34" y="185" width="4" height="3" fill="#FFD060" opacity="0.8"/><rect x="42" y="192" width="4" height="3" fill="#FFD060" opacity="0.7"/><rect x="60" y="165" width="4" height="3" fill="#A0C0FF" opacity="0.8"/><rect x="68" y="178" width="4" height="3" fill="#FFD060" opacity="0.7"/><rect x="90" y="175" width="4" height="3" fill="#FFD060" opacity="0.75"/><rect x="112" y="155" width="4" height="3" fill="#A0C0FF" opacity="0.8"/><!-- wet street reflection in window --><rect x="20" y="260" width="120" height="40" rx="2" fill="#0A1828" opacity="0.9"/><!-- right window --><rect x="340" y="120" width="120" height="180" rx="4" fill="#0A1828" opacity="0.9"/><rect x="338" y="118" width="124" height="184" rx="5" fill="none" stroke="#2A3040" stroke-width="2"/><!-- more city --><rect x="350" y="170" width="25" height="130" fill="#060C18"/><rect x="380" y="150" width="20" height="150" fill="#050A14"/><rect x="405" y="165" width="28" height="135" fill="#060C18"/><rect x="356" y="188" width="4" height="3" fill="#FF80A0" opacity="0.8"/><rect x="364" y="200" width="4" height="3" fill="#FFD060" opacity="0.7"/><rect x="385" y="170" width="4" height="3" fill="#A0C0FF" opacity="0.8"/><rect x="410" y="180" width="4" height="3" fill="#FFD060" opacity="0.75"/><!-- bar counter --><rect x="0" y="400" width="280" height="80" fill="#1A1428" rx="3"/><rect x="0" y="396" width="285" height="10" rx="3" fill="#2A2038"/><!-- counter shine --><rect x="0" y="398" width="282" height="3" rx="1" fill="rgba(150,100,255,0.15)"/><!-- bottles backlit --><rect x="0" y="280" width="270" height="8" fill="#1A1428" rx="2"/><!-- back bar shelf glow --><rect x="0" y="260" width="270" height="22" fill="#0A0818" opacity="0.9"/><rect x="0" y="258" width="270" height="6" fill="#2A1840" rx="1"/><!-- backlit bottles --><rect x="15" y="222" width="10" height="38" rx="4" fill="#402080" opacity="0.85"/><ellipse cx="20" cy="220" rx="5" ry="3" fill="#5030A0" opacity="0.9"/><rect x="32" y="218" width="12" height="42" rx="4" fill="#FF2060" opacity="0.7"/><ellipse cx="38" cy="216" rx="6" ry="3.5" fill="#FF4080" opacity="0.8"/><rect x="52" y="225" width="10" height="35" rx="4" fill="#1040A0" opacity="0.8"/><rect x="68" y="220" width="11" height="40" rx="4" fill="#20A060" opacity="0.75"/><rect x="86" y="216" width="12" height="44" rx="4" fill="#A04000" opacity="0.8"/><rect x="105" y="222" width="10" height="38" rx="4" fill="#8000C0" opacity="0.75"/><rect x="122" y="218" width="11" height="42" rx="4" fill="#C04020" opacity="0.8"/><rect x="140" y="224" width="10" height="36" rx="4" fill="#004080" opacity="0.8"/><!-- shelf glow from bottles --><ellipse cx="90" cy="255" rx="100" ry="20" fill="#4020A0" opacity="0.1"/><!-- bar stools --><ellipse cx="70" cy="460" rx="22" ry="7" fill="#2A2038"/><rect x="62" y="460" width="16" height="50" rx="3" fill="#1A1428"/><ellipse cx="180" cy="460" rx="22" ry="7" fill="#2A2038"/><rect x="172" y="460" width="16" height="50" rx="3" fill="#1A1428"/><!-- glass on counter --><path d="M60 400 L65 420 L75 420 L80 400 Z" fill="rgba(180,160,255,0.25)"/><rect x="60" y="398" width="20" height="4" rx="1" fill="rgba(200,180,255,0.2)"/><!-- floor --><rect x="0" y="510" width="480" height="190" fill="url(#mn-floor)"/><rect x="0" y="508" width="480" height="5" fill="#2A2438" opacity="0.8"/><!-- wet floor reflection --><ellipse cx="140" cy="540" rx="120" ry="25" fill="#6020C0" opacity="0.08"/><ellipse cx="380" cy="560" rx="80" ry="18" fill="#FF2060" opacity="0.06"/><!-- ambient glow bottom --><ellipse cx="140" cy="420" rx="140" ry="80" fill="#6020C0" opacity="0.06"/></svg>',
+midnight:'<svg viewBox="0 0 420 560" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="mn-neon" cx="65%" cy="28%" r="45%"><stop offset="0%" stop-color="#C040FF" stop-opacity="0.35"/><stop offset="100%" stop-color="#6010C0" stop-opacity="0"/></radialGradient><radialGradient id="mn-inn" cx="60%" cy="55%" r="40%"><stop offset="0%" stop-color="#FF9040" stop-opacity="0.3"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient></defs><!-- deep night --><rect width="420" height="560" fill="#06040E"/><!-- city bokeh far --><circle cx="20" cy="420" r="8" fill="#FF4080" opacity="0.15"/><circle cx="50" cy="440" r="6" fill="#40A0FF" opacity="0.12"/><circle cx="80" cy="410" r="10" fill="#FF8020" opacity="0.1"/><circle cx="110" cy="450" r="7" fill="#A040FF" opacity="0.13"/><circle cx="140" cy="430" r="5" fill="#40FF80" opacity="0.1"/><circle cx="350" cy="430" r="9" fill="#FF4080" opacity="0.12"/><circle cx="370" cy="450" r="6" fill="#FFD040" opacity="0.12"/><circle cx="390" cy="420" r="8" fill="#40A0FF" opacity="0.1"/><circle cx="410" cy="440" r="5" fill="#FF8040" opacity="0.12"/><!-- city lights horizontal band --><rect x="0" y="400" width="420" height="60" fill="#000010" opacity="0.7"/><!-- roof dark --><rect x="0" y="0" width="420" height="80" fill="#0C0A18"/><!-- roof tiles --><rect x="0" y="55" width="420" height="28" fill="#0A0816"/><g fill="#080610" opacity="0.7"><rect x="0" y="56" width="14" height="7" rx="7"/><rect x="14" y="56" width="14" height="7" rx="7"/><rect x="28" y="56" width="14" height="7" rx="7"/><rect x="42" y="56" width="14" height="7" rx="7"/><rect x="56" y="56" width="14" height="7" rx="7"/><rect x="70" y="56" width="14" height="7" rx="7"/><rect x="84" y="56" width="14" height="7" rx="7"/><rect x="98" y="56" width="14" height="7" rx="7"/><rect x="112" y="56" width="14" height="7" rx="7"/><rect x="126" y="56" width="14" height="7" rx="7"/><rect x="140" y="56" width="14" height="7" rx="7"/><rect x="154" y="56" width="14" height="7" rx="7"/><rect x="168" y="56" width="14" height="7" rx="7"/><rect x="182" y="56" width="14" height="7" rx="7"/><rect x="196" y="56" width="14" height="7" rx="7"/><rect x="210" y="56" width="14" height="7" rx="7"/><rect x="224" y="56" width="14" height="7" rx="7"/><rect x="238" y="56" width="14" height="7" rx="7"/><rect x="252" y="56" width="14" height="7" rx="7"/><rect x="266" y="56" width="14" height="7" rx="7"/><rect x="280" y="56" width="14" height="7" rx="7"/><rect x="294" y="56" width="14" height="7" rx="7"/><rect x="308" y="56" width="14" height="7" rx="7"/><rect x="322" y="56" width="14" height="7" rx="7"/><rect x="336" y="56" width="14" height="7" rx="7"/><rect x="350" y="56" width="14" height="7" rx="7"/><rect x="364" y="56" width="14" height="7" rx="7"/><rect x="378" y="56" width="14" height="7" rx="7"/><rect x="392" y="56" width="14" height="7" rx="7"/><rect x="406" y="56" width="14" height="7" rx="7"/></g><!-- wall dark --><rect x="0" y="80" width="420" height="380" fill="#120E20"/><!-- lantern rope --><line x1="10" y1="88" x2="410" y2="88" stroke="#3A2840" stroke-width="1.5"/><!-- 5 lanterns dim night --><g opacity="0.8"><line x1="35" y1="88" x2="35" y2="100" stroke="#4A2840" stroke-width="1.5"/><ellipse cx="35" cy="116" rx="13" ry="19" fill="#A01808" opacity="0.85"/><ellipse cx="35" cy="116" rx="10" ry="15" fill="#C02010" opacity="0.4"/><ellipse cx="35" cy="100" rx="5" ry="3.5" fill="#6B2010"/><ellipse cx="35" cy="132" rx="5" ry="3.5" fill="#6B2010"/><ellipse cx="35" cy="116" rx="30" ry="28" fill="#FF2010" opacity="0.06"/></g><g opacity="0.8"><line x1="95" y1="88" x2="95" y2="100" stroke="#4A2840" stroke-width="1.5"/><ellipse cx="95" cy="116" rx="13" ry="19" fill="#A01808" opacity="0.85"/><ellipse cx="95" cy="100" rx="5" ry="3.5" fill="#6B2010"/><ellipse cx="95" cy="132" rx="5" ry="3.5" fill="#6B2010"/><ellipse cx="95" cy="116" rx="30" ry="28" fill="#FF2010" opacity="0.06"/></g><g opacity="0.8"><line x1="180" y1="88" x2="180" y2="100" stroke="#4A2840" stroke-width="1.5"/><ellipse cx="180" cy="114" rx="13" ry="19" fill="#A01808" opacity="0.85"/><ellipse cx="180" cy="100" rx="5" ry="3.5" fill="#6B2010"/><ellipse cx="180" cy="130" rx="5" ry="3.5" fill="#6B2010"/><ellipse cx="180" cy="114" rx="30" ry="28" fill="#FF2010" opacity="0.06"/></g><g opacity="0.8"><line x1="295" y1="88" x2="295" y2="100" stroke="#4A2840" stroke-width="1.5"/><ellipse cx="295" cy="116" rx="13" ry="19" fill="#A01808" opacity="0.85"/><ellipse cx="295" cy="100" rx="5" ry="3.5" fill="#6B2010"/><ellipse cx="295" cy="132" rx="5" ry="3.5" fill="#6B2010"/><ellipse cx="295" cy="116" rx="30" ry="28" fill="#FF2010" opacity="0.06"/></g><g opacity="0.8"><line x1="390" y1="88" x2="390" y2="100" stroke="#4A2840" stroke-width="1.5"/><ellipse cx="390" cy="116" rx="13" ry="19" fill="#A01808" opacity="0.85"/><ellipse cx="390" cy="100" rx="5" ry="3.5" fill="#6B2010"/><ellipse cx="390" cy="132" rx="5" ry="3.5" fill="#6B2010"/><ellipse cx="390" cy="116" rx="30" ry="28" fill="#FF2010" opacity="0.06"/></g><!-- NEON SIGN --><rect x="240" y="90" width="150" height="55" rx="5" fill="#0A0618" opacity="0.95"/><rect x="238" y="88" width="154" height="59" rx="6" fill="none" stroke="#8020C0" stroke-width="2"/><text x="248" y="110" font-size="10" fill="#C840FF" font-family="serif"></text><text x="310" y="110" font-size="10" fill="#C840FF" font-family="serif"></text><text x="248" y="132" font-size="17" fill="#FF60FF" font-family="serif" font-weight="bold">Honobono</text><!-- neon glow --><ellipse cx="315" cy="118" rx="90" ry="40" fill="#8020FF" opacity="0.1"/><!--  neon sign left --><rect x="5" y="148" width="28" height="70" rx="4" fill="#180830" opacity="0.95"/><rect x="3" y="146" width="32" height="74" rx="5" fill="none" stroke="#6010A0" stroke-width="1.5"/><text x="19" y="175" font-size="9" fill="#9030E0" text-anchor="middle" font-family="serif"></text><ellipse cx="19" cy="183" rx="20" ry="20" fill="#8010C0" opacity="0.08"/><!-- dark door area --><rect x="20" y="148" width="170" height="260" fill="#0C0818"/><!-- noren dark --><rect x="100" y="150" width="42" height="120" rx="2" fill="#1A1E40" opacity="0.95"/><rect x="143" y="150" width="42" height="110" rx="2" fill="#14183A" opacity="0.95"/><!-- noren text --><text x="121" y="202" font-size="13" fill="rgba(160,180,240,0.8)" text-anchor="middle" font-family="serif">Izakaya</text><text x="164" y="202" font-size="10" fill="rgba(140,160,220,0.7)" text-anchor="middle" font-family="serif">Nihonshu</text><!-- people dim inside --><ellipse cx="60" cy="310" rx="11" ry="15" fill="#040208" opacity="0.8"/><rect x="49" y="310" width="22" height="60" rx="4" fill="#040208" opacity="0.8"/><ellipse cx="90" cy="320" rx="10" ry="14" fill="#040208" opacity="0.75"/><!-- right window dark with warm inner --><rect x="200" y="148" width="208" height="180" fill="#100C1E"/><rect x="198" y="146" width="212" height="184" rx="3" fill="none" stroke="#3A3050" stroke-width="2.5"/><rect x="202" y="150" width="204" height="176" fill="#FF8020" opacity="0.1"/><!-- window bars --><line x1="304" y1="146" x2="304" y2="330" stroke="#3A3050" stroke-width="2"/><line x1="200" y1="238" x2="410" y2="238" stroke="#3A3050" stroke-width="2"/><!-- amber bottles glowing --><rect x="208" y="160" width="10" height="28" rx="3" fill="#6A3808" opacity="0.9"/><rect x="220" y="160" width="10" height="28" rx="3" fill="#7A4810" opacity="0.9"/><rect x="232" y="160" width="10" height="28" rx="3" fill="#5A3008" opacity="0.9"/><rect x="244" y="160" width="10" height="28" rx="3" fill="#8A5018" opacity="0.85"/><rect x="256" y="160" width="10" height="28" rx="3" fill="#6A3808" opacity="0.9"/><!-- right section bottles --><rect x="316" y="156" width="9" height="26" rx="3" fill="#7A4810" opacity="0.9"/><rect x="327" y="156" width="9" height="26" rx="3" fill="#5A3008" opacity="0.9"/><rect x="338" y="156" width="9" height="26" rx="3" fill="#8A5018" opacity="0.85"/><rect x="349" y="156" width="9" height="26" rx="3" fill="#6A3808" opacity="0.9"/><rect x="360" y="156" width="9" height="26" rx="3" fill="#7A4810" opacity="0.9"/><!-- steam --><path d="M278 240 Q281 225 276 212" stroke="rgba(255,255,255,0.15)" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M290 240 Q293 224 288 210" stroke="rgba(255,255,255,0.12)" stroke-width="2.5" fill="none" stroke-linecap="round"/><!-- chef dark --><ellipse cx="300" cy="268" rx="13" ry="13" fill="#040208" opacity="0.7"/><rect x="287" y="274" width="26" height="38" rx="4" fill="#040208" opacity="0.7"/><!-- floor platform --><rect x="0" y="460" width="420" height="100" fill="#080610"/><!-- wet cobblestone reflection --><rect x="0" y="462" width="420" height="4" fill="#1A1428" opacity="0.9"/><!-- cobblestone pattern --><g fill="#100C1C" stroke="#0A0810" stroke-width="0.5"><rect x="0" y="468" width="55" height="22" rx="3"/><rect x="58" y="468" width="55" height="22" rx="3"/><rect x="116" y="468" width="55" height="22" rx="3"/><rect x="174" y="468" width="55" height="22" rx="3"/><rect x="232" y="468" width="55" height="22" rx="3"/><rect x="290" y="468" width="55" height="22" rx="3"/><rect x="348" y="468" width="55" height="22" rx="3"/><rect x="27" y="492" width="55" height="22" rx="3"/><rect x="85" y="492" width="55" height="22" rx="3"/><rect x="143" y="492" width="55" height="22" rx="3"/><rect x="201" y="492" width="55" height="22" rx="3"/><rect x="259" y="492" width="55" height="22" rx="3"/><rect x="317" y="492" width="55" height="22" rx="3"/></g><!-- neon reflection on wet floor --><rect x="0" y="462" width="420" height="60" fill="#6010A0" opacity="0.07"/><!-- neon glow layers --><rect x="0" y="0" width="420" height="560" fill="url(#mn-neon)"/><rect x="0" y="0" width="420" height="560" fill="url(#mn-inn)"/><!-- MENU board --><rect x="200" y="365" width="88" height="68" rx="3" fill="#0C0818" opacity="0.95"/><rect x="198" y="363" width="92" height="72" rx="4" fill="none" stroke="#3A2850" stroke-width="1.5"/><text x="244" y="383" font-size="9" fill="rgba(180,200,240,0.8)" text-anchor="middle">MENU</text><!-- barrel --><ellipse cx="365" cy="393" rx="26" ry="9" fill="#2A1828"/><rect x="339" y="393" width="52" height="46" rx="3" fill="#321E28"/><ellipse cx="365" cy="439" rx="26" ry="9" fill="#221018"/></svg>',
 
-forest:'<svg viewBox="0 0 480 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="fr-moon" cx="70%" cy="12%" r="30%"><stop offset="0%" stop-color="#E8F0C0" stop-opacity="0.5"/><stop offset="60%" stop-color="#A0B870" stop-opacity="0.1"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><linearGradient id="fr-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#040C08"/><stop offset="100%" stop-color="#0C1A0C"/></linearGradient><linearGradient id="fr-floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1A2A0E"/><stop offset="100%" stop-color="#080E06"/></linearGradient></defs><!-- night forest sky --><rect width="480" height="700" fill="url(#fr-sky)"/><!-- moon --><circle cx="340" cy="70" r="35" fill="#F0ECC0" opacity="0.85"/><circle cx="340" cy="70" r="28" fill="#F8F4D0" opacity="0.9"/><circle cx="328" cy="62" r="6" fill="#D8D4A8" opacity="0.4"/><circle cx="348" cy="80" r="4" fill="#D8D4A8" opacity="0.35"/><rect width="480" height="700" fill="url(#fr-moon)"/><!-- stars --><circle cx="40" cy="30" r="1.5" fill="white" opacity="0.9"/><circle cx="80" cy="15" r="1" fill="white" opacity="0.8"/><circle cx="150" cy="40" r="1.5" fill="white" opacity="0.85"/><circle cx="220" cy="25" r="1" fill="white" opacity="0.7"/><circle cx="60" cy="80" r="1" fill="white" opacity="0.65"/><circle cx="130" cy="60" r="1.5" fill="white" opacity="0.8"/><circle cx="400" cy="35" r="1" fill="white" opacity="0.75"/><circle cx="440" cy="55" r="1.5" fill="white" opacity="0.8"/><!-- back trees --><rect x="0" y="60" width="35" height="580" rx="14" fill="#0A1A08"/><ellipse cx="18" cy="120" rx="75" ry="90" fill="#0C2010" opacity="0.95"/><ellipse cx="18" cy="180" rx="85" ry="100" fill="#0A1C0C"/><!-- right back tree --><rect x="440" y="80" width="40" height="560" rx="14" fill="#0A1A08"/><ellipse cx="458" cy="140" rx="75" ry="85" fill="#0C2010" opacity="0.95"/><!-- mid trees --><rect x="50" y="200" width="22" height="440" rx="8" fill="#142810"/><ellipse cx="62" cy="260" rx="60" ry="75" fill="#162E12" opacity="0.95"/><rect x="390" y="180" width="22" height="460" rx="8" fill="#142810"/><ellipse cx="401" cy="240" rx="58" ry="70" fill="#162E12"/><!-- fire pit / cabin --><rect x="140" y="400" width="200" height="200" rx="8" fill="#2A1A0C" opacity="0.95"/><rect x="138" y="398" width="204" height="8" rx="3" fill="#5A3A18"/><!-- cabin window --><rect x="160" y="420" width="60" height="50" rx="4" fill="#4A2A08" opacity="0.8"/><rect x="158" y="418" width="64" height="54" rx="5" fill="none" stroke="#8A5A28" stroke-width="3"/><line x1="190" y1="418" x2="190" y2="472" stroke="#8A5A28" stroke-width="2"/><line x1="158" y1="445" x2="222" y2="445" stroke="#8A5A28" stroke-width="2"/><!-- warm light in cabin window --><rect x="160" y="420" width="60" height="50" rx="4" fill="#FF9030" opacity="0.25"/><!-- cabin window right --><rect x="260" y="420" width="60" height="50" rx="4" fill="#4A2A08" opacity="0.8"/><rect x="258" y="418" width="64" height="54" rx="5" fill="none" stroke="#8A5A28" stroke-width="3"/><line x1="290" y1="418" x2="290" y2="472" stroke="#8A5A28" stroke-width="2"/><line x1="258" y1="445" x2="322" y2="445" stroke="#8A5A28" stroke-width="2"/><rect x="260" y="420" width="60" height="50" rx="4" fill="#FF9030" opacity="0.22"/><!-- cabin door --><rect x="210" y="490" width="60" height="110" rx="4" fill="#5A3A18"/><rect x="208" y="488" width="64" height="114" rx="5" fill="none" stroke="#8A5A28" stroke-width="3"/><circle cx="264" cy="548" r="4" fill="#C09040"/><!-- fire / campfire --><ellipse cx="100" cy="580" rx="28" ry="8" fill="#3A1A08" opacity="0.9"/><ellipse cx="100" cy="575" rx="22" ry="6" fill="#4A2A08"/><!-- fire flame --><path d="M88 575 Q92 545 100 530 Q108 545 112 575 Z" fill="#FF8010" opacity="0.9"/><path d="M92 575 Q96 550 100 538 Q104 550 108 575 Z" fill="#FFAA30" opacity="0.95"/><path d="M95 575 Q98 555 100 548 Q102 555 105 575 Z" fill="#FFD060" opacity="0.9"/><!-- fire glow --><ellipse cx="100" cy="565" rx="60" ry="50" fill="#FF6010" opacity="0.14"/><ellipse cx="100" cy="580" rx="100" ry="30" fill="#FF8020" opacity="0.08"/><!-- ground grass --><rect x="0" y="600" width="480" height="100" fill="url(#fr-floor)"/><rect x="0" y="598" width="480" height="6" fill="#203A10" opacity="0.8"/><!-- firefly dots --><circle cx="200" cy="460" r="2.5" fill="#C0FF80" opacity="0.6"/><circle cx="300" cy="420" r="2" fill="#A0FF60" opacity="0.5"/><circle cx="350" cy="480" r="2.5" fill="#C0FF80" opacity="0.55"/><!-- moonlight on ground --><ellipse cx="340" cy="640" rx="80" ry="20" fill="#E8F0A0" opacity="0.08"/></svg>',
+forest:'<svg viewBox="0 0 420 560" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="fr-moon" cx="53%" cy="22%" r="25%"><stop offset="0%" stop-color="#E8F0D0" stop-opacity="0.7"/><stop offset="60%" stop-color="#C0D8A0" stop-opacity="0.15"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><radialGradient id="fr-fire" cx="50%" cy="80%" r="30%"><stop offset="0%" stop-color="#FF8020" stop-opacity="0.45"/><stop offset="100%" stop-color="#FF4000" stop-opacity="0"/></radialGradient></defs><!-- night sky deep blue --><rect width="420" height="560" fill="#0A1018"/><!-- moon glow --><rect width="420" height="560" fill="url(#fr-moon)"/><!-- moon disc --><circle cx="222" cy="118" r="38" fill="#E8F0D0" opacity="0.88"/><circle cx="222" cy="118" r="30" fill="#F4F8E4" opacity="0.92"/><!-- moon craters subtle --><circle cx="212" cy="108" r="5" fill="#D8E8C0" opacity="0.4"/><circle cx="232" cy="128" r="3" fill="#D8E8C0" opacity="0.35"/><!-- stars --><circle cx="30" cy="40" r="1.5" fill="white" opacity="0.9"/><circle cx="70" cy="20" r="1" fill="white" opacity="0.8"/><circle cx="100" cy="55" r="1.5" fill="white" opacity="0.85"/><circle cx="50" cy="80" r="1" fill="white" opacity="0.7"/><circle cx="330" cy="30" r="1.5" fill="white" opacity="0.9"/><circle cx="370" cy="55" r="1" fill="white" opacity="0.8"/><circle cx="390" cy="25" r="1.5" fill="white" opacity="0.85"/><circle cx="350" cy="80" r="1" fill="white" opacity="0.7"/><circle cx="150" cy="40" r="1" fill="white" opacity="0.75"/><circle cx="290" cy="50" r="1" fill="white" opacity="0.75"/><!-- back trees tall --><rect x="0" y="30" width="45" height="480" rx="16" fill="#0E1C0A"/><ellipse cx="22" cy="80" rx="70" ry="90" fill="#0C1A08" opacity="0.95"/><ellipse cx="22" cy="150" rx="75" ry="95" fill="#0A1806"/><!-- pine branches left --><path d="M0 80 Q25 60 45 80 Q30 75 45 90 Q25 85 45 100 Q30 95 45 110" fill="#0E1E0A" opacity="0.8"/><rect x="375" y="20" width="45" height="500" rx="16" fill="#0E1C0A"/><ellipse cx="398" cy="70" rx="70" ry="88" fill="#0C1A08" opacity="0.95"/><ellipse cx="398" cy="145" rx="72" ry="90" fill="#0A1806"/><!-- mid trees --><rect x="30" y="180" width="30" height="340" rx="10" fill="#121A0C"/><ellipse cx="45" cy="230" rx="58" ry="70" fill="#142010" opacity="0.92"/><!-- pine foliage details --><path d="M10 200 Q45 175 78 200" stroke="#0E1C0A" stroke-width="12" fill="none" opacity="0.7"/><path d="M10 230 Q45 210 78 230" stroke="#0E1C0A" stroke-width="10" fill="none" opacity="0.6"/><rect x="362" y="160" width="30" height="360" rx="10" fill="#121A0C"/><ellipse cx="377" cy="210" rx="55" ry="68" fill="#142010" opacity="0.92"/><!-- cabin --><rect x="120" y="290" width="180" height="190" fill="#3A2E20"/><rect x="118" y="288" width="184" height="194" rx="3" fill="none" stroke="#5A4830" stroke-width="3"/><!-- cabin roof triangle --><polygon points="100,295 210,210 320,295" fill="#2E2418"/><polygon points="105,295 210,215 315,295" fill="#4A3C28" opacity="0.8"/><!-- roof ridge --><rect x="207" y="208" width="6" height="20" rx="3" fill="#6A5838"/><!-- chimney with smoke --><rect x="250" y="215" width="20" height="40" rx="3" fill="#3A2E20"/><rect x="248" y="213" width="24" height="8" rx="2" fill="#4A3C28"/><!-- smoke wisps --><path d="M260 212 Q264 195 258 180" stroke="rgba(200,200,200,0.25)" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M267 215 Q271 198 265 183" stroke="rgba(200,200,200,0.2)" stroke-width="2.5" fill="none" stroke-linecap="round"/><!-- door lamp --><rect x="196" y="328" width="28" height="8" rx="2" fill="#5A4830"/><circle cx="210" cy="338" r="8" fill="#FFD080" opacity="0.8"/><ellipse cx="210" cy="348" rx="16" ry="8" fill="#FFB050" opacity="0.2"/><!-- cabin windows warm glow --><rect x="140" y="310" width="55" height="48" rx="4" fill="#FF9030" opacity="0.6"/><rect x="138" y="308" width="59" height="52" rx="5" fill="none" stroke="#6A5030" stroke-width="2.5"/><line x1="167" y1="308" x2="167" y2="360" stroke="#6A5030" stroke-width="2"/><line x1="138" y1="334" x2="197" y2="334" stroke="#6A5030" stroke-width="2"/><!-- inner glow left window --><rect x="142" y="312" width="51" height="44" rx="3" fill="#FFE080" opacity="0.25"/><!-- right window --><rect x="225" y="310" width="55" height="48" rx="4" fill="#FF9030" opacity="0.6"/><rect x="223" y="308" width="59" height="52" rx="5" fill="none" stroke="#6A5030" stroke-width="2.5"/><line x1="252" y1="308" x2="252" y2="360" stroke="#6A5030" stroke-width="2"/><line x1="223" y1="334" x2="282" y2="334" stroke="#6A5030" stroke-width="2"/><rect x="227" y="312" width="51" height="44" rx="3" fill="#FFE080" opacity="0.25"/><!-- door --><rect x="188" y="370" width="44" height="110" rx="4" fill="#2A1E10"/><rect x="186" y="368" width="48" height="114" rx="5" fill="none" stroke="#6A5030" stroke-width="2.5"/><!-- door knob --><circle cx="228" cy="428" r="4" fill="#C0A040"/><!-- CLOSES sign --><rect x="196" y="375" width="28" height="14" rx="2" fill="#F0E8D0" opacity="0.9"/><text x="210" y="385" font-size="7" fill="#3A2A10" text-anchor="middle">CLOSED</text><!-- stone path --><ellipse cx="210" cy="500" rx="22" ry="8" fill="#4A4038" opacity="0.9"/><ellipse cx="175" cy="518" rx="18" ry="6" fill="#4A4038" opacity="0.85"/><ellipse cx="240" cy="522" rx="16" ry="6" fill="#3A3028" opacity="0.85"/><ellipse cx="195" cy="535" rx="14" ry="5" fill="#4A4038" opacity="0.8"/><ellipse cx="220" cy="545" rx="12" ry="4" fill="#3A3028" opacity="0.8"/><!-- campfire ring --><ellipse cx="210" cy="485" rx="28" ry="10" fill="#2A1A0A" opacity="0.9"/><!-- fire logs --><rect x="192" y="480" width="36" height="6" rx="3" fill="#4A2808" transform="rotate(-15 210 483)"/><rect x="192" y="480" width="36" height="6" rx="3" fill="#3A2008" transform="rotate(15 210 483)"/><!-- flames --><path d="M200 480 Q205 455 210 440 Q215 455 220 480 Z" fill="#FF7010" opacity="0.9"/><path d="M204 480 Q208 458 210 448 Q212 458 216 480 Z" fill="#FFAA30" opacity="0.95"/><path d="M207 480 Q209 462 210 455 Q211 462 213 480 Z" fill="#FFE060" opacity="0.9"/><!-- fire glow --><rect x="0" y="0" width="420" height="560" fill="url(#fr-fire)"/><!-- fireflies --><circle cx="100" cy="380" r="2.5" fill="#C0FF80" opacity="0.65"/><circle cx="320" cy="360" r="2" fill="#A0FF60" opacity="0.55"/><circle cx="80" cy="420" r="2" fill="#C0FF80" opacity="0.6"/><circle cx="340" cy="400" r="2.5" fill="#A0FF60" opacity="0.55"/><!-- ground ferns --><ellipse cx="60" cy="490" rx="55" ry="20" fill="#1A3010" opacity="0.85"/><ellipse cx="360" cy="490" rx="55" ry="20" fill="#1A3010" opacity="0.85"/><ellipse cx="60" cy="520" rx="60" ry="22" fill="#142808" opacity="0.9"/><ellipse cx="360" cy="520" rx="60" ry="22" fill="#142808" opacity="0.9"/><!-- ground --><rect x="0" y="510" width="420" height="50" fill="#0E1808"/></svg>',
 
-cosmos:'<svg viewBox="0 0 480 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="cs-glow" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#4060C0" stop-opacity="0.2"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><linearGradient id="cs-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#020410"/><stop offset="50%" stop-color="#060A1E"/><stop offset="100%" stop-color="#0A1028"/></linearGradient></defs><!-- deep night sky --><rect width="480" height="700" fill="url(#cs-sky)"/><!-- nebula/galaxy hint --><ellipse cx="300" cy="200" rx="200" ry="120" fill="#2030A0" opacity="0.12"/><ellipse cx="200" cy="250" rx="160" ry="90" fill="#6020A0" opacity="0.08"/><rect width="480" height="700" fill="url(#cs-glow)"/><!-- stars many --><circle cx="30" cy="20" r="1.5" fill="white" opacity="0.9"/><circle cx="70" cy="45" r="1" fill="white" opacity="0.8"/><circle cx="120" cy="25" r="1.5" fill="white" opacity="0.85"/><circle cx="170" cy="60" r="1" fill="white" opacity="0.7"/><circle cx="250" cy="30" r="2" fill="white" opacity="0.9"/><circle cx="310" cy="50" r="1" fill="white" opacity="0.75"/><circle cx="380" cy="20" r="1.5" fill="white" opacity="0.85"/><circle cx="440" cy="55" r="1" fill="white" opacity="0.8"/><circle cx="55" cy="90" r="1" fill="white" opacity="0.65"/><circle cx="140" cy="80" r="1.5" fill="white" opacity="0.8"/><circle cx="220" cy="95" r="1" fill="white" opacity="0.7"/><circle cx="360" cy="75" r="1.5" fill="white" opacity="0.8"/><circle cx="420" cy="100" r="1" fill="white" opacity="0.7"/><circle cx="90" cy="140" r="1" fill="#A0C0FF" opacity="0.8"/><circle cx="200" cy="130" r="1.5" fill="#FFC080" opacity="0.75"/><circle cx="350" cy="120" r="1" fill="#A0C0FF" opacity="0.8"/><!-- city skyline far --><rect x="0" y="380" width="60" height="320" fill="#080C18"/><rect x="55" y="340" width="45" height="360" fill="#06080E"/><rect x="95" y="360" width="35" height="340" fill="#080C18"/><rect x="125" y="330" width="50" height="370" fill="#060A14"/><rect x="170" y="350" width="40" height="350" fill="#080C18"/><rect x="205" y="310" width="55" height="390" fill="#06080E"/><!-- city lights right --><rect x="260" y="320" width="50" height="380" fill="#080C18"/><rect x="305" y="340" width="40" height="360" fill="#060A14"/><rect x="340" y="360" width="55" height="340" fill="#080C18"/><rect x="390" y="330" width="45" height="370" fill="#06080E"/><rect x="430" y="350" width="50" height="350" fill="#080C18"/><!-- building windows glow --><rect x="10" y="395" width="5" height="4" fill="#FFD060" opacity="0.7"/><rect x="22" y="410" width="5" height="4" fill="#FFD060" opacity="0.6"/><rect x="62" y="360" width="5" height="4" fill="#A0C0FF" opacity="0.8"/><rect x="75" y="375" width="5" height="4" fill="#FFD060" opacity="0.65"/><rect x="100" y="380" width="5" height="4" fill="#FFD060" opacity="0.7"/><rect x="132" y="348" width="5" height="4" fill="#A0C0FF" opacity="0.75"/><rect x="145" y="362" width="5" height="4" fill="#FFD060" opacity="0.65"/><rect x="180" y="368" width="5" height="4" fill="#FFD060" opacity="0.7"/><rect x="215" y="328" width="5" height="4" fill="#FFA040" opacity="0.8"/><rect x="228" y="342" width="5" height="4" fill="#A0C0FF" opacity="0.7"/><rect x="268" y="338" width="5" height="4" fill="#FFD060" opacity="0.65"/><rect x="312" y="358" width="5" height="4" fill="#FFD060" opacity="0.7"/><rect x="350" y="375" width="5" height="4" fill="#A0C0FF" opacity="0.75"/><rect x="398" y="348" width="5" height="4" fill="#FFD060" opacity="0.65"/><rect x="435" y="368" width="5" height="4" fill="#FFA040" opacity="0.7"/><!-- rooftop floor / terrace --><rect x="0" y="500" width="480" height="200" fill="#0E1220"/><rect x="0" y="498" width="480" height="6" fill="#1A2038"/><!-- railing --><rect x="0" y="500" width="480" height="4" fill="#2A3050"/><line x1="40" y1="500" x2="40" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="80" y1="500" x2="80" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="120" y1="500" x2="120" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="160" y1="500" x2="160" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="200" y1="500" x2="200" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="240" y1="500" x2="240" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="280" y1="500" x2="280" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="320" y1="500" x2="320" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="360" y1="500" x2="360" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="400" y1="500" x2="400" y2="540" stroke="#2A3050" stroke-width="3"/><line x1="440" y1="500" x2="440" y2="540" stroke="#2A3050" stroke-width="3"/><!-- city glow on floor --><ellipse cx="240" cy="510" rx="280" ry="30" fill="#A0C0FF" opacity="0.05"/><!-- telescope --><rect x="310" y="450" width="12" height="55" rx="4" fill="#2A3050" transform="rotate(-30 316 477)"/><ellipse cx="295" cy="472" rx="14" ry="9" fill="#3A4060" transform="rotate(-30 295 472)"/><!-- string lights --><path d="M0 520 Q120 508 240 515 Q360 522 480 510" stroke="#FFD080" stroke-width="1.5" fill="none" opacity="0.4"/><circle cx="60" cy="512" r="3" fill="#FFD080" opacity="0.7"/><circle cx="120" cy="509" r="3" fill="#FFE8A0" opacity="0.65"/><circle cx="180" cy="513" r="3" fill="#FFD080" opacity="0.7"/><circle cx="240" cy="515" r="3" fill="#FFC060" opacity="0.7"/><circle cx="300" cy="513" r="3" fill="#FFD080" opacity="0.65"/><circle cx="360" cy="510" r="3" fill="#FFE8A0" opacity="0.7"/><circle cx="420" cy="509" r="3" fill="#FFD080" opacity="0.65"/><!-- city glow ambient --><ellipse cx="240" cy="380" rx="280" ry="80" fill="#4060C0" opacity="0.06"/></svg>',
+cosmos:'<svg viewBox="0 0 420 560" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="rt-moon" cx="50%" cy="20%" r="25%"><stop offset="0%" stop-color="#E0F0D0" stop-opacity="0.7"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><radialGradient id="rt-fire" cx="57%" cy="75%" r="25%"><stop offset="0%" stop-color="#FF9030" stop-opacity="0.4"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient></defs><!-- deep night sky --><rect width="420" height="560" fill="#060C18"/><!-- tall pines far --><rect x="0" y="0" width="50" height="560" rx="18" fill="#0A1408"/><ellipse cx="25" cy="60" rx="70" ry="85" fill="#081208" opacity="0.95"/><ellipse cx="25" cy="130" rx="72" ry="88" fill="#060E06"/><!-- pine details left --><path d="M0 50 Q25 30 50 50" fill="#0A1808" opacity="0.8"/><path d="M0 90 Q25 72 50 90" fill="#0A1808" opacity="0.7"/><path d="M0 130 Q25 112 50 130" fill="#0A1808" opacity="0.65"/><!-- right pines --><rect x="370" y="0" width="50" height="560" rx="18" fill="#0A1408"/><ellipse cx="395" cy="55" rx="70" ry="82" fill="#081208" opacity="0.95"/><ellipse cx="395" cy="125" rx="68" ry="85" fill="#060E06"/><!-- moon full --><circle cx="210" cy="110" r="40" fill="#DFF0D0" opacity="0.88"/><circle cx="210" cy="110" r="32" fill="#EAF8E0" opacity="0.92"/><!-- moon craters --><circle cx="200" cy="100" r="5" fill="#C8E0B8" opacity="0.4"/><circle cx="220" cy="122" r="3.5" fill="#C8E0B8" opacity="0.35"/><!-- stars --><circle cx="80" cy="30" r="1.5" fill="white" opacity="0.9"/><circle cx="110" cy="15" r="1" fill="white" opacity="0.85"/><circle cx="140" cy="45" r="1.5" fill="white" opacity="0.8"/><circle cx="270" cy="25" r="1.5" fill="white" opacity="0.9"/><circle cx="300" cy="50" r="1" fill="white" opacity="0.8"/><circle cx="330" cy="35" r="1.5" fill="white" opacity="0.85"/><circle cx="155" cy="60" r="1" fill="white" opacity="0.7"/><circle cx="255" cy="65" r="1" fill="white" opacity="0.75"/><!-- city lights far below --><rect x="40" y="290" width="340" height="120" fill="#050C18" opacity="0.8"/><!-- city building silhouettes --><rect x="50" y="270" width="30" height="140" fill="#040A14"/><rect x="85" y="250" width="35" height="160" fill="#050C18"/><rect x="125" y="265" width="28" height="145" fill="#040A14"/><rect x="158" y="245" width="40" height="165" fill="#050C18"/><rect x="203" y="255" width="32" height="155" fill="#040A14"/><rect x="240" y="240" width="38" height="170" fill="#050C18"/><rect x="283" y="260" width="30" height="150" fill="#040A14"/><rect x="318" y="248" width="35" height="162" fill="#050C18"/><rect x="358" y="265" width="28" height="145" fill="#040A14"/><!-- city windows glow --><rect x="55" y="285" width="5" height="4" fill="#FFD060" opacity="0.7"/><rect x="64" y="295" width="5" height="4" fill="#A0C0FF" opacity="0.7"/><rect x="92" y="262" width="5" height="4" fill="#FFD060" opacity="0.65"/><rect x="102" y="275" width="5" height="4" fill="#FFD060" opacity="0.65"/><rect x="130" y="278" width="5" height="4" fill="#A0C0FF" opacity="0.7"/><rect x="165" y="258" width="5" height="4" fill="#FFD060" opacity="0.65"/><rect x="175" y="270" width="5" height="4" fill="#FFA040" opacity="0.7"/><rect x="210" y="268" width="5" height="4" fill="#FFD060" opacity="0.65"/><rect x="248" y="252" width="5" height="4" fill="#A0C0FF" opacity="0.7"/><rect x="260" y="265" width="5" height="4" fill="#FFD060" opacity="0.65"/><rect x="290" y="272" width="5" height="4" fill="#FFD060" opacity="0.7"/><rect x="325" y="258" width="5" height="4" fill="#A0C0FF" opacity="0.65"/><rect x="365" y="278" width="5" height="4" fill="#FFD060" opacity="0.7"/><!-- RAYONG sign glow in city --><rect x="180" y="242" width="60" height="14" rx="3" fill="#0A1830" opacity="0.9"/><text x="210" y="252" font-size="8" fill="#A0C8FF" text-anchor="middle" font-family="sans-serif" letter-spacing="1">RAYONG</text><!-- deck/terrace floor --><rect x="30" y="390" width="360" height="170" fill="#2A1E10"/><rect x="28" y="388" width="364" height="6" fill="#4A3420"/><!-- deck wood planks --><line x1="30" y1="405" x2="390" y2="405" stroke="#221408" stroke-width="1.5" opacity="0.5"/><line x1="30" y1="422" x2="390" y2="422" stroke="#221408" stroke-width="1.5" opacity="0.4"/><line x1="30" y1="439" x2="390" y2="439" stroke="#221408" stroke-width="1" opacity="0.4"/><!-- cabin/bar structure --><rect x="170" y="248" width="160" height="160" fill="#2A1E10"/><rect x="168" y="246" width="164" height="164" rx="3" fill="none" stroke="#4A3420" stroke-width="2.5"/><!-- cabin roof --><polygon points="155,252 250,195 345,252" fill="#221808"/><polygon points="160,252 250,200 340,252" fill="#3A2A18" opacity="0.8"/><!-- chimney smoke --><rect x="270" y="200" width="16" height="35" rx="2" fill="#221808"/><path d="M278 199 Q282 184 276 170" stroke="rgba(180,180,180,0.2)" stroke-width="2.5" fill="none" stroke-linecap="round"/><!-- cabin windows warm --><rect x="185" y="268" width="50" height="44" rx="4" fill="#FF9030" opacity="0.55"/><rect x="183" y="266" width="54" height="48" rx="5" fill="none" stroke="#5A4028" stroke-width="2.5"/><line x1="210" y1="266" x2="210" y2="314" stroke="#5A4028" stroke-width="2"/><line x1="183" y1="290" x2="237" y2="290" stroke="#5A4028" stroke-width="2"/><!-- right window --><rect x="265" y="268" width="50" height="44" rx="4" fill="#FF9030" opacity="0.55"/><rect x="263" y="266" width="54" height="48" rx="5" fill="none" stroke="#5A4028" stroke-width="2.5"/><line x1="290" y1="266" x2="290" y2="314" stroke="#5A4028" stroke-width="2"/><line x1="263" y1="290" x2="317" y2="290" stroke="#5A4028" stroke-width="2"/><!-- door --><rect x="222" y="328" width="46" height="82" rx="3" fill="#1E1408"/><rect x="220" y="326" width="50" height="86" rx="4" fill="none" stroke="#5A4028" stroke-width="2.5"/><!-- bottle bar counter in cabin --><rect x="265" y="310" width="65" height="18" rx="2" fill="#1E1408" opacity="0.9"/><rect x="270" y="298" width="7" height="12" rx="2" fill="#4A2808" opacity="0.85"/><rect x="279" y="295" width="7" height="15" rx="2" fill="#5A3810" opacity="0.85"/><rect x="288" y="298" width="7" height="12" rx="2" fill="#4A2808" opacity="0.85"/><rect x="297" y="296" width="7" height="14" rx="2" fill="#6A4818" opacity="0.85"/><rect x="306" y="298" width="7" height="12" rx="2" fill="#4A2808" opacity="0.85"/><!-- string lights --><path d="M40 388 Q210 376 390 388" stroke="#8A7040" stroke-width="1.5" fill="none" opacity="0.7"/><!-- light bulbs --><circle cx="75" cy="386" r="4" fill="#FFE080" opacity="0.85"/><circle cx="120" cy="383" r="4" fill="#FFE8A0" opacity="0.8"/><circle cx="165" cy="381" r="4" fill="#FFE080" opacity="0.85"/><circle cx="210" cy="379" r="4" fill="#FFF0B0" opacity="0.85"/><circle cx="255" cy="381" r="4" fill="#FFE080" opacity="0.8"/><circle cx="300" cy="383" r="4" fill="#FFE8A0" opacity="0.85"/><circle cx="345" cy="385" r="4" fill="#FFE080" opacity="0.8"/><!-- glow from bulbs --><ellipse cx="75" cy="390" rx="15" ry="8" fill="#FFD060" opacity="0.1"/><ellipse cx="210" cy="385" rx="18" ry="9" fill="#FFD060" opacity="0.1"/><!-- sofa left --><rect x="35" y="415" width="100" height="50" rx="6" fill="#484060"/><rect x="35" y="408" width="100" height="14" rx="5" fill="#545070"/><rect x="35" y="415" width="14" height="50" rx="5" fill="#545070"/><rect x="121" y="415" width="14" height="50" rx="5" fill="#545070"/><!-- coffee table --><rect x="55" y="460" width="60" height="30" rx="4" fill="#3A2E20"/><!-- wine glass on table --><path d="M76 460 L80 448 L88 448 L92 460 Z" fill="rgba(180,60,60,0.4)"/><rect x="82" y="460" width="2" height="8" fill="rgba(180,180,180,0.3)"/><!-- sofa right --><rect x="285" y="415" width="100" height="50" rx="6" fill="#484060"/><rect x="285" y="408" width="100" height="14" rx="5" fill="#545070"/><rect x="285" y="415" width="14" height="50" rx="5" fill="#545070"/><rect x="371" y="415" width="14" height="50" rx="5" fill="#545070"/><!-- fire pit center --><ellipse cx="210" cy="480" rx="32" ry="12" fill="#1A1008" opacity="0.95"/><!-- fire --><path d="M198 477 Q204 455 210 442 Q216 455 222 477 Z" fill="#FF7010" opacity="0.88"/><path d="M202 477 Q207 458 210 448 Q213 458 218 477 Z" fill="#FFAA30" opacity="0.92"/><path d="M206 477 Q209 462 210 456 Q211 462 214 477 Z" fill="#FFE060" opacity="0.88"/><!-- fire glow overlay --><rect x="0" y="0" width="420" height="560" fill="url(#rt-fire)"/><!-- moon glow --><rect x="0" y="0" width="420" height="560" fill="url(#rt-moon)"/><!-- THE ROOFTOP sign --><rect x="35" y="450" width="95" height="20" rx="3" fill="#1A1008" opacity="0.9"/><text x="82" y="464" font-size="9" fill="rgba(210,200,170,0.85)" text-anchor="middle" font-family="sans-serif" letter-spacing="1">THE ROOFTOP</text><!-- lamp left --><rect x="52" y="400" width="8" height="20" rx="2" fill="#4A3820"/><circle cx="56" cy="397" r="10" fill="#F8E080" opacity="0.7"/><ellipse cx="56" cy="412" rx="20" ry="8" fill="#FFD060" opacity="0.15"/><!-- lamp right --><rect x="360" y="400" width="8" height="20" rx="2" fill="#4A3820"/><circle cx="364" cy="397" r="10" fill="#F8E080" opacity="0.7"/><ellipse cx="364" cy="412" rx="20" ry="8" fill="#FFD060" opacity="0.15"/><!-- MENU board --><rect x="148" y="375" width="52" height="70" rx="3" fill="#1A1208" opacity="0.9"/><rect x="146" y="373" width="56" height="74" rx="4" fill="none" stroke="#3A2818" stroke-width="1.5"/><text x="174" y="392" font-size="8" fill="rgba(200,220,180,0.85)" text-anchor="middle">MENU</text><text x="174" y="406" font-size="7" fill="rgba(180,200,160,0.7)" text-anchor="middle">Menu</text></svg>',
 
-beach:'<svg viewBox="0 0 480 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="bc-moon" cx="75%" cy="15%" r="25%"><stop offset="0%" stop-color="#F0F8E0" stop-opacity="0.55"/><stop offset="50%" stop-color="#C0D8A0" stop-opacity="0.12"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><linearGradient id="bc-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#060C1E"/><stop offset="50%" stop-color="#0A1428"/><stop offset="100%" stop-color="#102040"/></linearGradient><linearGradient id="bc-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0A2040"/><stop offset="100%" stop-color="#061428"/></linearGradient><linearGradient id="bc-sand" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#C8A870"/><stop offset="100%" stop-color="#A08050"/></linearGradient></defs><!-- night sky --><rect width="480" height="700" fill="url(#bc-sky)"/><!-- moon --><circle cx="360" cy="80" r="30" fill="#EEF8D8" opacity="0.88"/><circle cx="360" cy="80" r="23" fill="#F4FBE4" opacity="0.9"/><rect width="480" height="700" fill="url(#bc-moon)"/><!-- stars --><circle cx="20" cy="30" r="1.5" fill="white" opacity="0.85"/><circle cx="60" cy="15" r="1" fill="white" opacity="0.8"/><circle cx="110" cy="35" r="1.5" fill="white" opacity="0.9"/><circle cx="170" cy="20" r="1" fill="white" opacity="0.75"/><circle cx="220" cy="45" r="1.5" fill="white" opacity="0.85"/><circle cx="280" cy="25" r="1" fill="white" opacity="0.8"/><circle cx="430" cy="40" r="1" fill="white" opacity="0.75"/><circle cx="50" cy="70" r="1" fill="white" opacity="0.65"/><circle cx="140" cy="60" r="1.5" fill="white" opacity="0.8"/><!-- sea --><rect x="0" y="280" width="480" height="260" fill="url(#bc-sea)"/><!-- waves --><path d="M0 285 Q60 275 120 285 Q180 295 240 285 Q300 275 360 285 Q420 295 480 285" stroke="#1A4060" stroke-width="2.5" fill="none" opacity="0.7"/><path d="M0 300 Q70 292 140 300 Q210 308 280 300 Q350 292 420 300 Q450 305 480 300" stroke="#1A4060" stroke-width="2" fill="none" opacity="0.5"/><path d="M0 320 Q80 312 160 320 Q240 328 320 320 Q400 312 480 320" stroke="#204870" stroke-width="1.5" fill="none" opacity="0.4"/><!-- moonlight on sea --><ellipse cx="360" cy="340" rx="80" ry="200" fill="#C0D8B0" opacity="0.08" transform="rotate(5 360 340)"/><!-- fishing boats far --><path d="M60 292 L50 310 L90 310 L80 292 Z" fill="#1A3050" opacity="0.7"/><rect x="70" y="288" width="2" height="18" fill="#2A4060" opacity="0.8"/><path d="M64 296 L70 292 L76 296 Z" fill="#304060" opacity="0.65"/><!-- beach --><rect x="0" y="530" width="480" height="170" fill="url(#bc-sand)"/><rect x="0" y="528" width="480" height="6" fill="#D0B880" opacity="0.9"/><!-- sea foam at shore --><path d="M0 535 Q120 530 240 535 Q360 540 480 535" stroke="rgba(255,255,255,0.25)" stroke-width="3" fill="none"/><!-- beach items --><ellipse cx="80" cy="570" rx="25" ry="10" fill="#B09060" opacity="0.8"/><ellipse cx="80" cy="566" rx="22" ry="8" fill="#C0A070" opacity="0.9"/><!-- coconut palm tree --><rect x="360" y="300" width="16" height="240" rx="6" fill="#5A3A10" transform="rotate(-8 368 540)"/><ellipse cx="330" cy="300" rx="70" ry="35" fill="#1A5010" opacity="0.9"/><ellipse cx="370" cy="285" rx="65" ry="30" fill="#1E6014" opacity="0.88"/><ellipse cx="350" cy="295" rx="55" ry="28" fill="#228018" opacity="0.85"/><!-- coconuts --><circle cx="340" cy="315" r="8" fill="#5A3010" opacity="0.9"/><circle cx="355" cy="318" r="7" fill="#4A2808" opacity="0.85"/><!-- lanterns string --><path d="M0 550 Q120 543 240 548 Q360 553 480 545" stroke="#8A6040" stroke-width="1.5" fill="none" opacity="0.6"/><!-- lanterns hanging --><ellipse cx="80" cy="553" rx="7" ry="10" fill="#E84010" opacity="0.85"/><ellipse cx="160" cy="550" rx="7" ry="10" fill="#E84010" opacity="0.8"/><ellipse cx="240" cy="553" rx="7" ry="10" fill="#FF8010" opacity="0.85"/><ellipse cx="320" cy="551" rx="7" ry="10" fill="#E84010" opacity="0.8"/><ellipse cx="400" cy="549" rx="7" ry="10" fill="#FF8010" opacity="0.85"/><!-- glow from lanterns --><ellipse cx="80" cy="560" rx="25" ry="15" fill="#FF6010" opacity="0.1"/><ellipse cx="240" cy="560" rx="25" ry="15" fill="#FF8010" opacity="0.09"/><ellipse cx="400" cy="557" rx="25" ry="15" fill="#FF6010" opacity="0.09"/><!-- sea ambient glow --><ellipse cx="240" cy="400" rx="300" ry="80" fill="#1040A0" opacity="0.06"/></svg>',
+beach:'<svg viewBox="0 0 420 560" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="bc-moon" cx="72%" cy="12%" r="22%"><stop offset="0%" stop-color="#F0F8D8" stop-opacity="0.65"/><stop offset="60%" stop-color="#C8E0A0" stop-opacity="0.12"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient></defs><!-- night sky --><rect width="420" height="560" fill="#060C1C"/><!-- moon glow --><rect width="420" height="560" fill="url(#bc-moon)"/><!-- moon --><circle cx="300" cy="62" r="32" fill="#EEF8D8" opacity="0.88"/><circle cx="300" cy="62" r="25" fill="#F4FBE4" opacity="0.92"/><!-- stars --><circle cx="20" cy="30" r="1.5" fill="white" opacity="0.85"/><circle cx="55" cy="15" r="1" fill="white" opacity="0.8"/><circle cx="90" cy="40" r="1.5" fill="white" opacity="0.9"/><circle cx="130" cy="22" r="1" fill="white" opacity="0.75"/><circle cx="165" cy="50" r="1.5" fill="white" opacity="0.85"/><circle cx="350" cy="30" r="1" fill="white" opacity="0.8"/><circle cx="385" cy="18" r="1.5" fill="white" opacity="0.9"/><circle cx="410" cy="45" r="1" fill="white" opacity="0.75"/><!-- ocean --><rect x="0" y="260" width="420" height="180" fill="#0A2040" opacity="0.92"/><!-- moonlight reflection on ocean --><path d="M280 268 Q300 320 310 380 Q300 400 285 380 Q275 320 280 268 Z" fill="#C0D8A0" opacity="0.07"/><!-- ocean waves --><path d="M0 268 Q52 258 105 268 Q157 278 210 268 Q262 258 315 268 Q367 278 420 268" stroke="#1A4060" stroke-width="2.5" fill="none" opacity="0.6"/><path d="M0 285 Q63 276 126 285 Q189 294 252 285 Q315 276 378 285 Q399 289 420 285" stroke="#1A4060" stroke-width="1.8" fill="none" opacity="0.4"/><!-- palm trees --><rect x="30" y="120" width="14" height="250" rx="6" fill="#5A3810" transform="rotate(-6 37 370)"/><ellipse cx="10" cy="125" rx="55" ry="30" fill="#1A5010" opacity="0.88" transform="rotate(-10 10 125)"/><ellipse cx="40" cy="108" rx="50" ry="28" fill="#1E6014" opacity="0.85" transform="rotate(5 40 108)"/><ellipse cx="65" cy="118" rx="45" ry="25" fill="#228018" opacity="0.82" transform="rotate(-5 65 118)"/><!-- coconuts --><circle cx="35" cy="140" r="7" fill="#4A2808" opacity="0.9"/><circle cx="48" cy="148" r="6" fill="#3A2008" opacity="0.85"/><!-- right palm --><rect x="370" y="100" width="14" height="260" rx="6" fill="#5A3810" transform="rotate(5 377 360)"/><ellipse cx="395" cy="105" rx="55" ry="28" fill="#1A5010" opacity="0.88" transform="rotate(10 395 105)"/><ellipse cx="365" cy="92" rx="50" ry="26" fill="#1E6014" opacity="0.85" transform="rotate(-5 365 92)"/><!-- thatched roof structure --><polygon points="20,185 210,120 400,185" fill="#8A6828"/><polygon points="25,188 210,125 395,188" fill="#9A7830" opacity="0.8"/><!-- thatch texture lines --><line x1="20" y1="188" x2="50" y2="125" stroke="#6A5018" stroke-width="1.5" opacity="0.5"/><line x1="60" y1="188" x2="80" y2="125" stroke="#6A5018" stroke-width="1.5" opacity="0.4"/><line x1="100" y1="188" x2="115" y2="125" stroke="#6A5018" stroke-width="1.5" opacity="0.4"/><line x1="140" y1="188" x2="150" y2="122" stroke="#6A5018" stroke-width="1.5" opacity="0.4"/><line x1="280" y1="188" x2="270" y2="125" stroke="#6A5018" stroke-width="1.5" opacity="0.4"/><line x1="320" y1="188" x2="305" y2="125" stroke="#6A5018" stroke-width="1.5" opacity="0.4"/><line x1="360" y1="188" x2="340" y2="125" stroke="#6A5018" stroke-width="1.5" opacity="0.4"/><!-- second floor thatch --><polygon points="80,188 210,148 330,188" fill="#7A5A20" opacity="0.9"/><!-- upper balcony rail --><rect x="80" y="188" width="250" height="5" rx="2" fill="#6A4A18"/><line x1="90" y1="188" x2="90" y2="220" stroke="#6A4A18" stroke-width="2"/><line x1="120" y1="188" x2="120" y2="220" stroke="#6A4A18" stroke-width="2"/><line x1="150" y1="188" x2="150" y2="220" stroke="#6A4A18" stroke-width="2"/><line x1="180" y1="188" x2="180" y2="220" stroke="#6A4A18" stroke-width="2"/><line x1="210" y1="188" x2="210" y2="220" stroke="#6A4A18" stroke-width="2"/><line x1="240" y1="188" x2="240" y2="220" stroke="#6A4A18" stroke-width="2"/><line x1="270" y1="188" x2="270" y2="220" stroke="#6A4A18" stroke-width="2"/><line x1="300" y1="188" x2="300" y2="220" stroke="#6A4A18" stroke-width="2"/><rect x="80" y="220" width="250" height="5" rx="2" fill="#6A4A18"/><!-- string lights main --><path d="M20 188 Q210 175 400 188" stroke="#8A7040" stroke-width="1.5" fill="none"/><!-- bulbs --><circle cx="55" cy="184" r="4.5" fill="#FFE080" opacity="0.9"/><circle cx="100" cy="181" r="4.5" fill="#FFD060" opacity="0.85"/><circle cx="145" cy="179" r="4.5" fill="#FFE080" opacity="0.9"/><circle cx="190" cy="177" r="4.5" fill="#FFF0A0" opacity="0.9"/><circle cx="235" cy="179" r="4.5" fill="#FFE080" opacity="0.85"/><circle cx="280" cy="181" r="4.5" fill="#FFD060" opacity="0.9"/><circle cx="325" cy="183" r="4" fill="#FFE080" opacity="0.85"/><circle cx="370" cy="185" r="4" fill="#FFD060" opacity="0.9"/><!-- paper lanterns colorful --><line x1="60" y1="175" x2="60" y2="200" stroke="#8A7040" stroke-width="1.5"/><ellipse cx="60" cy="210" rx="12" ry="16" fill="#E84060" opacity="0.88"/><text x="60" y="214" font-size="7" fill="white" text-anchor="middle">shrimp</text><line x1="130" y1="172" x2="130" y2="198" stroke="#8A7040" stroke-width="1.5"/><ellipse cx="130" cy="208" rx="12" ry="16" fill="#40A0E0" opacity="0.85"/><text x="130" y="212" font-size="7" fill="white" text-anchor="middle">crab</text><line x1="200" y1="170" x2="200" y2="196" stroke="#8A7040" stroke-width="1.5"/><ellipse cx="200" cy="206" rx="12" ry="16" fill="#E08020" opacity="0.88"/><text x="200" y="210" font-size="7" fill="white" text-anchor="middle">fish</text><line x1="270" y1="172" x2="270" y2="198" stroke="#8A7040" stroke-width="1.5"/><ellipse cx="270" cy="208" rx="12" ry="16" fill="#60C040" opacity="0.85"/><text x="270" y="212" font-size="7" fill="white" text-anchor="middle">squid</text><line x1="340" y1="175" x2="340" y2="200" stroke="#8A7040" stroke-width="1.5"/><ellipse cx="340" cy="210" rx="12" ry="16" fill="#E84060" opacity="0.88"/><text x="340" y="214" font-size="7" fill="white" text-anchor="middle">shrimp</text><!-- dining tables --><rect x="50" y="310" width="100" height="10" rx="3" fill="#7A5A30"/><rect x="60" y="320" width="8" height="50" rx="2" fill="#6A4A28"/><rect x="134" y="320" width="8" height="50" rx="2" fill="#6A4A28"/><!-- table 2 --><rect x="180" y="305" width="100" height="10" rx="3" fill="#7A5A30"/><rect x="190" y="315" width="8" height="50" rx="2" fill="#6A4A28"/><rect x="264" y="315" width="8" height="50" rx="2" fill="#6A4A28"/><!-- table 3 --><rect x="300" y="310" width="90" height="10" rx="3" fill="#7A5A30"/><rect x="308" y="320" width="8" height="50" rx="2" fill="#6A4A28"/><rect x="374" y="320" width="8" height="50" rx="2" fill="#6A4A28"/><!-- customers silhouettes --><ellipse cx="80" cy="295" rx="10" ry="12" fill="#1A1008" opacity="0.5"/><ellipse cx="120" cy="295" rx="10" ry="12" fill="#1A1008" opacity="0.5"/><ellipse cx="210" cy="290" rx="10" ry="12" fill="#1A1008" opacity="0.45"/><ellipse cx="255" cy="290" rx="10" ry="12" fill="#1A1008" opacity="0.45"/><ellipse cx="330" cy="293" rx="10" ry="12" fill="#1A1008" opacity="0.5"/><!-- menu boards --><rect x="28" y="310" width="55" height="75" rx="3" fill="#1A2010" opacity="0.9"/><rect x="26" y="308" width="59" height="79" rx="4" fill="none" stroke="#4A3820" stroke-width="1.5"/><!-- board legs --><line x1="35" y1="385" x2="28" y2="415" stroke="#4A3820" stroke-width="2.5"/><line x1="76" y1="385" x2="83" y2="415" stroke="#4A3820" stroke-width="2.5"/><text x="55" y="328" font-size="7.5" fill="rgba(200,230,200,0.9)" text-anchor="middle">ร้านอาหาร</text><text x="55" y="342" font-size="7.5" fill="rgba(200,230,200,0.8)" text-anchor="middle">ทะเล</text><!-- Rayong seafood sign --><rect x="295" y="415" width="110" height="22" rx="4" fill="#4A2E10" opacity="0.9"/><text x="350" y="430" font-size="9" fill="#FFE8A0" text-anchor="middle" font-family="sans-serif">ระยอง ซีฟู้ด</text><!-- sand --><rect x="0" y="430" width="420" height="130" fill="#C8A868"/><!-- sand texture --><ellipse cx="100" cy="445" rx="40" ry="8" fill="#D0B070" opacity="0.5"/><ellipse cx="320" cy="455" rx="35" ry="7" fill="#C0A060" opacity="0.5"/></svg>',
 
-mountain:'<svg viewBox="0 0 480 700" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="mt-sun" cx="50%" cy="25%" r="50%"><stop offset="0%" stop-color="#FFD080" stop-opacity="0.6"/><stop offset="40%" stop-color="#FF9030" stop-opacity="0.2"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><linearGradient id="mt-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4080C0"/><stop offset="40%" stop-color="#80B0E0"/><stop offset="100%" stop-color="#E0B880"/></linearGradient><linearGradient id="mt-mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E8F0F8" stop-opacity="0.0"/><stop offset="100%" stop-color="#C0D8F0" stop-opacity="0.35"/></linearGradient></defs><!-- dawn sky --><rect width="480" height="700" fill="url(#mt-sky)"/><!-- sun glow --><rect width="480" height="700" fill="url(#mt-sun)"/><!-- sun disc --><circle cx="240" cy="160" r="40" fill="#FFE080" opacity="0.75"/><circle cx="240" cy="160" r="28" fill="#FFF0A0" opacity="0.85"/><!-- sun rays --><line x1="240" y1="108" x2="240" y2="90" stroke="#FFD060" stroke-width="2" opacity="0.5"/><line x1="272" y1="118" x2="286" y2="104" stroke="#FFD060" stroke-width="2" opacity="0.4"/><line x1="292" y1="148" x2="312" y2="144" stroke="#FFD060" stroke-width="1.5" opacity="0.4"/><line x1="208" y1="118" x2="194" y2="104" stroke="#FFD060" stroke-width="2" opacity="0.4"/><line x1="188" y1="148" x2="168" y2="144" stroke="#FFD060" stroke-width="1.5" opacity="0.4"/><!-- clouds dawn pink --><ellipse cx="80" cy="120" rx="100" ry="28" fill="#FFB8A0" opacity="0.45"/><ellipse cx="380" cy="140" rx="90" ry="22" fill="#FFB0A8" opacity="0.4"/><ellipse cx="200" cy="100" rx="80" ry="20" fill="#FFC8B0" opacity="0.38"/><!-- mountains back --><polygon points="0,350 120,150 240,350" fill="#506080" opacity="0.65"/><polygon points="120,350 240,160 360,350" fill="#4A5878" opacity="0.7"/><polygon points="240,350 360,170 480,350" fill="#506080" opacity="0.65"/><!-- snow caps --><polygon points="120,218 140,150 160,218" fill="white" opacity="0.7"/><polygon points="240,228 260,160 280,228" fill="white" opacity="0.72"/><!-- mountains mid --><polygon points="-20,500 120,280 260,500" fill="#384858" opacity="0.85"/><polygon points="220,500 360,260 500,500" fill="#3A4A5A" opacity="0.85"/><!-- mist layer --><rect x="0" y="440" width="480" height="80" fill="url(#mt-mist)"/><ellipse cx="240" cy="450" rx="280" ry="40" fill="white" opacity="0.18"/><!-- temple/shrine structure --><rect x="160" y="460" width="160" height="180" fill="#3A3028"/><rect x="155" y="455" width="170" height="14" rx="3" fill="#6A5038"/><!-- roof --><polygon points="130,460 240,400 350,460" fill="#5A3820"/><polygon points="140,464 240,408 340,464" fill="#6A4828" opacity="0.8"/><!-- roof ridge --><rect x="235" y="398" width="10" height="18" rx="3" fill="#8A6840"/><!-- columns --><rect x="180" y="460" width="16" height="180" rx="3" fill="#4A3A28"/><rect x="284" y="460" width="16" height="180" rx="3" fill="#4A3A28"/><!-- temple door --><rect x="210" y="530" width="60" height="110" rx="4" fill="#2A1808"/><rect x="208" y="528" width="64" height="114" rx="5" fill="none" stroke="#6A4828" stroke-width="3"/><!-- bell --><ellipse cx="240" cy="450" rx="14" ry="18" fill="#C8A040" opacity="0.85"/><ellipse cx="240" cy="438" rx="9" ry="6" fill="#A08030"/><!-- lanterns temple --><line x1="190" y1="455" x2="190" y2="482" stroke="#8A6040" stroke-width="1.5"/><ellipse cx="190" cy="492" rx="10" ry="14" fill="#E84010" opacity="0.85"/><line x1="290" y1="455" x2="290" y2="482" stroke="#8A6040" stroke-width="1.5"/><ellipse cx="290" cy="492" rx="10" ry="14" fill="#E84010" opacity="0.85"/><!-- warm glow --><ellipse cx="190" cy="500" rx="30" ry="20" fill="#FF6010" opacity="0.1"/><ellipse cx="290" cy="500" rx="30" ry="20" fill="#FF6010" opacity="0.1"/><!-- stone steps --><rect x="205" y="638" width="70" height="10" rx="2" fill="#5A5048"/><rect x="195" y="648" width="90" height="10" rx="2" fill="#4A4038"/><rect x="185" y="658" width="110" height="10" rx="2" fill="#3A3028"/><!-- ground --><rect x="0" y="640" width="480" height="60" fill="#2A3040"/><!-- mist ground --><ellipse cx="240" cy="645" rx="280" ry="25" fill="white" opacity="0.12"/></svg>'
+mountain:'<svg viewBox="0 0 420 560" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" style="position:absolute;top:0;left:0;width:100%;height:100%"><defs><radialGradient id="mt-fire2" cx="40%" cy="82%" r="28%"><stop offset="0%" stop-color="#FF9030" stop-opacity="0.5"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient><radialGradient id="mt-moon2" cx="50%" cy="18%" r="24%"><stop offset="0%" stop-color="#E0F0C8" stop-opacity="0.65"/><stop offset="100%" stop-color="#0000" stop-opacity="0"/></radialGradient></defs><!-- deep night --><rect width="420" height="560" fill="#060C18"/><!-- moon --><rect width="420" height="560" fill="url(#mt-moon2)"/><circle cx="210" cy="100" r="38" fill="#DFF0C8" opacity="0.88"/><circle cx="210" cy="100" r="30" fill="#EAF8D8" opacity="0.92"/><!-- stars --><circle cx="50" cy="35" r="1.5" fill="white" opacity="0.9"/><circle cx="85" cy="20" r="1" fill="white" opacity="0.8"/><circle cx="140" cy="45" r="1.5" fill="white" opacity="0.85"/><circle cx="80" cy="65" r="1" fill="white" opacity="0.7"/><circle cx="280" cy="25" r="1.5" fill="white" opacity="0.9"/><circle cx="320" cy="48" r="1" fill="white" opacity="0.8"/><circle cx="360" cy="32" r="1.5" fill="white" opacity="0.85"/><!-- tall pines frame --><rect x="0" y="0" width="52" height="560" rx="18" fill="#080E06"/><ellipse cx="26" cy="55" rx="68" ry="82" fill="#060C04" opacity="0.95"/><ellipse cx="26" cy="125" rx="70" ry="86" fill="#040A02"/><!-- pine branch details left --><path d="M0 45 Q26 28 52 45" fill="#080E06" opacity="0.85"/><path d="M0 80 Q26 65 52 80" fill="#080E06" opacity="0.75"/><path d="M0 115 Q26 100 52 115" fill="#080E06" opacity="0.7"/><path d="M0 150 Q26 135 52 150" fill="#080E06" opacity="0.65"/><!-- right pines --><rect x="368" y="0" width="52" height="560" rx="18" fill="#080E06"/><ellipse cx="394" cy="50" rx="68" ry="80" fill="#060C04" opacity="0.95"/><ellipse cx="394" cy="120" rx="68" ry="84" fill="#040A02"/><!-- mid trees --><rect x="40" y="150" width="32" height="380" rx="12" fill="#0C1408"/><ellipse cx="56" cy="200" rx="56" ry="68" fill="#0E1A0C" opacity="0.92"/><!-- red maple autumn accents --><ellipse cx="48" cy="380" rx="30" ry="20" fill="#A82820" opacity="0.7"/><ellipse cx="60" cy="395" rx="25" ry="18" fill="#C83428" opacity="0.65"/><rect x="370" y="150" width="32" height="380" rx="12" fill="#0C1408"/><ellipse cx="386" cy="195" rx="54" ry="65" fill="#0E1A0C" opacity="0.92"/><ellipse cx="375" cy="378" rx="30" ry="20" fill="#A82820" opacity="0.7"/><ellipse cx="362" cy="393" rx="25" ry="18" fill="#C83428" opacity="0.65"/><!-- forest lounge cabin --><rect x="118" y="265" width="184" height="175" fill="#2A1E10"/><rect x="116" y="263" width="188" height="179" rx="3" fill="none" stroke="#4A3420" stroke-width="2.5"/><!-- roof --><polygon points="98,270 210,198 322,270" fill="#221808"/><polygon points="103,270 210,203 317,270" fill="#3A2A18" opacity="0.8"/><!-- chimney --><rect x="248" y="206" width="18" height="36" rx="2" fill="#221808"/><path d="M257 205 Q261 190 255 175" stroke="rgba(200,200,180,0.2)" stroke-width="2.5" fill="none" stroke-linecap="round"/><!-- cabin windows --><rect x="132" y="283" width="52" height="46" rx="4" fill="#FF9030" opacity="0.58"/><rect x="130" y="281" width="56" height="50" rx="5" fill="none" stroke="#5A4028" stroke-width="2.5"/><line x1="158" y1="281" x2="158" y2="331" stroke="#5A4028" stroke-width="2"/><line x1="130" y1="306" x2="186" y2="306" stroke="#5A4028" stroke-width="2"/><!-- window inner glow --><rect x="134" y="285" width="48" height="42" rx="3" fill="#FFE080" opacity="0.22"/><!-- right window --><rect x="236" y="283" width="52" height="46" rx="4" fill="#FF9030" opacity="0.58"/><rect x="234" y="281" width="56" height="50" rx="5" fill="none" stroke="#5A4028" stroke-width="2.5"/><line x1="262" y1="281" x2="262" y2="331" stroke="#5A4028" stroke-width="2"/><line x1="234" y1="306" x2="290" y2="306" stroke="#5A4028" stroke-width="2"/><rect x="238" y="285" width="48" height="42" rx="3" fill="#FFE080" opacity="0.22"/><!-- door --><rect x="188" y="348" width="44" height="92" rx="3" fill="#1E1408"/><rect x="186" y="346" width="48" height="96" rx="4" fill="none" stroke="#5A4028" stroke-width="2.5"/><circle cx="228" cy="396" r="4" fill="#C09030"/><!-- door lamp --><rect x="200" y="340" width="22" height="8" rx="2" fill="#5A4028"/><circle cx="211" cy="333" r="7.5" fill="#FFD070" opacity="0.8"/><ellipse cx="211" cy="345" rx="14" ry="6" fill="#FFB040" opacity="0.18"/><!-- Forest Lounge sign --><rect x="36" y="360" width="80" height="18" rx="3" fill="#1A1008" opacity="0.9"/><text x="76" y="373" font-size="8" fill="rgba(210,200,170,0.85)" text-anchor="middle" font-family="sans-serif">FOREST LOUNGE</text><!-- MENU board --><rect x="146" y="355" width="50" height="70" rx="3" fill="#1A1208" opacity="0.95"/><rect x="144" y="353" width="54" height="74" rx="4" fill="none" stroke="#3A2818" stroke-width="1.5"/><!-- legs --><line x1="152" y1="425" x2="146" y2="455" stroke="#3A2818" stroke-width="2"/><line x1="190" y1="425" x2="196" y2="455" stroke="#3A2818" stroke-width="2"/><text x="171" y="373" font-size="8" fill="rgba(200,220,180,0.85)" text-anchor="middle">MENU</text><text x="171" y="386" font-size="7" fill="rgba(180,200,160,0.7)" text-anchor="middle">Menu</text><!-- string lights on cabin --><path d="M100 263 Q210 250 320 263" stroke="#8A7040" stroke-width="1.5" fill="none"/><circle cx="128" cy="260" r="3.5" fill="#FFE080" opacity="0.85"/><circle cx="158" cy="257" r="3.5" fill="#FFD060" opacity="0.8"/><circle cx="188" cy="255" r="3.5" fill="#FFE080" opacity="0.85"/><circle cx="218" cy="254" r="3.5" fill="#FFF0A0" opacity="0.85"/><circle cx="248" cy="255" r="3.5" fill="#FFE080" opacity="0.8"/><circle cx="278" cy="257" r="3.5" fill="#FFD060" opacity="0.85"/><circle cx="308" cy="260" r="3.5" fill="#FFE080" opacity="0.8"/><!-- deck platform --><rect x="70" y="418" width="280" height="90" fill="#241A0C"/><rect x="68" y="416" width="284" height="6" fill="#3A2A14"/><!-- deck wood lines --><line x1="70" y1="432" x2="350" y2="432" stroke="#1C1208" stroke-width="1.5" opacity="0.5"/><line x1="70" y1="448" x2="350" y2="448" stroke="#1C1208" stroke-width="1" opacity="0.4"/><!-- bottle bar open window --><rect x="247" y="340" width="70" height="20" rx="2" fill="#1A1008" opacity="0.95"/><rect x="250" y="325" width="7" height="15" rx="2" fill="#3A2808" opacity="0.85"/><rect x="259" y="322" width="7" height="18" rx="2" fill="#4A3010" opacity="0.85"/><rect x="268" y="325" width="7" height="15" rx="2" fill="#3A2808" opacity="0.85"/><rect x="277" y="323" width="7" height="17" rx="2" fill="#5A3818" opacity="0.85"/><rect x="286" y="325" width="7" height="15" rx="2" fill="#3A2808" opacity="0.85"/><!-- person at bar --><ellipse cx="310" cy="330" rx="10" ry="12" fill="#1A1008" opacity="0.6"/><rect x="300" y="342" width="20" height="36" rx="4" fill="#1A1008" opacity="0.6"/><!-- campfire --><ellipse cx="185" cy="468" rx="28" ry="10" fill="#1A1008" opacity="0.9"/><!-- fire logs --><rect x="168" y="464" width="34" height="5" rx="2.5" fill="#3A2008" transform="rotate(-12 185 466)"/><rect x="168" y="466" width="34" height="5" rx="2.5" fill="#2A1808" transform="rotate(12 185 468)"/><!-- flames --><path d="M176 464 Q181 444 185 432 Q189 444 194 464 Z" fill="#FF7010" opacity="0.88"/><path d="M179 464 Q183 447 185 438 Q187 447 191 464 Z" fill="#FFAA30" opacity="0.92"/><path d="M182 464 Q184 450 185 444 Q186 450 188 464 Z" fill="#FFE060" opacity="0.88"/><!-- sofas --><rect x="72" y="438" width="85" height="42" rx="5" fill="#484060"/><rect x="72" y="432" width="85" height="12" rx="4" fill="#545070"/><rect x="72" y="438" width="12" height="42" rx="4" fill="#545070"/><rect x="145" y="438" width="12" height="42" rx="4" fill="#545070"/><!-- wine on table left --><rect x="88" y="476" width="50" height="28" rx="3" fill="#2A1E10"/><!-- wine glass --><path d="M105 476 L109 462 L118 462 L122 476 Z" fill="rgba(160,40,40,0.35)"/><rect x="112" y="476" width="2" height="8" fill="rgba(160,120,100,0.3)"/><!-- right sofa --><rect x="263" y="438" width="82" height="42" rx="5" fill="#484060"/><rect x="263" y="432" width="82" height="12" rx="4" fill="#545070"/><rect x="263" y="438" width="12" height="42" rx="4" fill="#545070"/><rect x="333" y="438" width="12" height="42" rx="4" fill="#545070"/><!-- red maple plants --><ellipse cx="60" cy="440" rx="22" ry="28" fill="#A82820" opacity="0.8"/><ellipse cx="50" cy="448" rx="18" ry="22" fill="#C83428" opacity="0.75"/><ellipse cx="368" cy="438" rx="22" ry="26" fill="#A82820" opacity="0.8"/><ellipse cx="375" cy="446" rx="18" ry="20" fill="#C83428" opacity="0.75"/><!-- fire glow overlay --><rect x="0" y="0" width="420" height="560" fill="url(#mt-fire2)"/></svg>'
 };
-
-/* ── CHARACTER SVGs stored in hidden HTML divs, read at runtime ── */
-var CHARS = {};
-function initChars(){
-  var ids = ['izakaya','midnight','cafe','ramen','beach','forest','rooftop'];
-  ids.forEach(function(id){
-    var el = document.getElementById('char-svg-'+id);
-    if(el) CHARS[id] = el.innerHTML;
-  });
-}
 
 /* map new scene ids → existing room/char/bg assets */
 var SCENE_ALIAS = {
@@ -2521,9 +2673,12 @@ function setScene(id, ts){
   document.getElementById('iz-sname').textContent=sc.short;
   document.getElementById('iz-stitle').textContent=(ts&&ts.title)||sc.title;
   var whoEl=document.getElementById('iz-who');
-  if(whoEl) whoEl.textContent='\u{1F464} '+sc.who;
+  if(whoEl) whoEl.textContent='\uD83D\uDC64 '+sc.who;
   var charEl=document.getElementById('iz-char');
-  if(charEl && CHARS[id]) charEl.innerHTML=CHARS[id];
+  if(charEl){
+    var charSrc=document.getElementById('char-svg-'+id);
+    charEl.innerHTML = charSrc ? charSrc.innerHTML : '';
+  }
   renderMenu(sc);
   var atmos=document.getElementById('iz-atmos');
   if(atmos){
@@ -2561,7 +2716,11 @@ function addMsg(role,txt){
   d.className='iz-msg '+role;
   d.textContent=txt;
   chat.appendChild(d);
-  setTimeout(function(){chat.scrollTop=chat.scrollHeight;},60);
+  /* multiple scrolls to ensure last line clears the menu bar (Thai font renders slowly) */
+  chat.scrollTop=chat.scrollHeight;
+  setTimeout(function(){chat.scrollTop=chat.scrollHeight;},80);
+  setTimeout(function(){chat.scrollTop=chat.scrollHeight;},300);
+  setTimeout(function(){chat.scrollTop=chat.scrollHeight;},600);
 }
 
 function clearIzChat(){
@@ -2604,19 +2763,34 @@ function sendIz(){
   });
 }
 
-/* ── FOOD ORDER MENU ── */
+/* ── FOOD ORDER MENU (popup) ── */
 function renderMenu(sc){
-  var bar=document.getElementById('iz-menu');
-  if(!bar) return;
-  if(!sc || !sc.menu){ bar.innerHTML=''; return; }
-  var html='';
-  sc.menu.forEach(function(item,i){
-    html+='<button class="menu-item" onclick="orderFood('+i+')">'
-      +'<span class="menu-emoji">'+item.e+'</span>'
-      +'<span class="menu-name">'+item.n+'</span>'
-      +'</button>';
-  });
-  bar.innerHTML=html;
+  /* store current scene's menu for popup; nothing rendered inline now */
+  IZ_MENU = (sc && sc.menu) ? sc.menu : [];
+  IZ_MENU_TITLE = sc ? ('เมนู' + (sc.short ? ' · '+sc.short : '')) : 'เมนูของร้าน';
+}
+var IZ_MENU = [];
+var IZ_MENU_TITLE = 'เมนูของร้าน';
+
+function openIzMenu(){
+  var grid=document.getElementById('iz-menu-grid');
+  var title=document.getElementById('iz-menu-title');
+  if(title) title.textContent=IZ_MENU_TITLE;
+  if(!IZ_MENU.length){ grid.innerHTML='<div class="iz-menu-empty">ยังไม่มีเมนูในร้านนี้</div>'; }
+  else{
+    var html='';
+    IZ_MENU.forEach(function(item,i){
+      html+='<button class="iz-menu-card" onclick="orderFood('+i+');closeIzMenu()">'
+        +'<span class="iz-menu-emoji">'+item.e+'</span>'
+        +'<span class="iz-menu-name">'+item.n+'</span>'
+        +'</button>';
+    });
+    grid.innerHTML=html;
+  }
+  document.getElementById('iz-menu-pop').classList.add('show');
+}
+function closeIzMenu(){
+  document.getElementById('iz-menu-pop').classList.remove('show');
 }
 
 function orderFood(idx){
@@ -2925,7 +3099,7 @@ function escapeHtml(s){
 }
 function pad(n){return n<10?'0'+n:String(n);}
 
-/* ═══════════════ CODEX ═══════════════ */
+/* =============== CODEX =============== */
 function cxFilter(f,el){
   ST.cxFilter=f;
   document.querySelectorAll('.codex-tab').forEach(function(b){b.classList.remove('on');});
@@ -2971,14 +3145,14 @@ function cxTap(id){
   toast(em.e+' '+em.th+' — '+em.en);
 }
 
-/* ═══════════════ TOAST ═══════════════ */
+/* =============== TOAST =============== */
 function toast(msg){
   var t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
   setTimeout(function(){t.classList.remove('show');},2800);
 }
 
-/* ═══════════════ INIT ═══════════════ */
+/* =============== INIT =============== */
 /* ── QUICK LOG (บันทึกเองไม่ผ่าน AI) ── */
 function openQuickLog(){
   var ov=document.getElementById('quicklog-overlay');
@@ -3128,9 +3302,9 @@ function showMilestone(ms){
 }
 function closeMilestone(){ document.getElementById('milestone-overlay').classList.remove('show'); }
 
-/* ══════════════════════════════════════
+/* ======================================
    FORTUNE / GACHA กาชาปองกำลังใจ
-══════════════════════════════════════ */
+====================================== */
 var FORTUNE_TYPE='cheer';
 
 var FORTUNES={
@@ -3258,20 +3432,173 @@ function spinFromCard(){
 function shareFCard(){
   var item=ST_FORTUNE.item;
   if(!item) return;
-  var txt=item.t.replace(/\\n/g,'\n');
-  if(item.s) txt+='\n\n— '+item.s;
-  if(item.a) txt+=' ('+item.a+')';
-  txt+='\n\n✦ EMOTIA 🦙 emotia.app';
-  if(navigator.share){
-    navigator.share({text:txt}).catch(function(){});
-  }else{
-    try{
-      var ta=document.createElement('textarea');
-      ta.value=txt; document.body.appendChild(ta); ta.select();
-      document.execCommand('copy'); document.body.removeChild(ta);
-      toast('คัดลอกแล้ว — แคปหน้าจอการ์ดเพื่อแชร์ได้เลย ✦');
-    }catch(e){ toast('แคปหน้าจอการ์ดเพื่อแชร์ได้เลย ✦'); }
+  var type=ST_FORTUNE.type||'cheer';
+
+  /* ── Draw card on Canvas ── */
+  var W=600, H=800;
+  var canvas=document.createElement('canvas');
+  canvas.width=W; canvas.height=H;
+  var ctx=canvas.getContext('2d');
+
+  /* background per type */
+  var bgMap={
+    cheer:['#FFF5F0','#FFE8DC'],
+    quote:['#F0F4FF','#E4ECFF'],
+    poem: ['#F5F0FF','#EBE4FF'],
+    food: ['#F0FBF4','#E2F8EA']
+  };
+  var accentMap={
+    cheer:'#D4785A',
+    quote:'#5A78D4',
+    poem: '#8A5AD4',
+    food: '#5AB07A'
+  };
+  var typeLabel={
+    cheer:'🌸 กำลังใจ',
+    quote:'📜 คำคม',
+    poem: '🌙 บทกวี',
+    food: '🍜 อาหารจิตใจ'
+  };
+
+  var bg=bgMap[type]||bgMap.cheer;
+  var accent=accentMap[type]||accentMap.cheer;
+
+  /* background gradient */
+  var grad=ctx.createLinearGradient(0,0,W,H);
+  grad.addColorStop(0,bg[0]);
+  grad.addColorStop(1,bg[1]);
+  ctx.fillStyle=grad;
+  ctx.beginPath();
+  roundRect(ctx,0,0,W,H,40);
+  ctx.fill();
+
+  /* subtle texture overlay */
+  ctx.fillStyle='rgba(255,255,255,0.3)';
+  ctx.beginPath();
+  roundRect(ctx,20,20,W-40,H-40,32);
+  ctx.fill();
+
+  /* corner ornaments */
+  ctx.strokeStyle=accent+'66';
+  ctx.lineWidth=1.5;
+  var co=36; var cs=20;
+  /* TL */
+  ctx.beginPath(); ctx.moveTo(co,co+cs); ctx.lineTo(co,co); ctx.lineTo(co+cs,co); ctx.stroke();
+  /* TR */
+  ctx.beginPath(); ctx.moveTo(W-co-cs,co); ctx.lineTo(W-co,co); ctx.lineTo(W-co,co+cs); ctx.stroke();
+  /* BL */
+  ctx.beginPath(); ctx.moveTo(co,H-co-cs); ctx.lineTo(co,H-co); ctx.lineTo(co+cs,H-co); ctx.stroke();
+  /* BR */
+  ctx.beginPath(); ctx.moveTo(W-co-cs,H-co); ctx.lineTo(W-co,H-co); ctx.lineTo(W-co,H-co-cs); ctx.stroke();
+
+  /* type badge */
+  ctx.fillStyle=accent+'33';
+  ctx.beginPath();
+  roundRect(ctx,W/2-90,50,180,36,18);
+  ctx.fill();
+  ctx.fillStyle=accent;
+  ctx.font='bold 14px -apple-system,sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText(typeLabel[type]||'',W/2,73);
+
+  /* decorative dots */
+  ctx.fillStyle=accent+'44';
+  ctx.font='18px serif';
+  ctx.textAlign='center';
+  ctx.fillText('✦  ✦  ✦',W/2,130);
+
+  /* main text */
+  ctx.fillStyle='#2A1A0E';
+  ctx.textAlign='center';
+  var lines=(item.t||'').split('\n');
+  var fontSize=lines.length>4?26:30;
+  ctx.font='bold '+fontSize+'px Georgia,serif';
+  var lineH=fontSize*1.7;
+  var totalH=lines.length*lineH;
+  var startY=H/2-(totalH/2)+(lines.length>3?-40:0);
+  lines.forEach(function(line,i){
+    ctx.fillText(line,W/2,startY+i*lineH);
+  });
+
+  /* divider */
+  var divY=startY+totalH+30;
+  var dg=ctx.createLinearGradient(W/2-60,divY,W/2+60,divY);
+  dg.addColorStop(0,'transparent');
+  dg.addColorStop(0.5,accent+'88');
+  dg.addColorStop(1,'transparent');
+  ctx.strokeStyle=dg;
+  ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(W/2-60,divY); ctx.lineTo(W/2+60,divY); ctx.stroke();
+
+  /* source / attribution */
+  if(item.s){
+    ctx.fillStyle=accent+'CC';
+    ctx.font='italic 18px Georgia,serif';
+    ctx.textAlign='center';
+    ctx.fillText('— '+item.s,W/2,divY+36);
   }
+  if(item.a){
+    ctx.fillStyle=accent+'88';
+    ctx.font='13px -apple-system,sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText(item.a,W/2,divY+(item.s?62:36));
+  }
+
+  /* footer */
+  ctx.fillStyle=accent+'66';
+  ctx.font='12px -apple-system,sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText('— EMOTIA  —',W/2,H-48);
+
+  /* ── Save / Share ── */
+  try{
+    canvas.toBlob(function(blob){
+      if(!blob){ toast('ไม่สามารถสร้างรูปได้'); return; }
+      var url=URL.createObjectURL(blob);
+      /* try native share with file */
+      if(navigator.share && navigator.canShare){
+        var file=new File([blob],'emotia-card.png',{type:'image/png'});
+        if(navigator.canShare({files:[file]})){
+          navigator.share({
+            files:[file],
+            title:'EMOTIA Card',
+            text:'การ์ดจาก EMOTIA'
+          }).catch(function(){
+            downloadCard(url);
+          });
+          return;
+        }
+      }
+      /* fallback: download */
+      downloadCard(url);
+    },'image/png');
+  }catch(err){
+    toast('แคปหน้าจอการ์ดเพื่อแชร์ได้เลย ✦');
+  }
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.moveTo(x+r,y);
+  ctx.lineTo(x+w-r,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);
+  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);
+  ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+function downloadCard(url){
+  var a=document.createElement('a');
+  a.href=url;
+  a.download='emotia-card.png';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(url);},2000);
+  toast('บันทึกรูปแล้ว ✦ (กดค้างที่รูปเพื่อบันทึกลงกล้อง)');
 }
 
 function spinFortuneAI(){
@@ -3301,14 +3628,30 @@ function spinFortuneAI(){
     aiBtn.textContent='✨ AI สร้างให้';
     if(err||!res){ toast('เชื่อมต่อไม่ได้ ลองใหม่นะ'); return; }
     var text=res.trim();
-    // parse quote attribution if present
-    var attr='', m=text.match(/^[""](.+)[""][^—–-]*[—–-]\s*(.+)$/s);
-    if(m){ text='"'+m[1]+'"'; attr='— '+m[2].trim(); }
-    document.getElementById('fortune-type-lbl').textContent=lbl.e+' '+lbl.n+' ✦ AI';
+    // parse quote attribution if present (ES5/Safari-safe, no /s flag, no smart quotes in pattern)
+    var attr='';
+    var dashIdx=-1;
+    var dashChars=['\u2014','\u2013','-']; // em-dash, en-dash, hyphen
+    for(var di=0;di<dashChars.length;di++){
+      var idx=text.lastIndexOf(dashChars[di]);
+      if(idx>dashIdx) dashIdx=idx;
+    }
+    // only treat as quote if text starts with a quote char
+    var firstCh=text.charAt(0);
+    var isQuote=(firstCh==='"'||firstCh==='\u201C'||firstCh==='\u201D');
+    if(isQuote && dashIdx>0){
+      var quotePart=text.substring(0,dashIdx).trim();
+      var authorPart=text.substring(dashIdx+1).trim();
+      if(authorPart.length>0 && authorPart.length<60){
+        text=quotePart;
+        attr='\u2014 '+authorPart;
+      }
+    }
+    document.getElementById('fortune-type-lbl').textContent=lbl.e+' '+lbl.n+' \u2726 AI';
     document.getElementById('fortune-text').textContent=text;
     document.getElementById('fortune-attr').textContent=attr;
     // open card overlay
-    var aiItem={t:text, s:attr.replace(/^— /,'').split(' · ')[0], a:''};
+    var aiItem={t:text, s:attr.replace(/^\u2014 /,'').split(' \u00b7 ')[0], a:''};
     ST_FORTUNE={item:aiItem, type:FORTUNE_TYPE};
     openFCard(aiItem, FORTUNE_TYPE);
   });
@@ -3318,7 +3661,6 @@ function init(){
   load();
   applyTheme();
   hud();
-  initChars();
   rollQuests();
   renderQuests();
   renderRecap();

@@ -3265,8 +3265,8 @@ async function syncCoupons(showToast, btn) {
   if (!cfg.gsUrl) return;
   setBtnLoading(btn, true);
   try {
-    // ดึง id ที่มีอยู่ใน Sheets ก่อน แล้ว append เฉพาะที่ขาด
-    var BRANCH_KEY_MAP = { 'แพชชั่นระยอง': 'passione', 'โลตัสระยอง': 'lotus' };
+    // ดึง code+branch ที่มีใน Sheets ก่อน
+    var sheetsCodeSet = {};
     var sheetsIdSet = {};
     var branches = ['passione', 'lotus'];
     for (var b = 0; b < branches.length; b++) {
@@ -3276,25 +3276,40 @@ async function syncCoupons(showToast, btn) {
         if (data.couponRows && data.couponRows.length) {
           data.couponRows.forEach(function(r) {
             var rid = r[4] ? String(r[4]) : '';
+            var rcode = r[1] ? String(r[1]) : '';
+            var rbranch = r[5] ? String(r[5]) : '';
             if (rid) sheetsIdSet[rid] = true;
+            if (rcode && rbranch) sheetsCodeSet[rcode + '|' + rbranch] = true;
           });
         }
       } catch(e) { console.log('coupon fetch error', branches[b], e); }
     }
-    // append เฉพาะรายการที่ไม่มีใน Sheets
-    var missing = coupons.filter(function(c) { return !sheetsIdSet[String(c.id)]; });
+    // หา missing — ไม่มีทั้ง id และ code+branch ใน Sheets
+    var missing = coupons.filter(function(c) {
+      var branchName = BRANCH_NAMES[c.branch] || c.branch;
+      return !sheetsIdSet[String(c.id)] && !sheetsCodeSet[String(c.code) + '|' + branchName];
+    });
+    if (!missing.length) {
+      markCpUnsynced(false);
+      if (showToast) toast('ซิงค์คูปองขึ้น Sheets แล้ว ✓', 'success');
+      return;
+    }
+    // ส่ง batch แยกตาม branch — 1 request ต่อ branch
     var errors = 0;
-    for (var i = 0; i < missing.length; i++) {
-      var c = missing[i];
+    var byBranch = {};
+    missing.forEach(function(c) { if (!byBranch[c.branch]) byBranch[c.branch] = []; byBranch[c.branch].push(c); });
+    var branchKeys = Object.keys(byBranch);
+    for (var i = 0; i < branchKeys.length; i++) {
+      var br = branchKeys[i];
       try {
-        await gsPost(cfg.gsUrl, { type: 'coupon_append', branch: c.branch, branchName: BRANCH_NAMES[c.branch], item: c });
-      } catch(e) { errors++; console.log('coupon append error', c.code, e); }
+        await gsPost(cfg.gsUrl, { type: 'coupon_batch', branch: br, branchName: BRANCH_NAMES[br], items: byBranch[br] });
+      } catch(e) { errors++; console.log('coupon batch error', br, e); }
     }
     if (errors === 0) {
       markCpUnsynced(false);
-      if (showToast) toast('ซิงค์คูปองขึ้น Sheets แล้ว' + (missing.length ? ' (+' + missing.length + ' รายการ)' : '') + ' ✓', 'success');
+      if (showToast) toast('ซิงค์คูปองขึ้น Sheets แล้ว (+' + missing.length + ' รายการ) ✓', 'success');
     } else {
-      if (showToast) toast('ซิงค์บางส่วนล้มเหลว (' + errors + ' รายการ)', 'error');
+      if (showToast) toast('ซิงค์บางส่วนล้มเหลว', 'error');
     }
   } catch(err) {
     if (showToast) toast('เกิดข้อผิดพลาด: ' + err.message, 'error');

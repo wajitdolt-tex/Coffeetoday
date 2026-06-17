@@ -1539,7 +1539,9 @@ async function appendToSheet(type, branch, branchName, item) {
     return;
   }
   try {
-    var payload = { type: type, branch: branch, branchName: branchName, item: item, timestamp: new Date().toISOString() };
+    // ส่งเฉพาะ field ที่จำเป็นเพื่อไม่ให้ URL ยาวเกิน limit
+    var slimItem = item ? { id: item.id, code: item.code, type: item.type, amount: item.amount, date: item.date, branch: item.branch } : item;
+    var payload = { type: type, branch: branch, branchName: branchName, item: slimItem, timestamp: new Date().toISOString() };
     await gsPost(cfg.gsUrl, payload);
     if (type === 'coupon_append' || type === 'coupon_delete') markCpUnsynced(false);
   } catch(err) {

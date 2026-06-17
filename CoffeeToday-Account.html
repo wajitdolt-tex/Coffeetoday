@@ -1543,10 +1543,11 @@ async function appendToSheet(type, branch, branchName, item) {
     var slimItem = item ? { id: item.id, code: item.code, type: item.type, amount: item.amount, date: item.date, branch: item.branch } : item;
     var payload = { type: type, branch: branch, branchName: branchName, item: slimItem, timestamp: new Date().toISOString() };
     await gsPost(cfg.gsUrl, payload);
-    if (type === 'coupon_append' || type === 'coupon_delete') markCpUnsynced(false);
+    if (type === 'coupon_append') { markCpUnsynced(false); toast('บันทึกคูปองขึ้น Sheets แล้ว ✓', 'success'); }
+    else if (type === 'coupon_delete') markCpUnsynced(false);
   } catch(err) {
     console.log('append error', type, err);
-    if (type === 'coupon_append' || type === 'coupon_delete') markCpUnsynced(true);
+    if (type === 'coupon_append' || type === 'coupon_delete') { markCpUnsynced(true); toast('บันทึกคูปองไม่สำเร็จ กรุณากด ☁ บันทึกขึ้น Sheets', 'error'); }
   }
 }
 

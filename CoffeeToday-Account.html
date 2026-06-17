@@ -438,6 +438,7 @@ tr:hover td{background:var(--bg3);}
     <input type="month" id="cp-filter-month" oninput="renderCoupons()" style="width:150px;font-size:13px;padding:4px 8px;">
     <button class="btn btn-outline btn-sm" onclick="document.getElementById('cp-filter-month').value='';renderCoupons()">ทั้งหมด</button>
     <div style="margin-left:auto;display:flex;gap:8px;">
+      <button class="btn btn-outline btn-sm" id="cp-dedup-btn" onclick="dedupLocalCoupons()" style="color:var(--red);border-color:var(--red);">🧹 ล้างซ้ำ</button>
       <button class="btn btn-primary btn-sm" id="cp-sync-btn" onclick="syncCoupons(true, this)">☁ บันทึกขึ้น Sheets</button>
       <button class="btn btn-primary btn-sm" onclick="exportCouponPDF()">⬇ Export PDF ส่ง IT</button>
     </div>
@@ -3311,6 +3312,21 @@ function filterCoupon(branch) {
     el.style.color       = k === branch ? 'var(--accent)' : '';
   });
   renderCoupons();
+}
+
+function dedupLocalCoupons() {
+  var seen = {};
+  var before = coupons.length;
+  coupons = coupons.filter(function(c) {
+    var key = c.code + '|' + c.branch;
+    if (seen[key]) return false;
+    seen[key] = true;
+    return true;
+  });
+  localStorage.setItem('ct_coupons', JSON.stringify(coupons));
+  renderCoupons();
+  var removed = before - coupons.length;
+  toast('ล้างซ้ำแล้ว ' + (removed > 0 ? 'ลบ ' + removed + ' รายการ' : 'ไม่มีซ้ำ') + ' ✓', 'success');
 }
 
 function renderCoupons() {

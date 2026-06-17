@@ -1260,12 +1260,7 @@ async function submitDaily() {
   };
 
   try {
-    await fetch(cfg.gsUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    await gsPost(cfg.gsUrl, payload);
     toast(isEditMode ? 'อัปเดตข้อมูลสำเร็จ ✓' : 'บันทึกสำเร็จ ✓', 'success');
     isEditMode = false;
     editRowIndex = -1;
@@ -1505,20 +1500,36 @@ function renderPayables() {
 async function syncToSheets(type, branch, branchName, items) {
   if (!cfg.gsUrl) return;
   try {
-    var payload = JSON.stringify({
-      type: type,
-      branch: branch,
-      branchName: branchName,
-      items: items,
-      timestamp: new Date().toISOString()
-    });
-    await fetch(cfg.gsUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: payload
-    });
+    await gsPost(cfg.gsUrl, { type: type, branch: branch, branchName: branchName, items: items, timestamp: new Date().toISOString() });
   } catch(err) { console.log('sync error', type, err); }
+}
+
+// ใช้ JSONP (GET+payload) แทน POST no-cors เพื่อให้รู้ว่าสำเร็จจริง
+function gsPost(url, payload) {
+  return new Promise(function(resolve, reject) {
+    var cbName = 'gsCb_' + Date.now() + '_' + Math.floor(Math.random()*9999);
+    var encoded = encodeURIComponent(JSON.stringify(payload));
+    var script = document.createElement('script');
+    var timer = setTimeout(function() {
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      reject(new Error('timeout'));
+    }, 15000);
+    window[cbName] = function(data) {
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      if (data && data.status === 'ok') resolve(data);
+      else reject(new Error(data ? data.message : 'error'));
+    };
+    script.src = url + '?callback=' + cbName + '&payload=' + encoded;
+    script.onerror = function() {
+      clearTimeout(timer);
+      delete window[cbName];
+      reject(new Error('script error'));
+    };
+    document.head.appendChild(script);
+  });
 }
 
 async function appendToSheet(type, branch, branchName, item) {
@@ -1527,19 +1538,8 @@ async function appendToSheet(type, branch, branchName, item) {
     return;
   }
   try {
-    var payload = JSON.stringify({
-      type: type,
-      branch: branch,
-      branchName: branchName,
-      item: item,
-      timestamp: new Date().toISOString()
-    });
-    await fetch(cfg.gsUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: payload
-    });
+    var payload = { type: type, branch: branch, branchName: branchName, item: item, timestamp: new Date().toISOString() };
+    await gsPost(cfg.gsUrl, payload);
     if (type === 'coupon_append' || type === 'coupon_delete') markCpUnsynced(false);
   } catch(err) {
     console.log('append error', type, err);
@@ -1882,7 +1882,7 @@ async function saveLinemanSun() {
         note: note,
         timestamp: new Date().toISOString()
       });
-      await fetch(cfg.gsUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: lmPayload });
+      await gsPost(cfg.gsUrl, JSON.parse(lmPayload));
     } catch(e) { console.log('lineman sync error', e); }
   }
 
@@ -2658,7 +2658,7 @@ function addRepayment(id) {
       items: itemsToSync,
       timestamp: new Date().toISOString()
     });
-    fetch(cfg.gsUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: payload })
+    gsPost(cfg.gsUrl, JSON.parse(payload))
       .then(function() { toast('ซิงค์รายการคืนเงินแล้ว ✓', 'success'); })
       .catch(function() { toast('บันทึกการคืนเงินแล้ว แต่ sync ไม่สำเร็จ', 'error'); });
   } else {
@@ -3286,12 +3286,7 @@ async function syncCoupons(showToast, btn) {
     for (var i = 0; i < missing.length; i++) {
       var c = missing[i];
       try {
-        await fetch(cfg.gsUrl, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'coupon_append', branch: c.branch, branchName: BRANCH_NAMES[c.branch], item: c })
-        });
+        await gsPost(cfg.gsUrl, { type: 'coupon_append', branch: c.branch, branchName: BRANCH_NAMES[c.branch], item: c });
       } catch(e) { errors++; console.log('coupon append error', c.code, e); }
     }
     if (errors === 0) {

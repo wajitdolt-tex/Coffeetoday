@@ -1500,9 +1500,20 @@ function renderPayables() {
 
 async function syncToSheets(type, branch, branchName, items) {
   if (!cfg.gsUrl) return;
+  var payload = { type: type, branch: branch, branchName: branchName, items: items, timestamp: new Date().toISOString() };
+  // ใช้ POST เลี่ยง URL length limit ของ JSONP (payable มี partialPayments ทำให้ payload ใหญ่)
   try {
-    await gsPost(cfg.gsUrl, { type: type, branch: branch, branchName: branchName, items: items, timestamp: new Date().toISOString() });
-  } catch(err) { console.log('sync error', type, err); }
+    await fetch(cfg.gsUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+  } catch(err) {
+    console.log('sync error (POST)', type, err);
+    // fallback เป็น JSONP ถ้า POST ใช้ไม่ได้
+    try { await gsPost(cfg.gsUrl, payload); } catch(e2) { console.log('sync error (JSONP)', type, e2); }
+  }
 }
 
 // ใช้ JSONP (GET+payload) แทน POST no-cors เพื่อให้รู้ว่าสำเร็จจริง
@@ -1651,7 +1662,7 @@ async function loadSummary() {
       }
       var sheetsPayables = data.payableRows.map(function(r) {
         var partials = [];
-        try { partials = JSON.parse(String(r[13]||'[]')); } catch(e) {}
+        try { partials = JSON.parse(String(r[12]||'[]')); } catch(e) {}
         return {
           id: r[9] || Date.now(),
           date: cleanDate(r[0]),

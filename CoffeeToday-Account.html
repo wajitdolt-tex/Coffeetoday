@@ -1651,7 +1651,7 @@ async function loadSummary() {
       }
       var sheetsPayables = data.payableRows.map(function(r) {
         var partials = [];
-        try { partials = JSON.parse(String(r[12]||'[]')); } catch(e) {}
+        try { partials = JSON.parse(String(r[13]||'[]')); } catch(e) {}
         return {
           id: r[9] || Date.now(),
           date: cleanDate(r[0]),

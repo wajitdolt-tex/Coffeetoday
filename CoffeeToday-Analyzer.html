@@ -113,6 +113,19 @@ canvas{display:block;width:100%;border-radius:8px;}
 </head>
 <body>
 <div class="lov" id="lov"><div class="lob"><div class="sp"></div><div style="color:var(--br);font-weight:600" id="lt">กำลังโหลด...</div></div></div>
+
+<!-- popup เลือกสาขาก่อนสั่งสินค้า -->
+<div class="lov" id="branchModal" style="background:rgba(44,24,16,.55);z-index:1200">
+  <div class="lob" style="max-width:340px;padding:28px 30px">
+    <div style="font-size:30px;margin-bottom:8px">🏪</div>
+    <div style="font-weight:700;color:var(--br);font-size:16px;margin-bottom:4px">เลือกสาขาที่สั่งสินค้า</div>
+    <div style="font-size:12px;color:var(--t3);margin-bottom:18px">เพื่อความถูกต้องของยอดสั่งซื้อแต่ละสาขา</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="confirmBranch('แพชชั่น')" class="btn bp" style="width:100%;padding:13px;font-size:15px;border-radius:12px">☕ แพชชั่น</button>
+      <button onclick="confirmBranch('โลตัส')" class="btn bp" style="width:100%;padding:13px;font-size:15px;border-radius:12px;background:var(--gn)">🏪 โลตัส</button>
+    </div>
+  </div>
+</div>
 <header>
   <div class="logo"><span style="font-size:22px">☕</span><div><div>Coffee Today</div><span class="lsub">สั่งซื้อ & ต้นทุน · ระยอง</span></div></div>
   <div class="hr"><div class="sync"><div class="dot" id="dot"></div><span id="stxt">ยังไม่ได้เชื่อมต่อ</span></div></div>
@@ -319,8 +332,8 @@ canvas{display:block;width:100%;border-radius:8px;}
     <div class="ct" style="cursor:pointer;user-select:none" onclick="toggleCard('bill-sum-body',this)">🧾 สรุปยอดรวมแต่ละรอบ<span style="margin-left:auto;font-size:12px;color:var(--t3);font-weight:400">▲ ซ่อน</span></div>
     <div id="bill-sum-body">
       <div class="tw"><table><thead><tr>
-        <th>รอบ</th><th>วันที่</th><th>สาขา</th><th>จำนวนรายการ</th><th style="text-align:right">ยอดรวมบิล (incl.VAT)</th>
-      </tr></thead><tbody id="h-bill-tb"><tr><td colspan="5"><div class="emp">ยังไม่มีข้อมูล</div></td></tr></tbody></table></div>
+        <th>รอบ</th><th>วันที่</th><th>สาขา</th><th>จำนวนรายการ</th><th style="text-align:right">ยอดรวมบิล (incl.VAT)</th><th></th>
+      </tr></thead><tbody id="h-bill-tb"><tr><td colspan="6"><div class="emp">ยังไม่มีข้อมูล</div></td></tr></tbody></table></div>
     </div>
   </div>
 
@@ -1236,6 +1249,17 @@ function setBranch(b){
 }
 function initBranchUI(){ setBranch(_activeBranch); }
 
+// popup เลือกสาขาก่อนสั่งสินค้า — ขึ้นทุกครั้งที่กด Tab สั่งสินค้า
+function showBranchModal(){
+  var m=document.getElementById('branchModal');
+  if(m) m.classList.add('show');
+}
+function confirmBranch(b){
+  setBranch(b);
+  var m=document.getElementById('branchModal');
+  if(m) m.classList.remove('show');
+}
+
 var _histBranch='แพชชั่น';
 function setHistBranch(b){
   _histBranch=b;_activeBranch=b;
@@ -1271,7 +1295,7 @@ function renderBillSummary(){
   var tb=document.getElementById('h-bill-tb');
   if(!tb) return;
   var src=getFilteredHistory();
-  if(!src.length){tb.innerHTML='<tr><td colspan="5"><div class="emp">ยังไม่มีข้อมูล</div></td></tr>';return;}
+  if(!src.length){tb.innerHTML='<tr><td colspan="6"><div class="emp">ยังไม่มีข้อมูล</div></td></tr>';return;}
   // group by roundLabel — เอา totalInclVat จาก row แรกของแต่ละรอบ (ทุก row ในรอบเดียวกันมีค่าเท่ากัน)
   var roundMap={};
   src.forEach(function(r){
@@ -1316,8 +1340,42 @@ function renderBillSummary(){
       +'<td><span class="pill" style="font-size:10px;color:'+branchColor+'">'+row.branch+'</span></td>'
       +'<td class="mn" style="text-align:center">'+row.count+' รายการ</td>'
       +'<td class="mn" style="text-align:right;font-size:14px">'+totalDisp+'</td>'
+      +'<td style="text-align:right"><button class="btn bg2 bsm" onclick="editRoundBranch(\''+key+'\')">✏️ แก้สาขา</button></td>'
       +'</tr>';
   }).join('');
+}
+
+// แก้สาขาของทั้งรอบในครั้งเดียว — กรณีพนักงานเลือกสาขาผิดตอนสั่ง
+function editRoundBranch(roundLabel){
+  var rowsInRound=orderHistory.filter(function(r){return r.roundLabel===roundLabel;});
+  if(!rowsInRound.length){alert('ไม่พบข้อมูลรอบนี้');return;}
+  var current=rowsInRound[0].branch||'ไม่ระบุ';
+  var target=confirm('รอบ "'+roundLabel+'" ตอนนี้บันทึกเป็นสาขา: '+current+'\n\nกด OK = เปลี่ยนเป็น แพชชั่น\nกด Cancel = เปลี่ยนเป็น โลตัส');
+  var newBranch=target?'แพชชั่น':'โลตัส';
+  if(newBranch===current){
+    alert('สาขาเดิมเป็น '+current+' อยู่แล้ว ไม่มีการเปลี่ยนแปลง');
+    return;
+  }
+  if(!confirm('ยืนยันเปลี่ยนสาขารอบ "'+roundLabel+'" ('+rowsInRound.length+' รายการ) จาก '+current+' → '+newBranch+' ?')) return;
+  if(!API){
+    alert('ยังไม่ได้เชื่อมต่อ Google Sheets ไม่สามารถบันทึกการแก้ไขได้');
+    return;
+  }
+  sL('กำลังแก้ไขสาขา '+rowsInRound.length+' รายการ...');
+  (function updateNext(i){
+    if(i>=rowsInRound.length){
+      hL();
+      sS('ok','แก้สาขาเรียบร้อย ✅');
+      rowsInRound.forEach(function(r){r.branch=newBranch;});
+      renderHistoryUI();
+      return;
+    }
+    var r=rowsInRound[i];
+    var updated=Object.assign({},r,{branch:newBranch});
+    apiP({action:'upsert',sheet:'OrderHistory',data:updated})
+      .then(function(){updateNext(i+1);})
+      .catch(function(){updateNext(i+1);});
+  })(0);
 }
 
 function filterHistTable(r){
@@ -1477,12 +1535,14 @@ function toggleCard(bodyId, ctEl){
     if(btn) btn.textContent='▼ แสดง';
   }
 }
-function sTab(t,el){document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('active');});document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active');});document.getElementById('tab-'+t).classList.add('active');el.classList.add('active');if(t==='hist')loadHistory();}
+function sTab(t,el){document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('active');});document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active');});document.getElementById('tab-'+t).classList.add('active');el.classList.add('active');if(t==='hist')loadHistory();if(t==='ord')showBranchModal();}
 function rAll(){rIng();rMenus();uSt();rOrdCats();rOrd();bRec();bSrRec();rSubRecipes();}
 API=localStorage.getItem('ct_analysis_url')||'';
 if(API){document.getElementById('sc-url').value=API;loadMeta();}else loadDefaultIngs();
 // init branch UI หลัง DOM พร้อม
 setTimeout(initBranchUI,0);
+// หน้าแรกเปิดมาเป็น tab สั่งสินค้าอยู่แล้ว ให้ขึ้น popup เลือกสาขาทันที
+setTimeout(showBranchModal,50);
 
 </script>
 </body>

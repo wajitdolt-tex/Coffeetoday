@@ -387,6 +387,21 @@ canvas{display:block;width:100%;border-radius:8px;}
   </div>
   <div class="card"><div class="ct">🔄 รีเฟรชข้อมูล</div><button class="btn bp" onclick="loadMeta()">🔄 โหลดวัตถุดิบ + เมนูจาก Sheets</button><div id="ls" style="margin-top:8px;font-size:12px;color:var(--t3)"></div></div>
   <div class="card"><div class="ct">🗄️ ข้อมูลปัจจุบัน</div><div style="font-size:13px;color:var(--t2);line-height:2">วัตถุดิบ: <strong id="info-ings">0</strong> รายการ &nbsp;|&nbsp; เมนู: <strong id="info-menus">0</strong> รายการ &nbsp;|&nbsp; <span id="info-src" style="color:var(--t3)">default</span></div></div>
+
+  <!-- นำเข้าสูตรเมนูจากเอกสาร -->
+  <div class="card" style="border-color:rgba(46,125,82,.3);background:var(--gbg)">
+    <div class="ct">📋 นำเข้าสูตรเมนู — ชุดที่ 1: กาแฟร้อน/เย็น/ปั่น สูตรหลัก</div>
+    <div style="font-size:12px;color:var(--t2);background:var(--s2);border-radius:8px;padding:10px 12px;margin-bottom:12px;line-height:1.8">
+      ใส่สูตร 43 เมนู (ทูเดย์ เอสเปรสโซ คาปูชิโน ลาเต้ มอคคา เอสปูชิโน อเมริกาโน คาราเมลมัคคิอาโต ทุกขนาด)
+      ระบบจะค้นหาวัตถุดิบที่ตรงกันในชีทให้อัตโนมัติ — กดตรวจสอบก่อน แล้วค่อยยืนยันนำเข้า<br>
+      ⚠️ <strong>กาแฟมอคคา</strong> ในเอกสารไม่มีรหัสวัตถุดิบตรงตัว ระบบจะใช้ <strong>กาแฟ TD-1</strong> แทนเป็นค่าเริ่มต้น ถ้าไม่ถูกแก้ไขในเมนูได้ทีหลัง
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn bp" onclick="previewImportBatch1()">🔍 ตรวจสอบก่อนนำเข้า</button>
+      <button class="btn bg2" id="b-confirm-import1" onclick="confirmImportBatch1()" style="display:none">✅ ยืนยันนำเข้า</button>
+    </div>
+    <div id="import1-report" style="margin-top:12px;font-size:12px;line-height:1.8"></div>
+  </div>
 </div>
 </div>
 
@@ -629,6 +644,166 @@ function initSync(){
   API=u;localStorage.setItem('ct_analysis_url',u);sL('กำลัง Init...');
   apiP({action:'init'}).then(function(){hL();return loadMeta();}).then(function(){alert('Init + ซิงค์สำเร็จ ✅');}).catch(function(e){hL();alert('Error: '+e.message);});
 }
+
+// ============================================================
+// นำเข้าสูตรเมนู ชุดที่ 1 — กาแฟร้อน/เย็น/ปั่น สูตรหลัก (50 เมนู)
+// ที่มา: เอกสารสูตรเมนูทั้งหมด (PDF) — จับคู่วัตถุดิบด้วยคำค้นแบบ substring
+// kw = คำค้นที่ต้องพบในชื่อวัตถุดิบ (ต้องพบครบทุกคำ)
+// excl = คำที่ต้องไม่พบ (กันจับคู่ผิด เช่น คาราเมล vs คาราเมลมัคคิอาโต)
+// type = 'ing' ค้นใน Ingredients, 'sub' ค้นใน SubRecipes
+// ============================================================
+var IMPORT_BATCH1={
+  'ทูเดย์ร้อน 8oz':[{kw:['TD-1'],qty:8,unit:'g',type:'ing'}],
+  'เอสเปรสโซร้อน 8oz':[{kw:['TD-1'],qty:8,unit:'g',type:'ing'}],
+  'คาปูชิโนร้อน 8oz':[{kw:['TD-1'],qty:8,unit:'g',type:'ing'},{kw:['เมจิ'],qty:4,unit:'oz',type:'ing'}],
+  'ลาเต้ร้อน 8oz':[{kw:['TD-1'],qty:8,unit:'g',type:'ing'},{kw:['เมจิ'],qty:4,unit:'oz',type:'ing'}],
+  'มอคคาร้อน 8oz':[{kw:['TD-1'],qty:8,unit:'g',type:'ing',note:'ใช้ TD-1 แทนกาแฟมอคคา'},{kw:['มอคค'],excl:['ิอาโต'],qty:0.5,unit:'oz',type:'ing'},{kw:['เมจิ'],qty:4,unit:'oz',type:'ing'}],
+  'เอสปูชิโนร้อน 8oz':[{kw:['TD-4'],qty:8,unit:'g',type:'ing'}],
+  'อเมริกาโนร้อน 8oz':[{kw:['TD-1'],qty:8,unit:'g',type:'ing'}],
+  'อเมริกาโนน้ำผึ้งร้อน 8oz':[{kw:['TD-1'],qty:8,unit:'g',type:'ing'},{kw:['น้ำผึ้ง'],qty:0.5,unit:'oz',type:'ing'}],
+
+  'ทูเดย์ร้อน 12oz':[{kw:['TD-3'],qty:18,unit:'g',type:'ing'}],
+  'เอสเปรสโซร้อน 12oz':[{kw:['TD-3'],qty:18,unit:'g',type:'ing'}],
+  'คาปูชิโนร้อน 12oz':[{kw:['TD-3'],qty:18,unit:'g',type:'ing'},{kw:['เมจิ'],qty:6,unit:'oz',type:'ing'}],
+  'ลาเต้ร้อน 12oz':[{kw:['TD-3'],qty:18,unit:'g',type:'ing'},{kw:['เมจิ'],qty:6,unit:'oz',type:'ing'}],
+  'มอคคาร้อน 12oz':[{kw:['TD-3'],qty:18,unit:'g',type:'ing',note:'ใช้ TD-3 แทนกาแฟมอคคา'},{kw:['มอคค'],excl:['ิอาโต'],qty:1,unit:'oz',type:'ing'},{kw:['เมจิ'],qty:6,unit:'oz',type:'ing'}],
+  'เอสปูชิโนร้อน 12oz':[{kw:['TD-4'],qty:18,unit:'g',type:'ing'}],
+  'อเมริกาโนร้อน 12oz':[{kw:['TD-3'],qty:18,unit:'g',type:'ing'}],
+  'อเมริกาโนน้ำผึ้งร้อน 12oz':[{kw:['TD-3'],qty:18,unit:'g',type:'ing'},{kw:['น้ำผึ้ง'],qty:1,unit:'oz',type:'ing'}],
+
+  'ทูเดย์เย็น 22oz':[{kw:['TD-1'],qty:18,unit:'g',type:'ing'},{kw:['นมข้น'],qty:2,unit:'oz',type:'ing'},{kw:['นมจืด'],excl:['เมจิ'],qty:1,unit:'oz',type:'ing'}],
+  'เอสเปรสโซเย็น 22oz':[{kw:['TD-2'],qty:18,unit:'g',type:'ing'},{kw:['นมข้น'],qty:2,unit:'oz',type:'ing'},{kw:['นมจืด'],excl:['เมจิ'],qty:1,unit:'oz',type:'ing'}],
+  'คาปูชิโนเย็น 22oz':[{kw:['TD-1'],qty:18,unit:'g',type:'ing'},{kw:['คาปู'],qty:4,unit:'oz',type:'sub'}],
+  'ลาเต้เย็น 22oz':[{kw:['TD-1'],qty:18,unit:'g',type:'ing'},{kw:['เชื่อม'],qty:2,unit:'oz',type:'sub'},{kw:['เมจิ'],qty:3,unit:'oz',type:'ing'}],
+  'มอคคาเย็น 22oz':[{kw:['TD-1'],qty:18,unit:'g',type:'ing',note:'ใช้ TD-1 แทนกาแฟมอคคา'},{kw:['คาปู'],qty:4,unit:'oz',type:'sub'},{kw:['มอคค'],excl:['ิอาโต'],qty:0.5,unit:'oz',type:'ing'}],
+  'เอสปูชิโนเย็น 22oz':[{kw:['TD-4'],qty:18,unit:'g',type:'ing'},{kw:['คาปู'],qty:1,unit:'oz',type:'sub'},{kw:['นมข้น'],qty:1,unit:'oz',type:'ing'}],
+  'อเมริกาโนเย็น 22oz':[{kw:['TD-1'],qty:18,unit:'g',type:'ing'},{kw:['เชื่อม'],qty:2,unit:'oz',type:'sub'}],
+  'อเมริกาโนน้ำผึ้งเย็น 22oz':[{kw:['TD-1'],qty:18,unit:'g',type:'ing'},{kw:['น้ำผึ้ง'],qty:1,unit:'oz',type:'ing'}],
+
+  'ทูเดย์ปั่น 16oz':[{kw:['TD-1'],qty:18,unit:'g',type:'ing'},{kw:['นมข้น'],qty:2.5,unit:'oz',type:'ing'},{kw:['นมจืด'],excl:['เมจิ'],qty:1,unit:'oz',type:'ing'}],
+  'เอสเปรสโซปั่น 16oz':[{kw:['TD-2'],qty:18,unit:'g',type:'ing'},{kw:['นมข้น'],qty:2.5,unit:'oz',type:'ing'},{kw:['นมจืด'],excl:['เมจิ'],qty:1,unit:'oz',type:'ing'}],
+  'คาปูชิโนปั่น 16oz':[{kw:['TD-1'],qty:18,unit:'g',type:'ing'},{kw:['คาปู'],qty:4.5,unit:'oz',type:'sub'},{kw:['คาราเมล'],excl:['มัคคิอาโต'],qty:0.5,unit:'oz',type:'ing'}],
+  'มอคคาปั่น 16oz':[{kw:['TD-1'],qty:18,unit:'g',type:'ing',note:'ใช้ TD-1 แทนกาแฟมอคคา'},{kw:['คาปู'],qty:4.5,unit:'oz',type:'sub'},{kw:['มอคค'],excl:['ิอาโต'],qty:0.5,unit:'oz',type:'ing'}],
+  'เอสปูชิโนปั่น 16oz':[{kw:['TD-4'],qty:18,unit:'g',type:'ing'},{kw:['คาปู'],qty:2,unit:'oz',type:'sub'},{kw:['นมข้น'],qty:1,unit:'oz',type:'ing'}],
+  'ลาเต้ปั่น 16oz':[{kw:['TD-1'],qty:18,unit:'g',type:'ing'},{kw:['เชื่อม'],qty:1.5,unit:'oz',type:'sub'},{kw:['เมจิ'],qty:3,unit:'oz',type:'ing'}],
+  'อเมริกาโนปั่น 16oz':[{kw:['TD-1'],qty:18,unit:'g',type:'ing'},{kw:['เชื่อม'],qty:2,unit:'oz',type:'sub'}],
+
+  'ทูเดย์ปั่น 22oz':[{kw:['TD-1'],qty:18,unit:'g',type:'ing'},{kw:['นมข้น'],qty:2.5,unit:'oz',type:'ing'},{kw:['นมจืด'],excl:['เมจิ'],qty:1,unit:'oz',type:'ing'}],
+  'เอสเปรสโซปั่น 22oz':[{kw:['TD-2'],qty:18,unit:'g',type:'ing'},{kw:['นมข้น'],qty:2.5,unit:'oz',type:'ing'},{kw:['นมจืด'],excl:['เมจิ'],qty:1,unit:'oz',type:'ing'}],
+  'คาปูชิโนปั่น 22oz':[{kw:['TD-1'],qty:18,unit:'g',type:'ing'},{kw:['คาปู'],qty:4.5,unit:'oz',type:'sub'},{kw:['คาราเมล'],excl:['มัคคิอาโต'],qty:0.5,unit:'oz',type:'ing'}],
+  'มอคคาปั่น 22oz':[{kw:['TD-1'],qty:18,unit:'g',type:'ing',note:'ใช้ TD-1 แทนกาแฟมอคคา'},{kw:['คาปู'],qty:4.5,unit:'oz',type:'sub'},{kw:['มอคค'],excl:['ิอาโต'],qty:0.5,unit:'oz',type:'ing'}],
+  'เอสปูชิโนปั่น 22oz':[{kw:['TD-4'],qty:18,unit:'g',type:'ing'},{kw:['คาปู'],qty:2,unit:'oz',type:'sub'},{kw:['นมข้น'],qty:1,unit:'oz',type:'ing'}],
+  'ลาเต้ปั่น 22oz':[{kw:['TD-1'],qty:18,unit:'g',type:'ing'},{kw:['เมจิ'],qty:3,unit:'oz',type:'ing'},{kw:['เชื่อม'],qty:2,unit:'oz',type:'sub'}],
+  'อเมริกาโนปั่น 22oz':[{kw:['TD-1'],qty:18,unit:'g',type:'ing'},{kw:['เชื่อม'],qty:2,unit:'oz',type:'sub'}],
+
+  'คาราเมลมัคคิอาโตร้อน 8oz':[{kw:['TD-3'],qty:8,unit:'g',type:'ing'},{kw:['คาราเมล'],excl:['มัคคิอาโต'],qty:0.5,unit:'oz',type:'ing'},{kw:['เมจิ'],qty:4,unit:'oz',type:'ing'}],
+  'คาราเมลมัคคิอาโตร้อน 12oz':[{kw:['TD-3'],qty:18,unit:'g',type:'ing'},{kw:['คาราเมล'],excl:['มัคคิอาโต'],qty:1,unit:'oz',type:'ing'},{kw:['เมจิ'],qty:6,unit:'oz',type:'ing'}],
+  'คาราเมลมัคคิอาโตเย็น 22oz':[{kw:['TD-3'],qty:18,unit:'g',type:'ing'},{kw:['คาราเมล'],excl:['มัคคิอาโต'],qty:1,unit:'oz',type:'ing'},{kw:['เมจิ'],qty:3,unit:'oz',type:'ing'}],
+  'คาราเมลมัคคิอาโตปั่น 16oz':[{kw:['TD-3'],qty:18,unit:'g',type:'ing'},{kw:['คาราเมล'],excl:['มัคคิอาโต'],qty:2,unit:'oz',type:'ing'},{kw:['เมจิ'],qty:2,unit:'oz',type:'ing'}],
+  'คาราเมลมัคคิอาโตปั่น 22oz':[{kw:['TD-3'],qty:18,unit:'g',type:'ing'},{kw:['คาราเมล'],excl:['มัคคิอาโต'],qty:2,unit:'oz',type:'ing'},{kw:['เมจิ'],qty:2,unit:'oz',type:'ing'}]
+};
+
+var _importPlan1=null;
+
+function findIngBy(spec,ingsArr,subArr){
+  var pool=spec.type==='sub'?subArr:ingsArr;
+  for(var i=0;i<pool.length;i++){
+    var nm=pool[i].name||'';
+    var ok=spec.kw.every(function(k){return nm.indexOf(k)>=0;});
+    if(ok&&spec.excl){ok=!spec.excl.some(function(e){return nm.indexOf(e)>=0;});}
+    if(ok) return pool[i];
+  }
+  return null;
+}
+
+function previewImportBatch1(){
+  if(!API){alert('กรุณาเชื่อมต่อ Google Sheets ก่อน (Tab ตั้งค่า)');return;}
+  sL('กำลังตรวจสอบข้อมูล...');
+  Promise.all([
+    apiG({action:'read',sheet:'Ingredients'}),
+    apiG({action:'read',sheet:'SubRecipes'}),
+    apiG({action:'read',sheet:'Menus'})
+  ]).then(function(res){
+    hL();
+    var liveIngs=(res[0].rows||[]).map(function(r){return Object.assign({},r,{price:parseFloat(r.price)||0,qty:parseFloat(r.qty)||0});});
+    var liveSub=(res[1].rows||[]).map(function(r){return Object.assign({},r,{yield:parseFloat(r.yield)||1});});
+    var liveMenus=(res[2].rows||[]).map(function(r){return Object.assign({},r,{price:parseFloat(r.price)||0,recipe:typeof r.recipe==='string'?JSON.parse(r.recipe||'[]'):(r.recipe||[])});});
+
+    var plan=[],menuFound=0,menuNotFound=[];
+    var allKeys=Object.keys(IMPORT_BATCH1);
+    allKeys.forEach(function(menuName){
+      var m=liveMenus.find(function(x){return x.name===menuName;});
+      if(!m){menuNotFound.push(menuName);return;}
+      menuFound++;
+      var lines=IMPORT_BATCH1[menuName];
+      var recipe=[],notes=[],unmatched=[];
+      lines.forEach(function(spec){
+        var found=findIngBy(spec,liveIngs,liveSub);
+        if(found){
+          recipe.push({iId:found.id,qty:spec.qty,unit:spec.unit});
+          if(spec.note) notes.push(spec.note+' → ใช้ "'+found.name+'"');
+        } else {
+          unmatched.push(spec.kw.join('+'));
+        }
+      });
+      plan.push({menuId:m.id,menuName:menuName,price:m.price,cat:m.cat,order:m.order,recipe:recipe,notes:notes,unmatched:unmatched});
+    });
+
+    _importPlan1={plan:plan};
+
+    var html='<div style="background:var(--s2);border-radius:8px;padding:10px 12px;margin-bottom:8px">'
+      +'พบเมนูตรงกัน <strong>'+menuFound+'</strong>/'+allKeys.length+' รายการ';
+    if(menuNotFound.length) html+='<br><span style="color:var(--rd)">ไม่พบเมนู: '+menuNotFound.join(', ')+'</span>';
+    html+='</div>';
+
+    var withIssue=plan.filter(function(p){return p.unmatched.length||p.notes.length;});
+    if(withIssue.length){
+      html+='<div style="background:var(--abg);border:1px solid var(--ac2);border-radius:8px;padding:10px 12px;margin-bottom:8px">';
+      html+='<strong>รายการที่ควรตรวจสอบ ('+withIssue.length+'):</strong><br>';
+      html+=withIssue.map(function(p){
+        var s='• '+p.menuName;
+        if(p.notes.length) s+='<br>&nbsp;&nbsp;⚠️ '+p.notes.join('; ');
+        if(p.unmatched.length) s+='<br>&nbsp;&nbsp;❌ ไม่พบวัตถุดิบ: '+p.unmatched.join(', ');
+        return s;
+      }).join('<br>');
+      html+='</div>';
+    }
+
+    var willImport=plan.filter(function(p){return p.recipe.length>0;}).length;
+    html+='<div style="color:var(--gn);font-weight:600">พร้อมนำเข้าสูตร '+willImport+' เมนู (สูตรเดิม ถ้ามี จะถูกแทนที่)</div>';
+
+    document.getElementById('import1-report').innerHTML=html;
+    document.getElementById('b-confirm-import1').style.display=willImport>0?'inline-flex':'none';
+  }).catch(function(e){
+    hL();
+    document.getElementById('import1-report').innerHTML='<div style="color:var(--rd)">โหลดข้อมูลไม่สำเร็จ: '+e.message+'</div>';
+  });
+}
+
+function confirmImportBatch1(){
+  if(!_importPlan1){alert('กรุณากดตรวจสอบก่อน');return;}
+  var plan=_importPlan1.plan.filter(function(p){return p.recipe.length>0;});
+  if(!plan.length){alert('ไม่มีรายการให้นำเข้า');return;}
+  if(!confirm('ยืนยันนำเข้าสูตร '+plan.length+' เมนู?\nสูตรเดิม (ถ้ามี) จะถูกแทนที่')) return;
+  sL('กำลังนำเข้าสูตร 0/'+plan.length+'...');
+  (function next(i){
+    if(i>=plan.length){
+      hL();
+      var rep=document.getElementById('import1-report');
+      if(rep) rep.innerHTML+='<div style="color:var(--gn);font-weight:700;margin-top:8px">✅ นำเข้าสำเร็จ '+plan.length+' เมนู</div>';
+      var btn=document.getElementById('b-confirm-import1');
+      if(btn) btn.style.display='none';
+      _importPlan1=null;
+      loadMeta();
+      return;
+    }
+    var p=plan[i];
+    sL('กำลังนำเข้าสูตร '+(i+1)+'/'+plan.length+': '+p.menuName);
+    var data={id:p.menuId,name:p.menuName,price:p.price,cat:p.cat||'',order:p.order,recipe:JSON.stringify(p.recipe)};
+    apiP({action:'upsert',sheet:'Menus',data:data}).then(function(){next(i+1);}).catch(function(){next(i+1);});
+  })(0);
+}
+
 function forceSyncAll(){
   if(!API)return alert('กรุณาตั้งค่า URL ก่อน');
   if(!confirm('จะ sync วัตถุดิบที่ขาดหายจาก Sheets\n(ราคาที่กรอกไว้จะไม่หาย)\nดำเนินการต่อ?'))return;

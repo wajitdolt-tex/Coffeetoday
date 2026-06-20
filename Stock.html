@@ -1393,12 +1393,12 @@ function editMaterialName(matId){
 const menuSearchEl = document.getElementById('menuSearch');
 const menuListWrap = document.getElementById('menuListWrap');
 
-function ingredientPreview(recipe){
+function ingredientListHTML(recipe){
   return recipe.ingredients.map(i => {
     const mat = materialById(i.materialId);
     if (!mat) return '';
-    return `${mat.name} ${fmtNum(i.qty)}${mat.smallUnit}`;
-  }).filter(Boolean).join(' · ');
+    return `<li class="flex justify-between gap-2"><span>${mat.name}</span><span class="font-num text-slate-500">${fmtNum(i.qty)} ${mat.smallUnit}</span></li>`;
+  }).filter(Boolean).join('');
 }
 
 function menuCardHTML(recipe){
@@ -1406,7 +1406,8 @@ function menuCardHTML(recipe){
   return `
   <div class="border border-slate-200 rounded-lg p-3 bg-white" id="menucard_${recipe.id}">
     <p class="font-semibold text-slate-900 text-sm leading-snug">${recipe.name} <span class="text-slate-400 font-normal">(${recipe.size})</span></p>
-    <p class="text-[11px] text-slate-400 mt-0.5 leading-relaxed">ใช้: ${ingredientPreview(recipe)}</p>
+    <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wide mt-1.5">สูตร — ตรวจสอบความถูกต้องได้ที่นี่</p>
+    <ul class="text-[11px] text-slate-600 mt-0.5 space-y-0.5">${ingredientListHTML(recipe)}</ul>
     <div class="mt-2">
       <label class="block text-[10px] text-slate-400 mb-0.5">จำนวนที่ขายวันนี้ (แก้ว)</label>
       <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${qty}"
@@ -1657,9 +1658,25 @@ const editSaveTimers = {};
 editListWrap.addEventListener('change', (e) => {
   const id = e.target.dataset.matid;
   const field = e.target.dataset.editfield;
-  if (!id || field !== 'mode') return;
+  if (!id) return;
   const mat = materialById(id);
   if (!mat) return;
+
+  if (field === 'qfmode') {
+    const newMode = e.target.value;
+    if (!newMode) {
+      mat.quickFill = null;
+    } else {
+      mat.quickFill = { mode: newMode, rate1: mat.quickFill?.rate1 ?? null, rate2: mat.quickFill?.rate2 ?? null, label: mat.quickFill?.label || 'แก้ว' };
+    }
+    rerenderEditRow(mat);
+    renderFastMoving(materialSearchEl.value);
+    renderSlowMoving(materialSearchEl.value);
+    upsertMaterial(mat);
+    return;
+  }
+
+  if (field !== 'mode') return;
 
   const wantFraction = e.target.value === 'fraction';
   if (wantFraction && mat.noFraction) {
@@ -1690,6 +1707,18 @@ editListWrap.addEventListener('input', (e) => {
   if (!id || !field || field === 'mode') return;
   const mat = materialById(id);
   if (!mat) return;
+
+  if (field === 'qfrate1' || field === 'qfrate2' || field === 'qflabel') {
+    if (!mat.quickFill) return;
+    if (field === 'qfrate1') mat.quickFill.rate1 = parseFloat(e.target.value) || null;
+    if (field === 'qfrate2') mat.quickFill.rate2 = parseFloat(e.target.value) || null;
+    if (field === 'qflabel') mat.quickFill.label = e.target.value || 'แก้ว';
+    renderFastMoving(materialSearchEl.value);
+    renderSlowMoving(materialSearchEl.value);
+    clearTimeout(editSaveTimers[id]);
+    editSaveTimers[id] = setTimeout(() => upsertMaterial(mat), 700);
+    return;
+  }
 
   if (field === 'bigUnit') {
     mat.bigUnit = e.target.value;

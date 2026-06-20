@@ -66,16 +66,142 @@
           <h1 class="font-heading text-lg sm:text-xl font-bold text-slate-900 leading-none">Audit &amp; Stock Cafe</h1>
         </div>
       </div>
-      <div class="text-right shrink-0">
-        <p id="todayDisplay" class="font-num text-xs font-semibold text-slate-700 leading-none"></p>
-        <p id="branchBadge" class="text-[11px] text-accent-700 font-semibold mt-1 hidden"></p>
-        <div class="flex items-center gap-1.5 justify-end mt-1">
-          <span id="syncDot" class="sync-dot bg-slate-300"></span>
-          <p id="syncStatus" class="text-[11px] text-slate-400">ออฟไลน์</p>
+      <div class="flex items-center gap-3 shrink-0">
+        <button id="openAdminBtn" class="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg px-3 py-2 transition">
+          🔒 หลังบ้าน
+        </button>
+        <div class="text-right">
+          <p id="todayDisplay" class="font-num text-xs font-semibold text-slate-700 leading-none"></p>
+          <p id="branchBadge" class="text-[11px] text-accent-700 font-semibold mt-1 hidden"></p>
+          <div class="flex items-center gap-1.5 justify-end mt-1">
+            <span id="syncDot" class="sync-dot bg-slate-300"></span>
+            <p id="syncStatus" class="text-[11px] text-slate-400">ออฟไลน์</p>
+          </div>
         </div>
       </div>
     </div>
   </header>
+
+  <!-- ===== Modal: หลังบ้าน (PIN gate + admin tools) ===== -->
+  <div id="adminModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-start sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white sm:rounded-2xl w-full sm:max-w-2xl h-full sm:h-[90vh] flex flex-col shadow-xl">
+      <div class="bg-slate-900 px-5 py-4 flex items-center justify-between shrink-0 sm:rounded-t-2xl">
+        <p class="text-white font-heading font-semibold">🔒 หลังบ้าน (สูตรเมนู + จัดการวัตถุดิบ)</p>
+        <button id="closeAdminBtn" class="text-slate-300 hover:text-white text-2xl leading-none px-2">&times;</button>
+      </div>
+
+      <div id="pinGateWrap" class="px-5 py-8 flex flex-col items-center justify-center gap-3 flex-1">
+        <p class="text-slate-600 text-sm">ใส่รหัสเพื่อเข้าดูสูตรลับและแก้ไข Unit Master</p>
+        <input id="pinInput" type="password" inputmode="numeric" maxlength="4" placeholder="รหัส 4 หลัก"
+          class="w-40 h-12 rounded-lg px-3 bg-slate-50 border border-slate-300 text-slate-900 text-center font-num tracking-widest text-lg focus:outline-none focus:ring-2 focus:ring-accent-500">
+        <button id="pinUnlockBtn" class="h-11 px-6 rounded-lg bg-accent-600 hover:bg-accent-700 text-white font-semibold text-sm transition">ปลดล็อก</button>
+        <p id="pinMsg" class="text-xs font-medium"></p>
+      </div>
+
+      <div id="backOfficeWrap" class="hidden flex-1 overflow-y-auto">
+
+        <!-- ผูกสูตรเมนู: กรอกยอดขายเมนูวันนี้ -->
+        <div class="border-b border-slate-100">
+          <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">M</span>
+              <h2 class="font-heading font-semibold text-slate-900">กรอกยอดขายเมนูวันนี้ (ผูกสูตรอัตโนมัติ)</h2>
+            </div>
+            <button id="clearMenuSalesBtn" class="text-xs font-semibold text-slate-500 hover:text-red-600 border border-slate-300 hover:border-red-300 rounded-lg px-3 h-9 transition">
+              ล้างยอดขายเมนู
+            </button>
+          </div>
+          <div class="px-5 pt-4 pb-2">
+            <p class="text-xs text-slate-500 mb-3">วิธีใช้: เลื่อนหาเมนูที่ขายวันนี้ (หรือพิมพ์ค้นหา) แล้วใส่ "จำนวนแก้ว" ที่ขายได้ในแต่ละเมนู ระบบจะคำนวณปริมาณวัตถุดิบที่ควรใช้ไปตามสูตรให้อัตโนมัติ แล้วนำไปเทียบกับยอดที่นับจริงในการ์ดวัตถุดิบด้านบนและตาราง Audit ด้านล่างทันที — ไม่ต้องกรอกอะไรที่การ์ดวัตถุดิบเองอีก ข้อมูลสูตรเป็นความลับ ไม่แสดงนอกส่วนนี้ กดไอคอนดินสอข้างชื่อเมนูเพื่อแก้ชื่อได้</p>
+            <p class="text-xs text-slate-500 mb-3">ถ้าไม่ได้ใช้ระบบผูกสูตรเมนู ก็ยังกรอกยอดขายตามสูตรของวัตถุดิบเองได้ตรงๆ ที่การ์ดวัตถุดิบในหน้าหลักเหมือนเดิม (ช่อง "ยอดขายตามสูตร (POS)")</p>
+            <input id="menuSearch" type="text" placeholder="ค้นหาเมนู เช่น ลาเต, ชาไทย, ปั่น" class="input-base">
+            <p class="text-xs text-slate-500 mt-2">คำนวณยอดใช้วัตถุดิบจากเมนูที่ขายแล้ว <span id="menuAffectedCount" class="font-num font-semibold text-accent-700">0</span> รายการวัตถุดิบ</p>
+          </div>
+          <div id="menuListWrap" class="px-5 pb-5 space-y-4"></div>
+        </div>
+
+        <!-- เพิ่มวัตถุดิบใหม่ -->
+        <div class="border-b border-slate-100">
+          <details>
+            <summary class="px-5 py-3 flex items-center justify-between hover:bg-slate-50 transition">
+              <span class="text-[13px] font-semibold text-slate-600 flex items-center gap-2">
+                <svg class="chevron w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
+                เพิ่มวัตถุดิบใหม่ในระบบ (Unit Master)
+              </span>
+              <span class="text-slate-400 text-[11px]">แตะเพื่อเปิด/ปิด</span>
+            </summary>
+            <div class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-slate-50/60 border-t border-slate-100">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อวัตถุดิบ</label>
+                <input id="newName" type="text" placeholder="เช่น ไซรัปลาเวนเดอร์" class="input-base input-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">หมวดหมู่</label>
+                <input id="newCategory" type="text" placeholder="เช่น ไซรัปและซอส" class="input-base input-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">รูปแบบหน่วยนับ</label>
+                <select id="newType" class="input-base input-sm">
+                  <option value="fraction">มีหน่วยใหญ่ + หน่วยเศษ (เช่น ถุง/กรัม)</option>
+                  <option value="count">นับเป็นชิ้นล้วน ไม่มีเศษ (เช่น ขวด, ห่อ, ใบ)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">หน่วยใหญ่</label>
+                <input id="newBigUnit" type="text" placeholder="เช่น ถุง / ลัง / ขวด" class="input-base input-sm">
+              </div>
+              <div id="newSmallUnitWrap">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">หน่วยเศษ</label>
+                <input id="newSmallUnit" type="text" placeholder="เช่น กรัม / มล. / ใบ" class="input-base input-sm">
+              </div>
+              <div id="newRatioWrap">
+                <label class="block text-xs font-semibold text-slate-600 mb-1">1 หน่วยใหญ่ = กี่หน่วยเศษ</label>
+                <input id="newRatio" type="number" min="1" step="any" placeholder="เช่น 250" class="input-base input-sm font-num">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">ยกมาเริ่มต้น (หน่วยเศษ)</label>
+                <input id="newCarry" type="number" min="0" step="any" placeholder="0" class="input-base input-sm font-num">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">ความถี่การเคลื่อนไหว</label>
+                <select id="newFastMoving" class="input-base input-sm">
+                  <option value="1">เคลื่อนไหวบ่อย (นับทุกวัน)</option>
+                  <option value="0">ไม่ค่อยเคลื่อนไหว</option>
+                </select>
+              </div>
+              <div class="lg:col-span-3 flex items-center flex-wrap gap-3">
+                <button id="addMaterialBtn" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg px-5 h-11 transition text-sm">
+                  + เพิ่มวัตถุดิบนี้เข้าระบบ
+                </button>
+                <span id="addMaterialMsg" class="text-sm font-medium"></span>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <!-- แก้ไขอัตราส่วนวัตถุดิบเดิม -->
+        <div>
+          <details>
+            <summary class="px-5 py-3.5 flex items-center justify-between hover:bg-slate-50 transition">
+              <span class="text-[13px] font-semibold text-slate-600 flex items-center gap-2">
+                <svg class="chevron w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
+                แก้ไขอัตราส่วนวัตถุดิบเดิม (Unit Master)
+              </span>
+              <span class="text-slate-400 text-[11px]">แตะเพื่อเปิด/ปิด</span>
+            </summary>
+            <div class="border-t border-slate-100 bg-slate-50/60">
+              <div class="p-5 pb-3">
+                <p class="text-xs text-slate-500 mb-3">แก้ไข "1 หน่วยใหญ่ = กี่หน่วยเศษ" (เช่น 1 ถุงเต็ม / 1 ขวดเต็ม จริงๆ หนักหรือจุเท่าไหร่) รวมถึงชื่อหน่วยและยอดยกมาตั้งต้น — แก้แล้วมีผลทันทีกับทุกการคำนวณ และซิงค์ไปทุกเครื่อง</p>
+                <input id="editSearch" type="text" placeholder="ค้นหาวัตถุดิบที่ต้องการแก้ไข" class="input-base">
+              </div>
+              <div id="editListWrap" class="px-5 pb-5 space-y-4"></div>
+            </div>
+          </details>
+        </div>
+
+      </div>
+    </div>
+  </div>
 
   <main class="max-w-5xl mx-auto px-4 sm:px-6 pt-5 space-y-5">
 
@@ -205,125 +331,6 @@
             </div>
           </div>
         </details>
-      </section>
-
-      <!-- หลังบ้าน: PIN gate -->
-      <section class="bg-slate-900 rounded-xl overflow-hidden">
-        <div id="pinGateWrap" class="px-5 py-5 flex items-center justify-between gap-3 flex-wrap">
-          <div>
-            <p class="text-white font-heading font-semibold flex items-center gap-2">🔒 หลังบ้าน (สูตรเมนู + จัดการวัตถุดิบ)</p>
-            <p class="text-slate-400 text-xs mt-0.5">เฉพาะผู้จัดการ — ใส่รหัสเพื่อเข้าดูสูตรลับและแก้ไข Unit Master</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <input id="pinInput" type="password" inputmode="numeric" maxlength="4" placeholder="รหัส 4 หลัก"
-              class="w-32 h-11 rounded-lg px-3 bg-slate-800 border border-slate-700 text-white text-center font-num tracking-widest focus:outline-none focus:ring-2 focus:ring-accent-500">
-            <button id="pinUnlockBtn" class="h-11 px-4 rounded-lg bg-accent-600 hover:bg-accent-700 text-white font-semibold text-sm transition">ปลดล็อก</button>
-          </div>
-        </div>
-        <p id="pinMsg" class="px-5 pb-3 text-xs font-medium"></p>
-
-        <div id="backOfficeWrap" class="hidden bg-white border-t border-slate-200">
-
-          <!-- ผูกสูตรเมนู: กรอกยอดขายเมนูวันนี้ -->
-          <div class="border-b border-slate-100">
-            <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
-              <div class="flex items-center gap-2.5">
-                <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">M</span>
-                <h2 class="font-heading font-semibold text-slate-900">กรอกยอดขายเมนูวันนี้ (ผูกสูตรอัตโนมัติ)</h2>
-              </div>
-              <button id="clearMenuSalesBtn" class="text-xs font-semibold text-slate-500 hover:text-red-600 border border-slate-300 hover:border-red-300 rounded-lg px-3 h-9 transition">
-                ล้างยอดขายเมนู
-              </button>
-            </div>
-            <div class="px-5 pt-4 pb-2">
-              <p class="text-xs text-slate-500 mb-3">วิธีใช้: เลื่อนหาเมนูที่ขายวันนี้ (หรือพิมพ์ค้นหา) แล้วใส่ "จำนวนแก้ว" ที่ขายได้ในแต่ละเมนู ระบบจะคำนวณปริมาณวัตถุดิบที่ควรใช้ไปตามสูตรให้อัตโนมัติ แล้วนำไปเทียบกับยอดที่นับจริงในการ์ดวัตถุดิบด้านบนและตาราง Audit ด้านล่างทันที — ไม่ต้องกรอกอะไรที่การ์ดวัตถุดิบเองอีก ข้อมูลสูตรเป็นความลับ ไม่แสดงนอกส่วนนี้</p>
-              <p class="text-xs text-slate-500 mb-3">ถ้าไม่ได้ใช้ระบบผูกสูตรเมนู ก็ยังกรอกยอดขายตามสูตรของวัตถุดิบเองได้ตรงๆ ที่การ์ดวัตถุดิบในหน้าหลักเหมือนเดิม (ช่อง "ยอดขายตามสูตร (POS)")</p>
-              <input id="menuSearch" type="text" placeholder="ค้นหาเมนู เช่น ลาเต, ชาไทย, ปั่น" class="input-base">
-              <p class="text-xs text-slate-500 mt-2">คำนวณยอดใช้วัตถุดิบจากเมนูที่ขายแล้ว <span id="menuAffectedCount" class="font-num font-semibold text-accent-700">0</span> รายการวัตถุดิบ</p>
-            </div>
-            <div id="menuListWrap" class="px-5 pb-5 space-y-4 max-h-[28rem] overflow-y-auto"></div>
-          </div>
-
-          <!-- เพิ่มวัตถุดิบใหม่ -->
-          <div class="border-b border-slate-100">
-            <details>
-              <summary class="px-5 py-3 flex items-center justify-between hover:bg-slate-50 transition">
-                <span class="text-[13px] font-semibold text-slate-600 flex items-center gap-2">
-                  <svg class="chevron w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
-                  เพิ่มวัตถุดิบใหม่ในระบบ (Unit Master)
-                </span>
-                <span class="text-slate-400 text-[11px]">แตะเพื่อเปิด/ปิด</span>
-              </summary>
-              <div class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-slate-50/60 border-t border-slate-100">
-                <div>
-                  <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อวัตถุดิบ</label>
-                  <input id="newName" type="text" placeholder="เช่น ไซรัปลาเวนเดอร์" class="input-base input-sm">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-slate-600 mb-1">หมวดหมู่</label>
-                  <input id="newCategory" type="text" placeholder="เช่น ไซรัปและซอส" class="input-base input-sm">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-slate-600 mb-1">รูปแบบหน่วยนับ</label>
-                  <select id="newType" class="input-base input-sm">
-                    <option value="fraction">มีหน่วยใหญ่ + หน่วยเศษ (เช่น ถุง/กรัม)</option>
-                    <option value="count">นับเป็นชิ้นล้วน ไม่มีเศษ (เช่น ขวด, ห่อ, ใบ)</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-slate-600 mb-1">หน่วยใหญ่</label>
-                  <input id="newBigUnit" type="text" placeholder="เช่น ถุง / ลัง / ขวด" class="input-base input-sm">
-                </div>
-                <div id="newSmallUnitWrap">
-                  <label class="block text-xs font-semibold text-slate-600 mb-1">หน่วยเศษ</label>
-                  <input id="newSmallUnit" type="text" placeholder="เช่น กรัม / มล. / ใบ" class="input-base input-sm">
-                </div>
-                <div id="newRatioWrap">
-                  <label class="block text-xs font-semibold text-slate-600 mb-1">1 หน่วยใหญ่ = กี่หน่วยเศษ</label>
-                  <input id="newRatio" type="number" min="1" step="any" placeholder="เช่น 250" class="input-base input-sm font-num">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-slate-600 mb-1">ยกมาเริ่มต้น (หน่วยเศษ)</label>
-                  <input id="newCarry" type="number" min="0" step="any" placeholder="0" class="input-base input-sm font-num">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-slate-600 mb-1">ความถี่การเคลื่อนไหว</label>
-                  <select id="newFastMoving" class="input-base input-sm">
-                    <option value="1">เคลื่อนไหวบ่อย (นับทุกวัน)</option>
-                    <option value="0">ไม่ค่อยเคลื่อนไหว</option>
-                  </select>
-                </div>
-                <div class="lg:col-span-3 flex items-center flex-wrap gap-3">
-                  <button id="addMaterialBtn" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg px-5 h-11 transition text-sm">
-                    + เพิ่มวัตถุดิบนี้เข้าระบบ
-                  </button>
-                  <span id="addMaterialMsg" class="text-sm font-medium"></span>
-                </div>
-              </div>
-            </details>
-          </div>
-
-          <!-- แก้ไขอัตราส่วนวัตถุดิบเดิม -->
-          <div>
-            <details>
-              <summary class="px-5 py-3.5 flex items-center justify-between hover:bg-slate-50 transition">
-                <span class="text-[13px] font-semibold text-slate-600 flex items-center gap-2">
-                  <svg class="chevron w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
-                  แก้ไขอัตราส่วนวัตถุดิบเดิม (Unit Master)
-                </span>
-                <span class="text-slate-400 text-[11px]">แตะเพื่อเปิด/ปิด</span>
-              </summary>
-              <div class="border-t border-slate-100 bg-slate-50/60">
-                <div class="p-5 pb-3">
-                  <p class="text-xs text-slate-500 mb-3">แก้ไข "1 หน่วยใหญ่ = กี่หน่วยเศษ" (เช่น 1 ถุงเต็ม / 1 ขวดเต็ม จริงๆ หนักหรือจุเท่าไหร่) รวมถึงชื่อหน่วยและยอดยกมาตั้งต้น — แก้แล้วมีผลทันทีกับทุกการคำนวณ และซิงค์ไปทุกเครื่อง</p>
-                  <input id="editSearch" type="text" placeholder="ค้นหาวัตถุดิบที่ต้องการแก้ไข" class="input-base">
-                </div>
-                <div id="editListWrap" class="px-5 pb-5 space-y-4 max-h-[28rem] overflow-y-auto"></div>
-              </div>
-            </details>
-          </div>
-
-        </div>
       </section>
 
       <p class="text-center text-xs text-slate-400 pb-6">
@@ -876,6 +883,18 @@ async function seedRecipesIfEmpty(){
   } catch (e) { console.error('seedRecipesIfEmpty failed', e); }
 }
 
+// ดึงชื่อเมนู/สูตรล่าสุดจาก DB (เผื่อมีการแก้ชื่อจากเครื่องอื่น)
+async function loadRecipesFromDB(){
+  try {
+    const rows = await sb('recipes?select=id,name,size,category');
+    if (!rows) return;
+    rows.forEach(r => {
+      const recipe = RECIPES.find(x => x.id === r.id);
+      if (recipe) { recipe.name = r.name; recipe.size = r.size; recipe.category = r.category; }
+    });
+  } catch (e) { console.error('loadRecipesFromDB failed', e); }
+}
+
 // ดึงยอดคงเหลือล่าสุด (ก่อนวันนี้) ของแต่ละวัตถุดิบ มาเป็น "ยกมาเมื่อวาน" ของวันนี้
 async function loadCarryForward(branch){
   const today = todayDateStr();
@@ -1042,10 +1061,22 @@ document.querySelectorAll('.branch-pick-btn').forEach(btn => {
 branchSelectEl.addEventListener('change', () => activateBranch(branchSelectEl.value));
 
 const PIN_CODE = '9999';
+const adminModal = document.getElementById('adminModal');
+let adminUnlocked = false;
+
+document.getElementById('openAdminBtn').addEventListener('click', () => {
+  adminModal.classList.remove('hidden');
+  if (!adminUnlocked) document.getElementById('pinInput').focus();
+});
+document.getElementById('closeAdminBtn').addEventListener('click', () => {
+  adminModal.classList.add('hidden');
+});
+
 document.getElementById('pinUnlockBtn').addEventListener('click', () => {
   const val = document.getElementById('pinInput').value.trim();
   const msg = document.getElementById('pinMsg');
   if (val === PIN_CODE) {
+    adminUnlocked = true;
     document.getElementById('backOfficeWrap').classList.remove('hidden');
     document.getElementById('pinGateWrap').classList.add('hidden');
     msg.textContent = '';
@@ -1054,7 +1085,7 @@ document.getElementById('pinUnlockBtn').addEventListener('click', () => {
     renderEditList(editSearchEl.value);
   } else {
     msg.textContent = 'รหัสไม่ถูกต้อง';
-    msg.className = 'px-5 pb-3 text-xs font-medium text-red-400';
+    msg.className = 'text-xs font-medium text-red-600';
   }
 });
 document.getElementById('pinInput').addEventListener('keydown', (e) => {
@@ -1405,7 +1436,12 @@ function menuCardHTML(recipe){
   const qty = menuSales[recipe.id] ?? '';
   return `
   <div class="border border-slate-200 rounded-lg p-3 bg-white" id="menucard_${recipe.id}">
-    <p class="font-semibold text-slate-900 text-sm leading-snug">${recipe.name} <span class="text-slate-400 font-normal">(${recipe.size})</span></p>
+    <div class="flex items-start gap-1.5">
+      <p class="font-semibold text-slate-900 text-sm leading-snug">${recipe.name} <span class="text-slate-400 font-normal">(${recipe.size})</span></p>
+      <button data-editrecipename="${recipe.id}" title="แก้ไขชื่อเมนู" class="text-slate-300 hover:text-accent-600 shrink-0 mt-0.5">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+    </div>
     <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wide mt-1.5">สูตร — ตรวจสอบความถูกต้องได้ที่นี่</p>
     <ul class="text-[11px] text-slate-600 mt-0.5 space-y-0.5">${ingredientListHTML(recipe)}</ul>
     <div class="mt-2">
@@ -1416,6 +1452,35 @@ function menuCardHTML(recipe){
     <p id="menulive_${recipe.id}" class="text-[11px] mt-1.5 ${qty ? 'text-green-600 font-medium' : 'text-slate-400'}">${qty ? `บันทึกแล้ว ✓ ขาย ${fmtNum(qty)} แก้ว` : 'ยังไม่ได้กรอก'}</p>
   </div>`;
 }
+
+async function upsertRecipe(recipe){
+  setSyncStatus('syncing');
+  try {
+    await sb('recipes?on_conflict=id', {
+      method: 'POST',
+      body: JSON.stringify([{ id: recipe.id, name: recipe.name, size: recipe.size, category: recipe.category, ingredients: recipe.ingredients, updated_at: new Date().toISOString() }]),
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    });
+    setSyncStatus('online');
+  } catch (e) { console.error('upsertRecipe failed', e); setSyncStatus('error'); }
+}
+
+function editRecipeName(recipeId){
+  const recipe = RECIPES.find(r => r.id === recipeId);
+  if (!recipe) return;
+  const newName = prompt('แก้ไขชื่อเมนู', recipe.name);
+  if (newName === null) return;
+  const trimmed = newName.trim();
+  if (!trimmed) return;
+  recipe.name = trimmed;
+  upsertRecipe(recipe);
+  renderMenuList(menuSearchEl.value);
+}
+
+menuListWrap.addEventListener('click', (e) => {
+  const editBtn = e.target.closest('[data-editrecipename]');
+  if (editBtn) editRecipeName(editBtn.dataset.editrecipename);
+});
 
 function renderMenuList(filterText){
   const ft = (filterText || '').trim().toLowerCase();
@@ -1874,6 +1939,7 @@ function updateStats(){
     await seedMaterialsIfEmpty();
     await loadMaterialsFromDB();
     await seedRecipesIfEmpty();
+    await loadRecipesFromDB();
     setSyncStatus('online');
     if (syncMsg) syncMsg.textContent = 'พร้อมใช้งาน — เชื่อมต่อฐานข้อมูลสำเร็จ';
   } catch (e) {

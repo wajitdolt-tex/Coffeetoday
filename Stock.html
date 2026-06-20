@@ -100,6 +100,47 @@
 
       <div id="backOfficeWrap" class="hidden flex-1 overflow-y-auto">
 
+        <!-- ตารางสรุปรายงาน Audit -->
+        <div class="border-b border-slate-100">
+          <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2.5">
+            <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">A</span>
+            <h2 class="font-heading font-semibold text-slate-900">ตารางสรุปรายงาน Audit Reconciliation</h2>
+          </div>
+          <div class="px-5 py-3 flex items-center gap-3 text-[11px] text-slate-500 flex-wrap">
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span>ใช้เกินสูตร</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>ใช้ไม่ถึงสูตร</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>ตรงสูตร</span>
+          </div>
+          <div class="px-5 py-2.5 border-y border-slate-100 flex flex-wrap gap-2 items-center bg-slate-50/60">
+            <span class="text-[11px] font-semibold text-slate-500">กรอง:</span>
+            <select id="categoryFilter" class="input-base input-sm !h-8 !text-xs w-auto">
+              <option value="">ทุกหมวดหมู่</option>
+            </select>
+            <select id="statusFilter" class="input-base input-sm !h-8 !text-xs w-auto">
+              <option value="">ทุกสถานะ</option>
+              <option value="done">บันทึกแล้ว</option>
+              <option value="pending">ยังไม่ได้นับ</option>
+            </select>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm min-w-[1100px]">
+              <thead>
+                <tr class="text-left text-[11px] uppercase tracking-wide text-slate-500 border-b border-slate-200 bg-slate-50/80">
+                  <th class="px-4 py-2.5 font-semibold">รายการวัตถุดิบ</th>
+                  <th class="px-4 py-2.5 font-semibold">ยกมาเมื่อวาน</th>
+                  <th class="px-4 py-2.5 font-semibold">รับเข้าวันนี้</th>
+                  <th class="px-4 py-2.5 font-semibold">ยอดขายจริงตามสูตร (POS)</th>
+                  <th class="px-4 py-2.5 font-semibold">ยอดใช้ไปจริง</th>
+                  <th class="px-4 py-2.5 font-semibold">ผลต่าง (Variance)</th>
+                  <th class="px-4 py-2.5 font-semibold">คงเหลือยกไป</th>
+                  <th class="px-4 py-2.5 font-semibold">หมายเหตุ</th>
+                </tr>
+              </thead>
+              <tbody id="auditTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- ผูกสูตรเมนู: กรอกยอดขายเมนูวันนี้ -->
         <div class="border-b border-slate-100">
           <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
@@ -281,55 +322,6 @@
             <span class="text-slate-400 text-[11px]">แตะเพื่อเปิด/ปิด</span>
           </summary>
           <div id="slowMovingWrap" class="p-4 space-y-4 border-t border-slate-100"></div>
-        </details>
-      </section>
-
-      <!-- ตารางสรุปรายงาน Audit -->
-      <section class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <details>
-          <summary class="px-5 py-3.5 flex items-center justify-between hover:bg-slate-50 transition">
-            <span class="text-sm font-semibold text-slate-700 flex items-center gap-2.5">
-              <svg class="chevron w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
-              <span class="w-6 h-6 rounded-md bg-slate-100 text-slate-500 text-xs font-bold font-num flex items-center justify-center shrink-0">3</span>
-              ตารางสรุปรายงาน Audit Reconciliation
-            </span>
-            <span class="text-slate-400 text-[11px]">แตะเพื่อเปิด/ปิด</span>
-          </summary>
-          <div class="border-t border-slate-100">
-            <div class="px-5 py-3 flex items-center gap-3 text-[11px] text-slate-500 flex-wrap">
-              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span>ใช้เกินสูตร</span>
-              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>ใช้ไม่ถึงสูตร</span>
-              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>ตรงสูตร</span>
-            </div>
-            <div class="px-5 py-2.5 border-y border-slate-100 flex flex-wrap gap-2 items-center bg-slate-50/60">
-              <span class="text-[11px] font-semibold text-slate-500">กรอง:</span>
-              <select id="categoryFilter" class="input-base input-sm !h-8 !text-xs w-auto">
-                <option value="">ทุกหมวดหมู่</option>
-              </select>
-              <select id="statusFilter" class="input-base input-sm !h-8 !text-xs w-auto">
-                <option value="">ทุกสถานะ</option>
-                <option value="done">บันทึกแล้ว</option>
-                <option value="pending">ยังไม่ได้นับ</option>
-              </select>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full text-sm min-w-[1100px]">
-                <thead>
-                  <tr class="text-left text-[11px] uppercase tracking-wide text-slate-500 border-b border-slate-200 bg-slate-50/80">
-                    <th class="px-4 py-2.5 font-semibold">รายการวัตถุดิบ</th>
-                    <th class="px-4 py-2.5 font-semibold">ยกมาเมื่อวาน</th>
-                    <th class="px-4 py-2.5 font-semibold">รับเข้าวันนี้</th>
-                    <th class="px-4 py-2.5 font-semibold">ยอดขายจริงตามสูตร (POS)</th>
-                    <th class="px-4 py-2.5 font-semibold">ยอดใช้ไปจริง</th>
-                    <th class="px-4 py-2.5 font-semibold">ผลต่าง (Variance)</th>
-                    <th class="px-4 py-2.5 font-semibold">คงเหลือยกไป</th>
-                    <th class="px-4 py-2.5 font-semibold">หมายเหตุ</th>
-                  </tr>
-                </thead>
-                <tbody id="auditTableBody"></tbody>
-              </table>
-            </div>
-          </div>
         </details>
       </section>
 
@@ -1616,7 +1608,9 @@ const editListWrap = document.getElementById('editListWrap');
 
 function editHintText(mat){
   if (mat.noFraction) return `นับเป็น ${mat.bigUnit} ทีละชิ้น (ไม่มีหน่วยเศษ)`;
-  return `1 ${mat.bigUnit} = ${fmtNum(mat.ratio)} ${mat.smallUnit} · ยกมาตั้งต้นตอนนี้ ${fmtNum(mat.carry)} ${mat.smallUnit}`;
+  const big = Math.floor(mat.carry / mat.ratio);
+  const small = Math.round((mat.carry - big * mat.ratio) * 100) / 100;
+  return `1 ${mat.bigUnit} = ${fmtNum(mat.ratio)} ${mat.smallUnit} · ยกมาตั้งต้นตอนนี้ ${fmtNum(big)} ${mat.bigUnit} + ${fmtNum(small)} ${mat.smallUnit} (รวม ${fmtNum(mat.carry)} ${mat.smallUnit})`;
 }
 
 function quickFillAdminHTML(mat){
@@ -1657,6 +1651,8 @@ function quickFillAdminHTML(mat){
 
 function editRowHTML(mat){
   const isFrac = !mat.noFraction;
+  const carryBig = isFrac ? Math.floor(mat.carry / mat.ratio) : mat.carry;
+  const carrySmall = isFrac ? Math.round((mat.carry - carryBig * mat.ratio) * 100) / 100 : 0;
   return `
   <div class="border border-slate-200 rounded-lg p-3 bg-white" id="editrow_${mat.id}">
     <div class="flex items-center justify-between gap-2 mb-2">
@@ -1670,7 +1666,7 @@ function editRowHTML(mat){
         <option value="count" ${!isFrac ? 'selected' : ''}>นับเป็นชิ้นล้วน ไม่มีเศษ (เช่น ใบ, ชิ้น, อัน, กระป๋อง)</option>
       </select>
     </div>
-    <div class="grid grid-cols-2 ${isFrac ? 'sm:grid-cols-4' : 'sm:grid-cols-2'} gap-1.5">
+    <div class="grid grid-cols-2 ${isFrac ? 'sm:grid-cols-3' : ''} gap-1.5">
       <div>
         <label class="block text-[10px] text-slate-400 mb-0.5">หน่วยใหญ่</label>
         <input type="text" value="${mat.bigUnit}" data-matid="${mat.id}" data-editfield="bigUnit" class="input-base input-sm !h-9 !px-2 text-xs">
@@ -1683,12 +1679,23 @@ function editRowHTML(mat){
       <div>
         <label class="block text-[10px] text-slate-400 mb-0.5">1 ใหญ่ = กี่เศษ</label>
         <input type="number" min="0.0001" step="any" value="${mat.ratio}" data-matid="${mat.id}" data-editfield="ratio" class="input-base input-sm !h-9 !px-2 font-num text-xs">
-      </div>` : ''}
+      </div>` : `
       <div>
-        <label class="block text-[10px] text-slate-400 mb-0.5">ยกมาเริ่มต้น (เศษ)</label>
+        <label class="block text-[10px] text-slate-400 mb-0.5">ยกมาเริ่มต้น (${mat.bigUnit})</label>
         <input type="number" min="0" step="any" value="${mat.carry}" data-matid="${mat.id}" data-editfield="carry" class="input-base input-sm !h-9 !px-2 font-num text-xs">
-      </div>
+      </div>`}
     </div>
+    ${isFrac ? `
+    <div class="grid grid-cols-2 gap-1.5 mt-1.5">
+      <div>
+        <label class="block text-[10px] text-slate-400 mb-0.5">ยกมาเริ่มต้น — เต็ม (${mat.bigUnit})</label>
+        <input type="number" min="0" step="1" value="${carryBig}" data-matid="${mat.id}" data-editfield="carryBig" class="input-base input-sm !h-9 !px-2 font-num text-xs">
+      </div>
+      <div>
+        <label class="block text-[10px] text-slate-400 mb-0.5">ยกมาเริ่มต้น — เศษ (${mat.smallUnit})</label>
+        <input type="number" min="0" step="any" value="${carrySmall}" data-matid="${mat.id}" data-editfield="carrySmall" class="input-base input-sm !h-9 !px-2 font-num text-xs">
+      </div>
+    </div>` : ''}
     <p id="edithint_${mat.id}" class="text-[11px] text-slate-400 mt-1.5">${editHintText(mat)}</p>
     ${quickFillAdminHTML(mat)}
   </div>`;
@@ -1793,8 +1800,18 @@ editListWrap.addEventListener('input', (e) => {
   } else if (field === 'ratio') {
     const v = parseFloat(e.target.value);
     if (v > 0) mat.ratio = v;
+    // อัตราส่วนเปลี่ยน -> คำนวณยกมาใหม่จากช่อง เต็ม+เศษ ที่กรอกไว้
+    const bigEl = document.querySelector(`[data-matid="${id}"][data-editfield="carryBig"]`);
+    const smallEl = document.querySelector(`[data-matid="${id}"][data-editfield="carrySmall"]`);
+    if (bigEl && smallEl) mat.carry = (parseFloat(bigEl.value) || 0) * mat.ratio + (parseFloat(smallEl.value) || 0);
   } else if (field === 'carry') {
     mat.carry = parseFloat(e.target.value) || 0;
+  } else if (field === 'carryBig' || field === 'carrySmall') {
+    const bigEl = document.querySelector(`[data-matid="${id}"][data-editfield="carryBig"]`);
+    const smallEl = document.querySelector(`[data-matid="${id}"][data-editfield="carrySmall"]`);
+    const big = parseFloat(bigEl?.value) || 0;
+    const small = parseFloat(smallEl?.value) || 0;
+    mat.carry = big * mat.ratio + small;
   }
 
   const hintEl = document.getElementById('edithint_' + id);

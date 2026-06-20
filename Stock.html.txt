@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Audit & Stock Cafe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:Inter,sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:IBM Plex Mono,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width:640px){.container{max-width:640px}}@media (min-width:768px){.container{max-width:768px}}@media (min-width:1024px){.container{max-width:1024px}}@media (min-width:1280px){.container{max-width:1280px}}@media (min-width:1536px){.container{max-width:1536px}}.fixed{position:fixed}.sticky{position:sticky}.inset-0{inset:0}.top-0{top:0}.top-\[64px\]{top:64px}.z-20{z-index:20}.z-30{z-index:30}.z-50{z-index:50}.mx-1{margin-left:.25rem;margin-right:.25rem}.mx-auto{margin-left:auto;margin-right:auto}.mb-0\.5{margin-bottom:.125rem}.mb-1{margin-bottom:.25rem}.mb-1\.5{margin-bottom:.375rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.mb-5{margin-bottom:1.25rem}.ml-1{margin-left:.25rem}.mt-0\.5{margin-top:.125rem}.mt-1{margin-top:.25rem}.mt-1\.5{margin-top:.375rem}.mt-2{margin-top:.5rem}.mt-4{margin-top:1rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.table{display:table}.grid{display:grid}.hidden{display:none}.\!h-10{height:2.5rem!important}.\!h-8{height:2rem!important}.\!h-9{height:2.25rem!important}.h-1\.5{height:.375rem}.h-10{height:2.5rem}.h-11{height:2.75rem}.h-12{height:3rem}.h-14{height:3.5rem}.h-2{height:.5rem}.h-3{height:.75rem}.h-3\.5{height:.875rem}.h-4{height:1rem}.h-6{height:1.5rem}.h-9{height:2.25rem}.max-h-\[28rem\]{max-height:28rem}.min-h-screen{min-height:100vh}.w-1\.5{width:.375rem}.w-10{width:2.5rem}.w-2{width:.5rem}.w-20{width:5rem}.w-24{width:6rem}.w-3{width:.75rem}.w-3\.5{width:.875rem}.w-32{width:8rem}.w-4{width:1rem}.w-6{width:1.5rem}.w-auto{width:auto}.w-full{width:100%}.min-w-0{min-width:0}.min-w-\[1100px\]{min-width:1100px}.min-w-\[160px\]{min-width:160px}.max-w-5xl{max-width:64rem}.max-w-\[160px\]{max-width:160px}.max-w-sm{max-width:24rem}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}.basis-full{flex-basis:100%}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;-moz-user-select:none;user-select:none}.scroll-mt-40{scroll-margin-top:10rem}.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1\.5{gap:.375rem}.gap-2{gap:.5rem}.gap-2\.5{gap:.625rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}.space-y-3>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.75rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.75rem*var(--tw-space-y-reverse))}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem*var(--tw-space-y-reverse))}.space-y-5>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem*var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:.5rem}.rounded-md{border-radius:.375rem}.rounded-xl{border-radius:.75rem}.border{border-width:1px}.border-y{border-top-width:1px}.border-b,.border-y{border-bottom-width:1px}.border-t{border-top-width:1px}.border-amber-200{--tw-border-opacity:1;border-color:rgb(253 230 138/var(--tw-border-opacity,1))}.border-slate-100{--tw-border-opacity:1;border-color:rgb(241 245 249/var(--tw-border-opacity,1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240/var(--tw-border-opacity,1))}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225/var(--tw-border-opacity,1))}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85/var(--tw-border-opacity,1))}.bg-accent-50{--tw-bg-opacity:1;background-color:rgb(252 243 236/var(--tw-bg-opacity,1))}.bg-accent-600{--tw-bg-opacity:1;background-color:rgb(168 84 31/var(--tw-bg-opacity,1))}.bg-accent-700{--tw-bg-opacity:1;background-color:rgb(133 64 26/var(--tw-bg-opacity,1))}.bg-amber-50{--tw-bg-opacity:1;background-color:rgb(255 251 235/var(--tw-bg-opacity,1))}.bg-amber-500{--tw-bg-opacity:1;background-color:rgb(245 158 11/var(--tw-bg-opacity,1))}.bg-green-500{--tw-bg-opacity:1;background-color:rgb(34 197 94/var(--tw-bg-opacity,1))}.bg-green-600{--tw-bg-opacity:1;background-color:rgb(22 163 74/var(--tw-bg-opacity,1))}.bg-red-500{--tw-bg-opacity:1;background-color:rgb(239 68 68/var(--tw-bg-opacity,1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249/var(--tw-bg-opacity,1))}.bg-slate-300{--tw-bg-opacity:1;background-color:rgb(203 213 225/var(--tw-bg-opacity,1))}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252/var(--tw-bg-opacity,1))}.bg-slate-50\/60{background-color:rgba(248,250,252,.6)}.bg-slate-50\/80{background-color:rgba(248,250,252,.8)}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59/var(--tw-bg-opacity,1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42/var(--tw-bg-opacity,1))}.bg-slate-900\/60{background-color:rgba(15,23,42,.6)}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity,1))}.p-2\.5{padding:.625rem}.p-3{padding:.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.\!px-1\.5{padding-left:.375rem!important;padding-right:.375rem!important}.\!px-2{padding-left:.5rem!important;padding-right:.5rem!important}.px-1{padding-left:.25rem;padding-right:.25rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-10{padding-top:2.5rem;padding-bottom:2.5rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-2\.5{padding-top:.625rem;padding-bottom:.625rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-3\.5{padding-top:.875rem;padding-bottom:.875rem}.py-4{padding-top:1rem;padding-bottom:1rem}.py-5{padding-top:1.25rem;padding-bottom:1.25rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.pb-1{padding-bottom:.25rem}.pb-16{padding-bottom:4rem}.pb-2{padding-bottom:.5rem}.pb-3{padding-bottom:.75rem}.pb-5{padding-bottom:1.25rem}.pb-6{padding-bottom:1.5rem}.pt-4{padding-top:1rem}.pt-5{padding-top:1.25rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.align-top{vertical-align:top}.font-heading{font-family:Space Grotesk,sans-serif}.\!text-xs{font-size:.75rem!important;line-height:1rem!important}.text-5xl{font-size:3rem;line-height:1}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-\[13px\]{font-size:13px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:.75rem;line-height:1rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-normal{font-weight:400}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.italic{font-style:italic}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.leading-snug{line-height:1.375}.tracking-\[0\.18em\]{letter-spacing:.18em}.tracking-wide{letter-spacing:.025em}.tracking-widest{letter-spacing:.1em}.text-accent-600{--tw-text-opacity:1;color:rgb(168 84 31/var(--tw-text-opacity,1))}.text-accent-700{--tw-text-opacity:1;color:rgb(133 64 26/var(--tw-text-opacity,1))}.text-amber-600{--tw-text-opacity:1;color:rgb(217 119 6/var(--tw-text-opacity,1))}.text-amber-700{--tw-text-opacity:1;color:rgb(180 83 9/var(--tw-text-opacity,1))}.text-green-600{--tw-text-opacity:1;color:rgb(22 163 74/var(--tw-text-opacity,1))}.text-green-700{--tw-text-opacity:1;color:rgb(21 128 61/var(--tw-text-opacity,1))}.text-red-400{--tw-text-opacity:1;color:rgb(248 113 113/var(--tw-text-opacity,1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68/var(--tw-text-opacity,1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38/var(--tw-text-opacity,1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225/var(--tw-text-opacity,1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184/var(--tw-text-opacity,1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139/var(--tw-text-opacity,1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105/var(--tw-text-opacity,1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85/var(--tw-text-opacity,1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42/var(--tw-text-opacity,1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.accent-accent-600{accent-color:#a8541f}.shadow-xl{--tw-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color),0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.outline{outline-style:solid}.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.hover\:border-red-300:hover{--tw-border-opacity:1;border-color:rgb(252 165 165/var(--tw-border-opacity,1))}.hover\:bg-accent-50:hover{--tw-bg-opacity:1;background-color:rgb(252 243 236/var(--tw-bg-opacity,1))}.hover\:bg-accent-700:hover{--tw-bg-opacity:1;background-color:rgb(133 64 26/var(--tw-bg-opacity,1))}.hover\:bg-accent-800:hover{--tw-bg-opacity:1;background-color:rgb(107 51 15/var(--tw-bg-opacity,1))}.hover\:bg-amber-50\/30:hover{background-color:rgba(255,251,235,.3)}.hover\:bg-green-700:hover{--tw-bg-opacity:1;background-color:rgb(21 128 61/var(--tw-bg-opacity,1))}.hover\:bg-slate-100:hover{--tw-bg-opacity:1;background-color:rgb(241 245 249/var(--tw-bg-opacity,1))}.hover\:bg-slate-50:hover{--tw-bg-opacity:1;background-color:rgb(248 250 252/var(--tw-bg-opacity,1))}.hover\:bg-slate-800:hover{--tw-bg-opacity:1;background-color:rgb(30 41 59/var(--tw-bg-opacity,1))}.hover\:text-accent-600:hover{--tw-text-opacity:1;color:rgb(168 84 31/var(--tw-text-opacity,1))}.hover\:text-accent-700:hover{--tw-text-opacity:1;color:rgb(133 64 26/var(--tw-text-opacity,1))}.hover\:text-red-600:hover{--tw-text-opacity:1;color:rgb(220 38 38/var(--tw-text-opacity,1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}.focus\:ring-accent-500:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(194 105 58/var(--tw-ring-opacity,1))}.active\:scale-\[0\.99\]:active{--tw-scale-x:0.99;--tw-scale-y:0.99;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@media (min-width:640px){.sm\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.sm\:grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}.sm\:text-2xl{font-size:1.5rem;line-height:2rem}.sm\:text-\[11px\]{font-size:11px}.sm\:text-xl{font-size:1.25rem;line-height:1.75rem}}@media (min-width:1024px){.lg\:col-span-3{grid-column:span 3/span 3}.lg\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}}
+</style>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .font-heading { font-family: 'Space Grotesk', sans-serif; }
+  .font-num { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { opacity: 1; }
+  ::selection { background: #A8541F22; }
+  tbody tr:nth-child(even) { background-color: #F8FAFC; }
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
+  details[open] > summary .chevron { transform: rotate(90deg); }
+  .chevron { transition: transform .15s ease; }
+  .input-base {
+    width: 100%; height: 3rem; background: #fff; border: 1px solid #CBD5E1; border-radius: 0.6rem;
+    padding: 0 0.875rem; font-size: 0.95rem; color: #0F172A; transition: box-shadow .12s, border-color .12s;
+  }
+  .input-base:disabled { background: #F1F5F9; color: #64748B; }
+  .input-base::placeholder { color: #94A3B8; }
+  .input-base:focus { outline: none; border-color: #A8541F; box-shadow: 0 0 0 3px rgba(168,84,31,0.15); }
+  .input-sm { height: 2.5rem; font-size: 0.85rem; padding: 0 0.7rem; }
+  .chip { white-space: nowrap; }
+  .chip::-webkit-scrollbar { display: none; }
+  .sync-dot { width: 6px; height: 6px; border-radius: 9999px; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen pb-16">
+
+  <!-- ===== Modal: เลือกสาขาก่อนเริ่มนับสต็อก ===== -->
+  <div id="branchModal" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl text-center">
+      <div class="text-5xl mb-3">🏪</div>
+      <h3 class="font-heading font-bold text-lg text-slate-900 mb-1">เลือกสาขาที่นับสต็อก</h3>
+      <p class="text-xs text-slate-500 mb-5">เพื่อความถูกต้องของยอดนับสต็อกแต่ละสาขา</p>
+      <div class="space-y-3">
+        <button data-branch="สาขาแพชชั่นระยอง"
+          class="branch-pick-btn w-full flex items-center justify-center gap-2 bg-accent-700 hover:bg-accent-800 active:scale-[0.99] transition text-white font-semibold rounded-xl h-14 text-base">
+          <span class="text-xl">☕</span> สาขาแพชชั่นระยอง
+        </button>
+        <button data-branch="สาขาโลตัสระยอง"
+          class="branch-pick-btn w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 active:scale-[0.99] transition text-white font-semibold rounded-xl h-14 text-base">
+          <span class="text-xl">🏬</span> สาขาโลตัสระยอง
+        </button>
+      </div>
+      <p id="branchModalSyncMsg" class="text-[11px] text-slate-400 mt-4">กำลังเชื่อมต่อฐานข้อมูล…</p>
+    </div>
+  </div>
+
+  <!-- ===== Header ===== -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-accent-600 text-white font-heading font-bold text-sm flex items-center justify-center shrink-0">AS</div>
+        <div>
+          <p class="text-[10px] tracking-[0.18em] uppercase text-accent-600 font-semibold leading-none mb-1">Stock Reconciliation System</p>
+          <h1 class="font-heading text-lg sm:text-xl font-bold text-slate-900 leading-none">Audit &amp; Stock Cafe</h1>
+        </div>
+      </div>
+      <div class="text-right shrink-0">
+        <p id="todayDisplay" class="font-num text-xs font-semibold text-slate-700 leading-none"></p>
+        <p id="branchBadge" class="text-[11px] text-accent-700 font-semibold mt-1 hidden"></p>
+        <div class="flex items-center gap-1.5 justify-end mt-1">
+          <span id="syncDot" class="sync-dot bg-slate-300"></span>
+          <p id="syncStatus" class="text-[11px] text-slate-400">ออฟไลน์</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 pt-5 space-y-5">
+
+    <!-- สาขา / วันที่ -->
+    <section class="bg-white border border-slate-200 rounded-xl px-5 py-4 flex flex-wrap gap-4 items-end">
+      <div class="flex-1 min-w-[160px]">
+        <label class="block text-[13px] font-semibold text-slate-600 mb-1.5">สาขา <span class="text-red-500">*</span></label>
+        <select id="branchSelect" class="input-base input-sm">
+          <option value="" disabled selected>-- เลือกสาขา --</option>
+          <option value="สาขาโลตัสระยอง">สาขาโลตัสระยอง</option>
+          <option value="สาขาแพชชั่นระยอง">สาขาแพชชั่นระยอง</option>
+        </select>
+      </div>
+      <div class="min-w-[160px]">
+        <label class="block text-[13px] font-semibold text-slate-600 mb-1.5">วันที่นับสต็อก</label>
+        <input id="dateInput" type="text" disabled class="input-base input-sm font-num">
+      </div>
+      <div class="min-w-[160px]">
+        <label class="block text-[13px] font-semibold text-slate-600 mb-1.5">ผู้ตรวจนับ</label>
+        <input id="auditorInput" type="text" placeholder="ชื่อบาริสต้า" class="input-base input-sm">
+      </div>
+      <p class="basis-full text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+        ⏰ สต็อกต้องนับและลงข้อมูลทุกวัน — ยอด "ยกมาเมื่อวาน" ของวันถัดไปจะคำนวณจากยอดคงเหลือที่บันทึกวันนี้อัตโนมัติ
+      </p>
+    </section>
+
+    <div id="frontContent" class="hidden space-y-5">
+
+      <!-- สรุปสถิติ -->
+      <section class="grid grid-cols-3 gap-3">
+        <div class="bg-white border border-slate-200 rounded-xl px-4 py-3.5">
+          <p class="text-[10px] sm:text-[11px] uppercase tracking-wide text-slate-400 font-semibold">นับแล้ว</p>
+          <p id="statRecorded" class="font-num font-bold text-xl sm:text-2xl text-slate-900 mt-0.5">0<span class="text-slate-300 font-normal text-base">/0</span></p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl px-4 py-3.5">
+          <p class="text-[10px] sm:text-[11px] uppercase tracking-wide text-slate-400 font-semibold">ตรงตามสูตร</p>
+          <p id="statOk" class="font-num font-bold text-xl sm:text-2xl text-green-600 mt-0.5">0</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl px-4 py-3.5">
+          <p class="text-[10px] sm:text-[11px] uppercase tracking-wide text-slate-400 font-semibold">ควรตรวจสอบ</p>
+          <p id="statFlag" class="font-num font-bold text-xl sm:text-2xl text-red-600 mt-0.5">0</p>
+        </div>
+      </section>
+
+      <!-- แถบค้นหา + ความคืบหน้า -->
+      <section class="bg-white border border-slate-200 rounded-xl px-4 py-3.5 sticky top-[64px] z-20 space-y-3">
+        <div class="flex items-center gap-2">
+          <input id="materialSearch" type="text" placeholder="ค้นหาวัตถุดิบ เช่น ไซรัป, แก้ว, TD" class="input-base">
+          <button id="clearAllBtn" class="shrink-0 text-xs font-semibold text-slate-500 hover:text-red-600 border border-slate-300 hover:border-red-300 rounded-lg px-3 h-12 transition">
+            ล้างทั้งหมด
+          </button>
+        </div>
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-slate-500">นับแล้ว <span id="frontProgress" class="font-num font-semibold text-accent-700">0/0</span> รายการ</span>
+        </div>
+        <div id="categoryChips" class="flex gap-1.5 overflow-x-auto chip pb-1"></div>
+      </section>
+
+      <!-- วัตถุดิบที่เคลื่อนไหวบ่อย -->
+      <section class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2.5">
+          <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">1</span>
+          <h2 class="font-heading font-semibold text-slate-900">วัตถุดิบที่เคลื่อนไหวบ่อย <span class="text-slate-400 font-normal text-sm">(นับทุกวัน)</span></h2>
+        </div>
+        <div id="fastMovingWrap" class="p-4 space-y-4"></div>
+      </section>
+
+      <!-- รายการที่ไม่ค่อยเคลื่อนไหว -->
+      <section class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <details>
+          <summary class="px-5 py-3.5 flex items-center justify-between hover:bg-slate-50 transition">
+            <span class="text-sm font-semibold text-slate-700 flex items-center gap-2.5">
+              <svg class="chevron w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
+              <span class="w-6 h-6 rounded-md bg-slate-100 text-slate-500 text-xs font-bold font-num flex items-center justify-center shrink-0">2</span>
+              รายการที่ไม่ค่อยเคลื่อนไหว <span class="text-slate-400 font-normal">(ติ๊กถ้ามีการใช้วันนี้)</span>
+            </span>
+            <span class="text-slate-400 text-[11px]">แตะเพื่อเปิด/ปิด</span>
+          </summary>
+          <div id="slowMovingWrap" class="p-4 space-y-4 border-t border-slate-100"></div>
+        </details>
+      </section>
+
+      <!-- ตารางสรุปรายงาน Audit -->
+      <section class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <details>
+          <summary class="px-5 py-3.5 flex items-center justify-between hover:bg-slate-50 transition">
+            <span class="text-sm font-semibold text-slate-700 flex items-center gap-2.5">
+              <svg class="chevron w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
+              <span class="w-6 h-6 rounded-md bg-slate-100 text-slate-500 text-xs font-bold font-num flex items-center justify-center shrink-0">3</span>
+              ตารางสรุปรายงาน Audit Reconciliation
+            </span>
+            <span class="text-slate-400 text-[11px]">แตะเพื่อเปิด/ปิด</span>
+          </summary>
+          <div class="border-t border-slate-100">
+            <div class="px-5 py-3 flex items-center gap-3 text-[11px] text-slate-500 flex-wrap">
+              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span>ใช้เกินสูตร</span>
+              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>ใช้ไม่ถึงสูตร</span>
+              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>ตรงสูตร</span>
+            </div>
+            <div class="px-5 py-2.5 border-y border-slate-100 flex flex-wrap gap-2 items-center bg-slate-50/60">
+              <span class="text-[11px] font-semibold text-slate-500">กรอง:</span>
+              <select id="categoryFilter" class="input-base input-sm !h-8 !text-xs w-auto">
+                <option value="">ทุกหมวดหมู่</option>
+              </select>
+              <select id="statusFilter" class="input-base input-sm !h-8 !text-xs w-auto">
+                <option value="">ทุกสถานะ</option>
+                <option value="done">บันทึกแล้ว</option>
+                <option value="pending">ยังไม่ได้นับ</option>
+              </select>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm min-w-[1100px]">
+                <thead>
+                  <tr class="text-left text-[11px] uppercase tracking-wide text-slate-500 border-b border-slate-200 bg-slate-50/80">
+                    <th class="px-4 py-2.5 font-semibold">รายการวัตถุดิบ</th>
+                    <th class="px-4 py-2.5 font-semibold">ยกมาเมื่อวาน</th>
+                    <th class="px-4 py-2.5 font-semibold">รับเข้าวันนี้</th>
+                    <th class="px-4 py-2.5 font-semibold">ยอดขายจริงตามสูตร (POS)</th>
+                    <th class="px-4 py-2.5 font-semibold">ยอดใช้ไปจริง</th>
+                    <th class="px-4 py-2.5 font-semibold">ผลต่าง (Variance)</th>
+                    <th class="px-4 py-2.5 font-semibold">คงเหลือยกไป</th>
+                    <th class="px-4 py-2.5 font-semibold">หมายเหตุ</th>
+                  </tr>
+                </thead>
+                <tbody id="auditTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- หลังบ้าน: PIN gate -->
+      <section class="bg-slate-900 rounded-xl overflow-hidden">
+        <div id="pinGateWrap" class="px-5 py-5 flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <p class="text-white font-heading font-semibold flex items-center gap-2">🔒 หลังบ้าน (สูตรเมนู + จัดการวัตถุดิบ)</p>
+            <p class="text-slate-400 text-xs mt-0.5">เฉพาะผู้จัดการ — ใส่รหัสเพื่อเข้าดูสูตรลับและแก้ไข Unit Master</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <input id="pinInput" type="password" inputmode="numeric" maxlength="4" placeholder="รหัส 4 หลัก"
+              class="w-32 h-11 rounded-lg px-3 bg-slate-800 border border-slate-700 text-white text-center font-num tracking-widest focus:outline-none focus:ring-2 focus:ring-accent-500">
+            <button id="pinUnlockBtn" class="h-11 px-4 rounded-lg bg-accent-600 hover:bg-accent-700 text-white font-semibold text-sm transition">ปลดล็อก</button>
+          </div>
+        </div>
+        <p id="pinMsg" class="px-5 pb-3 text-xs font-medium"></p>
+
+        <div id="backOfficeWrap" class="hidden bg-white border-t border-slate-200">
+
+          <!-- ผูกสูตรเมนู: กรอกยอดขายเมนูวันนี้ -->
+          <div class="border-b border-slate-100">
+            <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
+              <div class="flex items-center gap-2.5">
+                <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">M</span>
+                <h2 class="font-heading font-semibold text-slate-900">กรอกยอดขายเมนูวันนี้ (ผูกสูตรอัตโนมัติ)</h2>
+              </div>
+              <button id="clearMenuSalesBtn" class="text-xs font-semibold text-slate-500 hover:text-red-600 border border-slate-300 hover:border-red-300 rounded-lg px-3 h-9 transition">
+                ล้างยอดขายเมนู
+              </button>
+            </div>
+            <div class="px-5 pt-4 pb-2">
+              <p class="text-xs text-slate-500 mb-3">กรอกจำนวนที่ขายได้ของแต่ละเมนู ระบบจะคำนวณ "ยอดขายตามสูตร" ของวัตถุดิบทุกตัวที่เกี่ยวข้องให้อัตโนมัติ แล้วเติมใส่ตารางและการ์ดด้านบนให้เอง — ข้อมูลสูตรเป็นความลับ ไม่แสดงนอกส่วนนี้</p>
+              <input id="menuSearch" type="text" placeholder="ค้นหาเมนู เช่น ลาเต, ชาไทย, ปั่น" class="input-base">
+              <p class="text-xs text-slate-500 mt-2">คำนวณยอดใช้วัตถุดิบจากเมนูที่ขายแล้ว <span id="menuAffectedCount" class="font-num font-semibold text-accent-700">0</span> รายการวัตถุดิบ</p>
+            </div>
+            <div id="menuListWrap" class="px-5 pb-5 space-y-4 max-h-[28rem] overflow-y-auto"></div>
+          </div>
+
+          <!-- เพิ่มวัตถุดิบใหม่ -->
+          <div class="border-b border-slate-100">
+            <details>
+              <summary class="px-5 py-3 flex items-center justify-between hover:bg-slate-50 transition">
+                <span class="text-[13px] font-semibold text-slate-600 flex items-center gap-2">
+                  <svg class="chevron w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
+                  เพิ่มวัตถุดิบใหม่ในระบบ (Unit Master)
+                </span>
+                <span class="text-slate-400 text-[11px]">แตะเพื่อเปิด/ปิด</span>
+              </summary>
+              <div class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-slate-50/60 border-t border-slate-100">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อวัตถุดิบ</label>
+                  <input id="newName" type="text" placeholder="เช่น ไซรัปลาเวนเดอร์" class="input-base input-sm">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">หมวดหมู่</label>
+                  <input id="newCategory" type="text" placeholder="เช่น ไซรัปและซอส" class="input-base input-sm">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">รูปแบบหน่วยนับ</label>
+                  <select id="newType" class="input-base input-sm">
+                    <option value="fraction">มีหน่วยใหญ่ + หน่วยเศษ (เช่น ถุง/กรัม)</option>
+                    <option value="count">นับเป็นชิ้นล้วน ไม่มีเศษ (เช่น ขวด, ห่อ, ใบ)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">หน่วยใหญ่</label>
+                  <input id="newBigUnit" type="text" placeholder="เช่น ถุง / ลัง / ขวด" class="input-base input-sm">
+                </div>
+                <div id="newSmallUnitWrap">
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">หน่วยเศษ</label>
+                  <input id="newSmallUnit" type="text" placeholder="เช่น กรัม / มล. / ใบ" class="input-base input-sm">
+                </div>
+                <div id="newRatioWrap">
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">1 หน่วยใหญ่ = กี่หน่วยเศษ</label>
+                  <input id="newRatio" type="number" min="1" step="any" placeholder="เช่น 250" class="input-base input-sm font-num">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">ยกมาเริ่มต้น (หน่วยเศษ)</label>
+                  <input id="newCarry" type="number" min="0" step="any" placeholder="0" class="input-base input-sm font-num">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">ความถี่การเคลื่อนไหว</label>
+                  <select id="newFastMoving" class="input-base input-sm">
+                    <option value="1">เคลื่อนไหวบ่อย (นับทุกวัน)</option>
+                    <option value="0">ไม่ค่อยเคลื่อนไหว</option>
+                  </select>
+                </div>
+                <div class="lg:col-span-3 flex items-center flex-wrap gap-3">
+                  <button id="addMaterialBtn" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg px-5 h-11 transition text-sm">
+                    + เพิ่มวัตถุดิบนี้เข้าระบบ
+                  </button>
+                  <span id="addMaterialMsg" class="text-sm font-medium"></span>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- แก้ไขอัตราส่วนวัตถุดิบเดิม -->
+          <div>
+            <details>
+              <summary class="px-5 py-3.5 flex items-center justify-between hover:bg-slate-50 transition">
+                <span class="text-[13px] font-semibold text-slate-600 flex items-center gap-2">
+                  <svg class="chevron w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
+                  แก้ไขอัตราส่วนวัตถุดิบเดิม (Unit Master)
+                </span>
+                <span class="text-slate-400 text-[11px]">แตะเพื่อเปิด/ปิด</span>
+              </summary>
+              <div class="border-t border-slate-100 bg-slate-50/60">
+                <div class="p-5 pb-3">
+                  <p class="text-xs text-slate-500 mb-3">แก้ไข "1 หน่วยใหญ่ = กี่หน่วยเศษ" (เช่น 1 ถุงเต็ม / 1 ขวดเต็ม จริงๆ หนักหรือจุเท่าไหร่) รวมถึงชื่อหน่วยและยอดยกมาตั้งต้น — แก้แล้วมีผลทันทีกับทุกการคำนวณ และซิงค์ไปทุกเครื่อง</p>
+                  <input id="editSearch" type="text" placeholder="ค้นหาวัตถุดิบที่ต้องการแก้ไข" class="input-base">
+                </div>
+                <div id="editListWrap" class="px-5 pb-5 space-y-4 max-h-[28rem] overflow-y-auto"></div>
+              </div>
+            </details>
+          </div>
+
+        </div>
+      </section>
+
+      <p class="text-center text-xs text-slate-400 pb-6">
+        ข้อมูลทั้งหมดซิงค์กับฐานข้อมูล Supabase แบบเรียลไทม์ เปิดจากเครื่องไหนก็เห็นข้อมูลเดียวกัน · ยอดยกมาของแต่ละวันคำนวณจากยอดคงเหลือวันก่อนหน้าอัตโนมัติ
+      </p>
+
+    </div>
+
+  </main>
+
+<script>
+function FR(id, name, category, bigUnit, smallUnit, ratio, carry, subUnit, subRatio) {
+  return { id, name, category, bigUnit, smallUnit, ratio, carry, subUnit, subRatio, noFraction:false };
+}
+function NF(id, name, category, unit, carry) {
+  return { id, name, category, bigUnit:unit, smallUnit:unit, ratio:1, carry, noFraction:true };
+}
+
+/* ===========================================================
+   MOCK DATA — Unit Master (อ้างอิงจากใบเช็กสต็อกกระดาษ Stock2569.pdf)
+=========================================================== */
+const MATERIALS = [
+  // เมล็ดกาแฟ
+  FR('td1','กาแฟ TD-1','เมล็ดกาแฟ','ถุง','กรัม',250,620),
+  FR('td2','กาแฟ TD-2','เมล็ดกาแฟ','ถุง','กรัม',250,480),
+  FR('td3','กาแฟ TD-3','เมล็ดกาแฟ','ถุง','กรัม',250,350),
+  FR('td4','กาแฟ TD-4','เมล็ดกาแฟ','ถุง','กรัม',250,200),
+  NF('fridaybeans','Friday Beans','เมล็ดกาแฟ','ถุง',6),
+  NF('mondaybeans','Monday Beans','เมล็ดกาแฟ','ถุง',6),
+
+  // ใบชา
+  FR('ceylontea','ชาซีลอน','ใบชา','ถุง','กรัม',400,300),
+  FR('thaitea','ชาไทย','ใบชา','ถุง','กรัม',400,340),
+  FR('greenmilktea','ชาเขียวนม','ใบชา','ถุง','กรัม',400,320),
+  FR('naturalgreentea','ชาเขียวธรรมชาติ','ใบชา','ถุง','กรัม',300,3000),
+  FR('matcha','ชาเขียวมัทฉะ','ใบชา','ถุง','กรัม',200,2000),
+  FR('lemontea','ชามะนาว','ใบชา','ถุง','กรัม',400,250),
+  FR('appletea','ชาแอปเปิ้ล','ใบชา','ถุง','กรัม',400,250),
+  FR('peachtea','ชาพีช','ใบชา','ถุง','กรัม',400,250),
+
+  // ผงและท็อปปิ้ง
+  FR('chocolate1000','ช็อคโกแลต (1000 กรัม)','ผงและท็อปปิ้ง','ถุง','กรัม',1000,1200),
+  FR('cocoapowder','ผงโกโก้','ผงและท็อปปิ้ง','ถุง','กรัม',1000,900),
+  FR('whipcream500','วิปครีมผง @500g','ผงและท็อปปิ้ง','ถุง','กรัม',500,2500),
+  NF('sugarbag','น้ำตาลทราย','ผงและท็อปปิ้ง','ถุง',10),
+  FR('creamer','ครีมเทียม','ผงและท็อปปิ้ง','ถุง','กรัม',1000,1000),
+
+  // ไซรัปและซอส
+  FR('syrupstrawberry','ไซรัปสตรอเบอรี่','ไซรัปและซอส','ขวด','มล.',750,900),
+  FR('syrupblueberry','ไซรัปบลูเบอรี่','ไซรัปและซอส','ขวด','มล.',750,900),
+  FR('syrupmango','ไซรัปมะม่วง','ไซรัปและซอส','ขวด','มล.',750,900),
+  FR('syruppomegranate','ไซรัปทับทิมเบอรี่','ไซรัปและซอส','ขวด','มล.',750,900),
+  FR('syrupkiwi','ไซรัปกีวี่','ไซรัปและซอส','ขวด','มล.',750,6000),
+  FR('syrupcaramel','ไซรัปคาราเมล','ไซรัปและซอส','ขวด','มล.',750,6000),
+  FR('syruphoney','ไซรัปน้ำผึ้ง','ไซรัปและซอส','ขวด','มล.',750,6000),
+  NF('syrupmaple','ไซรัปเมเปิ้ล','ไซรัปและซอส','ขวด',6),
+  FR('syruplychee','ไซรัปลิ้นจี่','ไซรัปและซอส','ขวด','มล.',750,4500),
+  FR('syrupkyoho','ไซรัปองุ่นเคียวโฮ','ไซรัปและซอส','ขวด','มล.',750,4500),
+  FR('syrupyuzu','ไซรัปยูสุ','ไซรัปและซอส','ขวด','มล.',750,4500),
+  FR('syrupbrownsugar','ไซรัป Brown Sugar บุก','ไซรัปและซอส','ขวด','มล.',750,6000),
+  FR('syrupmint','ไซรัปมินต์','ไซรัปและซอส','ขวด','มล.',750,4500),
+  NF('syruppassion','ไซรัปเสาวรส','ไซรัปและซอส','ขวด',6),
+  FR('syrupmocha','ไซรัปมอคค่า','ไซรัปและซอส','ขวด','มล.',750,4500),
+  NF('chocsauce','ช็อคเหลว','ไซรัปและซอส','ขวด',6),
+  NF('caramelsauce','คาราเมล (ซอส)','ไซรัปและซอส','ขวด',6),
+  FR('napukasauce','น้ำคาปู','ไซรัปและซอส','ขวด','มล.',750,4500),
+
+  // ผลไม้แช่แข็ง / วัตถุดิบสด
+  NF('mixberryfrozen','มิกซ์เบอร์รี่แช่แข็ง','ผลไม้แช่แข็ง/วัตถุดิบสด','ถุง',15),
+  NF('strawberryfrozen','สตรอเบอรี่แช่แข็ง','ผลไม้แช่แข็ง/วัตถุดิบสด','ถุง',15),
+  NF('freshlime','มะนาวสด','ผลไม้แช่แข็ง/วัตถุดิบสด','กก.',5),
+  NF('chaokuay','เฉาก๊วย','ผลไม้แช่แข็ง/วัตถุดิบสด','ถุง',10),
+  FR('sakura','ซากุระ','ผลไม้แช่แข็ง/วัตถุดิบสด','ถุง','กรัม',300,1500),
+  FR('buk','บุก','ผลไม้แช่แข็ง/วัตถุดิบสด','ถุง','กรัม',500,4000),
+
+  // เครื่องดื่มสำเร็จรูป
+  FR('orangetipco','น้ำส้ม Tipco','เครื่องดื่มสำเร็จรูป','ขวด','มล.',1000,12000),
+  FR('cocomax','น้ำมะพร้าว Cocomax','เครื่องดื่มสำเร็จรูป','ขวด','มล.',1000,10000),
+  NF('vitamilk','ไวตามิลค์เจ','เครื่องดื่มสำเร็จรูป','ลัง',3),
+  NF('oatmilk','นมโอ๊ต','เครื่องดื่มสำเร็จรูป','ลัง',3),
+  NF('takehome330','ถุง TakeHome 330ml','เครื่องดื่มสำเร็จรูป','ห่อ',5),
+  FR('water1500','น้ำดื่ม (1500ML)','เครื่องดื่มสำเร็จรูป','ลัง','มล.',18000,18000,'ขวด',1500),
+  FR('water600','น้ำดื่ม (600ML)','เครื่องดื่มสำเร็จรูป','ลัง','มล.',14400,14400,'ขวด',600),
+  FR('soda','โซดา','เครื่องดื่มสำเร็จรูป','ขวด','มล.',325,7800),
+
+  // นมและของเหลว
+  FR('milk','นมสด','นมและของเหลว','ลัง','มล.',12000,6500,'กล่อง',1000),
+  FR('condensedmilk','นมข้นหวาน','นมและของเหลว','ลัง','กรัม',18240,18240,'กระป๋อง',380),
+  FR('evapmilk','นมจืด','นมและของเหลว','ลัง','มล.',19680,19680,'กระป๋อง',410),
+  NF('yogurt','โยเกิร์ต','นมและของเหลว','ถ้วย',24),
+
+  // บรรจุภัณฑ์แก้ว/ฝา
+  FR('cup8oz','แก้ว 8 ออนซ์','บรรจุภัณฑ์แก้ว/ฝา','แถว','ใบ',50,40),
+  FR('cup12oz','แก้ว 12 ออนซ์','บรรจุภัณฑ์แก้ว/ฝา','แถว','ใบ',50,40),
+  NF('cup16robot','แก้ว 16 ออนซ์ (Robot)','บรรจุภัณฑ์แก้ว/ฝา','ใบ',40),
+  FR('cup16space','แก้ว 16 ออนซ์ (อวกาศ)','บรรจุภัณฑ์แก้ว/ฝา','แถว','ใบ',50,38),
+  FR('cup22oz','แก้ว 22 ออนซ์','บรรจุภัณฑ์แก้ว/ฝา','แถว','ใบ',50,30),
+  NF('lid8oz','ฝา 8 ออนซ์','บรรจุภัณฑ์แก้ว/ฝา','ใบ',40),
+  NF('lid12oz','ฝา 12 ออนซ์','บรรจุภัณฑ์แก้ว/ฝา','ใบ',40),
+  FR('flatlid','ฝาเรียบ','บรรจุภัณฑ์แก้ว/ฝา','แถว','ใบ',50,35),
+  FR('domelid','ฝาโดม','บรรจุภัณฑ์แก้ว/ฝา','แถว','ใบ',50,35),
+
+  // แก้ว/ถุงพรีเมียม
+  NF('campingcups','Camping Cups','แก้ว/ถุงพรีเมียม','กล่อง',3),
+  NF('doublewallcup','แก้ว DoubleWall','แก้ว/ถุงพรีเมียม','กล่อง',3),
+  NF('suctioncups','Suction Cups','แก้ว/ถุงพรีเมียม','กล่อง',3),
+  NF('transformercups','Transformer Cups','แก้ว/ถุงพรีเมียม','กล่อง',3),
+  NF('totebagsingle','ถุงผ้าเดี่ยว','แก้ว/ถุงพรีเมียม','ห่อ',5),
+  NF('totebageco','ถุงผ้ารักษ์โลก','แก้ว/ถุงพรีเมียม','ห่อ',5),
+
+  // เบเกอรี่/ขนม
+  NF('crispybread1','ขนมปังกรอบพริกเผาหมูหยอง','เบเกอรี่/ขนม','ถุง',10),
+  NF('bananachips','กล้วยฉาบ','เบเกอรี่/ขนม','ถุง',10),
+  NF('tarochips','เผือกฉาบ','เบเกอรี่/ขนม','ถุง',10),
+  NF('crispybreadbutter','ขนมปังกรอบรสเนย','เบเกอรี่/ขนม','ถุง',10),
+  NF('crispybreadsugar','ขนมปังกรอบเนยน้ำตาล','เบเกอรี่/ขนม','ถุง',10),
+  NF('crispybreadgarlic','ขนมปังกรอบเนยกระเทียม','เบเกอรี่/ขนม','ถุง',10),
+  NF('softcookies','Soft Cookies','เบเกอรี่/ขนม','กล่อง',8),
+  NF('toastbread','ขนมปังปิ้ง','เบเกอรี่/ขนม','ห่อ',10),
+  NF('pineappletart','ทาร์ตสับปะรด','เบเกอรี่/ขนม','กล่อง',8),
+
+  // วัตถุดิบเสริม/ซอง
+  NF('creampacket','ครีมซอง','วัตถุดิบเสริม/ซอง','กล่อง',5),
+  NF('sugarpacket','น้ำตาลซอง','วัตถุดิบเสริม/ซอง','กล่อง',5),
+  NF('brownsugarpacket','น้ำตาลแดงซอง','วัตถุดิบเสริม/ซอง','กล่อง',5),
+  NF('yellowbutter','เนยเหลือง','วัตถุดิบเสริม/ซอง','ถุง',5),
+  NF('orangejam','แยมส้ม','วัตถุดิบเสริม/ซอง','กระปุก',5),
+  NF('strawberryjam','แยมสตรอเบอรี่','วัตถุดิบเสริม/ซอง','กระปุก',5),
+  NF('breadstick','ไม้จิ้มขนมปัง','วัตถุดิบเสริม/ซอง','ห่อ',10),
+  NF('whipgas','ก๊าซวิป','วัตถุดิบเสริม/ซอง','หลอด',10),
+
+  // อุปกรณ์เสิร์ฟ/แพ็กเกจจิ้ง
+  NF('strawbent','หลอดงอ','อุปกรณ์เสิร์ฟ','ห่อ',5),
+  NF('strawspoon','หลอดช้อน','อุปกรณ์เสิร์ฟ','ห่อ',5),
+  NF('strawpearl','หลอดไข่มุก','อุปกรณ์เสิร์ฟ','ห่อ',5),
+  NF('strawwater','หลอดน้ำดื่ม','อุปกรณ์เสิร์ฟ','ห่อ',5),
+  NF('tissueCTD','กระดาษทิชชู่ CTD','อุปกรณ์เสิร์ฟ','ม้วน',10),
+  NF('stirrer','แท่งคนกาแฟ','อุปกรณ์เสิร์ฟ','ห่อ',10),
+  NF('breadtraysmall','ถาดขนมปัง (เล็ก)','อุปกรณ์เสิร์ฟ','ห่อ',10),
+  NF('breadtraylarge','ถาดขนมปัง (ใหญ่)','อุปกรณ์เสิร์ฟ','ห่อ',10),
+  NF('plasticfork','ส้อมพลาสติก','อุปกรณ์เสิร์ฟ','ห่อ',10),
+  NF('plasticspoon','ช้อนพลาสติก','อุปกรณ์เสิร์ฟ','ห่อ',10),
+  NF('bigbao','กล่องบิ๊กเปาฯ','อุปกรณ์เสิร์ฟ','ห่อ',10),
+  NF('thbagbig','ถุง TH ใหญ่','อุปกรณ์เสิร์ฟ','ห่อ',10),
+  NF('thbagdouble','ถุง TH คู่','อุปกรณ์เสิร์ฟ','ห่อ',10),
+  NF('tbag','ถุงตัว T','อุปกรณ์เสิร์ฟ','ห่อ',10),
+  NF('thbagsingle','ถุง TH เดี่ยว','อุปกรณ์เสิร์ฟ','ห่อ',10),
+  NF('garbagebag','ถุงขยะ 28x36','อุปกรณ์เสิร์ฟ','ห่อ',5),
+  NF('cookingglove','ถุงมือทำอาหาร','อุปกรณ์เสิร์ฟ','กล่อง',5),
+
+  // สมาชิก/เอกสาร
+  NF('membercard','บัตรสมาชิก','สมาชิก/เอกสาร','ใบ',20),
+  NF('timecard','บัตรลงเวลา','สมาชิก/เอกสาร','ใบ',20),
+  NF('posrolls','กระดาษ POS','สมาชิก/เอกสาร','ม้วน',10),
+
+  // ความสะอาด
+  NF('machinecleaner','ผงล้างเครื่อง','ความสะอาด','ถุง',5),
+  NF('handsoap','สบู่เหลวล้างมือ','ความสะอาด','ขวด',5),
+  NF('laundrydetergent','น้ำยาซักผ้า','ความสะอาด','แกลลอน',3),
+  NF('tablecloth','ผ้าเช็ดโต๊ะ','ความสะอาด','ห่อ',5),
+  NF('tablecleaner','น้ำยาเช็ดโต๊ะ','ความสะอาด','ขวด',5),
+  NF('floorcleaner','น้ำยาเช็ดพื้น','ความสะอาด','ขวด',5),
+  NF('dishwash','น้ำยาล้างจาน','ความสะอาด','ขวด',5),
+  NF('haitor','ไฮเตอร์','ความสะอาด','ขวด',5),
+  NF('detergentpowder','ผงซักฟอก','ความสะอาด','ถุง',5),
+  NF('servicetissue','ทิชชู่บริการ','ความสะอาด','แพ็ค',5),
+  NF('equipmentcloth','ผ้าเช็ดอุปกรณ์','ความสะอาด','ห่อ',5),
+  NF('spongecloth','ผ้าฟองน้ำ','ความสะอาด','ห่อ',5),
+  NF('dishsponge','ฟองน้ำล้างจาน','ความสะอาด','ห่อ',5),
+  NF('scotchbrite','สก็อตไบรท์','ความสะอาด','ห่อ',5),
+];
+
+/* ===========================================================
+   RECIPES — ผูกสูตรเมนูกับวัตถุดิบ (อ้างอิงจาก CoffeeToday_สูตรเมนูทั้งหมด.pdf)
+   ing(materialId, qty, unit) แปลงหน่วยเป็นหน่วยเศษของวัตถุดิบนั้นอัตโนมัติ
+   - 'oz'  -> มล./กรัม โดยประมาณ 1 oz ≈ 30
+   - 'g'   -> กรัม ตรงตัว
+   หมายเหตุ: ไม่รวมรายการที่ไม่ใช่ของในสต็อก เช่น น้ำเปล่า/น้ำร้อน/น้ำเชื่อมที่ชงเอง/เกลือ/ของแต่งหน้าที่ไม่ระบุปริมาณ
+   ครอบคลุมเมนูหลัก: กาแฟร้อน-เย็น-ปั่น และ ชาร้อน-เย็น-ปั่น (เมนูพิเศษ/ตามฤดูกาลยังไม่รวม เพิ่มเองได้ด้านล่าง)
+=========================================================== */
+function ing(materialId, qty, unit) {
+  return { materialId, qty: unit === 'oz' ? Math.round(qty * 30 * 100) / 100 : qty };
+}
+function RCP(id, name, size, category, ingredients) {
+  return { id, name, size, category, ingredients };
+}
+
+const RECIPES = [
+  // ---------- กาแฟร้อน 8oz ----------
+  RCP('hot_today_8','ทูเดย์ รอน','8oz','กาแฟร้อน', [ing('td1',8,'g')]),
+  RCP('hot_espresso_8','เอสเปรสโซ รอน','8oz','กาแฟร้อน', [ing('td1',8,'g')]),
+  RCP('hot_cappuccino_8','คาปูชิโน รอน','8oz','กาแฟร้อน', [ing('td1',8,'g'), ing('milk',4,'oz')]),
+  RCP('hot_latte_8','ลาเต รอน','8oz','กาแฟร้อน', [ing('td1',8,'g'), ing('milk',4,'oz')]),
+  RCP('hot_mocha_8','มอคคา รอน','8oz','กาแฟร้อน', [ing('td1',8,'g'), ing('syrupmocha',0.5,'oz'), ing('milk',4,'oz')]),
+  RCP('hot_espucino_8','เอสปูชิโน รอน','8oz','กาแฟร้อน', [ing('td4',8,'g')]),
+  RCP('hot_americano_8','อเมริกาโน รอน','8oz','กาแฟร้อน', [ing('td1',8,'g')]),
+  RCP('hot_americanohoney_8','อเมริกาโนน้ำผึ้ง รอน','8oz','กาแฟร้อน', [ing('td1',8,'g'), ing('syruphoney',0.5,'oz')]),
+
+  // ---------- กาแฟร้อน 12oz ----------
+  RCP('hot_today_12','ทูเดย์ รอน','12oz','กาแฟร้อน', [ing('td3',18,'g')]),
+  RCP('hot_espresso_12','เอสเปรสโซ รอน','12oz','กาแฟร้อน', [ing('td3',18,'g')]),
+  RCP('hot_cappuccino_12','คาปูชิโน รอน','12oz','กาแฟร้อน', [ing('td3',18,'g'), ing('milk',6,'oz')]),
+  RCP('hot_latte_12','ลาเต รอน','12oz','กาแฟร้อน', [ing('td3',18,'g'), ing('milk',6,'oz')]),
+  RCP('hot_mocha_12','มอคคา รอน','12oz','กาแฟร้อน', [ing('td1',18,'g'), ing('syrupmocha',1,'oz'), ing('milk',6,'oz')]),
+  RCP('hot_espucino_12','เอสปูชิโน รอน','12oz','กาแฟร้อน', [ing('td4',18,'g')]),
+  RCP('hot_americano_12','อเมริกาโน รอน','12oz','กาแฟร้อน', [ing('td3',18,'g')]),
+  RCP('hot_americanohoney_12','อเมริกาโนน้ำผึ้ง รอน','12oz','กาแฟร้อน', [ing('td3',18,'g'), ing('syruphoney',1,'oz')]),
+
+  // ---------- กาแฟเย็น 22oz ----------
+  RCP('iced_today_22','ทูเดย์ เย็น','22oz','กาแฟเย็น', [ing('td1',18,'g'), ing('condensedmilk',2,'oz'), ing('evapmilk',1,'oz')]),
+  RCP('iced_espresso_22','เอสเปรสโซ เย็น','22oz','กาแฟเย็น', [ing('td2',18,'g'), ing('condensedmilk',2,'oz'), ing('evapmilk',1,'oz')]),
+  RCP('iced_cappuccino_22','คาปูชิโน เย็น','22oz','กาแฟเย็น', [ing('td1',18,'g'), ing('napukasauce',4,'oz')]),
+  RCP('iced_latte_22','ลาเต เย็น','22oz','กาแฟเย็น', [ing('td1',18,'g'), ing('milk',3,'oz')]),
+  RCP('iced_mocha_22','มอคคา เย็น','22oz','กาแฟเย็น', [ing('td1',18,'g'), ing('napukasauce',4,'oz'), ing('syrupmocha',0.5,'oz')]),
+  RCP('iced_espucino_22','เอสปูชิโน เย็น','22oz','กาแฟเย็น', [ing('td4',18,'g'), ing('napukasauce',1,'oz'), ing('condensedmilk',1,'oz')]),
+  RCP('iced_americano_22','อเมริกาโน เย็น','22oz','กาแฟเย็น', [ing('td1',18,'g')]),
+  RCP('iced_americanohoney_22','อเมริกาโนน้ำผึ้ง เย็น','22oz','กาแฟเย็น', [ing('td1',18,'g'), ing('syruphoney',1,'oz')]),
+
+  // ---------- กาแฟปั่น 16oz / 22oz ----------
+  RCP('blend_today_16','ทูเดย์ ปั่น','16oz','กาแฟปั่น', [ing('td1',18,'g'), ing('condensedmilk',2.5,'oz'), ing('evapmilk',1,'oz')]),
+  RCP('blend_today_22','ทูเดย์ ปั่น','22oz','กาแฟปั่น', [ing('td1',18,'g'), ing('condensedmilk',2.5,'oz'), ing('evapmilk',1,'oz')]),
+  RCP('blend_espresso_16','เอสเปรสโซ ปั่น','16oz','กาแฟปั่น', [ing('td2',18,'g'), ing('condensedmilk',2.5,'oz'), ing('evapmilk',1,'oz')]),
+  RCP('blend_espresso_22','เอสเปรสโซ ปั่น','22oz','กาแฟปั่น', [ing('td2',18,'g'), ing('condensedmilk',2.5,'oz'), ing('evapmilk',1,'oz')]),
+  RCP('blend_cappuccino_16','คาปูชิโน ปั่น','16oz','กาแฟปั่น', [ing('td1',18,'g'), ing('napukasauce',4.5,'oz'), ing('syrupcaramel',0.5,'oz')]),
+  RCP('blend_cappuccino_22','คาปูชิโน ปั่น','22oz','กาแฟปั่น', [ing('td1',18,'g'), ing('napukasauce',4.5,'oz'), ing('syrupcaramel',0.5,'oz')]),
+  RCP('blend_mocha_16','มอคคา ปั่น','16oz','กาแฟปั่น', [ing('td1',18,'g'), ing('napukasauce',4.5,'oz'), ing('syrupmocha',0.5,'oz')]),
+  RCP('blend_mocha_22','มอคคา ปั่น','22oz','กาแฟปั่น', [ing('td1',18,'g'), ing('napukasauce',4.5,'oz'), ing('syrupmocha',0.5,'oz')]),
+  RCP('blend_espucino_16','เอสปูชิโน ปั่น','16oz','กาแฟปั่น', [ing('td4',18,'g'), ing('napukasauce',2,'oz'), ing('condensedmilk',1,'oz')]),
+  RCP('blend_espucino_22','เอสปูชิโน ปั่น','22oz','กาแฟปั่น', [ing('td4',18,'g'), ing('napukasauce',2,'oz'), ing('condensedmilk',1,'oz')]),
+  RCP('blend_latte_16','ลาเต ปั่น','16oz','กาแฟปั่น', [ing('td1',18,'g'), ing('milk',3,'oz')]),
+  RCP('blend_latte_22','ลาเต ปั่น','22oz','กาแฟปั่น', [ing('td1',18,'g'), ing('milk',3,'oz')]),
+  RCP('blend_americano_16','อเมริกาโน ปั่น','16oz','กาแฟปั่น', [ing('td1',18,'g')]),
+  RCP('blend_americano_22','อเมริกาโน ปั่น','22oz','กาแฟปั่น', [ing('td1',18,'g')]),
+
+  // ---------- ชาร้อน 8oz ----------
+  RCP('hot_thaimilktea_8','ชานม (ชาไทย) รอน','8oz','ชาร้อน', [ing('thaitea',10,'g'), ing('condensedmilk',1,'oz'), ing('evapmilk',1,'oz')]),
+  RCP('hot_greentea_8','ชาเขียว รอน','8oz','ชาร้อน', [ing('naturalgreentea',10,'g')]),
+  RCP('hot_greenmilktea_8','ชาเขียวนมลาเต รอน','8oz','ชาร้อน', [ing('greenmilktea',10,'g'), ing('milk',4,'oz')]),
+  RCP('hot_chocolate_8','ช็อคโกแลต รอน','8oz','ชาร้อน', [ing('chocolate1000',20,'g'), ing('condensedmilk',0.25,'oz')]),
+  RCP('hot_freshmilk_8','นมสด รอน','8oz','ชาร้อน', [ing('milk',5,'oz')]),
+  RCP('hot_blacktea_8','ชาดำ รอน','8oz','ชาร้อน', [ing('thaitea',10,'g')]),
+  RCP('hot_thaiteatlatte_8','ชาไทยลาเต รอน','8oz','ชาร้อน', [ing('thaitea',10,'g'), ing('milk',4,'oz')]),
+  RCP('hot_cocoa_8','โกโก รอน','8oz','ชาร้อน', [ing('cocoapowder',10,'g'), ing('milk',4,'oz')]),
+
+  // ---------- ชาร้อน 12oz ----------
+  RCP('hot_thaimilktea_12','ชานม (ชาไทย) รอน','12oz','ชาร้อน', [ing('thaitea',20,'g'), ing('condensedmilk',1.5,'oz'), ing('evapmilk',1.5,'oz')]),
+  RCP('hot_greentea_12','ชาเขียว รอน','12oz','ชาร้อน', [ing('naturalgreentea',20,'g')]),
+  RCP('hot_greenmilktea_12','ชาเขียวนมลาเต รอน','12oz','ชาร้อน', [ing('greenmilktea',20,'g'), ing('milk',6,'oz')]),
+  RCP('hot_chocolate_12','ช็อคโกแลต รอน','12oz','ชาร้อน', [ing('chocolate1000',25,'g'), ing('condensedmilk',0.5,'oz'), ing('milk',4,'oz')]),
+  RCP('hot_freshmilk_12','นมสด รอน','12oz','ชาร้อน', [ing('milk',8,'oz')]),
+  RCP('hot_blacktea_12','ชาดำ รอน','12oz','ชาร้อน', [ing('thaitea',20,'g')]),
+  RCP('hot_thaiteatlatte_12','ชาไทยลาเต รอน','12oz','ชาร้อน', [ing('thaitea',20,'g'), ing('milk',6,'oz')]),
+  RCP('hot_cocoa_12','โกโก รอน','12oz','ชาร้อน', [ing('cocoapowder',20,'g'), ing('milk',6,'oz')]),
+
+  // ---------- ชาเย็น 22oz ----------
+  RCP('iced_chocolate_22','ช็อคโกแลต เย็น','22oz','ชาเย็น', [ing('chocolate1000',25,'g'), ing('evapmilk',1,'oz'), ing('milk',2,'oz'), ing('milk',6,'oz')]),
+  RCP('iced_cocoa_22','โกโก เย็น','22oz','ชาเย็น', [ing('cocoapowder',20,'g'), ing('napukasauce',4,'oz')]),
+  RCP('iced_freshmilk_22','นมสด เย็น','22oz','ชาเย็น', [ing('milk',6,'oz')]),
+  RCP('iced_thaimilktea_22','ชาไทย (ชานม) เย็น','22oz','ชาเย็น', [ing('thaitea',20,'g'), ing('condensedmilk',2,'oz'), ing('evapmilk',1,'oz')]),
+  RCP('iced_blacktea_22','ชาดำ เย็น','22oz','ชาเย็น', [ing('thaitea',20,'g')]),
+  RCP('iced_greentea_22','ชาเขียว เย็น','22oz','ชาเย็น', [ing('naturalgreentea',20,'g')]),
+  RCP('iced_greenmilktea_22','ชาเขียวนม เย็น','22oz','ชาเย็น', [ing('greenmilktea',20,'g'), ing('napukasauce',4,'oz')]),
+  RCP('iced_lemontea_22','ชามะนาว เย็น','22oz','ชาเย็น', [ing('lemontea',30,'g'), ing('soda',6,'oz')]),
+  RCP('iced_appletea_22','ชาแอปเปิ้ล เย็น','22oz','ชาเย็น', [ing('appletea',30,'g'), ing('soda',6,'oz')]),
+  RCP('iced_peachtea_22','ชาพีช เย็น','22oz','ชาเย็น', [ing('peachtea',30,'g'), ing('soda',6,'oz')]),
+
+  // ---------- ชาปั่น 16oz / 22oz ----------
+  RCP('blend_thaitea_16','ชาไทย ปั่น','16oz','ชาปั่น', [ing('thaitea',20,'g'), ing('condensedmilk',2.5,'oz'), ing('evapmilk',1,'oz')]),
+  RCP('blend_thaitea_22','ชาไทย ปั่น','22oz','ชาปั่น', [ing('thaitea',20,'g'), ing('condensedmilk',2.5,'oz'), ing('evapmilk',1,'oz')]),
+  RCP('blend_thaiteablack_16','ชาไทยดำ ปั่น','16oz','ชาปั่น', [ing('thaitea',20,'g')]),
+  RCP('blend_thaiteablack_22','ชาไทยดำ ปั่น','22oz','ชาปั่น', [ing('thaitea',20,'g')]),
+  RCP('blend_greenmilktea_16','ชาเขียวนม ปั่น','16oz','ชาปั่น', [ing('greenmilktea',20,'g'), ing('napukasauce',2,'oz')]),
+  RCP('blend_greenmilktea_22','ชาเขียวนม ปั่น','22oz','ชาปั่น', [ing('greenmilktea',20,'g'), ing('napukasauce',2,'oz')]),
+  RCP('blend_lemontea_16','ชามะนาว ปั่น','16oz','ชาปั่น', [ing('lemontea',30,'g'), ing('soda',6,'oz')]),
+  RCP('blend_lemontea_22','ชามะนาว ปั่น','22oz','ชาปั่น', [ing('lemontea',45,'g'), ing('soda',6,'oz')]),
+  RCP('blend_appletea_16','ชาแอปเปิ้ล ปั่น','16oz','ชาปั่น', [ing('appletea',30,'g'), ing('soda',6,'oz')]),
+  RCP('blend_appletea_22','ชาแอปเปิ้ล ปั่น','22oz','ชาปั่น', [ing('appletea',45,'g'), ing('soda',6,'oz')]),
+  RCP('blend_peachtea_16','ชาพีช ปั่น','16oz','ชาปั่น', [ing('peachtea',30,'g'), ing('soda',6,'oz')]),
+  RCP('blend_peachtea_22','ชาพีช ปั่น','22oz','ชาปั่น', [ing('peachtea',45,'g'), ing('soda',6,'oz')]),
+  RCP('blend_chocolate_16','ช็อคโกแลต ปั่น','16oz','ชาปั่น', [ing('chocolate1000',30,'g'), ing('evapmilk',1,'oz'), ing('milk',1,'oz'), ing('condensedmilk',0.75,'oz')]),
+  RCP('blend_chocolate_22','ช็อคโกแลต ปั่น','22oz','ชาปั่น', [ing('chocolate1000',30,'g'), ing('evapmilk',1,'oz'), ing('milk',1.5,'oz'), ing('condensedmilk',1,'oz')]),
+  RCP('blend_freshmilk_16','นมสด ปั่น','16oz','ชาปั่น', [ing('milk',6,'oz')]),
+  RCP('blend_freshmilk_22','นมสด ปั่น','22oz','ชาปั่น', [ing('milk',6,'oz')]),
+  RCP('blend_cocoa_16','โกโก ปั่น','16oz','ชาปั่น', [ing('cocoapowder',20,'g'), ing('napukasauce',3,'oz')]),
+  RCP('blend_cocoa_22','โกโก ปั่น','22oz','ชาปั่น', [ing('cocoapowder',30,'g'), ing('napukasauce',4,'oz')]),
+
+  // ---------- สมูทตี้ / น้ำผลไม้ 16oz / 22oz ----------
+  RCP('smoothie_strawberry_16','สตรอเบอรี่สมูทตี้','16oz','สมูทตี้และน้ำผลไม้', [ing('syrupstrawberry',2,'oz')]),
+  RCP('smoothie_blueberry_16','บลูเบอรี่สมูทตี้','16oz','สมูทตี้และน้ำผลไม้', [ing('syrupblueberry',2,'oz')]),
+  RCP('smoothie_yogurt_16','โยเกิร์ตสมูทตี้','16oz','สมูทตี้และน้ำผลไม้', [ing('yogurt',1,'g'), ing('napukasauce',2,'oz')]),
+  RCP('smoothie_kiwi_16','กีวีสมูทตี้','16oz','สมูทตี้และน้ำผลไม้', [ing('syrupkiwi',2,'oz')]),
+  RCP('smoothie_mango_16','มะม่วงสมูทตี้','16oz','สมูทตี้และน้ำผลไม้', [ing('syrupmango',2,'oz')]),
+  RCP('smoothie_strawberry_22','สตรอเบอรี่สมูทตี้','22oz','สมูทตี้และน้ำผลไม้', [ing('syrupstrawberry',3,'oz')]),
+  RCP('smoothie_blueberry_22','บลูเบอรี่สมูทตี้','22oz','สมูทตี้และน้ำผลไม้', [ing('syrupblueberry',3,'oz')]),
+  RCP('smoothie_kiwi_22','กีวีสมูทตี้','22oz','สมูทตี้และน้ำผลไม้', [ing('syrupkiwi',3,'oz')]),
+  RCP('smoothie_mango_22','มะม่วงสมูทตี้','22oz','สมูทตี้และน้ำผลไม้', [ing('syrupmango',3,'oz')]),
+  RCP('smoothie_yogurt_22','โยเกิร์ตสมูทตี้','22oz','สมูทตี้และน้ำผลไม้', [ing('yogurt',1,'g')]),
+  RCP('juice_strawberry_22','สตรอเบอรี่เย็น (น้ำผลไม้)','22oz','สมูทตี้และน้ำผลไม้', [ing('syrupstrawberry',2,'oz')]),
+  RCP('juice_blueberry_22','บลูเบอรี่เย็น (น้ำผลไม้)','22oz','สมูทตี้และน้ำผลไม้', [ing('syrupblueberry',2,'oz')]),
+  RCP('juice_kiwi_22','กีวีเย็น (น้ำผลไม้)','22oz','สมูทตี้และน้ำผลไม้', [ing('syrupkiwi',2,'oz')]),
+  RCP('juice_lychee_22','ลิ้นจี่เย็น (น้ำผลไม้)','22oz','สมูทตี้และน้ำผลไม้', [ing('syruplychee',2,'oz')]),
+  RCP('soda_strawberry_22','สตรอเบอรี่โซดาเย็น','22oz','สมูทตี้และน้ำผลไม้', [ing('syrupstrawberry',2,'oz'), ing('soda',6,'oz')]),
+  RCP('soda_blueberry_22','บลูเบอรี่โซดาเย็น','22oz','สมูทตี้และน้ำผลไม้', [ing('syrupblueberry',2,'oz'), ing('soda',6,'oz')]),
+  RCP('soda_kiwi_22','กีวีโซดาเย็น','22oz','สมูทตี้และน้ำผลไม้', [ing('syrupkiwi',2,'oz'), ing('soda',6,'oz')]),
+  RCP('soda_lychee_22','ลิ้นจี่โซดาเย็น','22oz','สมูทตี้และน้ำผลไม้', [ing('syruplychee',2,'oz'), ing('soda',6,'oz')]),
+  RCP('soda_pomegranate_22','ทับทิมเบอรี่โซดาเย็น','22oz','สมูทตี้และน้ำผลไม้', [ing('syruppomegranate',2,'oz'), ing('soda',6,'oz')]),
+
+  // ---------- คาราเมลมัคคิอาโต ----------
+  RCP('caramelmac_hot_8','คาราเมลมัคคิอาโต รอน','8oz','คาราเมลมัคคิอาโต', [ing('td3',8,'g'), ing('syrupcaramel',0.5,'oz'), ing('milk',4,'oz')]),
+  RCP('caramelmac_hot_12','คาราเมลมัคคิอาโต รอน','12oz','คาราเมลมัคคิอาโต', [ing('td3',18,'g'), ing('syrupcaramel',1,'oz'), ing('milk',6,'oz')]),
+  RCP('caramelmac_iced_22','คาราเมลมัคคิอาโต เย็น','22oz','คาราเมลมัคคิอาโต', [ing('td3',18,'g'), ing('syrupcaramel',1,'oz'), ing('milk',3,'oz')]),
+  RCP('caramelmac_blend_16','คาราเมลมัคคิอาโต ปั่น','16oz','คาราเมลมัคคิอาโต', [ing('td3',18,'g'), ing('syrupcaramel',2,'oz'), ing('milk',2,'oz')]),
+  RCP('caramelmac_blend_22','คาราเมลมัคคิอาโต ปั่น','22oz','คาราเมลมัคคิอาโต', [ing('td3',18,'g'), ing('syrupcaramel',2,'oz'), ing('milk',2,'oz')]),
+
+  // ---------- นมคาราเมล (ไม่มีกาแฟ) ----------
+  RCP('caramelmilk_hot_8','นมคาราเมล รอน','8oz','นมคาราเมล', [ing('milk',5,'oz'), ing('syrupcaramel',0.5,'oz')]),
+  RCP('caramelmilk_hot_12','นมคาราเมล รอน','12oz','นมคาราเมล', [ing('milk',8,'oz'), ing('syrupcaramel',0.75,'oz')]),
+  RCP('caramelmilk_iced_22','นมคาราเมล เย็น','22oz','นมคาราเมล', [ing('milk',7,'oz'), ing('syrupcaramel',0.75,'oz')]),
+  RCP('caramelmilk_blend_16','นมคาราเมล ปั่น','16oz','นมคาราเมล', [ing('milk',6,'oz'), ing('syrupcaramel',1.5,'oz')]),
+  RCP('caramelmilk_blend_22','นมคาราเมล ปั่น','22oz','นมคาราเมล', [ing('milk',6,'oz'), ing('syrupcaramel',2,'oz')]),
+
+  // ---------- ชาเขียวมัทฉะ ----------
+  RCP('matcha_hot_12','ชาเขียวมัทฉะ รอน','12oz','มัทฉะ', [ing('matcha',10,'g'), ing('milk',6,'oz')]),
+  RCP('matcha_iced_22','ชาเขียวมัทฉะ เย็น','22oz','มัทฉะ', [ing('matcha',10,'g'), ing('milk',3,'oz')]),
+  RCP('matcha_blend_16','ชาเขียวมัทฉะ ปั่น','16oz','มัทฉะ', [ing('matcha',15,'g'), ing('napukasauce',3.5,'oz')]),
+  RCP('matcha_blend_22','ชาเขียวมัทฉะ ปั่น','22oz','มัทฉะ', [ing('matcha',20,'g'), ing('napukasauce',4,'oz')]),
+
+  // ---------- นมสดบราวน์ชูการ์ ----------
+  RCP('brownsugar_iced_16','นมสดบราวน์ชูการ์เย็น','16oz','บราวน์ชูการ์', [ing('milk',6,'oz'), ing('napukasauce',1,'oz'), ing('syrupbrownsugar',1,'oz'), ing('buk',60,'g')]),
+  RCP('brownsugar_iced_22','นมสดบราวน์ชูการ์เย็น','22oz','บราวน์ชูการ์', [ing('milk',7,'oz'), ing('napukasauce',1,'oz'), ing('syrupbrownsugar',1,'oz'), ing('buk',60,'g')]),
+
+  // ---------- ชามะนาวน้ำผึ้ง ----------
+  RCP('lemonhoney_22','ชามะนาวน้ำผึ้ง','22oz','ชามะนาวน้ำผึ้ง', [ing('lemontea',30,'g'), ing('syruphoney',0.75,'oz'), ing('freshlime',1,'g')]),
+
+  // ---------- เครื่องดื่มส้ม ----------
+  RCP('orange_coffee_16','กาแฟส้มเย็น','16oz','เครื่องดื่มส้ม', [ing('td3',9,'g'), ing('orangetipco',5,'oz')]),
+  RCP('orange_thaitea_16','ชาไทยส้มเย็น','16oz','เครื่องดื่มส้ม', [ing('thaitea',10,'g'), ing('orangetipco',5,'oz')]),
+  RCP('orange_chocolate_16','ช็อคโกแลตส้มเย็น','16oz','เครื่องดื่มส้ม', [ing('chocolate1000',20,'g'), ing('orangetipco',5,'oz')]),
+
+  // ---------- Cocomint / Moccamint ----------
+  RCP('cocomint_16','Cocomint (โกโกมิ้นท์)','16oz','เมนูพิเศษ', [ing('cocoapowder',15,'g'), ing('milk',2,'oz'), ing('napukasauce',2,'oz'), ing('syrupmint',1,'oz')]),
+  RCP('moccamint_16','Moccamint (มอคคามิ้นท์)','16oz','เมนูพิเศษ', [ing('td1',18,'g'), ing('milk',2,'oz'), ing('napukasauce',2,'oz'), ing('syrupmint',1,'oz'), ing('syrupmocha',0.5,'oz')]),
+
+  // ---------- ซีรีส์โซดาประจำสัปดาห์ 16oz ----------
+  RCP('week_monday_16','Monday - good morning','16oz','โซดาประจำสัปดาห์', [ing('peachtea',30,'g'), ing('syrupkyoho',0.5,'oz'), ing('soda',6,'oz')]),
+  RCP('week_tuesday_16','Tuesday - pink lady','16oz','โซดาประจำสัปดาห์', [ing('syrupkyoho',1,'oz'), ing('syrupyuzu',0.5,'oz'), ing('syruplychee',0.5,'oz'), ing('soda',6,'oz')]),
+  RCP('week_wednesday_16','Wednesday - in the garden','16oz','โซดาประจำสัปดาห์', [ing('syrupyuzu',1,'oz'), ing('syrupkiwi',0.5,'oz'), ing('syruplychee',0.25,'oz'), ing('soda',6,'oz')]),
+  RCP('week_thursday_16','Thursday - happy sunrise','16oz','โซดาประจำสัปดาห์', [ing('syrupyuzu',1,'oz'), ing('syrupstrawberry',0.25,'oz'), ing('syrupmango',0.25,'oz'), ing('soda',6,'oz')]),
+  RCP('week_friday_16','Friday - on the beach','16oz','โซดาประจำสัปดาห์', [ing('syrupyuzu',1,'oz'), ing('syruppomegranate',0.25,'oz'), ing('soda',6,'oz')]),
+  RCP('week_saturday_16','Saturday - go to the galaxy','16oz','โซดาประจำสัปดาห์', [ing('syrupkyoho',1,'oz'), ing('syrupblueberry',0.25,'oz'), ing('soda',6,'oz')]),
+  RCP('week_sunday_16','Sunday - just the chilling time','16oz','โซดาประจำสัปดาห์', [ing('naturalgreentea',10,'g'), ing('syrupkyoho',1,'oz'), ing('syrupstrawberry',0.5,'oz'), ing('syrupyuzu',0.5,'oz')]),
+
+  // ---------- ยูสุ ----------
+  RCP('yuzu_iced_22','ยูสุเย็น','22oz','ยูสุ', [ing('syrupyuzu',1.5,'oz')]),
+  RCP('yuzu_blend_16','ยูสุปั่น','16oz','ยูสุ', [ing('syrupyuzu',2,'oz')]),
+  RCP('yuzu_blend_22','ยูสุปั่น','22oz','ยูสุ', [ing('syrupyuzu',2,'oz')]),
+  RCP('yuzu_coffee_22','ยูสุกาแฟ (Yuzu Blessing Coffee)','22oz','ยูสุ', [ing('td3',18,'g'), ing('syrupyuzu',0.75,'oz')]),
+  RCP('yuzu_honey_22','ยูสุน้ำผึ้ง (Freshy Honey Yuzu)','22oz','ยูสุ', [ing('syrupyuzu',1,'oz'), ing('syruphoney',0.5,'oz'), ing('soda',6,'oz')]),
+  RCP('yuzu_tea_22','ชายูสุน้ำผึ้ง (Tea with Yuzu)','22oz','ยูสุ', [ing('naturalgreentea',20,'g'), ing('syrupyuzu',1,'oz'), ing('syruphoney',0.5,'oz')]),
+  RCP('yuzu_coffee_blend_16','กาแฟยูสุปั่น','16oz','ยูสุ', [ing('td3',9,'g'), ing('syrupyuzu',2,'oz')]),
+  RCP('yuzu_thaitea_blend_16','ชาไทยยูสุปั่น','16oz','ยูสุ', [ing('thaitea',20,'g'), ing('syrupyuzu',2,'oz')]),
+  RCP('yuzu_matcha_blend_16','มัทฉะยูสุปั่น','16oz','ยูสุ', [ing('matcha',5,'g'), ing('syrupyuzu',2,'oz')]),
+  RCP('yuzu_coffee_blend_22','กาแฟยูสุปั่น','22oz','ยูสุ', [ing('td3',9,'g'), ing('syrupyuzu',2,'oz')]),
+  RCP('yuzu_thaitea_blend_22','ชาไทยยูสุปั่น','22oz','ยูสุ', [ing('thaitea',20,'g'), ing('syrupyuzu',2,'oz')]),
+  RCP('yuzu_matcha_blend_22','มัทฉะยูสุปั่น','22oz','ยูสุ', [ing('matcha',5,'g'), ing('syrupyuzu',2,'oz')]),
+
+  // ---------- องุ่นๆ (Kyoho) ----------
+  RCP('kyoho_coffee_22','กาแฟองุ่นๆ (KYOHO Fresh Coffee)','22oz','องุ่นๆ Kyoho', [ing('td3',18,'g'), ing('syrupkyoho',1.5,'oz')]),
+  RCP('kyoho_juice_22','องุ่นๆ (KYOHO Juice)','22oz','องุ่นๆ Kyoho', [ing('syrupkyoho',2,'oz')]),
+  RCP('kyoho_soda_22','องุ่นๆโซดา (KYOHO Soda)','22oz','องุ่นๆ Kyoho', [ing('syrupkyoho',2,'oz'), ing('soda',6,'oz')]),
+  RCP('kyoho_tea_22','ชาองุ่นๆ (KYOHO Green Tea)','22oz','องุ่นๆ Kyoho', [ing('naturalgreentea',10,'g'), ing('syrupkyoho',2,'oz')]),
+
+  // ---------- ชาซีลอน ----------
+  RCP('ceylon_hot_12','ชานมซีลอน รอน','12oz','ชาซีลอน', [ing('ceylontea',10,'g'), ing('milk',6,'oz')]),
+  RCP('ceylon_iced_22','ชานมซีลอน เย็น','22oz','ชาซีลอน', [ing('ceylontea',15,'g'), ing('condensedmilk',1,'oz'), ing('evapmilk',1.5,'oz')]),
+  RCP('ceylon_brownsugar_22','ชานมซีลอนบราวน์ชูก้า','22oz','ชาซีลอน', [ing('ceylontea',15,'g'), ing('syrupbrownsugar',0.75,'oz'), ing('milk',3,'oz')]),
+  RCP('ceylon_strawberry_22','ชาซีลอนสตรอเบอร์รี่','22oz','ชาซีลอน', [ing('ceylontea',10,'g'), ing('syrupstrawberry',1,'oz')]),
+  RCP('ceylon_chocolate_22','ชาซีลอนช็อกโกแลต','22oz','ชาซีลอน', [ing('ceylontea',10,'g'), ing('chocolate1000',25,'g'), ing('syrupmocha',1,'oz')]),
+
+  // ---------- Lychee Freshy ----------
+  RCP('lychee_freshy_coffee_22','Lychee Freshy Coffee','22oz','ลิ้นจี่พิเศษ', [ing('td3',18,'g'), ing('syruplychee',1.5,'oz'), ing('soda',3,'oz')]),
+  RCP('lychee_peach_22','Lychee Peach Blossom Summer','22oz','ลิ้นจี่พิเศษ', [ing('peachtea',30,'g'), ing('syruplychee',0.5,'oz'), ing('soda',6,'oz'), ing('sakura',60,'g')]),
+  RCP('lychee_cherrymint_22','Lychee Cherry Blossom Mint','22oz','ลิ้นจี่พิเศษ', [ing('syrupmint',0.5,'oz'), ing('syruplychee',1.5,'oz'), ing('soda',6,'oz'), ing('sakura',60,'g')]),
+
+  // ---------- เมนูฮอลิเดย์ / มะพร้าว ----------
+  RCP('holiday_hohoho_matcha_22','Ho Ho Ho! Matcha','22oz','เมนูฮอลิเดย์', [ing('matcha',5,'g')]),
+  RCP('holiday_jinglebell_22','Jingle bell Yuzu & Matcha','22oz','เมนูฮอลิเดย์', [ing('matcha',5,'g'), ing('syrupyuzu',1,'oz')]),
+  RCP('holiday_matchacoconut_22','Matcha Coconut snowy','22oz','เมนูฮอลิเดย์', [ing('matcha',5,'g'), ing('milk',1,'oz'), ing('whipcream500',10,'g'), ing('cocomax',7,'oz')]),
+  RCP('holiday_darknight_22','Dark night Coconut','22oz','เมนูฮอลิเดย์', [ing('td3',9,'g'), ing('cocomax',7,'oz')]),
+
+  // ---------- Freppe 22oz ----------
+  RCP('freppe_matchastrawberry_22','Matcha Strawberry Snowy (Freppe)','22oz','Freppe', [ing('matcha',10,'g'), ing('milk',5,'oz'), ing('napukasauce',2,'oz'), ing('syrupstrawberry',1,'oz')]),
+  RCP('freppe_twinkleblue_22','Twinkle Blue Sky (Freppe)','22oz','Freppe', [ing('syrupyuzu',1,'oz'), ing('syruppomegranate',0.5,'oz'), ing('syrupkyoho',0.5,'oz'), ing('sakura',80,'g')]),
+  RCP('freppe_santacruz_22','Happiness Santacruz (Freppe)','22oz','Freppe', [ing('syrupkyoho',1.5,'oz'), ing('syrupblueberry',0.5,'oz'), ing('syrupyuzu',0.5,'oz'), ing('sakura',80,'g')]),
+
+  // ---------- เจ (Vegan) ----------
+  RCP('vegan_cocoa_22','โกโกเจ','22oz','เมนูเจ', [ing('cocoapowder',20,'g')]),
+];
+
+/* ===========================================================
+   หมวดหมู่ที่ถือว่า "ไม่ค่อยเคลื่อนไหว" — ที่เหลือถือว่าเคลื่อนไหวบ่อย (นับทุกวัน)
+=========================================================== */
+const SLOW_CATEGORIES = ['ความสะอาด', 'สมาชิก/เอกสาร', 'แก้ว/ถุงพรีเมียม'];
+MATERIALS.forEach(m => { m.fastMoving = !SLOW_CATEGORIES.includes(m.category); });
+
+// ค่าที่พนักงานพิมพ์ไว้จริง (repopulate ฟอร์มเวลา re-render)
+const rawInputs = {};
+// ผลคำนวณ audit ของแต่ละวัตถุดิบ จะถูกสร้างก็ต่อเมื่อกรอก "นับจริง St" แล้ว
+const records = {};
+// ยอดขายเมนูวันนี้
+const menuSales = {};
+
+/* ===========================================================
+   Supabase — ฐานข้อมูลกลาง ซิงค์ข้ามเครื่อง
+=========================================================== */
+const SUPABASE_URL = 'https://ummtqzweedmotrffqrhw.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_yIUQ7A8IjCXKSp7OgKoGjw_65k3iO-X';
+
+function setSyncStatus(state){
+  // state: 'online' | 'syncing' | 'offline' | 'error'
+  const dot = document.getElementById('syncDot');
+  const label = document.getElementById('syncStatus');
+  if (!dot || !label) return;
+  const map = {
+    online:  { cls: 'bg-green-500',  text: 'ซิงค์แล้ว' },
+    syncing: { cls: 'bg-amber-500',  text: 'กำลังซิงค์…' },
+    offline: { cls: 'bg-slate-300',  text: 'ออฟไลน์' },
+    error:   { cls: 'bg-red-500',    text: 'ซิงค์ไม่สำเร็จ' },
+  };
+  const m = map[state] || map.offline;
+  dot.className = `sync-dot ${m.cls}`;
+  label.textContent = m.text;
+}
+
+async function sb(path, options = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...options,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+    },
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Supabase ${path} -> ${res.status}: ${text}`);
+  }
+  if (res.status === 204) return null;
+  const txt = await res.text();
+  return txt ? JSON.parse(txt) : null;
+}
+
+function todayDateStr(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function materialToRow(mat){
+  return {
+    id: mat.id, name: mat.name, category: mat.category,
+    big_unit: mat.bigUnit, small_unit: mat.smallUnit,
+    ratio: mat.ratio, carry: mat.carry,
+    sub_unit: mat.subUnit || null, sub_ratio: mat.subRatio || null,
+    no_fraction: !!mat.noFraction, fast_moving: !!mat.fastMoving,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+async function seedMaterialsIfEmpty(){
+  try {
+    const existing = await sb('materials?select=id&limit=1');
+    if (existing && existing.length > 0) return;
+    const rows = MATERIALS.map(materialToRow);
+    for (let i = 0; i < rows.length; i += 50) {
+      await sb('materials?on_conflict=id', {
+        method: 'POST',
+        body: JSON.stringify(rows.slice(i, i + 50)),
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      });
+    }
+  } catch (e) { console.error('seedMaterialsIfEmpty failed', e); }
+}
+
+async function loadMaterialsFromDB(){
+  try {
+    const rows = await sb('materials?select=*');
+    if (!rows) return;
+    rows.forEach(r => {
+      let mat = materialById(r.id);
+      if (!mat) {
+        mat = { id: r.id };
+        MATERIALS.push(mat);
+      }
+      mat.name = r.name; mat.category = r.category;
+      mat.bigUnit = r.big_unit; mat.smallUnit = r.small_unit;
+      mat.ratio = Number(r.ratio); mat.carry = Number(r.carry);
+      mat.subUnit = r.sub_unit || undefined; mat.subRatio = r.sub_ratio ? Number(r.sub_ratio) : undefined;
+      mat.noFraction = !!r.no_fraction; mat.fastMoving = !!r.fast_moving;
+    });
+  } catch (e) { console.error('loadMaterialsFromDB failed', e); throw e; }
+}
+
+async function upsertMaterial(mat){
+  setSyncStatus('syncing');
+  try {
+    await sb('materials?on_conflict=id', {
+      method: 'POST',
+      body: JSON.stringify([materialToRow(mat)]),
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    });
+    setSyncStatus('online');
+  } catch (e) { console.error('upsertMaterial failed', e); setSyncStatus('error'); }
+}
+
+async function seedRecipesIfEmpty(){
+  try {
+    const existing = await sb('recipes?select=id&limit=1');
+    if (existing && existing.length > 0) return;
+    const rows = RECIPES.map(r => ({ id: r.id, name: r.name, size: r.size, category: r.category, ingredients: r.ingredients }));
+    for (let i = 0; i < rows.length; i += 50) {
+      await sb('recipes?on_conflict=id', {
+        method: 'POST',
+        body: JSON.stringify(rows.slice(i, i + 50)),
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      });
+    }
+  } catch (e) { console.error('seedRecipesIfEmpty failed', e); }
+}
+
+// ดึงยอดคงเหลือล่าสุด (ก่อนวันนี้) ของแต่ละวัตถุดิบ มาเป็น "ยกมาเมื่อวาน" ของวันนี้
+async function loadCarryForward(branch){
+  const today = todayDateStr();
+  try {
+    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${today}&select=material_id,actual_big,actual_small,count_date&order=count_date.desc`);
+    if (!rows) return;
+    const seen = new Set();
+    rows.forEach(r => {
+      if (seen.has(r.material_id)) return;
+      seen.add(r.material_id);
+      const mat = materialById(r.material_id);
+      if (!mat) return;
+      mat.carry = (Number(r.actual_big) || 0) * mat.ratio + (mat.noFraction ? 0 : (Number(r.actual_small) || 0));
+    });
+  } catch (e) { console.error('loadCarryForward failed', e); }
+}
+
+async function loadDailyCounts(branch){
+  const today = todayDateStr();
+  try {
+    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${today}&select=*`);
+    if (!rows) return;
+    rows.forEach(r => {
+      rawInputs[r.material_id] = {
+        received: r.received ? String(r.received) : '',
+        actualBig: (r.actual_big !== null && r.actual_big !== undefined) ? String(r.actual_big) : '',
+        actualSmall: r.actual_small ? String(r.actual_small) : '',
+        posSale: r.pos_sale ? String(r.pos_sale) : '',
+        note: r.note || '',
+      };
+      recomputeMaterialLocal(r.material_id);
+    });
+  } catch (e) { console.error('loadDailyCounts failed', e); }
+}
+
+const saveTimers = {};
+function scheduleSaveDailyCount(matId){
+  clearTimeout(saveTimers['dc_' + matId]);
+  saveTimers['dc_' + matId] = setTimeout(() => saveDailyCount(matId), 600);
+}
+async function saveDailyCount(matId){
+  const branch = branchSelectEl.value;
+  if (!branch) return;
+  const ri = rawInputs[matId] || {};
+  setSyncStatus('syncing');
+  try {
+    await sb('daily_counts?on_conflict=branch,count_date,material_id', {
+      method: 'POST',
+      body: JSON.stringify([{
+        branch, count_date: todayDateStr(), material_id: matId,
+        received: parseFloat(ri.received) || 0,
+        actual_big: parseFloat(ri.actualBig) || 0,
+        actual_small: parseFloat(ri.actualSmall) || 0,
+        pos_sale: parseFloat(ri.posSale) || 0,
+        note: ri.note || '',
+        updated_at: new Date().toISOString(),
+      }]),
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    });
+    setSyncStatus('online');
+  } catch (e) { console.error('saveDailyCount failed', e); setSyncStatus('error'); }
+}
+
+async function loadMenuSales(branch){
+  const today = todayDateStr();
+  try {
+    const rows = await sb(`menu_sales?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${today}&select=*`);
+    if (!rows) return;
+    rows.forEach(r => { if (r.qty > 0) menuSales[r.recipe_id] = Number(r.qty); });
+  } catch (e) { console.error('loadMenuSales failed', e); }
+}
+
+function scheduleSaveMenuSale(recipeId){
+  clearTimeout(saveTimers['ms_' + recipeId]);
+  saveTimers['ms_' + recipeId] = setTimeout(() => saveMenuSale(recipeId), 600);
+}
+async function saveMenuSale(recipeId){
+  const branch = branchSelectEl.value;
+  if (!branch) return;
+  setSyncStatus('syncing');
+  try {
+    await sb('menu_sales?on_conflict=branch,count_date,recipe_id', {
+      method: 'POST',
+      body: JSON.stringify([{ branch, count_date: todayDateStr(), recipe_id: recipeId, qty: menuSales[recipeId] || 0, updated_at: new Date().toISOString() }]),
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    });
+    setSyncStatus('online');
+  } catch (e) { console.error('saveMenuSale failed', e); setSyncStatus('error'); }
+}
+
+/* ===========================================================
+   Helpers
+=========================================================== */
+const fmtNum = (n) => {
+  const r = Math.round((n + Number.EPSILON) * 100) / 100;
+  return r.toLocaleString('th-TH', { maximumFractionDigits: 2 });
+};
+
+function materialById(id){ return MATERIALS.find(m => m.id === id); }
+
+function formatAsBigSmall(mat, totalSmall){
+  const sign = totalSmall < 0 ? -1 : 1;
+  const abs = Math.abs(totalSmall);
+  const big = Math.floor(abs / mat.ratio);
+  const rem = abs - big * mat.ratio;
+  let txt = `${sign < 0 ? '-' : ''}${fmtNum(big)} ${mat.bigUnit}`;
+  if (!mat.noFraction && rem > 0.001) txt += ` + ${fmtNum(rem)} ${mat.smallUnit}`;
+  if (mat.subUnit) {
+    const subVal = (totalSmall / mat.subRatio);
+    txt += `<br><span class="text-[11px] text-slate-400">≈ ${fmtNum(subVal)} ${mat.subUnit}</span>`;
+  }
+  return txt;
+}
+
+function computeRecord(mat, { received, actualBig, actualSmall, posSale, note }){
+  const carrySmall = mat.carry;
+  const receivedSmall = received * mat.ratio;
+  const actualTotalSmall = (actualBig * mat.ratio) + (mat.noFraction ? 0 : actualSmall);
+  const usedActual = (carrySmall + receivedSmall) - actualTotalSmall;
+  const variance = posSale - usedActual;
+  return {
+    carrySmall, receivedSmall, receivedBig: received,
+    actualTotalSmall, usedActual, posSale, variance,
+    remainSmall: actualTotalSmall, note: note || '',
+  };
+}
+
+function categories(){ return [...new Set(MATERIALS.map(m => m.category))]; }
+function recipeCategories(){ return [...new Set(RECIPES.map(r => r.category))]; }
+
+/* ===========================================================
+   Branch modal + PIN gate
+=========================================================== */
+const branchSelectEl = document.getElementById('branchSelect');
+const frontContent = document.getElementById('frontContent');
+const branchBadge = document.getElementById('branchBadge');
+const branchModal = document.getElementById('branchModal');
+
+async function activateBranch(branch){
+  branchSelectEl.value = branch;
+  branchBadge.textContent = branch;
+  branchBadge.classList.remove('hidden');
+  frontContent.classList.remove('hidden');
+  branchModal.classList.add('hidden');
+
+  setSyncStatus('syncing');
+  try {
+    await loadCarryForward(branch);
+    await loadDailyCounts(branch);
+    await loadMenuSales(branch);
+    setSyncStatus('online');
+  } catch (e) { console.error(e); setSyncStatus('error'); }
+
+  renderFastMoving('');
+  renderSlowMoving('');
+  renderCategoryChips();
+  renderTable();
+  renderMenuList('');
+  renderEditList('');
+  applyRecipeUsageToMaterials();
+}
+
+document.querySelectorAll('.branch-pick-btn').forEach(btn => {
+  btn.addEventListener('click', () => activateBranch(btn.dataset.branch));
+});
+branchSelectEl.addEventListener('change', () => activateBranch(branchSelectEl.value));
+
+const PIN_CODE = '9999';
+document.getElementById('pinUnlockBtn').addEventListener('click', () => {
+  const val = document.getElementById('pinInput').value.trim();
+  const msg = document.getElementById('pinMsg');
+  if (val === PIN_CODE) {
+    document.getElementById('backOfficeWrap').classList.remove('hidden');
+    document.getElementById('pinGateWrap').classList.add('hidden');
+    msg.textContent = '';
+  } else {
+    msg.textContent = 'รหัสไม่ถูกต้อง';
+    msg.className = 'px-5 pb-3 text-xs font-medium text-red-400';
+  }
+});
+document.getElementById('pinInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('pinUnlockBtn').click();
+});
+
+/* ===========================================================
+   รายการวัตถุดิบ — เคลื่อนไหวบ่อย / ไม่ค่อยเคลื่อนไหว
+=========================================================== */
+const materialSearchEl = document.getElementById('materialSearch');
+const fastMovingWrap = document.getElementById('fastMovingWrap');
+const slowMovingWrap = document.getElementById('slowMovingWrap');
+const chipsWrap = document.getElementById('categoryChips');
+
+function isTouched(id){
+  const ri = rawInputs[id];
+  return !!(ri && ri.actualBig !== undefined && ri.actualBig !== '');
+}
+
+function liveStatusHTML(id){
+  const rec = records[id];
+  const mat = materialById(id);
+  const ri = rawInputs[id] || {};
+  if (!rec) return '<span class="text-slate-400">ยังไม่ได้กรอกยอดนับ</span>';
+
+  const posTouched = ri.posSale !== undefined && ri.posSale !== '';
+  if (!posTouched) {
+    return `ใช้ไปจริง <span class="font-num font-semibold text-slate-900">${fmtNum(rec.usedActual)}</span> ${mat.smallUnit}
+      <span class="text-slate-300 mx-1">·</span><span class="text-slate-400">ยอดขายตามสูตรยังไม่เข้า</span>`;
+  }
+
+  let color, dot, label;
+  if (Math.abs(rec.variance) < 0.001) { color = 'text-green-600'; dot = 'bg-green-500'; label = 'ตรงตามสูตร'; }
+  else if (rec.variance < 0) { color = 'text-red-600'; dot = 'bg-red-500'; label = 'ใช้เกินสูตร'; }
+  else { color = 'text-amber-600'; dot = 'bg-amber-500'; label = 'ใช้ไม่ถึงสูตร'; }
+
+  return `<span class="inline-flex items-center gap-1.5 font-num font-semibold ${color}">
+      <span class="w-1.5 h-1.5 rounded-full ${dot}"></span>${rec.variance > 0 ? '+' : ''}${fmtNum(rec.variance)} ${mat.smallUnit} · ${label}
+    </span>
+    <span class="block text-slate-400 mt-0.5">ใช้ไปจริง ${fmtNum(rec.usedActual)} ${mat.smallUnit}</span>`;
+}
+
+function materialCardHTML(mat){
+  const ri = rawInputs[mat.id] || {};
+  const touched = isTouched(mat.id);
+  const gridCols = mat.noFraction ? 'grid-cols-2' : 'grid-cols-3';
+  return `
+  <div class="border border-slate-200 rounded-lg p-3 bg-white" id="card_${mat.id}">
+    <div class="flex items-start justify-between gap-2 mb-2">
+      <div class="min-w-0 flex items-start gap-1.5">
+        <div class="min-w-0">
+          <p class="font-semibold text-slate-900 text-sm leading-snug">${mat.name}</p>
+          <p class="text-[11px] text-slate-400">${mat.noFraction ? `หน่วยนับ: ${mat.bigUnit}` : `1 ${mat.bigUnit} = ${fmtNum(mat.ratio)} ${mat.smallUnit}`}</p>
+        </div>
+        <button data-editname="${mat.id}" title="แก้ไขชื่อ" class="text-slate-300 hover:text-accent-600 shrink-0 mt-0.5">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+      </div>
+      <span id="dot_${mat.id}" class="w-2 h-2 rounded-full ${touched ? 'bg-green-500' : 'bg-slate-300'} shrink-0 mt-1.5"></span>
+    </div>
+    <div class="grid ${gridCols} gap-1.5">
+      <div>
+        <label class="block text-[10px] text-slate-400 mb-0.5">รับเข้า (${mat.bigUnit})</label>
+        <input type="number" min="0" step="any" inputmode="decimal" placeholder="0" value="${ri.received ?? ''}"
+          data-matid="${mat.id}" data-field="received" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
+      </div>
+      <div>
+        <label class="block text-[10px] text-slate-400 mb-0.5">นับจริง St</label>
+        <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${ri.actualBig ?? ''}"
+          data-matid="${mat.id}" data-field="actualBig" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
+      </div>
+      ${mat.noFraction ? '' : `
+      <div>
+        <label class="block text-[10px] text-slate-400 mb-0.5">เศษ (${mat.smallUnit})</label>
+        <input type="number" min="0" step="any" inputmode="decimal" placeholder="0" value="${ri.actualSmall ?? ''}"
+          data-matid="${mat.id}" data-field="actualSmall" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
+      </div>`}
+    </div>
+    <div class="grid grid-cols-2 gap-1.5 mt-1.5">
+      <div>
+        <label class="block text-[10px] text-slate-400 mb-0.5">ยอดขายตามสูตร (POS)</label>
+        <input type="number" min="0" step="any" inputmode="decimal" placeholder="0" value="${ri.posSale ?? ''}"
+          data-matid="${mat.id}" data-field="posSale" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
+      </div>
+      <div>
+        <label class="block text-[10px] text-slate-400 mb-0.5">หมายเหตุ</label>
+        <input type="text" placeholder="ถ้ามี" value="${ri.note ?? ''}"
+          data-matid="${mat.id}" data-field="note" class="input-base input-sm !h-9 text-xs !px-1.5">
+      </div>
+    </div>
+    <p id="live_${mat.id}" class="text-[11px] mt-1.5 leading-relaxed">${liveStatusHTML(mat.id)}</p>
+  </div>`;
+}
+
+function slowItemHTML(mat){
+  const hasData = isTouched(mat.id) || !!(rawInputs[mat.id] && (rawInputs[mat.id].received || rawInputs[mat.id].note));
+  return `
+  <div class="border border-slate-200 rounded-lg overflow-hidden">
+    <label class="flex items-center gap-2 px-3 py-2.5 bg-slate-50 cursor-pointer select-none">
+      <input type="checkbox" data-toggle-matid="${mat.id}" ${hasData ? 'checked' : ''} class="w-4 h-4 accent-accent-600 shrink-0">
+      <span class="text-sm font-medium text-slate-700">${mat.name}</span>
+      <span class="text-[11px] text-slate-400 ml-1">มีการเคลื่อนไหววันนี้</span>
+    </label>
+    <div data-slowcard="${mat.id}" class="${hasData ? '' : 'hidden'} p-2.5 bg-white">
+      ${materialCardHTML(mat)}
+    </div>
+  </div>`;
+}
+
+function renderCategoryChips(){
+  const cats = categories().filter(cat => MATERIALS.some(m => m.category === cat && m.fastMoving));
+  chipsWrap.innerHTML = cats.map((cat, i) => `
+    <button data-jump="catsec_${i}" class="chip text-[11px] font-medium text-slate-500 bg-slate-100 hover:bg-accent-50 hover:text-accent-700 rounded-full px-3 py-1.5 transition">${cat}</button>
+  `).join('');
+  chipsWrap.querySelectorAll('button[data-jump]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const el = document.getElementById(btn.dataset.jump);
+      if (el) { el.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    });
+  });
+}
+
+function renderFastMoving(filterText){
+  const ft = (filterText || '').trim().toLowerCase();
+  let html = '';
+  categories().forEach((cat, i) => {
+    const items = MATERIALS.filter(m => m.fastMoving && m.category === cat && (!ft || m.name.toLowerCase().includes(ft)));
+    if (items.length === 0) return;
+    html += `
+      <details open id="catsec_${i}" class="border border-slate-100 rounded-lg scroll-mt-40 overflow-hidden">
+        <summary class="px-3 py-2.5 flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 transition">
+          <svg class="chevron w-3 h-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
+          <span class="text-xs font-bold uppercase tracking-wide text-accent-700">${cat} <span class="text-slate-300 font-normal">(${items.length})</span></span>
+        </summary>
+        <div class="p-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          ${items.map(materialCardHTML).join('')}
+        </div>
+      </details>`;
+  });
+  fastMovingWrap.innerHTML = html || `<p class="text-sm text-slate-400 text-center py-10">ไม่พบวัตถุดิบที่ค้นหา</p>`;
+  updateFrontProgress();
+}
+
+function renderSlowMoving(filterText){
+  const ft = (filterText || '').trim().toLowerCase();
+  let html = '';
+  categories().forEach(cat => {
+    const items = MATERIALS.filter(m => !m.fastMoving && m.category === cat && (!ft || m.name.toLowerCase().includes(ft)));
+    if (items.length === 0) return;
+    html += `
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wide text-slate-500 px-1 mb-2">${cat} <span class="text-slate-300 font-normal">(${items.length})</span></h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          ${items.map(slowItemHTML).join('')}
+        </div>
+      </div>`;
+  });
+  slowMovingWrap.innerHTML = html || `<p class="text-sm text-slate-400 text-center py-6">ไม่พบวัตถุดิบที่ค้นหา</p>`;
+}
+
+materialSearchEl.addEventListener('input', () => {
+  renderFastMoving(materialSearchEl.value);
+  renderSlowMoving(materialSearchEl.value);
+});
+
+document.getElementById('clearAllBtn').addEventListener('click', () => {
+  if (!confirm('ล้างยอดที่กรอกไว้ทั้งหมดของวันนี้?')) return;
+  Object.keys(rawInputs).forEach(k => delete rawInputs[k]);
+  Object.keys(records).forEach(k => delete records[k]);
+  renderFastMoving(materialSearchEl.value);
+  renderSlowMoving(materialSearchEl.value);
+  renderTable();
+});
+
+function updateFrontProgress(){
+  const recorded = Object.keys(records).length;
+  document.getElementById('frontProgress').textContent = `${recorded}/${MATERIALS.length}`;
+}
+
+function updateCardLive(id){
+  const dotEl = document.getElementById('dot_' + id);
+  const liveEl = document.getElementById('live_' + id);
+  if (dotEl) dotEl.className = `w-2 h-2 rounded-full ${isTouched(id) ? 'bg-green-500' : 'bg-slate-300'} shrink-0 mt-1.5`;
+  if (liveEl) liveEl.innerHTML = liveStatusHTML(id);
+}
+
+// คำนวณใหม่ + อัปเดต UI (ไม่ยิง save) — ใช้ตอนโหลดข้อมูลจาก DB
+function recomputeMaterialLocal(id){
+  const mat = materialById(id);
+  if (!mat) return;
+  const ri = rawInputs[id] || {};
+  if (ri.actualBig === undefined || ri.actualBig === '') {
+    delete records[id];
+  } else {
+    const received = parseFloat(ri.received) || 0;
+    const actualBig = parseFloat(ri.actualBig) || 0;
+    const actualSmall = mat.noFraction ? 0 : (parseFloat(ri.actualSmall) || 0);
+    const note = ri.note || '';
+    const posSale = parseFloat(ri.posSale) || 0;
+    records[id] = computeRecord(mat, { received, actualBig, actualSmall, posSale, note });
+  }
+}
+
+// คำนวณใหม่ + อัปเดต UI + บันทึกขึ้น Supabase (ใช้ตอนพนักงานพิมพ์)
+function recomputeMaterial(id){
+  recomputeMaterialLocal(id);
+  updateCardLive(id);
+  updateFrontProgress();
+  updateStats();
+  scheduleSaveDailyCount(id);
+}
+
+// event delegation: ฟัง input ทุกช่องในรายการเดียว
+function bindMaterialInputDelegation(container){
+  container.addEventListener('input', (e) => {
+    const id = e.target.dataset.matid;
+    const field = e.target.dataset.field;
+    if (!id || !field) return;
+    if (!rawInputs[id]) rawInputs[id] = {};
+    rawInputs[id][field] = e.target.value;
+    recomputeMaterial(id);
+  });
+  container.addEventListener('click', (e) => {
+    const editBtn = e.target.closest('[data-editname]');
+    if (editBtn) editMaterialName(editBtn.dataset.editname);
+  });
+  container.addEventListener('change', (e) => {
+    if (e.target.dataset.toggleMatid) {
+      const matId = e.target.dataset.toggleMatid;
+      const card = container.querySelector(`[data-slowcard="${matId}"]`);
+      if (card) card.classList.toggle('hidden', !e.target.checked);
+    }
+  });
+}
+bindMaterialInputDelegation(fastMovingWrap);
+bindMaterialInputDelegation(slowMovingWrap);
+
+function editMaterialName(matId){
+  const mat = materialById(matId);
+  if (!mat) return;
+  const newName = prompt('แก้ไขชื่อวัตถุดิบ', mat.name);
+  if (newName === null) return;
+  const trimmed = newName.trim();
+  if (!trimmed) return;
+  mat.name = trimmed;
+  upsertMaterial(mat);
+  renderFastMoving(materialSearchEl.value);
+  renderSlowMoving(materialSearchEl.value);
+  renderTable();
+  renderEditList(document.getElementById('editSearch') ? document.getElementById('editSearch').value : '');
+}
+
+/* ===========================================================
+   ผูกสูตรเมนู: กรอกยอดขายเมนูวันนี้
+=========================================================== */
+const menuSearchEl = document.getElementById('menuSearch');
+const menuListWrap = document.getElementById('menuListWrap');
+
+function ingredientPreview(recipe){
+  return recipe.ingredients.map(i => {
+    const mat = materialById(i.materialId);
+    if (!mat) return '';
+    return `${mat.name} ${fmtNum(i.qty)}${mat.smallUnit}`;
+  }).filter(Boolean).join(' · ');
+}
+
+function menuCardHTML(recipe){
+  const qty = menuSales[recipe.id] ?? '';
+  return `
+  <div class="border border-slate-200 rounded-lg p-3 bg-white flex items-center justify-between gap-3">
+    <div class="min-w-0">
+      <p class="font-semibold text-slate-900 text-sm leading-snug truncate">${recipe.name} <span class="text-slate-400 font-normal">(${recipe.size})</span></p>
+      <p class="text-[11px] text-slate-400 truncate">${ingredientPreview(recipe)}</p>
+    </div>
+    <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${qty}"
+      data-recipeid="${recipe.id}" class="menu-qty-input w-20 input-base input-sm !h-10 font-num text-center shrink-0">
+  </div>`;
+}
+
+function renderMenuList(filterText){
+  const ft = (filterText || '').trim().toLowerCase();
+  let html = '';
+  recipeCategories().forEach(cat => {
+    const items = RECIPES.filter(r => r.category === cat && (!ft || r.name.toLowerCase().includes(ft)));
+    if (items.length === 0) return;
+    html += `
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wide text-accent-700 px-1 mb-2">${cat} <span class="text-slate-300 font-normal">(${items.length})</span></h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          ${items.map(menuCardHTML).join('')}
+        </div>
+      </div>`;
+  });
+  menuListWrap.innerHTML = html || `<p class="text-sm text-slate-400 text-center py-6">ไม่พบเมนูที่ค้นหา</p>`;
+}
+
+menuSearchEl.addEventListener('input', () => renderMenuList(menuSearchEl.value));
+
+function applyRecipeUsageToMaterials(){
+  const totals = {};
+  RECIPES.forEach(recipe => {
+    const sold = menuSales[recipe.id];
+    if (!sold) return;
+    recipe.ingredients.forEach(ing => {
+      totals[ing.materialId] = (totals[ing.materialId] || 0) + ing.qty * sold;
+    });
+  });
+  Object.keys(totals).forEach(matId => {
+    if (!rawInputs[matId]) rawInputs[matId] = {};
+    rawInputs[matId].posSale = Math.round(totals[matId] * 100) / 100;
+    recomputeMaterial(matId);
+  });
+  const countEl = document.getElementById('menuAffectedCount');
+  if (countEl) countEl.textContent = Object.keys(totals).length;
+  renderTable();
+}
+
+menuListWrap.addEventListener('input', (e) => {
+  const id = e.target.dataset.recipeid;
+  if (!id) return;
+  const v = parseFloat(e.target.value) || 0;
+  if (v > 0) menuSales[id] = v; else delete menuSales[id];
+  applyRecipeUsageToMaterials();
+  scheduleSaveMenuSale(id);
+});
+
+document.getElementById('clearMenuSalesBtn').addEventListener('click', () => {
+  if (!confirm('ล้างยอดขายเมนูทั้งหมด? (ยอดขายตามสูตรที่คำนวณไว้จะถูกล้างด้วย)')) return;
+  const ids = Object.keys(menuSales);
+  ids.forEach(k => delete menuSales[k]);
+  Object.keys(rawInputs).forEach(matId => {
+    if (rawInputs[matId]) { rawInputs[matId].posSale = ''; recomputeMaterial(matId); }
+  });
+  ids.forEach(id => scheduleSaveMenuSale(id));
+  renderMenuList(menuSearchEl.value);
+  const countEl = document.getElementById('menuAffectedCount');
+  if (countEl) countEl.textContent = '0';
+  renderTable();
+});
+
+/* ===========================================================
+   เพิ่มวัตถุดิบใหม่
+=========================================================== */
+const newTypeEl = document.getElementById('newType');
+function toggleNewTypeFields(){
+  const isFraction = newTypeEl.value === 'fraction';
+  document.getElementById('newSmallUnitWrap').style.display = isFraction ? '' : 'none';
+  document.getElementById('newRatioWrap').style.display = isFraction ? '' : 'none';
+}
+newTypeEl.addEventListener('change', toggleNewTypeFields);
+toggleNewTypeFields();
+
+document.getElementById('addMaterialBtn').addEventListener('click', () => {
+  const name = document.getElementById('newName').value.trim();
+  const category = document.getElementById('newCategory').value.trim() || 'วัตถุดิบเพิ่มเติม';
+  const bigUnit = document.getElementById('newBigUnit').value.trim();
+  const isFraction = newTypeEl.value === 'fraction';
+  const smallUnit = isFraction ? document.getElementById('newSmallUnit').value.trim() : bigUnit;
+  const ratio = isFraction ? (parseFloat(document.getElementById('newRatio').value) || 0) : 1;
+  const carry = parseFloat(document.getElementById('newCarry').value) || 0;
+  const fastMoving = document.getElementById('newFastMoving').value === '1';
+  const msgEl = document.getElementById('addMaterialMsg');
+
+  if (!name || !bigUnit || (isFraction && (!smallUnit || ratio <= 0))) {
+    msgEl.textContent = 'กรุณากรอกชื่อ หน่วยใหญ่ และอัตราแปลงหน่วยให้ครบถ้วน';
+    msgEl.className = 'text-sm font-medium text-red-600';
+    return;
+  }
+
+  const id = 'custom_' + name.replace(/\s+/g,'_') + '_' + Date.now();
+  const mat = isFraction
+    ? FR(id, name, category, bigUnit, smallUnit, ratio, carry)
+    : NF(id, name, category, bigUnit, carry);
+  mat.fastMoving = fastMoving;
+  MATERIALS.push(mat);
+  upsertMaterial(mat);
+
+  renderCategoryChips();
+  renderFastMoving(materialSearchEl.value);
+  renderSlowMoving(materialSearchEl.value);
+  renderTable();
+  renderEditList(document.getElementById('editSearch').value);
+
+  msgEl.textContent = `เพิ่ม "${name}" เข้าระบบเรียบร้อย และซิงค์ขึ้นฐานข้อมูลแล้ว`;
+  msgEl.className = 'text-sm font-medium text-green-700';
+
+  ['newName','newCategory','newBigUnit','newSmallUnit','newRatio','newCarry'].forEach(id2 => {
+    document.getElementById(id2).value = '';
+  });
+});
+
+/* ===========================================================
+   แก้ไขอัตราส่วนวัตถุดิบเดิม
+=========================================================== */
+const editSearchEl = document.getElementById('editSearch');
+const editListWrap = document.getElementById('editListWrap');
+
+function editHintText(mat){
+  if (mat.noFraction) return `นับเป็น ${mat.bigUnit} ทีละชิ้น (ไม่มีหน่วยเศษ)`;
+  return `1 ${mat.bigUnit} = ${fmtNum(mat.ratio)} ${mat.smallUnit} · ยกมาตั้งต้นตอนนี้ ${fmtNum(mat.carry)} ${mat.smallUnit}`;
+}
+
+function editRowHTML(mat){
+  const isFrac = !mat.noFraction;
+  return `
+  <div class="border border-slate-200 rounded-lg p-3 bg-white" id="editrow_${mat.id}">
+    <div class="flex items-center justify-between gap-2 mb-2">
+      <p class="font-semibold text-slate-900 text-sm">${mat.name}</p>
+      <span class="text-[10px] text-slate-400">${mat.category}</span>
+    </div>
+    <div class="grid grid-cols-2 ${isFrac ? 'sm:grid-cols-4' : 'sm:grid-cols-2'} gap-1.5">
+      <div>
+        <label class="block text-[10px] text-slate-400 mb-0.5">หน่วยใหญ่</label>
+        <input type="text" value="${mat.bigUnit}" data-matid="${mat.id}" data-editfield="bigUnit" class="input-base input-sm !h-9 !px-2 text-xs">
+      </div>
+      ${isFrac ? `
+      <div>
+        <label class="block text-[10px] text-slate-400 mb-0.5">หน่วยเศษ</label>
+        <input type="text" value="${mat.smallUnit}" data-matid="${mat.id}" data-editfield="smallUnit" class="input-base input-sm !h-9 !px-2 text-xs">
+      </div>
+      <div>
+        <label class="block text-[10px] text-slate-400 mb-0.5">1 ใหญ่ = กี่เศษ</label>
+        <input type="number" min="0.0001" step="any" value="${mat.ratio}" data-matid="${mat.id}" data-editfield="ratio" class="input-base input-sm !h-9 !px-2 font-num text-xs">
+      </div>` : ''}
+      <div>
+        <label class="block text-[10px] text-slate-400 mb-0.5">ยกมาเริ่มต้น (เศษ)</label>
+        <input type="number" min="0" step="any" value="${mat.carry}" data-matid="${mat.id}" data-editfield="carry" class="input-base input-sm !h-9 !px-2 font-num text-xs">
+      </div>
+    </div>
+    <p id="edithint_${mat.id}" class="text-[11px] text-slate-400 mt-1.5">${editHintText(mat)}</p>
+  </div>`;
+}
+
+function renderEditList(filterText){
+  const ft = (filterText || '').trim().toLowerCase();
+  let html = '';
+  categories().forEach(cat => {
+    const items = MATERIALS.filter(m => m.category === cat && (!ft || m.name.toLowerCase().includes(ft)));
+    if (items.length === 0) return;
+    html += `
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wide text-accent-700 px-1 mb-2">${cat}</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          ${items.map(editRowHTML).join('')}
+        </div>
+      </div>`;
+  });
+  editListWrap.innerHTML = html || `<p class="text-sm text-slate-400 text-center py-6">ไม่พบวัตถุดิบที่ค้นหา</p>`;
+}
+
+editSearchEl.addEventListener('input', () => renderEditList(editSearchEl.value));
+
+const editSaveTimers = {};
+editListWrap.addEventListener('input', (e) => {
+  const id = e.target.dataset.matid;
+  const field = e.target.dataset.editfield;
+  if (!id || !field) return;
+  const mat = materialById(id);
+  if (!mat) return;
+
+  if (field === 'bigUnit') {
+    mat.bigUnit = e.target.value;
+    if (mat.noFraction) mat.smallUnit = e.target.value;
+  } else if (field === 'smallUnit') {
+    mat.smallUnit = e.target.value;
+  } else if (field === 'ratio') {
+    const v = parseFloat(e.target.value);
+    if (v > 0) mat.ratio = v;
+  } else if (field === 'carry') {
+    mat.carry = parseFloat(e.target.value) || 0;
+  }
+
+  const hintEl = document.getElementById('edithint_' + id);
+  if (hintEl) hintEl.innerHTML = editHintText(mat);
+
+  if (records[id]) recomputeMaterial(id);
+  renderFastMoving(materialSearchEl.value);
+  renderSlowMoving(materialSearchEl.value);
+  renderTable();
+
+  clearTimeout(editSaveTimers[id]);
+  editSaveTimers[id] = setTimeout(() => upsertMaterial(mat), 700);
+});
+
+/* ===========================================================
+   Render table (Audit Reconciliation)
+=========================================================== */
+const catFilterEl = document.getElementById('categoryFilter');
+const statusFilterEl = document.getElementById('statusFilter');
+
+function populateCategoryFilter(){
+  catFilterEl.innerHTML = '<option value="">ทุกหมวดหมู่</option>';
+  categories().forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = cat;
+    catFilterEl.appendChild(opt);
+  });
+}
+
+function varianceBadge(variance){
+  let color, dot, label;
+  if (Math.abs(variance) < 0.001) {
+    color = 'text-green-600'; dot = 'bg-green-500'; label = 'ตรงตามสูตร';
+  } else if (variance < 0) {
+    color = 'text-red-600'; dot = 'bg-red-500'; label = 'ใช้เกินสูตร (ชงเปลือง/ทำหก)';
+  } else {
+    color = 'text-amber-600'; dot = 'bg-amber-500'; label = 'ใช้ไม่ถึงสูตร (ชงจาง/ลืมคีย์ขาย)';
+  }
+  return `<span class="inline-flex items-center gap-1.5 font-num font-semibold text-sm ${color}" title="${label}">
+      <span class="w-1.5 h-1.5 rounded-full ${dot} shrink-0"></span>${variance > 0 ? '+' : ''}${fmtNum(variance)}
+    </span>`;
+}
+
+function renderTable(){
+  const tbody = document.getElementById('auditTableBody');
+  tbody.innerHTML = '';
+
+  const catFilter = catFilterEl.value;
+  const statusFilter = statusFilterEl.value;
+
+  MATERIALS
+    .filter(mat => !catFilter || mat.category === catFilter)
+    .filter(mat => {
+      if (!statusFilter) return true;
+      const has = !!records[mat.id];
+      return statusFilter === 'done' ? has : !has;
+    })
+    .forEach(mat => {
+      const rec = records[mat.id];
+      const tr = document.createElement('tr');
+      tr.className = 'border-b border-slate-100 align-top hover:bg-amber-50/30 transition-colors';
+
+      if (!rec) {
+        tr.innerHTML = `
+          <td class="px-4 py-3">
+            <div class="font-semibold text-slate-900">${mat.name}</div>
+            <div class="text-[11px] text-slate-400">${mat.category}</div>
+          </td>
+          <td class="px-4 py-3 font-num">${formatAsBigSmall(mat, mat.carry)}</td>
+          <td class="px-4 py-3 text-slate-400 italic" colspan="6">ยังไม่ได้บันทึกยอดนับวันนี้</td>
+        `;
+        tbody.appendChild(tr);
+        return;
+      }
+
+      tr.innerHTML = `
+        <td class="px-4 py-3">
+          <div class="font-semibold text-slate-900">${mat.name}</div>
+          <div class="text-[11px] text-slate-400">${mat.category}</div>
+        </td>
+        <td class="px-4 py-3 font-num">${formatAsBigSmall(mat, rec.carrySmall)}</td>
+        <td class="px-4 py-3 font-num">${fmtNum(rec.receivedBig)} ${mat.bigUnit}${mat.noFraction ? '' : `<br><span class="text-[11px] text-slate-400">(${fmtNum(rec.receivedSmall)} ${mat.smallUnit})</span>`}</td>
+        <td class="px-4 py-3">
+          <div class="flex items-center gap-1.5">
+            <input type="number" step="any" value="${rec.posSale}"
+              data-id="${mat.id}"
+              class="pos-input w-24 input-base input-sm !h-9 font-num">
+            <span class="text-[11px] text-slate-400">${mat.smallUnit}</span>
+          </div>
+        </td>
+        <td class="px-4 py-3 font-num font-semibold text-slate-900">${fmtNum(rec.usedActual)} <span class="text-[11px] font-normal text-slate-400">${mat.smallUnit}</span></td>
+        <td class="px-4 py-3">${varianceBadge(rec.variance)}</td>
+        <td class="px-4 py-3 font-num">${formatAsBigSmall(mat, rec.remainSmall)}</td>
+        <td class="px-4 py-3 text-xs text-slate-500 max-w-[160px] truncate" title="${rec.note}">${rec.note || '—'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  tbody.querySelectorAll('.pos-input').forEach(inp => {
+    inp.addEventListener('input', (e) => {
+      const id = e.target.dataset.id;
+      if (!rawInputs[id]) rawInputs[id] = {};
+      rawInputs[id].posSale = e.target.value;
+      recomputeMaterial(id);
+      const rec = records[id];
+      const row = e.target.closest('tr');
+      row.children[5].innerHTML = varianceBadge(rec.variance);
+    });
+  });
+
+  updateStats();
+}
+
+catFilterEl.addEventListener('change', renderTable);
+statusFilterEl.addEventListener('change', renderTable);
+
+function updateStats(){
+  const recorded = Object.keys(records).length;
+  let ok = 0, flag = 0;
+  Object.values(records).forEach(r => {
+    if (Math.abs(r.variance) < 0.001) ok++; else flag++;
+  });
+  document.getElementById('statRecorded').innerHTML = `${recorded}<span class="text-slate-300 font-normal text-base">/${MATERIALS.length}</span>`;
+  document.getElementById('statOk').textContent = ok;
+  document.getElementById('statFlag').textContent = flag;
+}
+
+/* ===========================================================
+   Init
+=========================================================== */
+(async function init(){
+  const today = new Date();
+  document.getElementById('dateInput').value = today.toLocaleDateString('th-TH', { day:'2-digit', month:'long', year:'numeric' });
+  document.getElementById('todayDisplay').textContent = today.toLocaleDateString('th-TH', { day:'2-digit', month:'long', year:'numeric' });
+
+  populateCategoryFilter();
+
+  setSyncStatus('syncing');
+  const syncMsg = document.getElementById('branchModalSyncMsg');
+  try {
+    await seedMaterialsIfEmpty();
+    await loadMaterialsFromDB();
+    await seedRecipesIfEmpty();
+    setSyncStatus('online');
+    if (syncMsg) syncMsg.textContent = 'พร้อมใช้งาน — เชื่อมต่อฐานข้อมูลสำเร็จ';
+  } catch (e) {
+    console.error('init sync failed', e);
+    setSyncStatus('error');
+    if (syncMsg) syncMsg.textContent = 'เชื่อมต่อฐานข้อมูลไม่สำเร็จ (ใช้งานแบบออฟไลน์ในเครื่องนี้ได้ แต่จะไม่ซิงค์ข้ามเครื่อง)';
+  }
+
+  populateCategoryFilter();
+  renderCategoryChips();
+  renderFastMoving('');
+  renderSlowMoving('');
+  renderTable();
+  renderMenuList('');
+  renderEditList('');
+})();
+</script>
+</body>
+</html>

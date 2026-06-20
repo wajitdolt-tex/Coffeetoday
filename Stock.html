@@ -236,7 +236,8 @@
               </button>
             </div>
             <div class="px-5 pt-4 pb-2">
-              <p class="text-xs text-slate-500 mb-3">กรอกจำนวนที่ขายได้ของแต่ละเมนู ระบบจะคำนวณ "ยอดขายตามสูตร" ของวัตถุดิบทุกตัวที่เกี่ยวข้องให้อัตโนมัติ แล้วเติมใส่ตารางและการ์ดด้านบนให้เอง — ข้อมูลสูตรเป็นความลับ ไม่แสดงนอกส่วนนี้</p>
+              <p class="text-xs text-slate-500 mb-3">วิธีใช้: เลื่อนหาเมนูที่ขายวันนี้ (หรือพิมพ์ค้นหา) แล้วใส่ "จำนวนแก้ว" ที่ขายได้ในแต่ละเมนู ระบบจะคำนวณปริมาณวัตถุดิบที่ควรใช้ไปตามสูตรให้อัตโนมัติ แล้วนำไปเทียบกับยอดที่นับจริงในการ์ดวัตถุดิบด้านบนและตาราง Audit ด้านล่างทันที — ไม่ต้องกรอกอะไรที่การ์ดวัตถุดิบเองอีก ข้อมูลสูตรเป็นความลับ ไม่แสดงนอกส่วนนี้</p>
+              <p class="text-xs text-slate-500 mb-3">ถ้าไม่ได้ใช้ระบบผูกสูตรเมนู ก็ยังกรอกยอดขายตามสูตรของวัตถุดิบเองได้ตรงๆ ที่การ์ดวัตถุดิบในหน้าหลักเหมือนเดิม (ช่อง "ยอดขายตามสูตร (POS)")</p>
               <input id="menuSearch" type="text" placeholder="ค้นหาเมนู เช่น ลาเต, ชาไทย, ปั่น" class="input-base">
               <p class="text-xs text-slate-500 mt-2">คำนวณยอดใช้วัตถุดิบจากเมนูที่ขายแล้ว <span id="menuAffectedCount" class="font-num font-semibold text-accent-700">0</span> รายการวัตถุดิบ</p>
             </div>
@@ -476,7 +477,7 @@ const MATERIALS = [
   // สมาชิก/เอกสาร
   NF('membercard','บัตรสมาชิก','สมาชิก/เอกสาร','ใบ',20),
   NF('timecard','บัตรลงเวลา','สมาชิก/เอกสาร','ใบ',20),
-  NF('posrolls','กระดาษ POS','สมาชิก/เอกสาร','ม้วน',10),
+  FR('posrolls','กระดาษ POS','สมาชิก/เอกสาร','ม้วน','%',100,1000),
 
   // ความสะอาด
   NF('machinecleaner','ผงล้างเครื่อง','ความสะอาด','ถุง',5),
@@ -782,12 +783,17 @@ function todayDateStr(){
 }
 
 function materialToRow(mat){
+  const qf = mat.quickFill || {};
   return {
     id: mat.id, name: mat.name, category: mat.category,
     big_unit: mat.bigUnit, small_unit: mat.smallUnit,
     ratio: mat.ratio, carry: mat.carry,
     sub_unit: mat.subUnit || null, sub_ratio: mat.subRatio || null,
     no_fraction: !!mat.noFraction, fast_moving: !!mat.fastMoving,
+    quick_fill_mode: qf.mode || null,
+    quick_fill_rate1: qf.rate1 ?? null,
+    quick_fill_rate2: qf.rate2 ?? null,
+    quick_fill_label: qf.label || null,
     updated_at: new Date().toISOString(),
   };
 }
@@ -811,6 +817,7 @@ async function loadMaterialsFromDB(){
   try {
     const rows = await sb('materials?select=*');
     if (!rows) return;
+    const toBackfill = [];
     rows.forEach(r => {
       let mat = materialById(r.id);
       if (!mat) {
@@ -822,7 +829,23 @@ async function loadMaterialsFromDB(){
       mat.ratio = Number(r.ratio); mat.carry = Number(r.carry);
       mat.subUnit = r.sub_unit || undefined; mat.subRatio = r.sub_ratio ? Number(r.sub_ratio) : undefined;
       mat.noFraction = !!r.no_fraction; mat.fastMoving = !!r.fast_moving;
+
+      if (r.quick_fill_mode) {
+        mat.quickFill = {
+          mode: r.quick_fill_mode,
+          rate1: r.quick_fill_rate1 !== null ? Number(r.quick_fill_rate1) : null,
+          rate2: r.quick_fill_rate2 !== null ? Number(r.quick_fill_rate2) : null,
+          label: r.quick_fill_label || 'แก้ว',
+        };
+      } else if (DEFAULT_QUICK_FILL[r.id]) {
+        // คอลัมน์นี้ยังไม่เคยถูกตั้งค่าใน DB (เพิ่งเพิ่มคอลัมน์ใหม่) -> ใช้ค่าเริ่มต้นในเครื่อง แล้วดันขึ้น DB ครั้งเดียว
+        mat.quickFill = DEFAULT_QUICK_FILL[r.id];
+        toBackfill.push(mat);
+      } else {
+        mat.quickFill = null;
+      }
     });
+    toBackfill.forEach(mat => upsertMaterial(mat));
   } catch (e) { console.error('loadMaterialsFromDB failed', e); throw e; }
 }
 
@@ -1010,8 +1033,6 @@ async function activateBranch(branch){
   renderSlowMoving('');
   renderCategoryChips();
   renderTable();
-  renderMenuList('');
-  renderEditList('');
   applyRecipeUsageToMaterials();
 }
 
@@ -1028,6 +1049,9 @@ document.getElementById('pinUnlockBtn').addEventListener('click', () => {
     document.getElementById('backOfficeWrap').classList.remove('hidden');
     document.getElementById('pinGateWrap').classList.add('hidden');
     msg.textContent = '';
+    // เพิ่งสร้าง DOM ของส่วนลับตอนปลดล็อกเท่านั้น ไม่ใช่ตั้งแต่โหลดหน้า
+    renderMenuList(menuSearchEl.value);
+    renderEditList(editSearchEl.value);
   } else {
     msg.textContent = 'รหัสไม่ถูกต้อง';
     msg.className = 'px-5 pb-3 text-xs font-medium text-red-400';
@@ -1073,6 +1097,64 @@ function liveStatusHTML(id){
     <span class="block text-slate-400 mt-0.5">ใช้ไปจริง ${fmtNum(rec.usedActual)} ${mat.smallUnit}</span>`;
 }
 
+// ค่าเริ่มต้นของ "ตัวช่วยกรอกเร็ว" — หลังบ้านปรับ/เปิด-ปิดเพิ่มได้ทุกวัตถุดิบที่หน้า "แก้ไขอัตราส่วนวัตถุดิบเดิม"
+const DEFAULT_QUICK_FILL = {
+  td1:             { mode: 'shot', rate1: 8,  rate2: 18 },
+  td2:             { mode: 'shot', rate1: null, rate2: 18 },
+  td3:             { mode: 'shot', rate1: 9,  rate2: 18 },
+  td4:             { mode: 'shot', rate1: 8,  rate2: 18 },
+  thaitea:         { mode: 'shot', rate1: 10, rate2: 20 },
+  ceylontea:       { mode: 'shot', rate1: 10, rate2: 15 },
+  greenmilktea:    { mode: 'shot', rate1: 10, rate2: 20 },
+  naturalgreentea: { mode: 'shot', rate1: 10, rate2: 20 },
+  thbagsingle:     { mode: 'unit', rate1: 1, label: 'ใบ' },
+  totebagsingle:   { mode: 'unit', rate1: 1, label: 'ใบ' },
+  campingcups:     { mode: 'unit', rate1: 1, label: 'ชิ้น' },
+  doublewallcup:   { mode: 'unit', rate1: 1, label: 'ชิ้น' },
+  suctioncups:     { mode: 'unit', rate1: 1, label: 'ชิ้น' },
+  transformercups: { mode: 'unit', rate1: 1, label: 'ชิ้น' },
+};
+MATERIALS.forEach(m => { if (DEFAULT_QUICK_FILL[m.id] && m.quickFill === undefined) m.quickFill = DEFAULT_QUICK_FILL[m.id]; });
+
+function quickFillHTML(mat){
+  const qf = mat.quickFill;
+  if (!qf || !qf.mode) return '';
+  const ri = rawInputs[mat.id] || {};
+
+  if (qf.mode === 'shot') {
+    return `
+    <div class="bg-accent-50/60 border border-accent-100 rounded-lg p-2.5 mb-1.5">
+      <p class="text-[10px] font-semibold text-accent-700 mb-1.5">⚡ ตัวช่วยกรอกเร็ว — ใส่จำนวนแก้วที่ขาย คำนวณยอดขายตามสูตรให้อัตโนมัติ</p>
+      <div class="grid ${qf.rate1 ? 'grid-cols-2' : 'grid-cols-1'} gap-1.5">
+        ${qf.rate1 ? `
+        <div>
+          <label class="block text-[10px] text-slate-500 mb-0.5">Single Shot (${fmtNum(qf.rate1)}g/แก้ว)</label>
+          <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${ri.shotSingle ?? ''}"
+            data-matid="${mat.id}" data-field="shotSingle" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
+        </div>` : ''}
+        <div>
+          <label class="block text-[10px] text-slate-500 mb-0.5">Double Shot (${fmtNum(qf.rate2)}g/แก้ว)</label>
+          <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${ri.shotDouble ?? ''}"
+            data-matid="${mat.id}" data-field="shotDouble" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
+        </div>
+      </div>
+      <p class="text-[10px] text-accent-700/70 mt-1">เติมยอดขายตามสูตร (POS) ด้านล่างให้เอง — ถ้าจะกรอกช่อง POS เองตรงๆ แทน ไม่ต้องใช้ตัวช่วยนี้</p>
+    </div>`;
+  }
+
+  // mode === 'unit': นับเป็นจำนวนที่ขาย/ใช้ไป ตรงๆ (เช่น ไซรัป, ถุงเดี่ยว, แก้วพรีเมียม)
+  return `
+    <div class="bg-accent-50/60 border border-accent-100 rounded-lg p-2.5 mb-1.5">
+      <p class="text-[10px] font-semibold text-accent-700 mb-1.5">⚡ ตัวช่วยกรอกเร็ว — ใส่จำนวนที่ขาย/ใช้ไป คำนวณยอดขายตามสูตรให้อัตโนมัติ</p>
+      <div>
+        <label class="block text-[10px] text-slate-500 mb-0.5">จำนวนที่ขาย (${qf.label || 'แก้ว'}) — ${fmtNum(qf.rate1)}${mat.smallUnit}/${qf.label || 'แก้ว'}</label>
+        <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${ri.quickUnit ?? ''}"
+          data-matid="${mat.id}" data-field="quickUnit" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
+      </div>
+      <p class="text-[10px] text-accent-700/70 mt-1">เติมยอดขายตามสูตร (POS) ด้านล่างให้เอง — ถ้าจะกรอกช่อง POS เองตรงๆ แทน ไม่ต้องใช้ตัวช่วยนี้</p>
+    </div>`;
+}
+
 function materialCardHTML(mat){
   const ri = rawInputs[mat.id] || {};
   const touched = isTouched(mat.id);
@@ -1109,6 +1191,7 @@ function materialCardHTML(mat){
           data-matid="${mat.id}" data-field="actualSmall" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
       </div>`}
     </div>
+    <div class="mt-1.5">${quickFillHTML(mat)}</div>
     <div class="grid grid-cols-2 gap-1.5 mt-1.5">
       <div>
         <label class="block text-[10px] text-slate-400 mb-0.5">ยอดขายตามสูตร (POS)</label>
@@ -1244,6 +1327,26 @@ function recomputeMaterial(id){
 }
 
 // event delegation: ฟัง input ทุกช่องในรายการเดียว
+function applyQuickFill(matId){
+  const mat = materialById(matId);
+  const qf = mat && mat.quickFill;
+  if (!qf || !qf.mode) return;
+  const ri = rawInputs[matId] || {};
+  let total = 0;
+  if (qf.mode === 'shot') {
+    const single = parseFloat(ri.shotSingle) || 0;
+    const double = parseFloat(ri.shotDouble) || 0;
+    total = single * (qf.rate1 || 0) + double * (qf.rate2 || 0);
+  } else if (qf.mode === 'unit') {
+    const count = parseFloat(ri.quickUnit) || 0;
+    total = count * (qf.rate1 || 0);
+  }
+  ri.posSale = Math.round(total * 100) / 100;
+  rawInputs[matId] = ri;
+  const posInput = document.querySelector(`#card_${matId} input[data-field="posSale"]`);
+  if (posInput) posInput.value = ri.posSale;
+}
+
 function bindMaterialInputDelegation(container){
   container.addEventListener('input', (e) => {
     const id = e.target.dataset.matid;
@@ -1251,6 +1354,7 @@ function bindMaterialInputDelegation(container){
     if (!id || !field) return;
     if (!rawInputs[id]) rawInputs[id] = {};
     rawInputs[id][field] = e.target.value;
+    if (field === 'shotSingle' || field === 'shotDouble' || field === 'quickUnit') applyQuickFill(id);
     recomputeMaterial(id);
   });
   container.addEventListener('click', (e) => {
@@ -1300,13 +1404,15 @@ function ingredientPreview(recipe){
 function menuCardHTML(recipe){
   const qty = menuSales[recipe.id] ?? '';
   return `
-  <div class="border border-slate-200 rounded-lg p-3 bg-white flex items-center justify-between gap-3">
-    <div class="min-w-0">
-      <p class="font-semibold text-slate-900 text-sm leading-snug truncate">${recipe.name} <span class="text-slate-400 font-normal">(${recipe.size})</span></p>
-      <p class="text-[11px] text-slate-400 truncate">${ingredientPreview(recipe)}</p>
+  <div class="border border-slate-200 rounded-lg p-3 bg-white" id="menucard_${recipe.id}">
+    <p class="font-semibold text-slate-900 text-sm leading-snug">${recipe.name} <span class="text-slate-400 font-normal">(${recipe.size})</span></p>
+    <p class="text-[11px] text-slate-400 mt-0.5 leading-relaxed">ใช้: ${ingredientPreview(recipe)}</p>
+    <div class="mt-2">
+      <label class="block text-[10px] text-slate-400 mb-0.5">จำนวนที่ขายวันนี้ (แก้ว)</label>
+      <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${qty}"
+        data-recipeid="${recipe.id}" class="menu-qty-input w-full input-base input-sm !h-10 font-num text-center">
     </div>
-    <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${qty}"
-      data-recipeid="${recipe.id}" class="menu-qty-input w-20 input-base input-sm !h-10 font-num text-center shrink-0">
+    <p id="menulive_${recipe.id}" class="text-[11px] mt-1.5 ${qty ? 'text-green-600 font-medium' : 'text-slate-400'}">${qty ? `บันทึกแล้ว ✓ ขาย ${fmtNum(qty)} แก้ว` : 'ยังไม่ได้กรอก'}</p>
   </div>`;
 }
 
@@ -1348,12 +1454,26 @@ function applyRecipeUsageToMaterials(){
   renderTable();
 }
 
+function updateMenuLive(recipeId){
+  const el = document.getElementById('menulive_' + recipeId);
+  if (!el) return;
+  const qty = menuSales[recipeId];
+  if (qty > 0) {
+    el.textContent = `บันทึกแล้ว ✓ ขาย ${fmtNum(qty)} แก้ว`;
+    el.className = 'text-[11px] mt-1.5 text-green-600 font-medium';
+  } else {
+    el.textContent = 'ยังไม่ได้กรอก';
+    el.className = 'text-[11px] mt-1.5 text-slate-400';
+  }
+}
+
 menuListWrap.addEventListener('input', (e) => {
   const id = e.target.dataset.recipeid;
   if (!id) return;
   const v = parseFloat(e.target.value) || 0;
   if (v > 0) menuSales[id] = v; else delete menuSales[id];
   applyRecipeUsageToMaterials();
+  updateMenuLive(id);
   scheduleSaveMenuSale(id);
 });
 
@@ -1433,6 +1553,42 @@ function editHintText(mat){
   return `1 ${mat.bigUnit} = ${fmtNum(mat.ratio)} ${mat.smallUnit} · ยกมาตั้งต้นตอนนี้ ${fmtNum(mat.carry)} ${mat.smallUnit}`;
 }
 
+function quickFillAdminHTML(mat){
+  const qf = mat.quickFill || {};
+  const mode = qf.mode || '';
+  return `
+    <div class="border-t border-slate-100 mt-2 pt-2">
+      <label class="block text-[10px] text-slate-400 mb-0.5">ตัวช่วยกรอกเร็ว (โชว์ที่หน้าร้านเลย ไม่ต้องผ่านรหัส)</label>
+      <select data-matid="${mat.id}" data-editfield="qfmode" class="input-base input-sm !h-9 !px-2 text-xs w-full mb-1.5">
+        <option value="" ${mode === '' ? 'selected' : ''}>ไม่ใช้ตัวช่วยกรอกเร็ว</option>
+        <option value="shot" ${mode === 'shot' ? 'selected' : ''}>Single Shot / Double Shot (กาแฟ, ชา)</option>
+        <option value="unit" ${mode === 'unit' ? 'selected' : ''}>นับเป็นจำนวนที่ขาย/ใช้ไป (ไซรัป, ถุง, แก้วพรีเมียม ฯลฯ)</option>
+      </select>
+      ${mode === 'shot' ? `
+      <div class="grid grid-cols-2 gap-1.5">
+        <div>
+          <label class="block text-[10px] text-slate-400 mb-0.5">Single Shot (${mat.smallUnit}/แก้ว)</label>
+          <input type="number" min="0" step="any" value="${qf.rate1 ?? ''}" data-matid="${mat.id}" data-editfield="qfrate1" class="input-base input-sm !h-9 !px-2 font-num text-xs">
+        </div>
+        <div>
+          <label class="block text-[10px] text-slate-400 mb-0.5">Double Shot (${mat.smallUnit}/แก้ว)</label>
+          <input type="number" min="0" step="any" value="${qf.rate2 ?? ''}" data-matid="${mat.id}" data-editfield="qfrate2" class="input-base input-sm !h-9 !px-2 font-num text-xs">
+        </div>
+      </div>` : ''}
+      ${mode === 'unit' ? `
+      <div class="grid grid-cols-2 gap-1.5">
+        <div>
+          <label class="block text-[10px] text-slate-400 mb-0.5">${mat.smallUnit}/หน่วยที่ขาย</label>
+          <input type="number" min="0" step="any" value="${qf.rate1 ?? ''}" data-matid="${mat.id}" data-editfield="qfrate1" class="input-base input-sm !h-9 !px-2 font-num text-xs">
+        </div>
+        <div>
+          <label class="block text-[10px] text-slate-400 mb-0.5">ชื่อหน่วยที่ขาย เช่น แก้ว/ใบ/ชิ้น</label>
+          <input type="text" value="${qf.label ?? ''}" data-matid="${mat.id}" data-editfield="qflabel" class="input-base input-sm !h-9 !px-2 text-xs">
+        </div>
+      </div>` : ''}
+    </div>`;
+}
+
 function editRowHTML(mat){
   const isFrac = !mat.noFraction;
   return `
@@ -1440,6 +1596,13 @@ function editRowHTML(mat){
     <div class="flex items-center justify-between gap-2 mb-2">
       <p class="font-semibold text-slate-900 text-sm">${mat.name}</p>
       <span class="text-[10px] text-slate-400">${mat.category}</span>
+    </div>
+    <div class="mb-2">
+      <label class="block text-[10px] text-slate-400 mb-0.5">รูปแบบการกรอกหน้าร้าน</label>
+      <select data-matid="${mat.id}" data-editfield="mode" class="input-base input-sm !h-9 !px-2 text-xs w-full">
+        <option value="fraction" ${isFrac ? 'selected' : ''}>มีหน่วยใหญ่ + หน่วยเศษ (เช่น ม้วน/% , ถุง/กรัม, ขวด/มล.)</option>
+        <option value="count" ${!isFrac ? 'selected' : ''}>นับเป็นชิ้นล้วน ไม่มีเศษ (เช่น ใบ, ชิ้น, อัน, กระป๋อง)</option>
+      </select>
     </div>
     <div class="grid grid-cols-2 ${isFrac ? 'sm:grid-cols-4' : 'sm:grid-cols-2'} gap-1.5">
       <div>
@@ -1461,6 +1624,7 @@ function editRowHTML(mat){
       </div>
     </div>
     <p id="edithint_${mat.id}" class="text-[11px] text-slate-400 mt-1.5">${editHintText(mat)}</p>
+    ${quickFillAdminHTML(mat)}
   </div>`;
 }
 
@@ -1483,11 +1647,47 @@ function renderEditList(filterText){
 
 editSearchEl.addEventListener('input', () => renderEditList(editSearchEl.value));
 
+function rerenderEditRow(mat){
+  const rowEl = document.getElementById('editrow_' + mat.id);
+  if (rowEl) rowEl.outerHTML = editRowHTML(mat);
+}
+
 const editSaveTimers = {};
+
+editListWrap.addEventListener('change', (e) => {
+  const id = e.target.dataset.matid;
+  const field = e.target.dataset.editfield;
+  if (!id || field !== 'mode') return;
+  const mat = materialById(id);
+  if (!mat) return;
+
+  const wantFraction = e.target.value === 'fraction';
+  if (wantFraction && mat.noFraction) {
+    // เปลี่ยนจาก "นับเป็นชิ้น" -> "มีหน่วยเศษ": ตั้งค่าเริ่มต้นให้กรอกต่อได้เลย
+    mat.noFraction = false;
+    mat.smallUnit = 'หน่วยย่อย';
+    mat.ratio = 100;
+    mat.carry = mat.carry * 100; // คงจำนวนของเดิมไว้ในหน่วยใหญ่เท่ากัน
+  } else if (!wantFraction && !mat.noFraction) {
+    // เปลี่ยนจาก "มีหน่วยเศษ" -> "นับเป็นชิ้น": ปัดยอดยกมาเป็นจำนวนเต็มหน่วยใหญ่
+    mat.noFraction = true;
+    mat.smallUnit = mat.bigUnit;
+    mat.carry = Math.round(mat.carry / mat.ratio);
+    mat.ratio = 1;
+  }
+
+  rerenderEditRow(mat);
+  if (records[id]) recomputeMaterial(id);
+  renderFastMoving(materialSearchEl.value);
+  renderSlowMoving(materialSearchEl.value);
+  renderTable();
+  upsertMaterial(mat);
+});
+
 editListWrap.addEventListener('input', (e) => {
   const id = e.target.dataset.matid;
   const field = e.target.dataset.editfield;
-  if (!id || !field) return;
+  if (!id || !field || field === 'mode') return;
   const mat = materialById(id);
   if (!mat) return;
 
@@ -1658,8 +1858,6 @@ function updateStats(){
   renderFastMoving('');
   renderSlowMoving('');
   renderTable();
-  renderMenuList('');
-  renderEditList('');
 })();
 </script>
 </body>

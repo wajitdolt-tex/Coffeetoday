@@ -1057,10 +1057,10 @@ const GOOGLE_SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwWIM
 // ส่งข้อมูลแถวนี้ขึ้น Google Sheet แบบ fire-and-forget (ไม่บล็อกการทำงานหลัก ถ้าพังก็แค่ log เฉยๆ)
 function pushToGoogleSheet(payload){
   if (!GOOGLE_SHEETS_WEBHOOK_URL) return;
+  // หมายเหตุ: ห้ามใช้ mode:'no-cors' กับ Apps Script Web App เพราะมี redirect ภายในที่ทำให้ body หาย
+  // ไม่ตั้ง header เอง เพื่อให้เบราว์เซอร์ส่งเป็น "simple request" (text/plain) อัตโนมัติ เลี่ยง preflight ได้โดยไม่ทำ body หาย
   fetch(GOOGLE_SHEETS_WEBHOOK_URL, {
     method: 'POST',
-    mode: 'no-cors', // Apps Script web app ไม่ส่ง CORS header กลับมาให้ครบ ใช้ no-cors แล้วไม่ต้องอ่าน response
-    headers: { 'Content-Type': 'text/plain' }, // เลี่ยง preflight OPTIONS request ที่ Apps Script ไม่รองรับ
     body: JSON.stringify(payload),
   }).catch(e => console.error('pushToGoogleSheet failed', e));
 }

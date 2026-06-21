@@ -1683,7 +1683,11 @@ function bindMaterialInputDelegation(container){
       const matId = e.target.dataset.toggleMatid;
       const card = container.querySelector(`[data-slowcard="${matId}"]`);
       if (card) card.classList.toggle('hidden', !e.target.checked);
+      return;
     }
+    // บันทึกทันทีตอนออกจากช่อง (blur) ด้วย ไม่รอแค่ debounce — กันเคสกรอกเสร็จแล้วสลับการ์ดเร็วๆ ทำให้ข้อมูลไม่ถูกบันทึก
+    const id = e.target.dataset.matid;
+    if (id) { clearTimeout(saveTimers['dc_' + id]); saveDailyCount(id); }
   });
 }
 bindMaterialInputDelegation(fastMovingWrap);
@@ -1904,6 +1908,15 @@ recipeEditListWrap.addEventListener('input', (e) => {
   scheduleSaveRecipe(recipeId);
 });
 
+// บันทึกทันทีตอนออกจากช่อง (blur) ด้วย ไม่รอแค่ debounce เฉยๆ — กันเคสพิมพ์เสร็จแล้วรีบสลับหน้า/ปิดก่อนครบ 600ms ทำให้ข้อมูลไม่ถูกบันทึก
+recipeEditListWrap.addEventListener('change', (e) => {
+  const recipeId = e.target.dataset.recipeid;
+  if (!recipeId) return;
+  clearTimeout(recipeSaveTimers[recipeId]);
+  const recipe = RECIPES.find(r => r.id === recipeId);
+  if (recipe) { upsertRecipe(recipe); flashRecipeSaved(recipeId); }
+});
+
 recipeEditListWrap.addEventListener('click', (e) => {
   const addBtn = e.target.closest('[data-addingredient]');
   if (addBtn) {
@@ -1993,6 +2006,13 @@ menuListWrap.addEventListener('input', (e) => {
   scheduleSaveMenuSale(id);
 });
 
+menuListWrap.addEventListener('change', (e) => {
+  const id = e.target.dataset.recipeid;
+  if (!id) return;
+  clearTimeout(saveTimers['ms_' + id]);
+  saveMenuSale(id);
+});
+
 document.getElementById('clearMenuSalesBtn').addEventListener('click', () => {
   if (!confirm('ล้างยอดขายเมนูทั้งหมด? (ยอดขายตามสูตรที่คำนวณไว้จะถูกล้างด้วย)')) return;
   const ids = Object.keys(menuSales);
@@ -2067,6 +2087,13 @@ frontMenuListWrap.addEventListener('input', (e) => {
   updateFrontMenuLive(id);
   updateMenuLive(id); // เผื่อหลังบ้านเปิดค้างไว้พร้อมกัน ให้ตัวเลขตรงกัน
   scheduleSaveMenuSale(id);
+});
+
+frontMenuListWrap.addEventListener('change', (e) => {
+  const id = e.target.dataset.frontrecipeid;
+  if (!id) return;
+  clearTimeout(saveTimers['ms_' + id]);
+  saveMenuSale(id);
 });
 
 document.getElementById('clearFrontMenuSalesBtn').addEventListener('click', () => {
@@ -2563,6 +2590,17 @@ editListWrap.addEventListener('input', (e) => {
   editSaveTimers[id] = setTimeout(() => upsertMaterial(mat), 700);
 });
 
+// บันทึกทันทีตอนออกจากช่อง (blur) ด้วย ไม่รอแค่ debounce — กันเคสสลับหน้า/ปิดก่อนครบเวลาทำให้ข้อมูลไม่ถูกบันทึก
+editListWrap.addEventListener('change', (e) => {
+  const id = e.target.dataset.matid;
+  const field = e.target.dataset.editfield;
+  if (!id || !field || field === 'mode' || field === 'qfmode') return;
+  const mat = materialById(id);
+  if (!mat) return;
+  clearTimeout(editSaveTimers[id]);
+  upsertMaterial(mat);
+});
+
 /* ===========================================================
    Render table (Audit Reconciliation)
 =========================================================== */
@@ -2949,6 +2987,13 @@ pastListWrap.addEventListener('input', (e) => {
   pastInputs[id][field] = e.target.value;
   clearTimeout(pastSaveTimers[id]);
   pastSaveTimers[id] = setTimeout(() => savePastDailyCount(id), 600);
+});
+
+pastListWrap.addEventListener('change', (e) => {
+  const id = e.target.dataset.pastmatid;
+  if (!id) return;
+  clearTimeout(pastSaveTimers[id]);
+  savePastDailyCount(id);
 });
 
 /* ===========================================================

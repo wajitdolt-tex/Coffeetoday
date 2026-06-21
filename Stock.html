@@ -855,6 +855,7 @@ async function loadMaterialsFromDB(){
     const rows = await sb('materials?select=*');
     if (!rows) return;
     const toBackfill = [];
+    const dbIds = new Set(rows.map(r => r.id));
     rows.forEach(r => {
       let mat = materialById(r.id);
       if (!mat) {
@@ -883,6 +884,12 @@ async function loadMaterialsFromDB(){
       }
     });
     toBackfill.forEach(mat => upsertMaterial(mat));
+
+    // DB คือฐานความจริงเมื่อมีข้อมูลแล้ว -> ลบวัตถุดิบในเครื่องที่ไม่มีอยู่ใน DB อีกต่อไป
+    // (เช่น ถูกลบไปจากเครื่องอื่น แต่ตัวแปร MATERIALS ในโค้ดยังมี default เดิมค้างอยู่)
+    for (let i = MATERIALS.length - 1; i >= 0; i--) {
+      if (!dbIds.has(MATERIALS[i].id)) MATERIALS.splice(i, 1);
+    }
   } catch (e) { console.error('loadMaterialsFromDB failed', e); throw e; }
 }
 
@@ -916,13 +923,27 @@ async function seedRecipesIfEmpty(){
 // ดึงชื่อเมนู/สูตรล่าสุดจาก DB (เผื่อมีการแก้ชื่อจากเครื่องอื่น)
 async function loadRecipesFromDB(){
   try {
-    const rows = await sb('recipes?select=id,name,size,category');
+    const rows = await sb('recipes?select=id,name,size,category,ingredients');
     if (!rows) return;
     rows.forEach(r => {
       const recipe = RECIPES.find(x => x.id === r.id);
-      if (recipe) { recipe.name = r.name; recipe.size = r.size; recipe.category = r.category; }
+      if (recipe) {
+        recipe.name = r.name; recipe.size = r.size; recipe.category = r.category;
+        if (r.ingredients && r.ingredients.length) recipe.ingredients = r.ingredients;
+      }
     });
   } catch (e) { console.error('loadRecipesFromDB failed', e); }
+}
+
+// เผื่อมีสูตรไหนยังอ้างถึงวัตถุดิบที่ถูกลบไปแล้วค้างอยู่ (เช่น บันทึกไม่ทันตอนลบ) ตัดทิ้งให้อัตโนมัติแล้วบันทึกกลับ
+function cleanupStaleRecipeIngredients(){
+  RECIPES.forEach(r => {
+    const validIngredients = r.ingredients.filter(i => materialById(i.materialId));
+    if (validIngredients.length !== r.ingredients.length) {
+      r.ingredients = validIngredients.length ? validIngredients : [{ materialId: MATERIALS[0].id, qty: 0 }];
+      upsertRecipe(r);
+    }
+  });
 }
 
 // ดึงยอดคงเหลือล่าสุด (ก่อนวันนี้) ของแต่ละวัตถุดิบ มาเป็น "ยกมาเมื่อวาน" ของวันนี้
@@ -2706,6 +2727,7 @@ pastListWrap.addEventListener('input', (e) => {
     await loadMaterialsFromDB();
     await seedRecipesIfEmpty();
     await loadRecipesFromDB();
+    cleanupStaleRecipeIngredients();
     setSyncStatus('online');
     if (syncMsg) syncMsg.textContent = 'พร้อมใช้งาน — เชื่อมต่อฐานข้อมูลสำเร็จ';
   } catch (e) {

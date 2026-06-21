@@ -107,6 +107,7 @@
         <button data-admintab="add" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">➕ เพิ่มวัตถุดิบ</button>
         <button data-admintab="edit" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">✏️ แก้ไข/ยกมา</button>
         <button data-admintab="recipe" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">📝 แก้ไขสูตร</button>
+        <button data-admintab="past" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">📅 ย้อนหลัง</button>
       </div>
 
         <!-- ตารางสรุปรายงาน Audit -->
@@ -253,6 +254,25 @@
           <div id="recipeEditListWrap" class="px-5 pb-5 space-y-4 bg-slate-50/60"></div>
         </div>
 
+        <!-- แก้ไขข้อมูลย้อนหลัง -->
+        <div id="adminTabPast" class="admin-tab-panel">
+          <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2.5">
+            <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">📅</span>
+            <h2 class="font-heading font-semibold text-slate-900">แก้ไข/เพิ่มข้อมูลย้อนหลัง</h2>
+          </div>
+          <div class="p-5 pb-3 bg-slate-50/60">
+            <p class="text-xs text-slate-500 mb-3">เลือกวันที่ย้อนหลังเพื่อกรอกหรือแก้ไขยอดนับของสาขา "<span id="pastBranchLabel">-</span>" ในวันนั้น (ใช้สาขาเดียวกับที่เลือกอยู่หน้าหลัก) — บันทึกอัตโนมัติเหมือนหน้านับสต็อกปกติ แต่ <strong>ไม่กระทบยอดของวันนี้</strong></p>
+            <div class="flex items-center gap-2 mb-3">
+              <input id="pastDateInput" type="date" class="input-base input-sm w-auto">
+              <button id="pastLoadBtn" class="h-10 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition shrink-0">โหลดข้อมูลวันนี้ที่เลือก</button>
+            </div>
+            <input id="pastSearch" type="text" placeholder="ค้นหาวัตถุดิบ" class="input-base">
+          </div>
+          <div id="pastListWrap" class="px-5 pb-5 space-y-4 bg-slate-50/60">
+            <p class="text-sm text-slate-400 text-center py-6">เลือกวันที่แล้วกด "โหลดข้อมูลวันนี้ที่เลือก" ก่อน</p>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -380,7 +400,7 @@ const MATERIALS = [
   FR('cocoapowder','ผงโกโก้','ผงและท็อปปิ้ง','ถุง','กรัม',1000,900),
   FR('whipcream500','วิปครีมผง @500g','ผงและท็อปปิ้ง','ถุง','กรัม',500,2500),
   FR('sugarbag','น้ำตาลทราย','ผงและท็อปปิ้ง','ถุง','กรัม',1000,10000),
-  FR('creamer','ครีมเทียม','ผงและท็อปปิ้ง','ถุง','กรัม',1000,1000),
+  FR('creamer','ครีมเทียม','ผงและท็อปปิ้ง','ถุง','กรัม',900,1000),
 
   // ไซรัปและซอส
   FR('syrupstrawberry','ไซรัปสตรอเบอรี่','ไซรัปและซอส','ขวด','กรัม',750,900),
@@ -422,6 +442,7 @@ const MATERIALS = [
 
   // นมและของเหลว
   FR('milk','นมสด','นมและของเหลว','ลัง','ออนซ์',400,216.67,'กล่อง',33.33),
+  FR('soymilk','นมถั่วเหลืองเจ','นมและของเหลว','ลัง','ออนซ์',400,0,'กล่อง',33.33),
   FR('condensedmilk','นมข้นหวาน','นมและของเหลว','ลัง','ออนซ์',608,608,'กระป๋อง',12.67),
   FR('evapmilk','นมจืด','นมและของเหลว','ลัง','ออนซ์',656,656,'กระป๋อง',13.67),
   NF('yogurt','โยเกิร์ต','นมและของเหลว','ถ้วย',24),
@@ -732,6 +753,9 @@ const RECIPES = [
 
   // ---------- เจ (Vegan) ----------
   RCP('vegan_cocoa_22','โกโกเจ','22oz','เมนูเจ', [ing('cocoapowder',20,'g')]),
+  RCP('vegan_latte_22','ลาเตเจ','22oz','เมนูเจ', [ing('soymilk',4,'g')]),
+  RCP('vegan_greenmilktea_22','ชาเขียวนมเจ','22oz','เมนูเจ', [ing('soymilk',4,'g')]),
+  RCP('vegan_thaitea_22','ชาไทยเจ','22oz','เมนูเจ', [ing('soymilk',4,'g')]),
 ];
 
 /* ===========================================================
@@ -929,6 +953,10 @@ async function loadDailyCounts(branch){
         reviewedAt: r.reviewed_at || '',
         reviewedNote: r.reviewed_note || '',
       };
+      if (r.material_id === 'napukasauce') {
+        // ค่าที่โหลดมาคือยอดที่เคยตีคืนไปแล้วก่อนหน้านี้ -> ตั้งเป็นฐานไว้ ไม่ให้ตีคืนซ้ำตอนโหลดหน้า
+        rawInputs.napukasauce.creditedBatches = rawInputs.napukasauce.actualBig || '0';
+      }
       recomputeMaterialLocal(r.material_id);
     });
   } catch (e) { console.error('loadDailyCounts failed', e); }
@@ -1092,7 +1120,7 @@ document.getElementById('closeAdminBtn').addEventListener('click', () => {
   adminModal.classList.add('hidden');
 });
 
-const ADMIN_TABS = ['audit', 'menu', 'add', 'edit', 'recipe'];
+const ADMIN_TABS = ['audit', 'menu', 'add', 'edit', 'recipe', 'past'];
 function showAdminTab(tab){
   ADMIN_TABS.forEach(t => {
     const panel = document.getElementById('adminTab' + t.charAt(0).toUpperCase() + t.slice(1));
@@ -1432,6 +1460,68 @@ function clearStaleReview(id){
   }
 }
 
+// อัปเดตค่าที่โชว์ในช่อง input บนการ์ด (ใช้ตอนระบบปรับเลขให้เอง ไม่ใช่จากการพิมพ์ตรงๆ)
+function syncCardInputDOM(matId, field, value){
+  document.querySelectorAll(`[data-matid="${matId}"][data-field="${field}"]`).forEach(el => {
+    el.value = value;
+  });
+}
+
+// ถ้ากรอก "เศษ" เกินกว่า 1 หน่วยใหญ่ ให้ทดเป็นหน่วยใหญ่อัตโนมัติ (เช่น เศษ 934 กรัม ตอน 1 ถุง=900 กรัม -> ทดเป็น 1 ถุง + เศษ 34)
+function normalizeActualSmall(matId){
+  const mat = materialById(matId);
+  if (!mat || mat.noFraction || !mat.ratio) return;
+  const ri = rawInputs[matId];
+  if (!ri) return;
+  let small = parseFloat(ri.actualSmall) || 0;
+  let big = parseFloat(ri.actualBig) || 0;
+  if (small >= mat.ratio) {
+    const extraBig = Math.floor(small / mat.ratio);
+    big += extraBig;
+    small = Math.round((small - extraBig * mat.ratio) * 100) / 100;
+    ri.actualBig = String(big);
+    ri.actualSmall = String(small);
+    syncCardInputDOM(matId, 'actualBig', ri.actualBig);
+    syncCardInputDOM(matId, 'actualSmall', ri.actualSmall);
+  }
+}
+
+// เพิ่ม/ลดยอด "เศษ" ของวัตถุดิบหนึ่งตัว แล้วทดหน่วยใหญ่ให้อัตโนมัติถ้าเกิน (ใช้กับการตีคืนน้ำคาปู)
+function adjustMaterialRemaining(matId, deltaSmallUnits){
+  const mat = materialById(matId);
+  if (!mat || !deltaSmallUnits) return;
+  if (!rawInputs[matId]) rawInputs[matId] = {};
+  const ri = rawInputs[matId];
+  let small = (parseFloat(ri.actualSmall) || 0) + deltaSmallUnits;
+  let big = parseFloat(ri.actualBig) || 0;
+  if (mat.ratio > 0) {
+    while (small >= mat.ratio) { small -= mat.ratio; big += 1; }
+    while (small < 0 && big > 0) { small += mat.ratio; big -= 1; }
+  }
+  ri.actualBig = String(big);
+  ri.actualSmall = String(Math.round(small * 100) / 100);
+  syncCardInputDOM(matId, 'actualBig', ri.actualBig);
+  syncCardInputDOM(matId, 'actualSmall', ri.actualSmall);
+  recomputeMaterial(matId);
+}
+
+// น้ำคาปูแต่ละ "แบท" ผสมจาก ครีมเทียม 150g + นมจืด 1 กระป๋อง — ถ้านับน้ำคาปูเหลือเป็นแบทเต็ม
+// (ยังไม่ได้ผสม/ไม่ได้ใช้) ให้ตีคืนวัตถุดิบตั้งต้นกลับไปที่ครีมเทียม/นมจืด ตามจำนวนแบทที่เหลือ
+const NAPUKA_CREAMER_PER_BATCH = 150; // กรัม
+function applyNapukaCreditBack(){
+  const ri = rawInputs['napukasauce'];
+  if (!ri) return;
+  const newBatches = parseFloat(ri.actualBig) || 0;
+  const prevBatches = parseFloat(ri.creditedBatches) || 0;
+  const delta = newBatches - prevBatches;
+  if (delta === 0) return;
+  ri.creditedBatches = String(newBatches);
+
+  adjustMaterialRemaining('creamer', delta * NAPUKA_CREAMER_PER_BATCH);
+  const evap = materialById('evapmilk');
+  if (evap && evap.subRatio) adjustMaterialRemaining('evapmilk', delta * evap.subRatio);
+}
+
 function bindMaterialInputDelegation(container){
   container.addEventListener('input', (e) => {
     const id = e.target.dataset.matid;
@@ -1441,7 +1531,9 @@ function bindMaterialInputDelegation(container){
     rawInputs[id][field] = e.target.value;
     if (field.startsWith('qfsize_')) applyQuickFill(id);
     if (['received', 'actualBig', 'actualSmall', 'posSale'].includes(field)) clearStaleReview(id);
+    if (field === 'actualSmall') normalizeActualSmall(id);
     recomputeMaterial(id);
+    if (id === 'napukasauce' && field === 'actualBig') applyNapukaCreditBack();
   });
   container.addEventListener('click', (e) => {
     const editBtn = e.target.closest('[data-editname]');
@@ -1485,7 +1577,7 @@ const OZ_RECIPE_MATERIALS = new Set([
   'syrupstrawberry','syrupblueberry','syrupmango','syruppomegranate','syrupkiwi',
   'syrupcaramel','syruphoney','syruplychee','syrupkyoho','syrupyuzu',
   'syrupbrownsugar','syrupmint','syrupmocha','napukasauce','orangetipco','cocomax',
-  'milk','condensedmilk','evapmilk','soda',
+  'milk','condensedmilk','evapmilk','soda','soymilk',
 ]);
 function recipeUnitLabel(mat){
   return OZ_RECIPE_MATERIALS.has(mat.id) ? 'oz' : mat.smallUnit;
@@ -2235,6 +2327,141 @@ function updateStats(){
   document.getElementById('statOk').textContent = ok;
   document.getElementById('statFlag').textContent = flag;
 }
+
+/* ===========================================================
+   แก้ไข/เพิ่มข้อมูลย้อนหลัง (วันที่อื่นที่ไม่ใช่วันนี้)
+=========================================================== */
+const pastInputs = {};
+const pastDateInputEl = document.getElementById('pastDateInput');
+const pastSearchEl = document.getElementById('pastSearch');
+const pastListWrap = document.getElementById('pastListWrap');
+const pastSaveTimers = {};
+
+(function initPastDateDefault(){
+  const y = new Date();
+  y.setDate(y.getDate() - 1);
+  pastDateInputEl.value = y.getFullYear() + '-' + String(y.getMonth()+1).padStart(2,'0') + '-' + String(y.getDate()).padStart(2,'0');
+  pastDateInputEl.max = todayDateStr();
+})();
+
+function pastCardHTML(mat){
+  const ri = pastInputs[mat.id] || {};
+  const gridCols = mat.noFraction ? 'grid-cols-2' : 'grid-cols-3';
+  return `
+  <div class="border border-slate-200 rounded-lg p-3 bg-white">
+    <p class="font-semibold text-slate-900 text-sm leading-snug">${mat.name}</p>
+    <p class="text-[11px] text-slate-400 mb-2">${mat.noFraction ? `หน่วยนับ: ${mat.bigUnit}` : `1 ${mat.bigUnit} = ${fmtNum(mat.ratio)} ${mat.smallUnit}`}</p>
+    <div class="grid ${gridCols} gap-1.5">
+      <div>
+        <label class="block text-[10px] text-slate-400 mb-0.5">รับเข้า (${mat.bigUnit})</label>
+        <input type="number" min="0" step="any" placeholder="0" value="${ri.received ?? ''}"
+          data-pastmatid="${mat.id}" data-pastfield="received" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
+      </div>
+      <div>
+        <label class="block text-[10px] text-slate-400 mb-0.5">นับจริง St</label>
+        <input type="number" min="0" step="1" placeholder="0" value="${ri.actualBig ?? ''}"
+          data-pastmatid="${mat.id}" data-pastfield="actualBig" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
+      </div>
+      ${mat.noFraction ? '' : `
+      <div>
+        <label class="block text-[10px] text-slate-400 mb-0.5">เศษ (${mat.smallUnit})</label>
+        <input type="number" min="0" step="any" placeholder="0" value="${ri.actualSmall ?? ''}"
+          data-pastmatid="${mat.id}" data-pastfield="actualSmall" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
+      </div>`}
+    </div>
+    <div class="grid grid-cols-2 gap-1.5 mt-1.5">
+      <div>
+        <label class="block text-[10px] text-slate-400 mb-0.5">ยอดขายตามสูตร (POS)</label>
+        <input type="number" min="0" step="any" placeholder="0" value="${ri.posSale ?? ''}"
+          data-pastmatid="${mat.id}" data-pastfield="posSale" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
+      </div>
+      <div>
+        <label class="block text-[10px] text-slate-400 mb-0.5">หมายเหตุ</label>
+        <input type="text" placeholder="ถ้ามี" value="${ri.note ?? ''}"
+          data-pastmatid="${mat.id}" data-pastfield="note" class="input-base input-sm !h-9 text-xs !px-1.5">
+      </div>
+    </div>
+    <p id="pastsavemsg_${mat.id}" class="text-[10px] text-green-600 mt-1"></p>
+  </div>`;
+}
+
+function renderPastList(filterText){
+  const ft = (filterText || '').trim().toLowerCase();
+  let html = '';
+  categories().forEach(cat => {
+    const items = MATERIALS.filter(m => m.category === cat && (!ft || m.name.toLowerCase().includes(ft)));
+    if (items.length === 0) return;
+    html += `
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wide text-accent-700 px-1 mb-2">${cat}</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          ${items.map(pastCardHTML).join('')}
+        </div>
+      </div>`;
+  });
+  pastListWrap.innerHTML = html || `<p class="text-sm text-slate-400 text-center py-6">ไม่พบวัตถุดิบที่ค้นหา</p>`;
+}
+
+async function loadPastDate(){
+  const branch = branchSelectEl.value;
+  const date = pastDateInputEl.value;
+  document.getElementById('pastBranchLabel').textContent = branch || '-';
+  if (!branch || !date) { alert('กรุณาเลือกสาขา (ที่หน้าหลัก) และวันที่ก่อน'); return; }
+  Object.keys(pastInputs).forEach(k => delete pastInputs[k]);
+  setSyncStatus('syncing');
+  try {
+    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${date}&select=*`);
+    (rows || []).forEach(r => {
+      pastInputs[r.material_id] = {
+        received: r.received ? String(r.received) : '',
+        actualBig: (r.actual_big !== null && r.actual_big !== undefined) ? String(r.actual_big) : '',
+        actualSmall: r.actual_small ? String(r.actual_small) : '',
+        posSale: r.pos_sale ? String(r.pos_sale) : '',
+        note: r.note || '',
+      };
+    });
+    setSyncStatus('online');
+  } catch (e) { console.error('loadPastDate failed', e); setSyncStatus('error'); }
+  renderPastList(pastSearchEl.value);
+}
+
+async function savePastDailyCount(matId){
+  const branch = branchSelectEl.value;
+  const date = pastDateInputEl.value;
+  if (!branch || !date) return;
+  const ri = pastInputs[matId] || {};
+  setSyncStatus('syncing');
+  try {
+    await sb('daily_counts?on_conflict=branch,count_date,material_id', {
+      method: 'POST',
+      body: JSON.stringify([{
+        branch, count_date: date, material_id: matId,
+        received: parseFloat(ri.received) || 0,
+        actual_big: parseFloat(ri.actualBig) || 0,
+        actual_small: parseFloat(ri.actualSmall) || 0,
+        pos_sale: parseFloat(ri.posSale) || 0,
+        note: ri.note || '',
+        updated_at: new Date().toISOString(),
+      }]),
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    });
+    setSyncStatus('online');
+    const el = document.getElementById('pastsavemsg_' + matId);
+    if (el) { el.textContent = 'บันทึกแล้ว ✓'; clearTimeout(pastSaveTimers['flash_'+matId]); pastSaveTimers['flash_'+matId] = setTimeout(() => { el.textContent=''; }, 1500); }
+  } catch (e) { console.error('savePastDailyCount failed', e); setSyncStatus('error'); }
+}
+
+document.getElementById('pastLoadBtn').addEventListener('click', loadPastDate);
+pastSearchEl.addEventListener('input', () => renderPastList(pastSearchEl.value));
+pastListWrap.addEventListener('input', (e) => {
+  const id = e.target.dataset.pastmatid;
+  const field = e.target.dataset.pastfield;
+  if (!id || !field) return;
+  if (!pastInputs[id]) pastInputs[id] = {};
+  pastInputs[id][field] = e.target.value;
+  clearTimeout(pastSaveTimers[id]);
+  pastSaveTimers[id] = setTimeout(() => savePastDailyCount(id), 600);
+});
 
 /* ===========================================================
    Init

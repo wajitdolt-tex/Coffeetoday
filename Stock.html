@@ -2048,7 +2048,10 @@ function editRowHTML(mat){
   <div class="border border-slate-200 rounded-lg p-3 bg-white" id="editrow_${mat.id}">
     <div class="flex items-center justify-between gap-2 mb-2">
       <p class="font-semibold text-slate-900 text-sm">${mat.name}</p>
-      <span class="text-[10px] text-slate-400">${mat.category}</span>
+      <div class="flex items-center gap-2 shrink-0">
+        <span class="text-[10px] text-slate-400">${mat.category}</span>
+        <button data-deletemat="${mat.id}" title="ลบวัตถุดิบนี้ออกจากระบบ" class="text-red-400 hover:text-red-600 w-6 h-6 flex items-center justify-center">🗑</button>
+      </div>
     </div>
     <div class="mb-2">
       <label class="block text-[10px] text-slate-400 mb-0.5">รูปแบบการกรอกหน้าร้าน</label>
@@ -2118,7 +2121,51 @@ function rerenderEditRow(mat){
 
 const editSaveTimers = {};
 
+async function deleteMaterialFromDB(matId){
+  try {
+    await sb(`materials?id=eq.${encodeURIComponent(matId)}`, { method: 'DELETE' });
+  } catch (e) { console.error('deleteMaterialFromDB failed', e); }
+}
+
+function deleteMaterial(matId){
+  const mat = materialById(matId);
+  if (!mat) return;
+
+  const affectedRecipes = RECIPES.filter(r => r.ingredients.some(i => i.materialId === matId));
+  let msg = `ลบวัตถุดิบ "${mat.name}" ออกจากระบบ?`;
+  if (affectedRecipes.length > 0) {
+    msg += `\n\nวัตถุดิบนี้ถูกใช้อยู่ใน ${affectedRecipes.length} สูตรเมนู (เช่น ${affectedRecipes.slice(0,3).map(r=>r.name).join(', ')}${affectedRecipes.length>3?' ฯลฯ':''}) — ถ้าลบ จะตัดรายการวัตถุดิบนี้ออกจากสูตรเหล่านั้นด้วย ทำต่อหรือไม่?`;
+  }
+  if (!confirm(msg)) return;
+
+  // ตัดออกจากทุกสูตรที่ใช้วัตถุดิบนี้อยู่ แล้วบันทึกสูตรที่แก้กลับขึ้น DB
+  affectedRecipes.forEach(r => {
+    r.ingredients = r.ingredients.filter(i => i.materialId !== matId);
+    if (r.ingredients.length === 0) r.ingredients.push({ materialId: MATERIALS.find(m=>m.id!==matId).id, qty: 0 });
+    upsertRecipe(r);
+  });
+
+  const idx = MATERIALS.findIndex(m => m.id === matId);
+  if (idx !== -1) MATERIALS.splice(idx, 1);
+  delete rawInputs[matId];
+  delete records[matId];
+
+  deleteMaterialFromDB(matId);
+
+  renderCategoryChips();
+  renderFastMoving(materialSearchEl.value);
+  renderSlowMoving(materialSearchEl.value);
+  renderEditList(editSearchEl.value);
+  renderMenuList(menuSearchEl.value);
+  renderRecipeEditList(recipeEditSearchEl.value);
+  populateCategoryFilter();
+  renderTable();
+}
+
 editListWrap.addEventListener('click', (e) => {
+  const deleteBtn = e.target.closest('[data-deletemat]');
+  if (deleteBtn) { deleteMaterial(deleteBtn.dataset.deletemat); return; }
+
   const addBtn = e.target.closest('[data-addqfsize]');
   if (addBtn) {
     const mat = materialById(addBtn.dataset.addqfsize);

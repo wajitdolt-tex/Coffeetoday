@@ -85,6 +85,11 @@
   <!-- ===== Modal: หลังบ้าน (PIN gate + admin tools) ===== -->
   <div id="toastWrap" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-2 pointer-events-none w-full px-4"></div>
 
+  <iframe name="gsheetTargetFrame" style="display:none;"></iframe>
+  <form id="gsheetForm" method="POST" target="gsheetTargetFrame" style="display:none;">
+    <input type="hidden" name="payload" id="gsheetPayloadInput">
+  </form>
+
   <div id="adminModal" class="fixed inset-0 bg-slate-50 z-50 hidden overflow-y-auto">
     <div class="bg-slate-900 px-4 sm:px-6 py-4 flex items-center justify-between sticky top-0 z-20">
       <p class="text-white font-heading font-semibold text-sm sm:text-base">🔒 หลังบ้าน (สูตรเมนู + จัดการวัตถุดิบ)</p>
@@ -1057,12 +1062,15 @@ const GOOGLE_SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwWIM
 // ส่งข้อมูลแถวนี้ขึ้น Google Sheet แบบ fire-and-forget (ไม่บล็อกการทำงานหลัก ถ้าพังก็แค่ log เฉยๆ)
 function pushToGoogleSheet(payload){
   if (!GOOGLE_SHEETS_WEBHOOK_URL) return;
-  // หมายเหตุ: ห้ามใช้ mode:'no-cors' กับ Apps Script Web App เพราะมี redirect ภายในที่ทำให้ body หาย
-  // ไม่ตั้ง header เอง เพื่อให้เบราว์เซอร์ส่งเป็น "simple request" (text/plain) อัตโนมัติ เลี่ยง preflight ได้โดยไม่ทำ body หาย
-  fetch(GOOGLE_SHEETS_WEBHOOK_URL, {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  }).catch(e => console.error('pushToGoogleSheet failed', e));
+  // ใช้ฟอร์มซ่อน + iframe แทน fetch() เพราะ Apps Script Web App มี redirect ภายในที่ทำให้
+  // fetch() (ทั้งโหมด cors และ no-cors) ส่ง body ไปไม่ถึง doPost ได้ไม่แน่นอน
+  // การ submit ฟอร์มจริงๆ ไม่ถูกจำกัดด้วย CORS เลย เชื่อถือได้กว่ามาก
+  try {
+    const form = document.getElementById('gsheetForm');
+    document.getElementById('gsheetPayloadInput').value = JSON.stringify(payload);
+    form.action = GOOGLE_SHEETS_WEBHOOK_URL;
+    form.submit();
+  } catch (e) { console.error('pushToGoogleSheet failed', e); }
 }
 
 async function saveDailyCount(matId){

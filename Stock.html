@@ -338,6 +338,24 @@
         <div id="categoryChips" class="flex gap-1.5 overflow-x-auto chip pb-1"></div>
       </section>
 
+      <!-- จำนวนแก้วที่ขายวันนี้ -->
+      <section class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-2.5">
+            <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">🍵</span>
+            <h2 class="font-heading font-semibold text-slate-900">จำนวนแก้วที่ขายวันนี้</h2>
+          </div>
+          <button id="clearFrontMenuSalesBtn" class="text-xs font-semibold text-slate-500 hover:text-red-600 border border-slate-300 hover:border-red-300 rounded-lg px-3 h-9 transition">
+            ล้างยอดขายเมนู
+          </button>
+        </div>
+        <div class="px-5 pt-4 pb-2">
+          <p class="text-xs text-slate-500 mb-3">กรอกจำนวนแก้วที่ขายของแต่ละเมนู ระบบจะคำนวณยอดวัตถุดิบที่ควรใช้ไปให้อัตโนมัติ ไม่ต้องคำนวณเอง</p>
+          <input id="frontMenuSearch" type="text" placeholder="ค้นหาเมนู เช่น ลาเต, ชาไทย, ปั่น" class="input-base">
+        </div>
+        <div id="frontMenuListWrap" class="px-5 pb-5 space-y-4"></div>
+      </section>
+
       <!-- วัตถุดิบที่เคลื่อนไหวบ่อย -->
       <section class="bg-white border border-slate-200 rounded-xl overflow-hidden">
         <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2.5">
@@ -1138,6 +1156,7 @@ async function activateBranch(branch){
   renderFastMoving('');
   renderSlowMoving('');
   renderCategoryChips();
+  renderFrontMenuList('');
   renderTable();
   applyRecipeUsageToMaterials();
   startGoogleSheetsPoll();
@@ -1965,6 +1984,83 @@ document.getElementById('clearMenuSalesBtn').addEventListener('click', () => {
     if (rawInputs[matId]) { rawInputs[matId].posSale = ''; recomputeMaterial(matId); }
   });
   ids.forEach(id => scheduleSaveMenuSale(id));
+  renderMenuList(menuSearchEl.value);
+  renderFrontMenuList(frontMenuSearchEl.value);
+  const countEl = document.getElementById('menuAffectedCount');
+  if (countEl) countEl.textContent = '0';
+  renderTable();
+});
+
+/* ===========================================================
+   จำนวนแก้วที่ขายวันนี้ (หน้าหลัก) — เหมือนกับหลังบ้านแต่ไม่โชว์สูตร/วัตถุดิบ ไม่ต้องผ่านรหัส
+=========================================================== */
+const frontMenuSearchEl = document.getElementById('frontMenuSearch');
+const frontMenuListWrap = document.getElementById('frontMenuListWrap');
+
+function frontMenuCardHTML(recipe){
+  const qty = menuSales[recipe.id] ?? '';
+  return `
+  <div class="border border-slate-200 rounded-lg p-3 bg-white">
+    <p class="font-semibold text-slate-900 text-sm leading-snug mb-1.5">${recipe.name} <span class="text-slate-400 font-normal">(${recipe.size})</span></p>
+    <label class="block text-[10px] text-slate-400 mb-0.5">จำนวนที่ขายวันนี้ (แก้ว)</label>
+    <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${qty}"
+      data-frontrecipeid="${recipe.id}" class="front-menu-qty-input w-full input-base input-sm !h-10 font-num text-center">
+    <p id="frontmenulive_${recipe.id}" class="text-[11px] mt-1.5 ${qty ? 'text-green-600 font-medium' : 'text-slate-400'}">${qty ? `บันทึกแล้ว ✓ ขาย ${fmtNum(qty)} แก้ว` : 'ยังไม่ได้กรอก'}</p>
+  </div>`;
+}
+
+function renderFrontMenuList(filterText){
+  const ft = (filterText || '').trim().toLowerCase();
+  let html = '';
+  recipeCategories().forEach(cat => {
+    const items = RECIPES.filter(r => r.category === cat && (!ft || r.name.toLowerCase().includes(ft)));
+    if (items.length === 0) return;
+    html += `
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wide text-accent-700 px-1 mb-2">${cat} <span class="text-slate-300 font-normal">(${items.length})</span></h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          ${items.map(frontMenuCardHTML).join('')}
+        </div>
+      </div>`;
+  });
+  frontMenuListWrap.innerHTML = html || `<p class="text-sm text-slate-400 text-center py-6">ไม่พบเมนูที่ค้นหา</p>`;
+}
+
+function updateFrontMenuLive(recipeId){
+  const el = document.getElementById('frontmenulive_' + recipeId);
+  if (!el) return;
+  const qty = menuSales[recipeId];
+  if (qty > 0) {
+    el.textContent = `บันทึกแล้ว ✓ ขาย ${fmtNum(qty)} แก้ว`;
+    el.className = 'text-[11px] mt-1.5 text-green-600 font-medium';
+  } else {
+    el.textContent = 'ยังไม่ได้กรอก';
+    el.className = 'text-[11px] mt-1.5 text-slate-400';
+  }
+}
+
+frontMenuSearchEl.addEventListener('input', () => renderFrontMenuList(frontMenuSearchEl.value));
+
+frontMenuListWrap.addEventListener('input', (e) => {
+  const id = e.target.dataset.frontrecipeid;
+  if (!id) return;
+  const v = parseFloat(e.target.value) || 0;
+  if (v > 0) menuSales[id] = v; else delete menuSales[id];
+  applyRecipeUsageToMaterials();
+  updateFrontMenuLive(id);
+  updateMenuLive(id); // เผื่อหลังบ้านเปิดค้างไว้พร้อมกัน ให้ตัวเลขตรงกัน
+  scheduleSaveMenuSale(id);
+});
+
+document.getElementById('clearFrontMenuSalesBtn').addEventListener('click', () => {
+  if (!confirm('ล้างยอดขายเมนูทั้งหมด? (ยอดขายตามสูตรที่คำนวณไว้จะถูกล้างด้วย)')) return;
+  const ids = Object.keys(menuSales);
+  ids.forEach(k => delete menuSales[k]);
+  Object.keys(rawInputs).forEach(matId => {
+    if (rawInputs[matId]) { rawInputs[matId].posSale = ''; recomputeMaterial(matId); }
+  });
+  ids.forEach(id => scheduleSaveMenuSale(id));
+  renderFrontMenuList(frontMenuSearchEl.value);
   renderMenuList(menuSearchEl.value);
   const countEl = document.getElementById('menuAffectedCount');
   if (countEl) countEl.textContent = '0';

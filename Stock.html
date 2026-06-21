@@ -967,10 +967,26 @@ function scheduleSaveDailyCount(matId){
   clearTimeout(saveTimers['dc_' + matId]);
   saveTimers['dc_' + matId] = setTimeout(() => saveDailyCount(matId), 600);
 }
+
+// URL ของ Google Apps Script Web App (ตั้งค่าหลังจากติดตั้งสคริปต์ในชีตแล้ว) — ว่างไว้ได้ ถ้ายังไม่ตั้ง ระบบจะใช้งานปกติแค่ไม่ซิงค์ขึ้นชีต
+const GOOGLE_SHEETS_WEBHOOK_URL = '';
+
+// ส่งข้อมูลแถวนี้ขึ้น Google Sheet แบบ fire-and-forget (ไม่บล็อกการทำงานหลัก ถ้าพังก็แค่ log เฉยๆ)
+function pushToGoogleSheet(payload){
+  if (!GOOGLE_SHEETS_WEBHOOK_URL) return;
+  fetch(GOOGLE_SHEETS_WEBHOOK_URL, {
+    method: 'POST',
+    mode: 'no-cors', // Apps Script web app ไม่ส่ง CORS header กลับมาให้ครบ ใช้ no-cors แล้วไม่ต้องอ่าน response
+    headers: { 'Content-Type': 'text/plain' }, // เลี่ยง preflight OPTIONS request ที่ Apps Script ไม่รองรับ
+    body: JSON.stringify(payload),
+  }).catch(e => console.error('pushToGoogleSheet failed', e));
+}
+
 async function saveDailyCount(matId){
   const branch = branchSelectEl.value;
   if (!branch) return;
   const ri = rawInputs[matId] || {};
+  const mat = materialById(matId);
   setSyncStatus('syncing');
   try {
     await sb('daily_counts?on_conflict=branch,count_date,material_id', {
@@ -990,6 +1006,16 @@ async function saveDailyCount(matId){
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
     });
     setSyncStatus('online');
+    pushToGoogleSheet({
+      type: 'daily_count',
+      branch, count_date: todayDateStr(), material_id: matId,
+      material_name: mat ? mat.name : matId,
+      received: parseFloat(ri.received) || 0,
+      actual_big: parseFloat(ri.actualBig) || 0,
+      actual_small: parseFloat(ri.actualSmall) || 0,
+      pos_sale: parseFloat(ri.posSale) || 0,
+      note: ri.note || '',
+    });
   } catch (e) { console.error('saveDailyCount failed', e); setSyncStatus('error'); }
 }
 
@@ -1088,6 +1114,56 @@ async function activateBranch(branch){
   renderCategoryChips();
   renderTable();
   applyRecipeUsageToMaterials();
+  startGoogleSheetsPoll();
+}
+
+// ดึงข้อมูลล่าสุดจาก Supabase มาเทียบ เผื่อมีคนแก้ตรงๆ ใน Google Sheet (ผ่าน Apps Script onEdit -> Supabase)
+// ข้ามช่องที่ผู้ใช้กำลังพิมพ์อยู่ ไม่ทับขณะกำลังกรอกสด
+let sheetsPollTimer = null;
+function startGoogleSheetsPoll(){
+  if (!GOOGLE_SHEETS_WEBHOOK_URL) return; // ยังไม่ได้ตั้งค่า Google Sheets ไม่ต้องดึงซ้ำให้เปลือง
+  if (sheetsPollTimer) return; // เริ่มแล้วไม่ต้องเริ่มซ้ำ
+  sheetsPollTimer = setInterval(pollForExternalChanges, 20000);
+}
+
+async function pollForExternalChanges(){
+  const branch = branchSelectEl.value;
+  if (!branch) return;
+  const today = todayDateStr();
+  try {
+    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${today}&select=*`);
+    if (!rows) return;
+    let anyChanged = false;
+    rows.forEach(r => {
+      const matId = r.material_id;
+      const incoming = {
+        received: r.received ? String(r.received) : '',
+        actualBig: (r.actual_big !== null && r.actual_big !== undefined) ? String(r.actual_big) : '',
+        actualSmall: r.actual_small ? String(r.actual_small) : '',
+        posSale: r.pos_sale ? String(r.pos_sale) : '',
+        note: r.note || '',
+      };
+      const current = rawInputs[matId] || {};
+      let changed = false;
+      ['received', 'actualBig', 'actualSmall', 'posSale', 'note'].forEach(field => {
+        const active = document.activeElement;
+        const isFocused = active && active.dataset && active.dataset.matid === matId && active.dataset.field === field;
+        if (isFocused) return; // อย่าทับช่องที่กำลังพิมพ์อยู่
+        if (incoming[field] !== (current[field] ?? '')) {
+          current[field] = incoming[field];
+          changed = true;
+        }
+      });
+      if (changed) {
+        rawInputs[matId] = current;
+        recomputeMaterialLocal(matId); // ไม่ใช้ recomputeMaterial เพราะไม่ต้อง save วนกลับขึ้น Supabase/Sheet ซ้ำ
+        ['received', 'actualBig', 'actualSmall', 'posSale', 'note'].forEach(f => syncCardInputDOM(matId, f, current[f] ?? ''));
+        updateCardLive(matId);
+        anyChanged = true;
+      }
+    });
+    if (anyChanged) { updateFrontProgress(); updateStats(); renderTable(); }
+  } catch (e) { console.error('pollForExternalChanges failed', e); }
 }
 
 document.querySelectorAll('.branch-pick-btn').forEach(btn => {

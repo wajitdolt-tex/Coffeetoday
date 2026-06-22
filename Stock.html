@@ -298,7 +298,7 @@
         <!-- สำรองข้อมูลรายเดือน (Excel) -->
         <div id="adminTabExport" class="admin-tab-panel">
           <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2.5">
-            <span class="w-6 h-6 rounded-md bg-green-50 text-green-700 text-xs font-bold flex items-center justify-center shrink-0">ð¥</span>
+            <span class="w-6 h-6 rounded-md bg-green-50 text-green-700 text-xs font-bold flex items-center justify-center shrink-0">📥</span>
             <h2 class="font-heading font-semibold text-slate-900">สำรองข้อมูลรายเดือน (Excel)</h2>
           </div>
           <div class="p-5 space-y-4 bg-slate-50/60">
@@ -317,15 +317,15 @@
                 </select>
               </div>
               <button id="exportBtn" class="w-full bg-green-600 hover:bg-green-700 active:scale-[0.99] text-white font-semibold rounded-lg px-4 h-11 transition text-sm">
-                ð¥ ดาวน์โหลด Excel
+                📥 ดาวน์โหลด Excel
               </button>
             </div>
             <div class="bg-white border border-slate-200 rounded-xl p-4">
               <p class="text-xs font-semibold text-slate-700 mb-2">ชีทที่ได้รับในไฟล์:</p>
               <ul class="text-xs text-slate-500 space-y-1.5">
-                <li>ð <strong>ยอดนับสต็อกรายวัน</strong> — ยกมา, รับเข้า, นับจริง, ยอดขาย POS, ใช้จริง, ผลต่าง, คงเหลือ</li>
-                <li>ðµ <strong>ยอดขายเมนูรายวัน</strong> — จำนวนแก้วต่อเมนูต่อวัน</li>
-                <li>ð <strong>รายการวัตถุดิบ</strong> — Unit Master ทั้งหมด</li>
+                <li>📊 <strong>ยอดนับสต็อกรายวัน</strong> — ยกมา, รับเข้า, นับจริง, ยอดขาย POS, ใช้จริง, ผลต่าง, คงเหลือ</li>
+                <li>🍵 <strong>ยอดขายเมนูรายวัน</strong> — จำนวนแก้วต่อเมนูต่อวัน</li>
+                <li>📋 <strong>รายการวัตถุดิบ</strong> — Unit Master ทั้งหมด</li>
               </ul>
             </div>
             <p id="exportStatusMsg" class="text-xs text-center text-slate-500 min-h-[1.25rem]"></p>
@@ -480,6 +480,20 @@
   </main>
 
 <script>
+
+/* evalExpr: รับ string เช่น "84+16" หรือ "500+382" คืนผลรวม
+   ใช้แทน parseFloat เพื่อให้ช่องนับสต็อกรับ expression ได้ */
+function evalExpr(str) {
+  str = String(str || '').trim();
+  if (!str) return 0;
+  if (!/^[\d\s.+\-]+$/.test(str)) return parseFloat(str) || 0;
+  const parts = str.replace(/\s+/g, '').split('+').filter(Boolean);
+  const total = parts.reduce((s, p) => s + (parseFloat(p) || 0), 0);
+  return isFinite(total) ? Math.round(total * 10000) / 10000 : parseFloat(str) || 0;
+}
+function hasExpr(val) { return String(val||'').includes('+'); }
+function exprHintText(val) { return hasExpr(val) ? '= ' + fmtNum(evalExpr(val)) : ''; }
+
 function FR(id, name, category, bigUnit, smallUnit, ratio, carry, subUnit, subRatio) {
   return { id, name, category, bigUnit, smallUnit, ratio, carry, subUnit, subRatio, noFraction:false };
 }
@@ -1086,7 +1100,7 @@ function cleanupStaleRecipeIngredients(){
 async function loadCarryForward(branch){
   const today = todayDateStr();
   try {
-    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${today}&select=material_id,actual_big,actual_small,count_date&order=count_date.desc`);
+    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${today}&select=material_id,actual_big,actual_small,note,count_date&order=count_date.desc`);
     if (!rows) return;
     const seen = new Set();
     rows.forEach(r => {
@@ -1095,6 +1109,7 @@ async function loadCarryForward(branch){
       const mat = materialById(r.material_id);
       if (!mat) return;
       mat.carry = (Number(r.actual_big) || 0) * mat.ratio + (mat.noFraction ? 0 : (Number(r.actual_small) || 0));
+      mat.carryExpr = r.note && r.note.includes('\u200b') ? r.note.split('\u200b')[1].split('|')[0] : null;
     });
   } catch (e) { console.error('loadCarryForward failed', e); }
 }
@@ -1110,7 +1125,7 @@ async function loadDailyCounts(branch){
         actualBig: (r.actual_big !== null && r.actual_big !== undefined) ? String(r.actual_big) : '',
         actualSmall: r.actual_small ? String(r.actual_small) : '',
         posSale: r.pos_sale ? String(r.pos_sale) : '',
-        note: r.note || '',
+        note: r.note ? r.note.split('\u200b')[0] : '',
         reviewed: !!r.reviewed,
         reviewedAt: r.reviewed_at || '',
         reviewedNote: r.reviewed_note || '',
@@ -1159,10 +1174,10 @@ async function saveDailyCount(matId){
       body: JSON.stringify([{
         branch, count_date: todayDateStr(), material_id: matId,
         received: parseFloat(ri.received) || 0,
-        actual_big: parseFloat(ri.actualBig) || 0,
-        actual_small: parseFloat(ri.actualSmall) || 0,
+        actual_big: evalExpr(ri.actualBig),
+        actual_small: evalExpr(ri.actualSmall),
         pos_sale: parseFloat(ri.posSale) || 0,
-        note: ri.note || '',
+        note: (ri.note || '') + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + (ri.actualBig||'') + '|' + (ri.actualSmall||'') : ''),
         reviewed: !!ri.reviewed,
         reviewed_at: ri.reviewedAt || null,
         reviewed_note: ri.reviewedNote || '',
@@ -1176,8 +1191,8 @@ async function saveDailyCount(matId){
       branch, count_date: todayDateStr(), material_id: matId,
       material_name: mat ? mat.name : matId,
       received: parseFloat(ri.received) || 0,
-      actual_big: parseFloat(ri.actualBig) || 0,
-      actual_small: parseFloat(ri.actualSmall) || 0,
+      actual_big: evalExpr(ri.actualBig),
+      actual_small: evalExpr(ri.actualSmall),
       pos_sale: parseFloat(ri.posSale) || 0,
       note: ri.note || '',
     });
@@ -1520,7 +1535,7 @@ function materialCardHTML(mat){
       </div>
       <span id="dot_${mat.id}" class="w-2 h-2 rounded-full ${touched ? 'bg-green-500' : 'bg-slate-300'} shrink-0 mt-1.5"></span>
     </div>
-    <p class="text-[11px] text-slate-400 mb-2 -mt-1">ยกมาเมื่อวาน: <span class="font-num font-semibold text-slate-600">${formatAsBigSmall(mat, mat.carry)}</span></p>
+    <p class="text-[11px] text-slate-400 mb-2 -mt-1">ยกมาเมื่อวาน: <span class="font-num font-semibold text-slate-600">${formatAsBigSmall(mat, mat.carry)}</span>${mat.carryExpr && mat.carryExpr.includes('+') ? ` <span class="text-[10px] text-slate-400 font-num">(${mat.carryExpr})</span>` : ''}</p>
     <div class="grid ${gridCols} gap-1.5">
       <div>
         <label class="block text-[10px] text-slate-400 mb-0.5">รับเข้า (${mat.bigUnit})</label>
@@ -1528,15 +1543,17 @@ function materialCardHTML(mat){
           data-matid="${mat.id}" data-field="received" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
       </div>
       <div>
-        <label class="block text-[10px] text-slate-400 mb-0.5">นับจริง St</label>
-        <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${ri.actualBig ?? ''}"
+        <label class="block text-[10px] text-slate-400 mb-0.5">นับจริง <span class="text-slate-300">(สโตว์+ร้าน)</span></label>
+        <input type="text" inputmode="decimal" placeholder="0 หรือ สโตว์+ร้าน" value="${ri.actualBig ?? ''}"
           data-matid="${mat.id}" data-field="actualBig" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
+        <p class="text-[10px] text-green-600 font-num text-center h-3 leading-3">${exprHintText(ri.actualBig)}</p>
       </div>
       ${mat.noFraction ? '' : `
       <div>
         <label class="block text-[10px] text-slate-400 mb-0.5">เศษ (${mat.smallUnit})</label>
-        <input type="number" min="0" step="any" inputmode="decimal" placeholder="0" value="${ri.actualSmall ?? ''}"
+        <input type="text" inputmode="decimal" placeholder="0 หรือ a+b" value="${ri.actualSmall ?? ''}"
           data-matid="${mat.id}" data-field="actualSmall" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
+        <p class="text-[10px] text-green-600 font-num text-center h-3 leading-3">${exprHintText(ri.actualSmall)}</p>
       </div>`}
     </div>
     <div class="mt-1.5">${quickFillHTML(mat)}</div>
@@ -1670,8 +1687,8 @@ function recomputeMaterialLocal(id){
     delete records[id];
   } else {
     const received = parseFloat(ri.received) || 0;
-    const actualBig = parseFloat(ri.actualBig) || 0;
-    const actualSmall = mat.noFraction ? 0 : (parseFloat(ri.actualSmall) || 0);
+    const actualBig = evalExpr(ri.actualBig);
+    const actualSmall = mat.noFraction ? 0 : (evalExpr(ri.actualSmall));
     const note = ri.note || '';
     const posSale = parseFloat(ri.posSale) || 0;
     records[id] = computeRecord(mat, { received, actualBig, actualSmall, posSale, note });
@@ -1730,8 +1747,8 @@ function normalizeActualSmall(matId){
   if (!mat || mat.noFraction || !mat.ratio) return;
   const ri = rawInputs[matId];
   if (!ri) return;
-  let small = parseFloat(ri.actualSmall) || 0;
-  let big = parseFloat(ri.actualBig) || 0;
+  let small = evalExpr(ri.actualSmall);
+  let big = evalExpr(ri.actualBig);
   if (small >= mat.ratio) {
     const extraBig = Math.floor(small / mat.ratio);
     big += extraBig;
@@ -1760,8 +1777,8 @@ function adjustMaterialRemaining(matId, deltaSmallUnits){
   if (!mat || !deltaSmallUnits) return;
   if (!rawInputs[matId]) rawInputs[matId] = {};
   const ri = rawInputs[matId];
-  let small = (parseFloat(ri.actualSmall) || 0) + deltaSmallUnits;
-  let big = parseFloat(ri.actualBig) || 0;
+  let small = (evalExpr(ri.actualSmall)) + deltaSmallUnits;
+  let big = evalExpr(ri.actualBig);
   if (mat.ratio > 0) {
     while (small >= mat.ratio) { small -= mat.ratio; big += 1; }
     while (small < 0 && big > 0) { small += mat.ratio; big -= 1; }
@@ -1779,7 +1796,7 @@ const NAPUKA_CREAMER_PER_BATCH = 150; // กรัม
 function applyNapukaCreditBack(){
   const ri = rawInputs['napukasauce'];
   if (!ri) return;
-  const newBatches = parseFloat(ri.actualBig) || 0;
+  const newBatches = evalExpr(ri.actualBig);
   const prevBatches = parseFloat(ri.creditedBatches) || 0;
   const delta = newBatches - prevBatches;
   if (delta === 0) return;
@@ -3368,10 +3385,10 @@ async function savePastDailyCount(matId){
       body: JSON.stringify([{
         branch, count_date: date, material_id: matId,
         received: parseFloat(ri.received) || 0,
-        actual_big: parseFloat(ri.actualBig) || 0,
-        actual_small: parseFloat(ri.actualSmall) || 0,
+        actual_big: evalExpr(ri.actualBig),
+        actual_small: evalExpr(ri.actualSmall),
         pos_sale: parseFloat(ri.posSale) || 0,
-        note: ri.note || '',
+        note: (ri.note || '') + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + (ri.actualBig||'') + '|' + (ri.actualSmall||'') : ''),
         updated_at: new Date().toISOString(),
       }]),
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
@@ -3395,8 +3412,8 @@ function adjustPastMaterialRemaining(matId, deltaSmallUnits){
   if (!mat || !deltaSmallUnits) return;
   if (!pastInputs[matId]) pastInputs[matId] = {};
   const pi = pastInputs[matId];
-  let small = (parseFloat(pi.actualSmall) || 0) + deltaSmallUnits;
-  let big = parseFloat(pi.actualBig) || 0;
+  let small = (evalExpr(pi.actualSmall)) + deltaSmallUnits;
+  let big = evalExpr(pi.actualBig);
   if (mat.ratio > 0) {
     while (small >= mat.ratio) { small -= mat.ratio; big += 1; }
     while (small < 0 && big > 0) { small += mat.ratio; big -= 1; }
@@ -3411,7 +3428,7 @@ function adjustPastMaterialRemaining(matId, deltaSmallUnits){
 function applyNapukaCreditBackPast(){
   const pi = pastInputs['napukasauce'];
   if (!pi) return;
-  const newBatches = parseFloat(pi.actualBig) || 0;
+  const newBatches = evalExpr(pi.actualBig);
   const prevBatches = parseFloat(pi.creditedBatches) || 0;
   const delta = newBatches - prevBatches;
   if (delta === 0) return;

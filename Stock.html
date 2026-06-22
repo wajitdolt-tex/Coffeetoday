@@ -1058,7 +1058,7 @@ function scheduleSaveDailyCount(matId){
 }
 
 // URL ของ Google Apps Script Web App (ตั้งค่าหลังจากติดตั้งสคริปต์ในชีตแล้ว) — ว่างไว้ได้ ถ้ายังไม่ตั้ง ระบบจะใช้งานปกติแค่ไม่ซิงค์ขึ้นชีต
-const GOOGLE_SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwWIMSD7NVczvFCZYRCiSoS7MjUY3CImG_RT4GLBgqzhfKrzHiAWN4smqg1c-O9IIwh/exec';
+const GOOGLE_SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzb92khQoSnGLbPkdUsOJmU4DLpJF4HwN3_ddHFGGNSaod5bKkIND8vrqqhIyhyYF79/exec';
 
 // ส่งข้อมูลแถวนี้ขึ้น Google Sheet แบบ fire-and-forget (ไม่บล็อกการทำงานหลัก ถ้าพังก็แค่ log เฉยๆ)
 function pushToGoogleSheet(payload){

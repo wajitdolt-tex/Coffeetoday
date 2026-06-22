@@ -1227,7 +1227,7 @@ async function saveDailyCount(matId){
       body: JSON.stringify([{
         branch, count_date: todayDateStr(), material_id: matId,
         received: parseFloat(ri.received) || 0,
-        actual_big: evalExpr(ri.actualBig),
+        actual_big: evalExpr(ri.actualBig) + (ri.creditBig || 0),
         actual_small: evalExpr(ri.actualSmall) + (ri.creditSmall || 0),
         pos_sale: parseFloat(ri.posSale) || 0,
         note: (ri.note || '') + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + (ri.actualBig||'') + '|' + (ri.actualSmall||'') : ''),
@@ -1734,15 +1734,14 @@ function updateCardLive(id){
   const creditEl = document.getElementById('credit_' + id);
   if (creditEl) {
     const creditSmall = (rawInputs[id] || {}).creditSmall || 0;
+    const _cb = (rawInputs[id] || {}).creditBig || 0;
     const mat = materialById(id);
-    if (creditSmall && mat) {
-      let creditTxt;
-      if (mat.subUnit && mat.subRatio) {
-        const subCount = Math.round((Math.abs(creditSmall) / mat.subRatio) * 100) / 100;
-        creditTxt = '🔄 ตีคืนน้ำคาปู ' + (creditSmall > 0 ? '+' : '') + fmtNum(subCount) + ' ' + mat.subUnit;
-      } else {
-        creditTxt = '🔄 ตีคืนน้ำคาปู ' + (creditSmall > 0 ? '+' : '') + fmtNum(creditSmall) + ' ' + mat.smallUnit;
-      }
+    if ((creditSmall || _cb) && mat) {
+      const _creditBig = (rawInputs[id] || {}).creditBig || 0;
+      let creditParts = [];
+      if (_creditBig) creditParts.push((_creditBig > 0 ? '+' : '') + fmtNum(_creditBig) + ' ' + mat.bigUnit);
+      if (creditSmall) creditParts.push((creditSmall > 0 ? '+' : '') + fmtNum(creditSmall) + ' ' + mat.smallUnit);
+      const creditTxt = '🔄 ตีคืนน้ำคาปู ' + (creditParts.length ? creditParts.join(' ') : '0');
       creditEl.textContent = creditTxt;
       creditEl.classList.remove('hidden');
     } else {
@@ -1756,11 +1755,13 @@ function recomputeMaterialLocal(id){
   const mat = materialById(id);
   if (!mat) return;
   const ri = rawInputs[id] || {};
-  if (ri.actualBig === undefined || ri.actualBig === '') {
+  const _hasCreditBig = (ri.creditBig || 0) !== 0;
+  const _hasCreditSm  = (ri.creditSmall || 0) !== 0;
+  if ((ri.actualBig === undefined || ri.actualBig === '') && !_hasCreditBig && !_hasCreditSm) {
     delete records[id];
   } else {
     const received = parseFloat(ri.received) || 0;
-    const actualBig = evalExpr(ri.actualBig);
+    const actualBig = evalExpr(ri.actualBig) + (ri.creditBig || 0);
     const actualSmall = mat.noFraction ? 0 : (evalExpr(ri.actualSmall) + (ri.creditSmall || 0));
     const note = ri.note || '';
     const posSale = parseFloat(ri.posSale) || 0;
@@ -1849,8 +1850,11 @@ function adjustMaterialRemaining(matId, deltaSmallUnits){
   const mat = materialById(matId);
   if (!mat || !deltaSmallUnits) return;
   if (!rawInputs[matId]) rawInputs[matId] = {};
-  // สะสม credit แยกจากยอดที่พนักงานกรอก เพื่อไม่ให้ทับกัน
-  rawInputs[matId].creditSmall = Math.round(((rawInputs[matId].creditSmall || 0) + deltaSmallUnits) * 10000) / 10000;
+  // แบ่ง credit เป็นหน่วยเต็ม (big) และเศษ — หน่วยเต็มไปโชว์ช่อง St, เศษไปช่องเศษ
+  const deltaBig   = mat.ratio > 0 ? Math.floor(deltaSmallUnits / mat.ratio) : 0;
+  const deltaSmall = Math.round((deltaSmallUnits - deltaBig * mat.ratio) * 10000) / 10000;
+  rawInputs[matId].creditBig   = Math.round(((rawInputs[matId].creditBig   || 0) + deltaBig)   * 10000) / 10000;
+  rawInputs[matId].creditSmall = Math.round(((rawInputs[matId].creditSmall || 0) + deltaSmall) * 10000) / 10000;
   recomputeMaterial(matId);
 }
 
@@ -3466,7 +3470,7 @@ async function savePastDailyCount(matId){
       body: JSON.stringify([{
         branch, count_date: date, material_id: matId,
         received: parseFloat(ri.received) || 0,
-        actual_big: evalExpr(ri.actualBig),
+        actual_big: evalExpr(ri.actualBig) + (ri.creditBig || 0),
         actual_small: evalExpr(ri.actualSmall) + (ri.creditSmall || 0),
         pos_sale: parseFloat(ri.posSale) || 0,
         note: (ri.note || '') + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + (ri.actualBig||'') + '|' + (ri.actualSmall||'') : ''),

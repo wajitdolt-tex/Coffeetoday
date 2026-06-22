@@ -269,9 +269,38 @@
             <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">📝</span>
             <h2 class="font-heading font-semibold text-slate-900">แก้ไขสูตรเมนู</h2>
           </div>
-          <div class="p-5 pb-3 bg-slate-50/60">
-            <p class="text-xs text-slate-500 mb-3">แก้ชื่อเมนู ขนาด หรือรายการวัตถุดิบ+ปริมาณในสูตรได้โดยตรง ลบ/เพิ่มวัตถุดิบในสูตรได้ — แก้แล้วบันทึกอัตโนมัติ มีผลกับการคำนวณ "ยอดขายตามสูตร" ทันที</p>
+          <div class="p-5 pb-3 bg-slate-50/60 space-y-3">
+            <p class="text-xs text-slate-500">แก้ชื่อเมนู ขนาด หรือรายการวัตถุดิบ+ปริมาณในสูตรได้โดยตรง — แก้แล้วบันทึกอัตโนมัติ</p>
             <input id="recipeEditSearch" type="text" placeholder="ค้นหาเมนูที่ต้องการแก้ไขสูตร" class="input-base">
+            <details id="addRecipeDetails" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+              <summary class="px-4 py-3 flex items-center gap-2 cursor-pointer hover:bg-slate-50 transition list-none">
+                <svg class="chevron w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
+                <span class="text-sm font-semibold text-accent-700">➕ เพิ่มเมนูใหม่</span>
+                <span class="text-xs text-slate-400 ml-1">เพิ่มรายการที่ต้องการกรอกจำนวนขาย</span>
+              </summary>
+              <div class="p-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อเมนู <span class="text-red-400">*</span></label>
+                  <input id="newRecipeName" type="text" placeholder="เช่น น้ำแตงโม" class="input-base input-sm">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">ขนาด/รายละเอียด</label>
+                  <input id="newRecipeSize" type="text" placeholder="เช่น 16oz หรือ 1 แก้ว" class="input-base input-sm">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">หมวดหมู่</label>
+                  <select id="newRecipeCategory" class="input-base input-sm">
+                    <option value="">เลือกหมวด</option>
+                  </select>
+                </div>
+                <div class="sm:col-span-3">
+                  <p class="text-[10px] text-slate-400 mb-2">เพิ่มส่วนผสมทีหลังได้ในรายการด้านล่าง — กด "บันทึก" เพื่อสร้างเมนูก่อนได้เลย</p>
+                  <button id="saveNewRecipeBtn" class="bg-accent-600 hover:bg-accent-700 text-white font-semibold text-sm rounded-lg px-5 h-9 transition">
+                    บันทึกเมนูใหม่
+                  </button>
+                </div>
+              </div>
+            </details>
           </div>
           <div id="recipeEditListWrap" class="px-5 pb-5 space-y-4 bg-slate-50/60"></div>
         </div>
@@ -594,6 +623,9 @@ const MATERIALS = [
   NF('totebageco','ถุงผ้ารักษ์โลก','แก้ว/ถุงพรีเมียม','ห่อ',5),
 
   // เบเกอรี่/ขนม
+  NF('fruitjelly','เยลลี่ผลไม้','เบเกอรี่/ขนม','ถุง',10),
+  NF('cornflake','คอนเฟรก','เบเกอรี่/ขนม','ถุง',10),
+  NF('graincracker','แครเกอร์ธัญพืช','เบเกอรี่/ขนม','ถุง',10),
   NF('crispybread1','ขนมปังกรอบพริกเผาหมูหยอง','เบเกอรี่/ขนม','ถุง',10),
   NF('bananachips','กล้วยฉาบ','เบเกอรี่/ขนม','ถุง',10),
   NF('tarochips','เผือกฉาบ','เบเกอรี่/ขนม','ถุง',10),
@@ -884,6 +916,23 @@ const RECIPES = [
   RCP('vegan_greenmilktea_22','ชาเขียวนมเจ','22oz','เมนูเจ', [ing('vitamilk',4,'g')]),
   RCP('vegan_thaitea_22','ชาไทยเจ','22oz','เมนูเจ', [ing('vitamilk',4,'g')]),
 
+
+  // ---------- เครื่องดื่มสำเร็จรูป ----------
+  RCP('drink_water600','น้ำดื่ม','600ml','เครื่องดื่มสำเร็จรูป',[ing('water600',1,'g')]),
+  RCP('drink_water1500','น้ำดื่ม','1500ml','เครื่องดื่มสำเร็จรูป',[ing('water1500',1,'g')]),
+  RCP('drink_soda','โซดา','1 ขวด','เครื่องดื่มสำเร็จรูป',[ing('soda',10.83,'g')]),
+  RCP('drink_vitamilk','ไวตามิลค์เจ','1 กล่อง','เครื่องดื่มสำเร็จรูป',[ing('vitamilk',6.67,'g')]),
+  RCP('drink_oatmilk','นมโอ๊ต','1 กล่อง','เครื่องดื่มสำเร็จรูป',[ing('oatmilk',6.67,'g')]),
+  // ---------- เบเกอรี่/ขนม ----------
+  RCP('snack_crispybread1','ขนมปังกรอบพริกเผาหมูหยอง','1 ถุง','เบเกอรี่/ขนม',[ing('crispybread1',1,'g')]),
+  RCP('snack_crispybreadbutter','ขนมปังกรอบรสเนย','1 ถุง','เบเกอรี่/ขนม',[ing('crispybreadbutter',1,'g')]),
+  RCP('snack_crispybreadsugar','ขนมปังกรอบเนยน้ำตาล','1 ถุง','เบเกอรี่/ขนม',[ing('crispybreadsugar',1,'g')]),
+  RCP('snack_bananachips','กล้วยฉาบ','1 ถุง','เบเกอรี่/ขนม',[ing('bananachips',1,'g')]),
+  RCP('snack_tarochips','เผือกฉาบ','1 ถุง','เบเกอรี่/ขนม',[ing('tarochips',1,'g')]),
+  RCP('snack_pineappletart','ทาร์ตสับปะรด','1 กล่อง','เบเกอรี่/ขนม',[ing('pineappletart',1,'g')]),
+  RCP('snack_fruitjelly','เยลลี่ผลไม้','1 ถุง','เบเกอรี่/ขนม',[ing('fruitjelly',1,'g')]),
+  RCP('snack_cornflake','คอนเฟรก','1 ถุง','เบเกอรี่/ขนม',[ing('cornflake',1,'g')]),
+  RCP('snack_graincracker','แครเกอร์ธัญพืช','1 ถุง','เบเกอรี่/ขนม',[ing('graincracker',1,'g')]),
   // ---------- แอดเพิ่ม (Add-ons) ----------
   // Add Shot กาแฟ (10g ต่อ 1 shot)
   RCP('addshot_td1','Add Shot กาแฟ TD1','','แอดเพิ่ม',[ing('td1',10,'g')]),
@@ -1076,10 +1125,14 @@ async function loadRecipesFromDB(){
     const rows = await sb('recipes?select=id,name,size,category,ingredients');
     if (!rows) return;
     rows.forEach(r => {
+      if (!r.id || !r.name) return;
       const recipe = RECIPES.find(x => x.id === r.id);
       if (recipe) {
         recipe.name = r.name; recipe.size = r.size; recipe.category = r.category;
         if (r.ingredients && r.ingredients.length) recipe.ingredients = r.ingredients;
+      } else {
+        // เมนูที่ผู้ใช้เพิ่มเองจาก DB (ไม่มีใน hardcoded RECIPES)
+        RECIPES.push({ id: r.id, name: r.name, size: r.size || '', category: r.category || 'เมนูอื่นๆ', ingredients: r.ingredients || [] });
       }
     });
   } catch (e) { console.error('loadRecipesFromDB failed', e); }
@@ -1683,8 +1736,13 @@ function updateCardLive(id){
     const creditSmall = (rawInputs[id] || {}).creditSmall || 0;
     const mat = materialById(id);
     if (creditSmall && mat) {
-      let creditTxt = '🔄 ตีคืนน้ำคาปู ' + (creditSmall > 0 ? '+' : '') + fmtNum(creditSmall) + ' ' + mat.smallUnit;
-      if (mat.subUnit && mat.subRatio) creditTxt += ' (≈ ' + fmtNum(Math.abs(creditSmall) / mat.subRatio) + ' ' + mat.subUnit + ')';
+      let creditTxt;
+      if (mat.subUnit && mat.subRatio) {
+        const subCount = Math.round((Math.abs(creditSmall) / mat.subRatio) * 100) / 100;
+        creditTxt = '🔄 ตีคืนน้ำคาปู ' + (creditSmall > 0 ? '+' : '') + fmtNum(subCount) + ' ' + mat.subUnit;
+      } else {
+        creditTxt = '🔄 ตีคืนน้ำคาปู ' + (creditSmall > 0 ? '+' : '') + fmtNum(creditSmall) + ' ' + mat.smallUnit;
+      }
       creditEl.textContent = creditTxt;
       creditEl.classList.remove('hidden');
     } else {
@@ -1813,9 +1871,9 @@ function applyNapukaCreditBack(){
   if (evap && evap.subRatio) adjustMaterialRemaining('evapmilk', delta * evap.subRatio);
 
   const creamerAmt = Math.abs(delta * NAPUKA_CREAMER_PER_BATCH);
-  const evapAmt = evap && evap.subRatio ? Math.abs(delta * evap.subRatio) : 0;
+  const evapCans = Math.abs(delta); // 1 แบท = 1 กระป๋องนมจืด
   const verb = delta > 0 ? 'ตีคืนเข้า' : 'หักออกจาก';
-  showToast(`🔄 น้ำคาปูเปลี่ยน ${Math.abs(delta)} แบท — ${verb}ครีมเทียม ${fmtNum(creamerAmt)}g และนมจืด ${fmtNum(evapAmt)}oz อัตโนมัติ`, 'success');
+  showToast(`🔄 น้ำคาปูเปลี่ยน ${Math.abs(delta)} แบท — ${verb}ครีมเทียม ${fmtNum(creamerAmt)}g และนมจืด ${fmtNum(evapCans)} กระป๋อง อัตโนมัติ`, 'success');
 }
 
 function bindMaterialInputDelegation(container){
@@ -2082,7 +2140,24 @@ recipeEditListWrap.addEventListener('change', (e) => {
   if (recipe) { upsertRecipe(recipe); flashRecipeSaved(recipeId); }
 });
 
-recipeEditListWrap.addEventListener('click', (e) => {
+recipeEditListWrap.addEventListener('click', async (e) => {
+  const delBtn = e.target.closest('[data-deleterecipe]');
+  if (delBtn) {
+    const recipeId = delBtn.dataset.deleterecipe;
+    const recipe = RECIPES.find(r => r.id === recipeId);
+    if (!recipe) return;
+    if (!confirm('ลบเมนู "' + recipe.name + '" ? การลบจะมีผลทันที')) return;
+    RECIPES.splice(RECIPES.indexOf(recipe), 1);
+    try {
+      await sb('recipes?id=eq.' + encodeURIComponent(recipeId), { method: 'DELETE' });
+      showToast('ลบ "' + recipe.name + '" แล้ว', 'success');
+    } catch(err) { console.error(err); }
+    renderRecipeEditList(recipeEditSearchEl.value);
+    renderMenuList(menuSearchEl ? menuSearchEl.value : '');
+    if (frontMenuSearchEl) renderFrontMenuList(frontMenuSearchEl.value);
+    renderFrontMenuChips();
+    return;
+  }
   const addBtn = e.target.closest('[data-addingredient]');
   if (addBtn) {
     const recipe = RECIPES.find(r => r.id === addBtn.dataset.addingredient);
@@ -3625,6 +3700,67 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
     btn.textContent = '📥 ดาวน์โหลด Excel';
   }
 });
+
+
+/* ===========================================================
+   เพิ่มเมนูใหม่ (custom recipe)
+=========================================================== */
+(function initAddRecipeForm(){
+  // Populate category dropdown
+  function populateNewRecipeCategory(){
+    const sel = document.getElementById('newRecipeCategory');
+    if (!sel) return;
+    const existing = [...sel.options].map(o => o.value);
+    recipeCategories().forEach(cat => {
+      if (!existing.includes(cat)) {
+        const opt = document.createElement('option');
+        opt.value = opt.textContent = cat;
+        sel.appendChild(opt);
+      }
+    });
+    // Add fallback
+    if (!existing.includes('เมนูอื่นๆ')) {
+      const opt = document.createElement('option');
+      opt.value = opt.textContent = 'เมนูอื่นๆ';
+      sel.appendChild(opt);
+    }
+  }
+
+  document.getElementById('adminTabRecipe').addEventListener('click', (e) => {
+    if (e.target.closest('#addRecipeDetails > summary')) populateNewRecipeCategory();
+  });
+
+  document.getElementById('saveNewRecipeBtn').addEventListener('click', async () => {
+    const name = document.getElementById('newRecipeName').value.trim();
+    if (!name) { alert('กรุณาระบุชื่อเมนูก่อน'); return; }
+    const size = document.getElementById('newRecipeSize').value.trim();
+    const category = document.getElementById('newRecipeCategory').value || 'เมนูอื่นๆ';
+    const id = 'custom_' + Date.now();
+    const recipe = { id, name, size, category, ingredients: [] };
+    RECIPES.push(recipe);
+    setSyncStatus('syncing');
+    try {
+      await upsertRecipe(recipe);
+      setSyncStatus('online');
+      showToast('เพิ่มเมนู "' + name + '" แล้ว ✓ แก้ไขสูตรได้ในรายการด้านล่าง', 'success');
+      // Reset form
+      document.getElementById('newRecipeName').value = '';
+      document.getElementById('newRecipeSize').value = '';
+      document.getElementById('addRecipeDetails').removeAttribute('open');
+      // Refresh lists
+      renderRecipeEditList(recipeEditSearchEl.value);
+      renderMenuList(menuSearchEl ? menuSearchEl.value : '');
+      if (frontMenuSearchEl) renderFrontMenuList(frontMenuSearchEl.value);
+      renderFrontMenuChips();
+      populateCategoryFilter();
+      refreshCategoryDatalist();
+    } catch(e) {
+      console.error('saveNewRecipe failed', e);
+      setSyncStatus('error');
+      showToast('บันทึกไม่สำเร็จ', 'warn');
+    }
+  });
+})();
 
 /* ===========================================================
    Init

@@ -209,7 +209,8 @@
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">หมวดหมู่</label>
-              <input id="newCategory" type="text" placeholder="เช่น ไซรัปและซอส" class="input-base input-sm">
+              <input id="newCategory" type="text" placeholder="พิมพ์หรือเลือกจากรายการ" list="matCategoryList" autocomplete="off" class="input-base input-sm">
+              <datalist id="matCategoryList"></datalist>
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">รูปแบบหน่วยนับ</label>
@@ -248,6 +249,22 @@
               <span id="addMaterialMsg" class="text-sm font-medium"></span>
             </div>
           </div>
+        </div>
+
+        <!-- จัดเรียงหมวดหมู่ -->
+        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden mx-5 mb-5 mt-0">
+          <details id="catOrderDetails">
+            <summary class="px-4 py-3 flex items-center gap-2 cursor-pointer hover:bg-slate-50 transition list-none">
+              <svg class="chevron w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
+              <span class="text-sm font-semibold text-slate-700">🗂 จัดเรียงหมวดหมู่</span>
+              <span class="text-xs text-slate-400 ml-1">ลากเพื่อเรียงลำดับการแสดงผล</span>
+            </summary>
+            <div class="border-t border-slate-100 p-4">
+              <p class="text-xs text-slate-500 mb-3">ลากแถบเพื่อเรียงใหม่ — ลำดับนี้จะใช้ในหน้านับสต็อก, ฟิลเตอร์หมวดหมู่, และไฟล์ Excel export</p>
+              <ul id="catSortList" class="space-y-1.5"></ul>
+              <button id="resetCatOrderBtn" class="mt-3 text-xs text-slate-400 hover:text-red-500 transition">↩ รีเซ็ตลำดับเดิม</button>
+            </div>
+          </details>
         </div>
 
         <!-- แก้ไขอัตราส่วนวัตถุดิบเดิม + ยอดยกมา -->
@@ -1334,6 +1351,31 @@ function computeRecord(mat, { received, actualBig, actualSmall, posSale, note })
 
 function categories(){ return [...new Set(MATERIALS.map(m => m.category))]; }
 function recipeCategories(){ return [...new Set(RECIPES.map(r => r.category))]; }
+
+/* หมวดหมู่วัตถุดิบ — ดึงจาก MATERIALS + รองรับการเรียงลำดับ */
+let _categoryOrder = null; // null = ใช้ order จาก MATERIALS
+
+function materialCategories(){
+  const raw = [...new Set(MATERIALS.map(m => m.category))];
+  if (!_categoryOrder) return raw;
+  // เรียงตาม _categoryOrder, ที่ไม่มีใน order ให้ต่อท้าย
+  const ordered = _categoryOrder.filter(c => raw.includes(c));
+  const rest = raw.filter(c => !_categoryOrder.includes(c));
+  return [...ordered, ...rest];
+}
+
+function saveCategoryOrder(){
+  try { localStorage.setItem('matCategoryOrder', JSON.stringify(_categoryOrder)); } catch(e){}
+}
+
+function loadCategoryOrder(){
+  try {
+    const v = localStorage.getItem('matCategoryOrder');
+    if (v) _categoryOrder = JSON.parse(v);
+  } catch(e){}
+}
+
+
 
 /* ===========================================================
    Branch modal + PIN gate
@@ -3790,6 +3832,63 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
   });
 })();
 
+
+/* ===========================================================
+   จัดการหมวดหมู่วัตถุดิบ
+=========================================================== */
+function refreshMatCategoryDatalist(){
+  const dl = document.getElementById('matCategoryList');
+  if (!dl) return;
+  dl.innerHTML = '';
+  materialCategories().forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    dl.appendChild(opt);
+  });
+}
+
+function renderCatSortList(){
+  const ul = document.getElementById('catSortList');
+  if (!ul) return;
+  const cats = materialCategories();
+  ul.innerHTML = cats.map((cat, i) => `
+    <li draggable="true" data-catidx="${i}" data-cat="${cat}"
+        class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 cursor-grab active:cursor-grabbing select-none">
+      <span class="text-slate-400 text-sm">⠿</span>
+      <span class="text-sm font-medium text-slate-700 flex-1">${cat}</span>
+      <span class="text-[10px] text-slate-400">${MATERIALS.filter(m=>m.category===cat).length} รายการ</span>
+    </li>`).join('');
+
+  // Drag-to-reorder
+  let dragged = null;
+  ul.querySelectorAll('li').forEach(li => {
+    li.addEventListener('dragstart', () => { dragged = li; li.style.opacity='0.4'; });
+    li.addEventListener('dragend',   () => { dragged = null; li.style.opacity=''; });
+    li.addEventListener('dragover',  e => { e.preventDefault(); const r=li.getBoundingClientRect(); const mid=r.top+r.height/2; ul.insertBefore(dragged, e.clientY<mid?li:li.nextSibling); });
+  });
+  ul.addEventListener('dragend', () => {
+    const newOrder = [...ul.querySelectorAll('li')].map(li => li.dataset.cat);
+    _categoryOrder = newOrder;
+    saveCategoryOrder();
+    refreshMatCategoryDatalist();
+    populateCategoryFilter();
+    renderFastMoving(document.getElementById('materialSearch') ? document.getElementById('materialSearch').value : '');
+    renderSlowMoving(document.getElementById('materialSearch') ? document.getElementById('materialSearch').value : '');
+  });
+}
+
+document.getElementById('catOrderDetails').addEventListener('toggle', function(){
+  if (this.open) renderCatSortList();
+});
+
+document.getElementById('resetCatOrderBtn').addEventListener('click', () => {
+  _categoryOrder = null;
+  saveCategoryOrder();
+  renderCatSortList();
+  refreshMatCategoryDatalist();
+  populateCategoryFilter();
+});
+
 /* ===========================================================
    Init
 =========================================================== */
@@ -3799,6 +3898,8 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
   document.getElementById('todayDisplay').textContent = today.toLocaleDateString('th-TH', { day:'2-digit', month:'long', year:'numeric' });
   const _em = document.getElementById('exportMonthInput');
   if (_em) _em.value = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0');
+  loadCategoryOrder();
+  refreshMatCategoryDatalist();
   // sync export branch dropdown เมื่อ branch หลักเปลี่ยน
   branchSelectEl.addEventListener('change', () => {
     const ebs = document.getElementById('exportBranchSelect');

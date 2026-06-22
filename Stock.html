@@ -1183,12 +1183,28 @@ async function loadDailyCounts(branch){
         reviewedAt: r.reviewed_at || '',
         reviewedNote: r.reviewed_note || '',
       };
-      if (r.material_id === 'napukasauce') {
-        // ค่าที่โหลดมาคือยอดที่เคยตีคืนไปแล้วก่อนหน้านี้ -> ตั้งเป็นฐานไว้ ไม่ให้ตีคืนซ้ำตอนโหลดหน้า
-        rawInputs.napukasauce.creditedBatches = rawInputs.napukasauce.actualBig || '0';
-      }
       recomputeMaterialLocal(r.material_id);
     });
+    // strip credit ออกจาก actual → โชว์ยอดนับจริงในช่อง input
+    const _napBatches = evalExpr((rawInputs['napukasauce'] || {}).actualBig) || 0;
+    if (_napBatches > 0) {
+      if (rawInputs['evapmilk']) {
+        rawInputs['evapmilk'].creditBig   = _napBatches;
+        rawInputs['evapmilk'].creditSmall = 0;
+        rawInputs['evapmilk'].actualBig   = String(Math.max(0, evalExpr(rawInputs['evapmilk'].actualBig) - _napBatches));
+        recomputeMaterialLocal('evapmilk');
+      }
+      if (rawInputs['creamer']) {
+        const _cMat = materialById('creamer');
+        const _totalC = _napBatches * NAPUKA_CREAMER_PER_BATCH;
+        const _cBig   = _cMat ? Math.floor(_totalC / _cMat.ratio) : 0;
+        const _cSmall = Math.round((_totalC - _cBig * (_cMat ? _cMat.ratio : 1)) * 10000) / 10000;
+        rawInputs['creamer'].creditBig   = _cBig;
+        rawInputs['creamer'].creditSmall = _cSmall;
+        rawInputs['creamer'].actualSmall = String(Math.max(0, evalExpr(rawInputs['creamer'].actualSmall) - _cSmall));
+        recomputeMaterialLocal('creamer');
+      }
+    }
   } catch (e) { console.error('loadDailyCounts failed', e); }
 }
 
@@ -1864,20 +1880,28 @@ const NAPUKA_CREAMER_PER_BATCH = 150; // กรัม
 function applyNapukaCreditBack(){
   const ri = rawInputs['napukasauce'];
   if (!ri) return;
-  const newBatches = evalExpr(ri.actualBig);
-  const prevBatches = parseFloat(ri.creditedBatches) || 0;
-  const delta = newBatches - prevBatches;
-  if (delta === 0) return;
-  ri.creditedBatches = String(newBatches);
+  const batches = evalExpr(ri.actualBig) || 0;
 
-  const evap = materialById('evapmilk');
-  adjustMaterialRemaining('creamer', delta * NAPUKA_CREAMER_PER_BATCH);
-  if (evap && evap.subRatio) adjustMaterialRemaining('evapmilk', delta * evap.subRatio);
+  // Absolute credit — คำนวณจากจำนวนแบทปัจจุบันใหม่ทุกครั้ง ไม่สะสม delta
+  // นมจืด: 1 แบท = 1 กระป๋อง (ลงตัว ไม่มีเศษ)
+  if (!rawInputs['evapmilk']) rawInputs['evapmilk'] = {};
+  rawInputs['evapmilk'].creditBig   = batches;
+  rawInputs['evapmilk'].creditSmall = 0;
+  recomputeMaterial('evapmilk');
 
-  const creamerAmt = Math.abs(delta * NAPUKA_CREAMER_PER_BATCH);
-  const evapCans = Math.abs(delta); // 1 แบท = 1 กระป๋องนมจืด
-  const verb = delta > 0 ? 'ตีคืนเข้า' : 'หักออกจาก';
-  showToast(`🔄 น้ำคาปูเปลี่ยน ${Math.abs(delta)} แบท — ${verb}ครีมเทียม ${fmtNum(creamerAmt)}g และนมจืด ${fmtNum(evapCans)} กระป๋อง อัตโนมัติ`, 'success');
+  // ครีมเทียม: 1 แบท = 150g (เศษถุง)
+  if (!rawInputs['creamer']) rawInputs['creamer'] = {};
+  const creamerMat = materialById('creamer');
+  const totalCreamer = batches * NAPUKA_CREAMER_PER_BATCH;
+  const cBig   = creamerMat ? Math.floor(totalCreamer / creamerMat.ratio) : 0;
+  const cSmall = Math.round((totalCreamer - cBig * (creamerMat ? creamerMat.ratio : 1)) * 10000) / 10000;
+  rawInputs['creamer'].creditBig   = cBig;
+  rawInputs['creamer'].creditSmall = cSmall;
+  recomputeMaterial('creamer');
+
+  if (batches > 0) {
+    showToast(`🔄 น้ำคาปู ${fmtNum(batches)} แบท — ตีคืนนมจืด ${fmtNum(batches)} กระป๋อง · ครีมเทียม ${fmtNum(totalCreamer)}g`, 'success');
+  }
 }
 
 function bindMaterialInputDelegation(container){

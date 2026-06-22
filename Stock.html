@@ -1175,7 +1175,7 @@ async function saveDailyCount(matId){
         branch, count_date: todayDateStr(), material_id: matId,
         received: parseFloat(ri.received) || 0,
         actual_big: evalExpr(ri.actualBig),
-        actual_small: evalExpr(ri.actualSmall),
+        actual_small: evalExpr(ri.actualSmall) + (ri.creditSmall || 0),
         pos_sale: parseFloat(ri.posSale) || 0,
         note: (ri.note || '') + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + (ri.actualBig||'') + '|' + (ri.actualSmall||'') : ''),
         reviewed: !!ri.reviewed,
@@ -1556,6 +1556,7 @@ function materialCardHTML(mat){
         <p class="text-[10px] text-green-600 font-num text-center h-3 leading-3">${exprHintText(ri.actualSmall)}</p>
       </div>`}
     </div>
+    <p id="credit_${mat.id}" class="text-[10px] text-blue-500 mt-1 font-num ${(rawInputs[mat.id]||{}).creditSmall ? '' : 'hidden'}">🔄 ตีคืนน้ำคาปู ${((rawInputs[mat.id]||{}).creditSmall > 0 ? '+' : '') + fmtNum((rawInputs[mat.id]||{}).creditSmall || 0)} ${mat.smallUnit}</p>
     <div class="mt-1.5">${quickFillHTML(mat)}</div>
     <div class="grid grid-cols-2 gap-1.5 mt-1.5">
       <div>
@@ -1676,6 +1677,18 @@ function updateCardLive(id){
   const liveEl = document.getElementById('live_' + id);
   if (dotEl) dotEl.className = `w-2 h-2 rounded-full ${isTouched(id) ? 'bg-green-500' : 'bg-slate-300'} shrink-0 mt-1.5`;
   if (liveEl) liveEl.innerHTML = liveStatusHTML(id);
+  // อัปเดตบรรทัดตีคืนน้ำคาปู
+  const creditEl = document.getElementById('credit_' + id);
+  if (creditEl) {
+    const creditSmall = (rawInputs[id] || {}).creditSmall || 0;
+    const mat = materialById(id);
+    if (creditSmall && mat) {
+      creditEl.textContent = '🔄 ตีคืนน้ำคาปู ' + (creditSmall > 0 ? '+' : '') + fmtNum(creditSmall) + ' ' + mat.smallUnit;
+      creditEl.classList.remove('hidden');
+    } else {
+      creditEl.classList.add('hidden');
+    }
+  }
 }
 
 // คำนวณใหม่ + อัปเดต UI (ไม่ยิง save) — ใช้ตอนโหลดข้อมูลจาก DB
@@ -1688,7 +1701,7 @@ function recomputeMaterialLocal(id){
   } else {
     const received = parseFloat(ri.received) || 0;
     const actualBig = evalExpr(ri.actualBig);
-    const actualSmall = mat.noFraction ? 0 : (evalExpr(ri.actualSmall));
+    const actualSmall = mat.noFraction ? 0 : (evalExpr(ri.actualSmall) + (ri.creditSmall || 0));
     const note = ri.note || '';
     const posSale = parseFloat(ri.posSale) || 0;
     records[id] = computeRecord(mat, { received, actualBig, actualSmall, posSale, note });
@@ -1776,17 +1789,8 @@ function adjustMaterialRemaining(matId, deltaSmallUnits){
   const mat = materialById(matId);
   if (!mat || !deltaSmallUnits) return;
   if (!rawInputs[matId]) rawInputs[matId] = {};
-  const ri = rawInputs[matId];
-  let small = (evalExpr(ri.actualSmall)) + deltaSmallUnits;
-  let big = evalExpr(ri.actualBig);
-  if (mat.ratio > 0) {
-    while (small >= mat.ratio) { small -= mat.ratio; big += 1; }
-    while (small < 0 && big > 0) { small += mat.ratio; big -= 1; }
-  }
-  ri.actualBig = String(big);
-  ri.actualSmall = String(Math.round(small * 100) / 100);
-  syncCardInputDOM(matId, 'actualBig', ri.actualBig);
-  syncCardInputDOM(matId, 'actualSmall', ri.actualSmall);
+  // สะสม credit แยกจากยอดที่พนักงานกรอก เพื่อไม่ให้ทับกัน
+  rawInputs[matId].creditSmall = Math.round(((rawInputs[matId].creditSmall || 0) + deltaSmallUnits) * 10000) / 10000;
   recomputeMaterial(matId);
 }
 
@@ -3386,7 +3390,7 @@ async function savePastDailyCount(matId){
         branch, count_date: date, material_id: matId,
         received: parseFloat(ri.received) || 0,
         actual_big: evalExpr(ri.actualBig),
-        actual_small: evalExpr(ri.actualSmall),
+        actual_small: evalExpr(ri.actualSmall) + (ri.creditSmall || 0),
         pos_sale: parseFloat(ri.posSale) || 0,
         note: (ri.note || '') + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + (ri.actualBig||'') + '|' + (ri.actualSmall||'') : ''),
         updated_at: new Date().toISOString(),

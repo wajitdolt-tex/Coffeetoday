@@ -443,11 +443,17 @@
 
       <!-- วัตถุดิบที่เคลื่อนไหวบ่อย -->
       <section class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2.5">
-          <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">1</span>
-          <h2 class="font-heading font-semibold text-slate-900">วัตถุดิบที่เคลื่อนไหวบ่อย <span class="text-slate-400 font-normal text-sm">(นับทุกวัน)</span></h2>
-        </div>
-        <div id="fastMovingWrap" class="p-4 space-y-4"></div>
+        <details id="fastMovingDetails" open>
+          <summary class="px-5 py-3.5 flex items-center justify-between hover:bg-slate-50 transition cursor-pointer list-none">
+            <span class="font-heading font-semibold text-slate-900 flex items-center gap-2.5">
+              <svg class="chevron w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
+              <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">1</span>
+              วัตถุดิบที่เคลื่อนไหวบ่อย <span class="text-slate-400 font-normal text-sm ml-1">(นับทุกวัน)</span>
+            </span>
+            <span class="text-slate-400 text-[11px]">แตะเพื่อเปิด/ปิด</span>
+          </summary>
+          <div id="fastMovingWrap" class="p-4 space-y-4 border-t border-slate-100"></div>
+        </details>
       </section>
 
       <!-- รายการที่ไม่ค่อยเคลื่อนไหว -->
@@ -863,6 +869,34 @@ const RECIPES = [
   RCP('vegan_latte_22','ลาเตเจ','22oz','เมนูเจ', [ing('vitamilk',4,'g')]),
   RCP('vegan_greenmilktea_22','ชาเขียวนมเจ','22oz','เมนูเจ', [ing('vitamilk',4,'g')]),
   RCP('vegan_thaitea_22','ชาไทยเจ','22oz','เมนูเจ', [ing('vitamilk',4,'g')]),
+
+  // ---------- แอดเพิ่ม (Add-ons) ----------
+  // Add Shot กาแฟ (10g ต่อ 1 shot)
+  RCP('addshot_td1','Add Shot กาแฟ TD1','','แอดเพิ่ม',[ing('td1',10,'g')]),
+  RCP('addshot_td2','Add Shot กาแฟ TD2','','แอดเพิ่ม',[ing('td2',10,'g')]),
+  RCP('addshot_td3','Add Shot กาแฟ TD3','','แอดเพิ่ม',[ing('td3',10,'g')]),
+  RCP('addshot_td4','Add Shot กาแฟ TD4','','แอดเพิ่ม',[ing('td4',10,'g')]),
+  // Add Shot ชา (10g ต่อ 1 shot)
+  RCP('addshot_naturalgreentea','Add Shot ชาเขียวธรรมชาติ','','แอดเพิ่ม',[ing('naturalgreentea',10,'g')]),
+  RCP('addshot_greenmilktea','Add Shot ชาเขียวนม','','แอดเพิ่ม',[ing('greenmilktea',10,'g')]),
+  RCP('addshot_thaitea','Add Shot ชาไทย','','แอดเพิ่ม',[ing('thaitea',10,'g')]),
+  // วิปครีม
+  RCP('add_whipcream','วิปครีม','','แอดเพิ่ม',[ing('whipcream500',10,'g')]),
+  RCP('add_caramelwhip','คาราเมล วิปครีม','','แอดเพิ่ม',[ing('whipcream500',10,'g'),ing('syrupcaramel',0.5,'g')]),
+  // ท็อปปิ้ง
+  RCP('add_chaokuay','เพิ่มเฉากัวย','','แอดเพิ่ม',[ing('chaokuay',60,'g')]),
+  RCP('add_buk','เพิ่มเม็ดบุก','','แอดเพิ่ม',[ing('buk',60,'g')]),
+  RCP('add_sakura','ชากุระคริสตัล','','แอดเพิ่ม',[ing('sakura',60,'g')]),
+  RCP('add_freshlime','ผลมะนาว 1 ลูก','','แอดเพิ่ม',[ing('freshlime',1,'g')]),
+  // นม (หน่วย oz → ระบบแปลงอัตโนมัติ)
+  RCP('add_vitamilk2oz','Add นมเมจิ 2 ออนซ์','','แอดเพิ่ม',[ing('vitamilk',2,'g')]),
+  RCP('add_condensedmilk','เพิ่มนมข้นหวาน','','แอดเพิ่ม',[ing('condensedmilk',0.5,'g')]),
+  RCP('add_evapmilk','Add นมข้นจืด','','แอดเพิ่ม',[ing('evapmilk',1,'g')]),
+  // ไซรัป (1 oz = 30ml → ระบบแปลงอัตโนมัติ)
+  RCP('add_brownsugar','Add ไซรัปบราวน์ชูก้า','','แอดเพิ่ม',[ing('syrupbrownsugar',1,'g')]),
+  RCP('add_honey','Add น้ำผึ้ง','','แอดเพิ่ม',[ing('syruphoney',1,'g')]),
+  // ถุง
+  RCP('add_thbag','Add ถุง TH','','แอดเพิ่ม',[ing('thbagsingle',1,'g')]),
 ];
 
 /* ===========================================================

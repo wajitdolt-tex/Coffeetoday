@@ -571,7 +571,7 @@ const MATERIALS = [
   // นมและของเหลว
   FR('milk','นมสด','นมและของเหลว','ลัง','ออนซ์',400,216.67,'กล่อง',33.33),
   FR('condensedmilk','นมข้นหวาน','นมและของเหลว','ลัง','ออนซ์',608,608,'กระป๋อง',12.67),
-  FR('evapmilk','นมจืด','นมและของเหลว','ลัง','ออนซ์',656,656,'กระป๋อง',13.67),
+  FR('evapmilk','นมจืด','นมและของเหลว','ลัง','ออนซ์',672,672,'กระป๋อง',14),
   NF('yogurt','โยเกิร์ต','นมและของเหลว','ถ้วย',24),
 
   // บรรจุภัณฑ์แก้ว/ฝา
@@ -1683,7 +1683,9 @@ function updateCardLive(id){
     const creditSmall = (rawInputs[id] || {}).creditSmall || 0;
     const mat = materialById(id);
     if (creditSmall && mat) {
-      creditEl.textContent = '🔄 ตีคืนน้ำคาปู ' + (creditSmall > 0 ? '+' : '') + fmtNum(creditSmall) + ' ' + mat.smallUnit;
+      let creditTxt = '🔄 ตีคืนน้ำคาปู ' + (creditSmall > 0 ? '+' : '') + fmtNum(creditSmall) + ' ' + mat.smallUnit;
+      if (mat.subUnit && mat.subRatio) creditTxt += ' (≈ ' + fmtNum(Math.abs(creditSmall) / mat.subRatio) + ' ' + mat.subUnit + ')';
+      creditEl.textContent = creditTxt;
       creditEl.classList.remove('hidden');
     } else {
       creditEl.classList.add('hidden');

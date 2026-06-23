@@ -2705,31 +2705,60 @@ var IZ_MENU=[];
 var IZ_MENU_TITLE='\u0E40\u0E21\u0E19\u0E39\u0E02\u0E2D\u0E07\u0E23\u0E49\u0E32\u0E19';
 var FORTUNES={
   cheer:[
-    {t:'\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49\u0E40\u0E2B\u0E19\u0E37\u0E48\u0E2D\u0E22\u0E41\u0E04\u0E48\u0E44\u0E2B\u0E19\n\u0E1E\u0E23\u0E38\u0E48\u0E07\u0E19\u0E35\u0E49\u0E22\u0E31\u0E07\u0E21\u0E35\u0E43\u0E2B\u0E49\u0E44\u0E14\u0E49\u0E25\u0E2D\u0E07',s:'',a:''},
-    {t:'\u0E44\u0E21\u0E48\u0E15\u0E49\u0E2D\u0E07\u0E40\u0E01\u0E48\u0E07\u0E17\u0E38\u0E01\u0E27\u0E31\u0E19\n\u0E27\u0E31\u0E19\u0E44\u0E2B\u0E19\u0E2D\u0E22\u0E39\u0E48\u0E23\u0E2D\u0E14\u0E44\u0E14\u0E49\u0E01\u0E47\u0E19\u0E31\u0E1A\u0E27\u0E48\u0E32\u0E0A\u0E19\u0E30\u0E41\u0E25\u0E49\u0E27',s:'',a:''},
-    {t:'\u0E43\u0E08\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13\u0E1C\u0E48\u0E32\u0E19\u0E21\u0E32\u0E2B\u0E25\u0E32\u0E22\u0E27\u0E31\u0E19\u0E17\u0E35\u0E48\u0E2B\u0E19\u0E31\u0E01\n\u0E41\u0E25\u0E49\u0E27\u0E01\u0E47\u0E22\u0E31\u0E07\u0E21\u0E32\u0E16\u0E36\u0E07\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49\u0E44\u0E14\u0E49',s:'',a:''},
-    {t:'\u0E1A\u0E32\u0E07\u0E17\u0E35\u0E01\u0E32\u0E23\u0E1E\u0E31\u0E01\u0E01\u0E47\u0E04\u0E37\u0E2D\u0E01\u0E32\u0E23\u0E01\u0E49\u0E32\u0E27\u0E2B\u0E19\u0E49\u0E32',s:'',a:''},
-    {t:'\u0E14\u0E2D\u0E01\u0E44\u0E21\u0E49\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E41\u0E02\u0E48\u0E07\u0E01\u0E31\u0E19\n\u0E17\u0E38\u0E01\u0E14\u0E2D\u0E01\u0E1A\u0E32\u0E19\u0E43\u0E19\u0E40\u0E27\u0E25\u0E32\u0E02\u0E2D\u0E07\u0E15\u0E31\u0E27\u0E40\u0E2D\u0E07',s:'',a:''},
-    {t:'\u0E44\u0E21\u0E48\u0E40\u0E1B\u0E47\u0E19\u0E44\u0E23 \u0E43\u0E2B\u0E49\u0E40\u0E27\u0E25\u0E32\u0E15\u0E31\u0E27\u0E40\u0E2D\u0E07\u0E1A\u0E49\u0E32\u0E07',s:'',a:''}
+    {t:'วันนี้เหนื่อยแค่ไหน\nพรุ่งนี้ยังมีให้ได้ลอง',s:'',a:''},
+    {t:'ไม่ต้องเก่งทุกวัน\nวันไหนอยู่รอดได้ก็นับว่าชนะแล้ว',s:'',a:''},
+    {t:'ใจของคุณผ่านมาหลายวันที่หนัก\nแล้วก็ยังมาถึงวันนี้ได้',s:'',a:''},
+    {t:'บางทีการพักก็คือการก้าวหน้า',s:'',a:''},
+    {t:'ดอกไม้ไม่ได้แข่งกัน\nทุกดอกบานในเวลาของตัวเอง',s:'',a:''},
+    {t:'ไม่เป็นไร ให้เวลาตัวเองบ้าง',s:'',a:''},
+    {t:'คุณไม่ต้องสมบูรณ์\nแค่จริงใจกับตัวเองก็พอ',s:'',a:''},
+    {t:'วันที่ยากที่สุด\nมักสอนอะไรบางอย่างที่วันดีๆ ไม่เคยสอน',s:'',a:''},
+    {t:'หายใจลึกๆ\nบางอย่างแก้ได้พรุ่งนี้',s:'',a:''},
+    {t:'เมื่อคืนคุณนอนหลับและตื่นขึ้นมา\nนั่นก็คือความแข็งแกร่งแบบหนึ่งแล้ว',s:'',a:''},
+    {t:'ทุกคนมีวันที่รู้สึกว่าตัวเองน้อยเกินไป\nแต่คุณไม่ใช่ความรู้สึกนั้น',s:'',a:''},
+    {t:'ให้ตัวเองเป็นเพื่อนที่ดี\nเหมือนที่คุณเป็นให้คนอื่น',s:'',a:''}
   ],
   quote:[
-    {t:'\u0E04\u0E27\u0E32\u0E21\u0E40\u0E1B\u0E23\u0E32\u0E30\u0E1A\u0E32\u0E07\u0E44\u0E21\u0E48\u0E43\u0E0A\u0E48\u0E08\u0E38\u0E14\u0E2D\u0E48\u0E2D\u0E19\n\u0E21\u0E31\u0E19\u0E04\u0E37\u0E2D\u0E04\u0E27\u0E32\u0E21\u0E01\u0E25\u0E49\u0E32\u0E17\u0E35\u0E48\u0E41\u0E17\u0E49\u0E08\u0E23\u0E34\u0E07',s:'Brene Brown',a:'Daring Greatly, 2012'},
-    {t:'\u0E1C\u0E39\u0E49\u0E17\u0E35\u0E48\u0E21\u0E35\u0E40\u0E2B\u0E15\u0E38\u0E1C\u0E25\u0E43\u0E19\u0E01\u0E32\u0E23\u0E21\u0E35\u0E0A\u0E35\u0E27\u0E34\u0E15\n\u0E08\u0E30\u0E17\u0E19\u0E15\u0E48\u0E2D\u0E04\u0E27\u0E32\u0E21\u0E17\u0E38\u0E01\u0E02\u0E4C\u0E44\u0E14\u0E49\u0E41\u0E17\u0E1A\u0E17\u0E38\u0E01\u0E23\u0E39\u0E1B\u0E41\u0E1A\u0E1A',s:'Viktor Frankl',a:'Man\'s Search for Meaning, 1946'},
-    {t:'\u0E0A\u0E35\u0E27\u0E34\u0E15\u0E2A\u0E21\u0E1A\u0E39\u0E23\u0E13\u0E4C\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14\u0E40\u0E21\u0E37\u0E48\u0E2D\u0E40\u0E23\u0E32\u0E40\u0E1B\u0E47\u0E19\u0E15\u0E31\u0E27\u0E40\u0E2D\u0E07',s:'Carl Rogers',a:'On Becoming a Person, 1961'},
-    {t:'\u0E40\u0E23\u0E32\u0E17\u0E19\u0E17\u0E38\u0E01\u0E02\u0E4C\u0E44\u0E21\u0E48\u0E43\u0E0A\u0E48\u0E40\u0E1E\u0E23\u0E32\u0E30\u0E40\u0E2B\u0E15\u0E38\u0E01\u0E32\u0E23\u0E13\u0E4C\n\u0E41\u0E15\u0E48\u0E40\u0E1E\u0E23\u0E32\u0E30\u0E04\u0E27\u0E32\u0E21\u0E04\u0E34\u0E14\u0E17\u0E35\u0E48\u0E40\u0E23\u0E32\u0E21\u0E35',s:'Epictetus',a:'Enchiridion'},
-    {t:'\u0E15\u0E31\u0E27\u0E15\u0E19\u0E41\u0E17\u0E49\u0E08\u0E23\u0E34\u0E07\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E2D\u0E22\u0E39\u0E48\u0E43\u0E19 ego\n\u0E41\u0E15\u0E48\u0E2D\u0E22\u0E39\u0E48\u0E43\u0E19\u0E1E\u0E37\u0E49\u0E19\u0E17\u0E35\u0E48\u0E17\u0E35\u0E48\u0E40\u0E07\u0E35\u0E22\u0E1A\u0E01\u0E27\u0E48\u0E32\u0E19\u0E31\u0E49\u0E19',s:'Carl Jung',a:'The Undiscovered Self, 1957'}
+    {t:'ความเปราะบางไม่ใช่จุดอ่อน\nมันคือความกล้าที่แท้จริง',s:'Brené Brown',a:'Daring Greatly, 2012'},
+    {t:'ผู้ที่มีเหตุผลในการมีชีวิต\nจะทนต่อความทุกข์ได้แทบทุกรูปแบบ',s:'Viktor Frankl',a:'Man\'s Search for Meaning, 1946'},
+    {t:'ชีวิตสมบูรณ์ที่สุดเมื่อเราเป็นตัวเอง',s:'Carl Rogers',a:'On Becoming a Person, 1961'},
+    {t:'เราทนทุกข์ไม่ใช่เพราะเหตุการณ์\nแต่เพราะความคิดที่เรามี',s:'Epictetus',a:'Enchiridion'},
+    {t:'ตัวตนแท้จริงของคุณไม่ได้อยู่ใน ego\nแต่อยู่ในพื้นที่ที่เงียบกว่านั้น',s:'Carl Jung',a:'The Undiscovered Self, 1957'},
+    {t:'การยอมรับตัวเองไม่ใช่การยอมแพ้\nมันคือจุดเริ่มต้นของการเปลี่ยนแปลง',s:'Tara Brach',a:'Radical Acceptance, 2003'},
+    {t:'ความรู้สึกเป็นข้อมูล ไม่ใช่คำสั่ง',s:'Susan David',a:'Emotional Agility, 2016'},
+    {t:'การรู้จักตัวเองคือจุดเริ่มต้นของปัญญาทั้งปวง',s:'Aristotle',a:'Nicomachean Ethics'},
+    {t:'คนที่มองเข้าข้างใน ตื่น\nคนที่มองออกข้างนอก ฝัน',s:'Carl Jung',a:''},
+    {t:'ไม่มีใครสามารถทำให้คุณรู้สึกด้อยกว่า\nโดยที่คุณไม่ยินยอม',s:'Eleanor Roosevelt',a:''},
+    {t:'ชีวิตคือสิ่งที่เกิดขึ้น\nขณะที่คุณวางแผนอย่างอื่น',s:'John Lennon',a:''},
+    {t:'เราไม่ได้เห็นโลกตามที่มันเป็น\nเราเห็นโลกตามที่เราเป็น',s:'Anaïs Nin',a:''}
   ],
   poem:[
-    {t:'\u0E1D\u0E19\u0E17\u0E35\u0E48\u0E15\u0E01\u0E17\u0E38\u0E01\u0E27\u0E31\u0E19\n\u0E2A\u0E31\u0E01\u0E27\u0E31\u0E19\u0E01\u0E47\u0E15\u0E49\u0E2D\u0E07\u0E2B\u0E22\u0E38\u0E14\n\u0E2B\u0E31\u0E27\u0E43\u0E08\u0E17\u0E35\u0E48\u0E40\u0E08\u0E47\u0E1A\u0E1B\u0E27\u0E14\n\u0E2A\u0E31\u0E01\u0E27\u0E31\u0E19\u0E01\u0E47\u0E15\u0E49\u0E2D\u0E07\u0E2B\u0E32\u0E22',s:'',a:''},
-    {t:'\u0E17\u0E30\u0E40\u0E25\u0E17\u0E35\u0E48\u0E42\u0E01\u0E23\u0E18\u0E08\u0E31\u0E14\n\u0E01\u0E47\u0E22\u0E31\u0E07\u0E21\u0E35\u0E01\u0E49\u0E19\u0E17\u0E35\u0E48\u0E2A\u0E07\u0E1A\n\u0E2B\u0E31\u0E27\u0E43\u0E08\u0E17\u0E35\u0E48\u0E23\u0E49\u0E2D\u0E19\u0E23\u0E19\n\u0E01\u0E47\u0E22\u0E31\u0E07\u0E21\u0E35\u0E2A\u0E48\u0E27\u0E19\u0E17\u0E35\u0E48\u0E40\u0E22\u0E47\u0E19',s:'',a:''},
-    {t:'\u0E40\u0E21\u0E25\u0E47\u0E14\u0E1E\u0E31\u0E19\u0E18\u0E38\u0E4C\u0E44\u0E21\u0E48\u0E23\u0E39\u0E49\u0E27\u0E48\u0E32\n\u0E15\u0E31\u0E27\u0E40\u0E2D\u0E07\u0E08\u0E30\u0E01\u0E25\u0E32\u0E22\u0E40\u0E1B\u0E47\u0E19\u0E15\u0E49\u0E19\u0E44\u0E21\u0E49\n\u0E41\u0E15\u0E48\u0E21\u0E31\u0E19\u0E01\u0E47\u0E07\u0E2D\u0E01\u0E07\u0E32\u0E21\u0E2D\u0E22\u0E39\u0E48\u0E14\u0E35',s:'',a:''},
-    {t:'Do not go gentle\ninto that good night',s:'Dylan Thomas',a:'1951'}
+    {t:'ฝนที่ตกทุกวัน\nสักวันก็ต้องหยุด\nหัวใจที่เจ็บปวด\nสักวันก็ต้องหาย',s:'',a:''},
+    {t:'ทะเลที่โกรธจัด\nก็ยังมีก้นที่สงบ\nหัวใจที่ร้อนรน\nก็ยังมีส่วนที่เย็น',s:'',a:''},
+    {t:'เมล็ดพันธุ์ไม่รู้ว่า\nตัวเองจะกลายเป็นต้นไม้\nแต่มันก็งอกงามอยู่ดี',s:'',a:''},
+    {t:'คืนที่มืดที่สุด\nยังมีดาวซ่อนอยู่\nแค่เมฆบดบังไว้\nดาวก็ยังอยู่เสมอ',s:'',a:''},
+    {t:'แม่น้ำไม่ได้วิ่ง\nมันแค่ไหล\nเราก็เป็นได้\nแบบนั้นบ้าง',s:'',a:''},
+    {t:'ใบไม้ที่ร่วงหล่น\nไม่ใช่ความพ่ายแพ้\nมันคือการพักใหญ่\nก่อนจะผลิใบใหม่',s:'',a:''},
+    {t:'ความเงียบก็มีภาษา\nที่ใจเข้าใจได้\nโดยไม่ต้องแปล',s:'',a:''},
+    {t:'วันที่เรารู้สึกน้อยที่สุด\nบางทีก็คือวันที่เราได้ยินตัวเองมากที่สุด',s:'',a:''},
+    {t:'Do not go gentle\ninto that good night',s:'Dylan Thomas',a:'1951'},
+    {t:'หัวใจไม่ได้แตกสลาย\nมันแค่เปิดกว้างขึ้น\nเพื่อรับอะไรบางอย่าง\nที่ใหญ่กว่าเดิม',s:'',a:''},
+    {t:'ฉันไม่ได้หายไปไหน\nแค่กำลังนั่งอยู่\nในส่วนที่เงียบที่สุด\nของตัวเอง',s:'',a:''},
+    {t:'บางวันก็แค่อยู่\nโดยไม่ต้องเป็นอะไร\nนั่นก็เพียงพอแล้ว',s:'',a:''}
   ],
   food:[
-    {t:'\u0E23\u0E32\u0E40\u0E21\u0E07\u0E23\u0E49\u0E2D\u0E19\u0E46 \u0E22\u0E32\u0E21\u0E40\u0E22\u0E47\u0E19\n\u0E1A\u0E32\u0E07\u0E17\u0E35\u0E04\u0E27\u0E32\u0E21\u0E2D\u0E1A\u0E2D\u0E38\u0E48\u0E19\u0E01\u0E47\u0E21\u0E32\u0E43\u0E19\u0E0A\u0E32\u0E21\u0E40\u0E14\u0E35\u0E22\u0E27',s:'',a:''},
-    {t:'\u0E01\u0E32\u0E41\u0E1F\u0E16\u0E49\u0E27\u0E22\u0E41\u0E23\u0E01\u0E15\u0E2D\u0E19\u0E40\u0E0A\u0E49\u0E32\n\u0E01\u0E48\u0E2D\u0E19\u0E42\u0E25\u0E01\u0E08\u0E30\u0E27\u0E38\u0E48\u0E19\u0E27\u0E32\u0E22\n\u0E40\u0E1B\u0E47\u0E19\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13\u0E04\u0E19\u0E40\u0E14\u0E35\u0E22\u0E27\u0E2A\u0E31\u0E01\u0E04\u0E23\u0E39\u0E48',s:'',a:''},
-    {t:'\u0E40\u0E04\u0E49\u0E01\u0E0A\u0E34\u0E49\u0E19\u0E40\u0E25\u0E47\u0E01\u0E46 \u0E43\u0E19\u0E27\u0E31\u0E19\u0E18\u0E23\u0E23\u0E21\u0E14\u0E32\n\u0E04\u0E27\u0E32\u0E21\u0E2A\u0E38\u0E02\u0E44\u0E21\u0E48\u0E15\u0E49\u0E2D\u0E07\u0E23\u0E2D\u0E42\u0E2D\u0E01\u0E32\u0E2A\u0E1E\u0E34\u0E40\u0E28\u0E29',s:'',a:''},
-    {t:'\u0E0A\u0E32\u0E19\u0E21\u0E44\u0E02\u0E48\u0E21\u0E38\u0E01\n\u0E2B\u0E27\u0E32\u0E19 \u0E2B\u0E19\u0E31\u0E01 \u0E40\u0E15\u0E47\u0E21\u0E1B\u0E32\u0E01\n\u0E1A\u0E32\u0E07\u0E27\u0E31\u0E19\u0E01\u0E47\u0E15\u0E49\u0E2D\u0E07\u0E43\u0E2B\u0E49\u0E23\u0E32\u0E07\u0E27\u0E31\u0E25\u0E15\u0E31\u0E27\u0E40\u0E2D\u0E07',s:'',a:''}
+    {t:'ราเมงร้อนๆ ยามเย็น\nบางทีความอบอุ่นก็มาในชามเดียว',s:'',a:''},
+    {t:'กาแฟถ้วยแรกตอนเช้า\nก่อนโลกจะวุ่นวาย\nเป็นของคุณคนเดียวสักครู่',s:'',a:''},
+    {t:'เค้กชิ้นเล็กๆ ในวันธรรมดา\nความสุขไม่ต้องรอโอกาสพิเศษ',s:'',a:''},
+    {t:'ชานมไข่มุก\nหวาน หนัก เต็มปาก\nบางวันก็ต้องให้รางวัลตัวเอง',s:'',a:''},
+    {t:'ข้าวต้มกลางดึก\nเรียบง่าย อุ่น เพียงพอ\nบางครั้งนั่นคือทุกอย่าง',s:'',a:''},
+    {t:'ช็อกโกแลตละลายบนลิ้น\nช้าๆ ก็มีความสุขแบบหนึ่ง',s:'',a:''},
+    {t:'โซบะเย็นยามร้อน\nบางทีความเรียบง่าย\nคือสิ่งที่ดีที่สุด',s:'',a:''},
+    {t:'ขนมปังปิ้งเนยกรอบๆ\nกลิ่นหอม เสียงกรอบ\nช่วงเวลาเล็กๆ ที่รักได้',s:'',a:''},
+    {t:'น้ำมะพร้าวเย็น\nหลังวันที่เหนื่อย\nธรรมชาติมีของขวัญ\nให้เราเสมอ',s:'',a:''},
+    {t:'ส้มตำจานโปรด\nรสชาติที่ทำให้รู้สึกว่า\nทุกอย่างเป็นปกติดี',s:'',a:''},
+    {t:'ซุปร้อนๆ วันฝนตก\nมีบางอย่างที่ปลอบใจได้\nโดยไม่ต้องพูดอะไร',s:'',a:''},
+    {t:'ไอศกรีมโคนสักคัน\nบางทีความเด็กก็จำเป็น',s:'',a:''}
   ]
 };
 var FORTUNE_TYPE_LABELS={
@@ -2740,7 +2769,27 @@ var FORTUNE_TYPE_LABELS={
 };
 function setFortuneType(t,btn){FORTUNE_TYPE=t;document.querySelectorAll('.ft-btn').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');showFortuneIdle();}
 function showFortuneIdle(){var lbl=FORTUNE_TYPE_LABELS[FORTUNE_TYPE];document.getElementById('fortune-type-lbl').textContent=lbl.e+' '+lbl.n;document.getElementById('fortune-text').textContent='\u0E01\u0E14\u0E2B\u0E21\u0E38\u0E19\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E23\u0E31\u0E1A\u0E02\u0E49\u0E2D\u0E04\u0E27\u0E32\u0E21 \u2726';document.getElementById('fortune-attr').textContent='';}
-function spinFortune(){var btn=document.getElementById('fortune-spin');var card=document.getElementById('fortune-card');btn.disabled=true;card.classList.add('spinning');var pool=FORTUNES[FORTUNE_TYPE]||FORTUNES.cheer;var item=pool[Math.floor(Math.random()*pool.length)];var lbl=FORTUNE_TYPE_LABELS[FORTUNE_TYPE];ST_FORTUNE={item:item,type:FORTUNE_TYPE};setTimeout(function(){card.classList.remove('spinning');document.getElementById('fortune-type-lbl').textContent=lbl.e+' '+lbl.n;document.getElementById('fortune-text').textContent=item.t;document.getElementById('fortune-attr').textContent=(item.s?'\u2014 '+item.s:'')+(item.a?' \u00B7 '+item.a:'');btn.disabled=false;openFCard(item,FORTUNE_TYPE);},380);}
+function spinFortune(){
+  var btn=document.getElementById('fortune-spin');
+  var card=document.getElementById('fortune-card');
+  btn.disabled=true;card.classList.add('spinning');
+  var pool=FORTUNES[FORTUNE_TYPE]||FORTUNES.cheer;
+  /* avoid repeat: pick differently if pool > 1 */
+  var lastT=ST_FORTUNE&&ST_FORTUNE.type===FORTUNE_TYPE?ST_FORTUNE.item.t:'';
+  var tries=0,item;
+  do{ item=pool[Math.floor(Math.random()*pool.length)]; tries++; }
+  while(item.t===lastT&&pool.length>1&&tries<10);
+  var lbl=FORTUNE_TYPE_LABELS[FORTUNE_TYPE];
+  ST_FORTUNE={item:item,type:FORTUNE_TYPE};
+  setTimeout(function(){
+    card.classList.remove('spinning');
+    document.getElementById('fortune-type-lbl').textContent=lbl.e+' '+lbl.n;
+    document.getElementById('fortune-text').textContent=item.t;
+    document.getElementById('fortune-attr').textContent=(item.s?'\u2014 '+item.s:'')+(item.a?' \u00B7 '+item.a:'');
+    btn.disabled=false;
+    openFCard(item,FORTUNE_TYPE);
+  },380);
+}
 function openFCard(item,type){if(!item)return;var lbl=FORTUNE_TYPE_LABELS[type];var fc=document.getElementById('fcard');fc.className='fcard t-'+type;document.getElementById('fcard-type-badge').textContent=lbl.e+' '+lbl.n;document.getElementById('fcard-text').textContent=item.t;document.getElementById('fcard-source').textContent=item.s?'\u2014 '+item.s:'';document.getElementById('fcard-ref').textContent=item.a||'';document.getElementById('fcard-overlay').classList.add('show');}
 function closeFCard(){document.getElementById('fcard-overlay').classList.remove('show');}
 function spinFromCard(){closeFCard();setTimeout(spinFortune,200);}

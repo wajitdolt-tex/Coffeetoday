@@ -2783,6 +2783,13 @@ function quickLogPick(id){var em=EMOTIONS.filter(function(e){return e.id===id;})
 function deleteEntry(id){if(!confirm('\u0E25\u0E1A\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01\u0E19\u0E35\u0E49?'))return;var idx=-1;for(var i=0;i<ST.hist.length;i++){if(ST.hist[i].id===id){idx=i;break;}}if(idx<0)return;ST.hist.splice(idx,1);recalcDisc();save();hud();toast('\u0E25\u0E1A\u0E41\u0E25\u0E49\u0E27');if(ST.calView==='timeline')renderTimeline();else renderCal();}
 function recalcDisc(){var d={};ST.hist.forEach(function(h){d[h.emotionId]=(d[h.emotionId]||0)+1;});ST.disc=d;}
 function editEntry(id){var h=null;for(var i=0;i<ST.hist.length;i++){if(ST.hist[i].id===id){h=ST.hist[i];break;}}if(!h)return;var nv=prompt('\u0E41\u0E01\u0E49\u0E44\u0E02\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01:',h.text||'');if(nv===null)return;h.text=nv.trim();save();if(ST.calView==='timeline')renderTimeline();else renderCal();toast('\u0E41\u0E01\u0E49\u0E44\u0E02\u0E41\u0E25\u0E49\u0E27 \u2726');}
+function showOnboard(){
+  closeSettings();
+  var ob=document.getElementById('onboard');
+  ob.style.display='';
+  ob.classList.remove('hidden');
+}
+
 function exportData(){var data={v:1,exported:new Date().toISOString(),disc:ST.disc,xp:ST.xp,hist:ST.hist};var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='emotia-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(url);},1000);toast('\u0E2A\u0E33\u0E23\u0E2D\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E41\u0E25\u0E49\u0E27 \u2726');}
 function importData(){document.getElementById('import-file').value='';document.getElementById('import-file').click();}
 function handleImport(ev){var file=ev.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(e){try{var data=JSON.parse(e.target.result);if(!data.hist||!Array.isArray(data.hist))throw new Error('\u0E44\u0E1F\u0E25\u0E4C\u0E44\u0E21\u0E48\u0E16\u0E39\u0E01\u0E15\u0E49\u0E2D\u0E07');if(!confirm('\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32 '+data.hist.length+' \u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01? (\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E1B\u0E31\u0E08\u0E08\u0E38\u0E1A\u0E31\u0E19\u0E08\u0E30\u0E16\u0E39\u0E01\u0E41\u0E17\u0E19\u0E17\u0E35\u0E48)'))return;ST.hist=data.hist;ST.xp=data.xp||0;ST.disc=data.disc||{};ST.hist.forEach(function(h){if(!h.id)h.id='h'+(h.date||Date.now())+'_'+Math.random().toString(36).slice(2,7);});recalcDisc();save();hud();toast('\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 \u2726');}catch(err){toast('\u0E19\u0E33\u0E40\u0E02\u0E49\u0E32\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49: '+err.message);}};reader.readAsText(file);}
@@ -2853,6 +2860,7 @@ function spinFortuneAI(){if(!aiEnabled()){toast('AI \u0E22\u0E31\u0E07\u0E44\u0E
     <div class="set-row"><div class="set-info"><div class="set-name">🔗 ใช้ Key อื่น</div><div class="set-desc">ดึงข้อมูลจากเครื่องอื่นโดยใส่ key</div></div><button class="set-btn" onclick="importDeviceKey()">ใส่ Key</button></div>
     <div class="set-row"><div class="set-info"><div class="set-name">💾 สำรองข้อมูล</div><div class="set-desc">ดาวน์โหลดบันทึกทั้งหมด</div></div><button class="set-btn" onclick="exportData()">Export</button></div>
     <div class="set-row"><div class="set-info"><div class="set-name">📥 นำเข้าข้อมูล</div><div class="set-desc">กู้คืนจากไฟล์สำรอง</div></div><button class="set-btn" onclick="importData()">Import</button></div>
+    <div class="set-row"><div class="set-info"><div class="set-name">🐱 หน้าต้อนรับ</div><div class="set-desc">ดูหน้าเริ่มต้นอีกครั้ง</div></div><button class="set-btn" onclick="showOnboard()">ดู</button></div>
     <button class="ql-close" onclick="closeSettings()">ปิด</button>
   </div>
 </div>

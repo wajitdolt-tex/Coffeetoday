@@ -950,30 +950,6 @@ const RECIPES = [
   RCP('snack_fruitjelly','เยลลี่ผลไม้','1 ถุง','เบเกอรี่/ขนม',[ing('fruitjelly',1,'g')]),
   RCP('snack_cornflake','คอนเฟรก','1 ถุง','เบเกอรี่/ขนม',[ing('cornflake',1,'g')]),
   RCP('snack_graincracker','แครเกอร์ธัญพืช','1 ถุง','เบเกอรี่/ขนม',[ing('graincracker',1,'g')]),
-
-  // ---------- ชามะนาวน้ำผึ้ง ----------
-  RCP('honeylemon_hot_8','น้ำผึ้งมะนาวร้อน','8oz','ชามะนาวน้ำผึ้ง',[ing('freshlime',1,'g'),ing('syruphoney',1,'g')]),
-  RCP('honeylemon_soda_22','น้ำผึ้งมะนาวโซดาเย็น','22oz','ชามะนาวน้ำผึ้ง',[ing('freshlime',1,'g'),ing('syruphoney',1,'g'),ing('soda',6,'g')]),
-  RCP('honeylemon_blend_22','น้ำผึ้งมะนาวปั่น','22oz','ชามะนาวน้ำผึ้ง',[ing('freshlime',1,'g'),ing('syruphoney',1,'g')]),
-
-  // ---------- เฉาก๊วยนมสด ----------
-  RCP('chaokuay_milk_16','เฉาก๊วยนมสด','16oz','เมนูพิเศษ',[ing('milk',4,'g'),ing('napukasauce',2,'g'),ing('chaokuay',60,'g')]),
-  RCP('chaokuay_milk_22','เฉาก๊วยนมสด','22oz','เมนูพิเศษ',[ing('milk',6,'g'),ing('napukasauce',2,'g'),ing('chaokuay',60,'g')]),
-  RCP('chaokuay_brownsugar_22','เฉาก๊วยนมสดบราวน์ชูการ์','22oz','เมนูพิเศษ',[ing('milk',6,'g'),ing('syrupbrownsugar',1,'g'),ing('chaokuay',60,'g')]),
-
-  // ---------- นมโอ๊ต ----------
-  RCP('matcha_oatmilk_22','มัทฉะลาเต้นมโอ๊ต','22oz','นมโอ๊ต',[ing('matcha',5,'g'),ing('oatmilk',3,'g')]),
-  RCP('greenmilktea_oatmilk_22','ชาเขียวนมโอ๊ต','22oz','นมโอ๊ต',[ing('greenmilktea',20,'g'),ing('oatmilk',3,'g')]),
-  RCP('thaitea_oatmilk_22','ชาไทยนมโอ๊ต','22oz','นมโอ๊ต',[ing('thaitea',20,'g'),ing('oatmilk',3,'g')]),
-  RCP('cocoa_oatmilk_22','โกโก้นมโอ๊ต','22oz','นมโอ๊ต',[ing('cocoapowder',15,'g'),ing('oatmilk',3,'g')]),
-  RCP('coffee_oatmilk_16','กาแฟนมโอ๊ต','16oz','นมโอ๊ต',[ing('td3',18,'g'),ing('oatmilk',3,'g')]),
-
-  // ---------- อเมริกาโน่โซดา ----------
-  RCP('americano_soda_22','อเมริกาโน่โซดา','22oz','กาแฟเย็น',[ing('td1',18,'g'),ing('soda',6,'g')]),
-
-  // ---------- สมูทตี้ผลไม้ ----------
-  RCP('strawberry_smoothie_16','สตรอเบอรี่สมูทตี้','16oz','สมูทตี้และน้ำผลไม้',[ing('strawberryfrozen',100,'g'),ing('syrupstrawberry',1,'g')]),
-  RCP('mixberry_smoothie_16','มิกซ์เบอรี่สมูทตี้','16oz','สมูทตี้และน้ำผลไม้',[ing('mixberryfrozen',100,'g'),ing('syrupstrawberry',1,'g')]),
   // ---------- แอดเพิ่ม (Add-ons) ----------
   // Add Shot กาแฟ (10g ต่อ 1 shot)
   RCP('addshot_td1','Add Shot กาแฟ TD1','','แอดเพิ่ม',[ing('td1',10,'g')]),
@@ -3826,17 +3802,11 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
     if (e.target.closest('#addRecipeDetails > summary')) populateNewRecipeCategory();
   });
 
-  document.getElementById('saveNewRecipeBtn').addEventListener('click', async (ev) => {
-    ev.preventDefault(); ev.stopPropagation();
-    const nameEl = document.getElementById('newRecipeName');
-    const name = nameEl ? nameEl.value.trim() : '';
+  document.getElementById('saveNewRecipeBtn').addEventListener('click', async () => {
+    const name = document.getElementById('newRecipeName').value.trim();
     if (!name) { alert('กรุณาระบุชื่อเมนูก่อน'); return; }
-    const sizeEl = document.getElementById('newRecipeSize');
-    const catEl  = document.getElementById('newRecipeCategory');
-    const size     = sizeEl ? sizeEl.value.trim() : '';
-    const category = (catEl && catEl.value) ? catEl.value : 'เมนูอื่นๆ';
-    const btn = document.getElementById('saveNewRecipeBtn');
-    btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก…';
+    const size = document.getElementById('newRecipeSize').value.trim();
+    const category = document.getElementById('newRecipeCategory').value || 'เมนูอื่นๆ';
     const id = 'custom_' + Date.now();
     const recipe = { id, name, size, category, ingredients: [] };
     RECIPES.push(recipe);
@@ -3845,22 +3815,21 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
       await upsertRecipe(recipe);
       setSyncStatus('online');
       showToast('เพิ่มเมนู "' + name + '" แล้ว ✓ แก้ไขสูตรได้ในรายการด้านล่าง', 'success');
-      if (nameEl) nameEl.value = '';
-      if (sizeEl) sizeEl.value = '';
-      const det = document.getElementById('addRecipeDetails');
-      if (det) det.removeAttribute('open');
-      try { if (recipeEditSearchEl) renderRecipeEditList(recipeEditSearchEl.value || ''); } catch(_){}
-      try { renderFrontMenuChips(); } catch(_){}
-      try { if (frontMenuSearchEl) renderFrontMenuList(frontMenuSearchEl.value || ''); } catch(_){}
-      try { populateCategoryFilter(); } catch(_){}
-      try { refreshCategoryDatalist(); } catch(_){}
+      // Reset form
+      document.getElementById('newRecipeName').value = '';
+      document.getElementById('newRecipeSize').value = '';
+      document.getElementById('addRecipeDetails').removeAttribute('open');
+      // Refresh lists
+      renderRecipeEditList(recipeEditSearchEl.value);
+      renderMenuList(menuSearchEl ? menuSearchEl.value : '');
+      if (frontMenuSearchEl) renderFrontMenuList(frontMenuSearchEl.value);
+      renderFrontMenuChips();
+      populateCategoryFilter();
+      refreshCategoryDatalist();
     } catch(e) {
       console.error('saveNewRecipe failed', e);
-      RECIPES.splice(RECIPES.findIndex(r => r.id === id), 1);
       setSyncStatus('error');
-      showToast('บันทึกไม่สำเร็จ: ' + (e.message || e), 'warn');
-    } finally {
-      btn.disabled = false; btn.textContent = 'บันทึกเมนูใหม่';
+      showToast('บันทึกไม่สำเร็จ', 'warn');
     }
   });
 })();

@@ -500,7 +500,7 @@ tr:hover td{background:var(--bg3);}
 
   <div id="stab-month-content">
     <div class="month-row">
-      <div><label>สาขา</label><select id="s-branch"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
+      <div><label>สาขา</label><select id="s-branch" onchange="loadSummary()"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
       <div><label>เดือน/ปี</label><input type="month" id="s-month"></div>
       <div><button class="btn btn-primary" onclick="loadSummary()"><span id="s-txt">ดึงข้อมูล</span></button></div>
     </div>
@@ -1500,20 +1500,9 @@ function renderPayables() {
 
 async function syncToSheets(type, branch, branchName, items) {
   if (!cfg.gsUrl) return;
-  var payload = { type: type, branch: branch, branchName: branchName, items: items, timestamp: new Date().toISOString() };
-  // ใช้ POST เลี่ยง URL length limit ของ JSONP (payable มี partialPayments ทำให้ payload ใหญ่)
   try {
-    await fetch(cfg.gsUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    });
-  } catch(err) {
-    console.log('sync error (POST)', type, err);
-    // fallback เป็น JSONP ถ้า POST ใช้ไม่ได้
-    try { await gsPost(cfg.gsUrl, payload); } catch(e2) { console.log('sync error (JSONP)', type, e2); }
-  }
+    await gsPost(cfg.gsUrl, { type: type, branch: branch, branchName: branchName, items: items, timestamp: new Date().toISOString() });
+  } catch(err) { console.log('sync error', type, err); }
 }
 
 // ใช้ JSONP (GET+payload) แทน POST no-cors เพื่อให้รู้ว่าสำเร็จจริง

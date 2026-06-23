@@ -873,6 +873,62 @@ body{
 }
 .alpaca-duck:active{transform:scale(0.93);}
 .alpaca-duck.wiggle{animation:charFloat 0.5s ease-in-out;}
+/* ── PETS ── */
+.pets-panel{padding:12px 16px 20px;}
+.pets-intro{font-size:11px;color:var(--dim);text-align:center;margin-bottom:14px;line-height:1.5;}
+.pets-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.pet-card{background:var(--card);border-radius:18px;padding:16px 12px;text-align:center;border:2px solid var(--soft);position:relative;transition:transform 0.15s;}
+.pet-card.unlocked{border-color:var(--coral);box-shadow:0 4px 16px rgba(232,114,90,0.15);}
+.pet-card.locked{opacity:0.55;filter:grayscale(0.4);}
+.pet-card.unlocked:active{transform:scale(0.97);}
+.pet-emoji{font-size:36px;margin-bottom:6px;display:block;}
+.pet-name{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:3px;}
+.pet-cond{font-size:10px;color:var(--dim);line-height:1.4;}
+.pet-badge{position:absolute;top:8px;right:8px;font-size:9px;background:var(--coral);color:white;border-radius:8px;padding:2px 6px;font-weight:700;}
+.pet-locked-icon{position:absolute;top:8px;right:8px;font-size:13px;opacity:0.4;}
+.pet-detail-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:250;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(60,30,10,0.4);}
+.pet-detail-overlay.show{display:flex;}
+.pet-detail-box{background:var(--cream);border-radius:24px;padding:28px 24px;max-width:320px;width:100%;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,0.2);}
+.pd-emoji{font-size:56px;margin-bottom:10px;}
+.pd-name{font-size:20px;font-weight:800;color:var(--ink);margin-bottom:6px;}
+.pd-story{font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:14px;}
+.pd-cond{font-size:11px;color:var(--coral);font-weight:600;margin-bottom:16px;}
+.pd-close{background:var(--coral);color:white;border:none;border-radius:20px;padding:10px 28px;font-size:14px;font-weight:700;cursor:pointer;}
+/* ── WEEKLY SUMMARY ── */
+.week-sum{background:var(--card);border-radius:16px;padding:16px;margin:12px 16px 4px;border:1px solid var(--soft);}
+.ws-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.ws-title{font-size:13px;font-weight:700;color:var(--ink);}
+.ws-btn{background:var(--coral);color:white;border:none;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;}
+.ws-body{font-size:13px;color:var(--ink2);line-height:1.7;white-space:pre-wrap;}
+.ws-body.empty{color:var(--dim);font-style:italic;font-size:12px;}
+
+/* ── EMOTION TREND CHART ── */
+.trend-panel{padding:16px;}
+.trend-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:12px;}
+.trend-svg{width:100%;overflow:visible;}
+.trend-line{fill:none;stroke:var(--coral);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.trend-area{fill:url(#trendGrad);opacity:0.3;}
+.trend-dot{fill:var(--coral);stroke:white;stroke-width:2;}
+.trend-label{font-size:9px;fill:var(--dim);text-anchor:middle;}
+.trend-empty{font-size:12px;color:var(--dim);text-align:center;padding:20px 0;}
+.trend-tabs{display:flex;gap:8px;margin-bottom:12px;}
+.trend-tab{background:var(--soft);border:none;border-radius:16px;padding:5px 12px;font-size:11px;color:var(--ink2);cursor:pointer;}
+.trend-tab.on{background:var(--coral);color:white;font-weight:600;}
+
+/* ── EMOTION PROFILE ── */
+.profile-panel{padding:16px 16px 20px;}
+.profile-card{background:linear-gradient(135deg,var(--peach,#FDEBD0),var(--lavender,#EDE7F6));border-radius:20px;padding:20px;margin-bottom:14px;text-align:center;}
+.profile-type{font-size:22px;font-weight:800;color:var(--coral);font-family:var(--font-d);margin-bottom:6px;}
+.profile-badge{font-size:32px;margin-bottom:8px;}
+.profile-desc{font-size:12px;color:var(--ink2);line-height:1.6;}
+.profile-gen-btn{background:var(--coral);color:white;border:none;border-radius:20px;padding:8px 20px;font-size:12px;font-weight:700;cursor:pointer;margin-top:10px;}
+.profile-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.profile-stat{background:var(--card);border-radius:14px;padding:12px;text-align:center;border:1px solid var(--soft);}
+.ps-val{font-size:20px;font-weight:800;color:var(--coral);}
+.ps-lbl{font-size:10px;color:var(--dim);margin-top:2px;}
+.ps-bar{height:6px;background:var(--soft);border-radius:3px;margin-top:6px;overflow:hidden;}
+.ps-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--coral));}
+
 </style>
 </head>
 <body>
@@ -1001,6 +1057,15 @@ body{
     <div class="recap-body" id="recap-body"></div>
   </div>
 
+  <!-- Weekly AI Summary -->
+  <div class="week-sum" id="week-sum">
+    <div class="ws-head">
+      <span class="ws-title">🗓 อาทิตย์นี้เราเป็นยังไง</span>
+      <button class="ws-btn" onclick="genWeekSummary()">AI สรุป</button>
+    </div>
+    <div class="ws-body empty" id="ws-body">กด "AI สรุป" เพื่อให้ AI วิเคราะห์สัปดาห์นี้</div>
+  </div>
+
   <div class="izakaya-teaser" onclick="goTab('pub')">
     <div class="iz-glow"></div>
     <div class="iz-title">🏮 พูดคุยกับตัวละคร</div>
@@ -1052,6 +1117,7 @@ body{
   <div class="cal-tabs">
     <button class="cal-tab on" id="caltab-month" onclick="setCalView('month')">🗓 ปฏิทิน</button>
     <button class="cal-tab" id="caltab-timeline" onclick="setCalView('timeline')">📜 ไทม์ไลน์</button>
+    <button class="cal-tab" id="caltab-trend" onclick="setCalView('trend')">📈 สถิติ</button>
   </div>
 
   <!-- MONTH VIEW -->
@@ -1077,6 +1143,19 @@ body{
   <div id="cal-timeline-view" style="display:none">
     <div class="timeline-body" id="timeline-body"></div>
   </div>
+
+  <!-- TREND VIEW -->
+  <div id="cal-trend-view" style="display:none">
+    <div class="trend-panel">
+      <div class="trend-tabs">
+        <button class="trend-tab on" id="ttab-30" onclick="setTrendRange(30,this)">30 วัน</button>
+        <button class="trend-tab" id="ttab-90" onclick="setTrendRange(90,this)">90 วัน</button>
+        <button class="trend-tab" id="ttab-all" onclick="setTrendRange(0,this)">ทั้งหมด</button>
+      </div>
+      <div class="trend-title">📈 เส้นทางอารมณ์</div>
+      <div id="trend-chart"></div>
+    </div>
+  </div>
 </div>
 
 <!-- ══ CODEX ══ -->
@@ -1091,8 +1170,25 @@ body{
     <button class="codex-tab t-u" onclick="cxFilter('uncommon',this)">Uncommon</button>
     <button class="codex-tab t-r" onclick="cxFilter('rare',this)">Rare</button>
     <button class="codex-tab t-l" onclick="cxFilter('legendary',this)">Legendary</button>
+    <button class="codex-tab" onclick="cxFilter('profile',this)">🧠 Profile</button>
+    <button class="codex-tab" onclick="cxFilter('pets',this)">🐾 สัตว์เลี้ยง</button>
   </div>
   <div class="codex-grid" id="cx-grid"></div>
+  <!-- Profile panel -->
+  <div class="profile-panel" id="profile-panel" style="display:none">
+    <div class="profile-card" id="profile-card">
+      <div class="profile-badge" id="profile-badge">🌱</div>
+      <div class="profile-type" id="profile-type">ยังไม่มีข้อมูลเพียงพอ</div>
+      <div class="profile-desc" id="profile-desc">บันทึกอารมณ์อย่างน้อย 5 ครั้งเพื่อดู Profile</div>
+      <button class="profile-gen-btn" onclick="genEmotionProfile()">✨ AI วิเคราะห์ Profile</button>
+    </div>
+    <div class="profile-stats" id="profile-stats"></div>
+  </div>
+  <!-- Pets panel -->
+  <div class="pets-panel" id="pets-panel" style="display:none">
+    <div class="pets-intro">สัตว์เลี้ยงจะปลดล็อกเมื่อคุณบันทึกอารมณ์สะสม</div>
+    <div class="pets-grid" id="pets-grid"></div>
+  </div>
 </div>
 
 <!-- Hidden character SVG templates -->
@@ -1431,7 +1527,7 @@ function updateAuthUI(){
   }
 }
 
-/* ── SUPABASE SYNC ── */
+
 function sbFetch(method, path, body, extraHeaders){
   var token=getAuthToken();
   var headers={
@@ -1606,28 +1702,29 @@ function aiCall(payload, cb){
 
 /* ═══════════════ DATA ═══════════════ */
 var EMOTIONS = [
-  {id:'joy',th:'ความสุข',en:'Joy',r:'common',xp:10,e:'\uD83D\uDE0A',d:'ความรู้สึกสว่างไสวที่พุ่งขึ้นมาจากข้างใน เบา โล่ง อยากแบ่งปัน'},
-  {id:'sadness',th:'ความเศร้า',en:'Sadness',r:'common',xp:10,e:'\uD83D\uDE14',d:'ความหนักในอก บางครั้งก็จำเป็น เพื่อให้รู้ว่าอะไรสำคัญ'},
-  {id:'anger',th:'ความโกรธ',en:'Anger',r:'common',xp:10,e:'\uD83D\uDE24',d:'ไฟที่ลุกขึ้นปกป้องสิ่งที่เราเชื่อ พลังงานที่ต้องการทิศทาง'},
-  {id:'fear',th:'ความกลัว',en:'Fear',r:'common',xp:10,e:'\uD83D\uDE28',d:'สัญชาตญาณโบราณที่บอกให้ระวัง หัวใจเต้นแรง ร่างกายตื่นตัว'},
-  {id:'calm',th:'ความสงบ',en:'Calm',r:'common',xp:10,e:'\uD83D\uDE0C',d:'ทะเลที่ราบเรียบ ลมหายใจที่เต็ม ความเงียบที่สบาย'},
-  {id:'love',th:'ความรัก',en:'Love',r:'common',xp:10,e:'\uD83E\uDD70',d:'ความอบอุ่นที่ขยายออก อยากเห็นคนนั้นมีความสุข'},
-  {id:'tired',th:'ความเหนื่อย',en:'Tired',r:'common',xp:10,e:'\uD83D\uDE34',d:'ร่างกายหรือจิตใจที่ขอพัก สัญญาณว่าทุ่มเทมามาก'},
-  {id:'nostalgia',th:'ความคิดถึง',en:'Nostalgia',r:'uncommon',xp:20,e:'\uD83C\uDF05',d:'ยืนมองอดีตด้วยความหวานขม อยากสัมผัสสิ่งที่ผ่านไปแล้ว'},
-  {id:'hope',th:'ความหวัง',en:'Hope',r:'uncommon',xp:20,e:'\uD83C\uDF31',d:'ดอกไม้เล็กๆ ที่งอกในความมืด เชื่อว่าพรุ่งนี้อาจดีกว่า'},
-  {id:'loneliness',th:'ความโดดเดี่ยว',en:'Loneliness',r:'uncommon',xp:20,e:'\uD83C\uDF19',d:'อยู่ในห้องเต็มคน แต่รู้สึกไม่มีใครเห็นเราอย่างที่เราเป็น'},
-  {id:'gratitude',th:'ความกตัญญู',en:'Gratitude',r:'uncommon',xp:20,e:'\uD83D\uDE4F',d:'หัวใจที่รู้ว่าสิ่งดีๆ เกิดขึ้นได้เพราะผู้อื่น'},
-  {id:'melancholy',th:'เมลังโคลี',en:'Melancholy',r:'uncommon',xp:20,e:'\uD83C\uDFAD',d:'ความเศร้าที่มีความงดงาม ไม่ใช่ความเจ็บปวด แต่เป็นบทกวีเงียบๆ'},
-  {id:'awe',th:'ความตะลึง',en:'Awe',r:'rare',xp:30,e:'\uD83C\uDF0C',d:'ยืนต่อหน้าสิ่งที่ใหญ่กว่าตัวเอง แล้วรู้สึกเล็กลงแต่ก็เป็นส่วนหนึ่ง'},
-  {id:'sonder',th:'ซอนเดอร์',en:'Sonder',r:'rare',xp:30,e:'\uD83C\uDFD9',d:'ตระหนักว่าทุกคนที่เดินผ่านไปต่างมีชีวิตที่ซับซ้อนเหมือนเรา'},
-  {id:'hiraeth',th:'ฮิราเอธ',en:'Hiraeth',r:'rare',xp:30,e:'\uD83C\uDFD4',d:'ความโหยหาบ้านที่อาจไม่เคยมีอยู่จริง ความรู้สึกแบบเวลส์โบราณ'},
-  {id:'sehnsucht',th:'เซ็นซุกท์',en:'Sehnsucht',r:'legendary',xp:50,e:'✨',d:'ความโหยหาอันลึกซึ้งที่ไร้ชื่อ ความรู้สึกว่าชีวิตสมบูรณ์แบบมีอยู่ที่ไหนสักที่'},
-  {id:'mamihlapinatapai',th:'มามิห์ลาปินาทาไป',en:'Mamihlapinatapai',r:'legendary',xp:50,e:'\uD83D\uDC41',d:'ความเงียบระหว่างสองคนที่ต่างรอให้อีกฝ่ายพูดสิ่งที่รู้สึกร่วมกัน'},
-  /* ── HIDDEN / SEASONAL — ปลดล็อกเฉพาะเงื่อนไข ── */
-  {id:'petrichor',th:'เพทริคอร์',en:'Petrichor',r:'rare',xp:35,e:'\uD83C\uDF27',hidden:true,cond:'night',d:'กลิ่นดินหลังฝนแรก ความรู้สึกสดชื่นปนความทรงจำ — ค้นพบได้ยามค่ำคืน'},
-  {id:'serenity',th:'เซเรนิตี้',en:'Serenity',r:'rare',xp:35,e:'\uD83C\uDF04',hidden:true,cond:'morning',d:'ความสงบใสยามเช้าตรู่ ก่อนโลกตื่น — ค้นพบได้ยามรุ่งสาง'},
-  {id:'saudade',th:'ซาวดาจี',en:'Saudade',r:'legendary',xp:60,e:'\uD83D\uDD4A',hidden:true,cond:'weekend',d:'ความคิดถึงอันอ่อนหวานถึงสิ่งที่อาจไม่กลับมา — ค้นพบได้วันหยุด'},
-  {id:'kenopsia',th:'เคนอปเซีย',en:'Kenopsia',r:'legendary',xp:60,e:'\uD83C\uDFDA',hidden:true,cond:'late',d:'บรรยากาศวังเวงของที่ที่เคยมีคนพลุกพล่าน แต่ตอนนี้เงียบงัน — ดึกแล้ว'}
+  /* v=valence(-2ถึง2), a=arousal(-2ถึง2), p=plutchik category */
+  {id:'joy',th:'ความสุข',en:'Joy',r:'common',xp:10,e:'\uD83D\uDE0A',v:2,a:1,p:'joy',d:'ความรู้สึกสว่างไสวที่พุ่งขึ้นมาจากข้างใน เบา โล่ง อยากแบ่งปัน'},
+  {id:'sadness',th:'ความเศร้า',en:'Sadness',r:'common',xp:10,e:'\uD83D\uDE14',v:-2,a:-1,p:'sadness',d:'ความหนักในอก บางครั้งก็จำเป็น เพื่อให้รู้ว่าอะไรสำคัญ'},
+  {id:'anger',th:'ความโกรธ',en:'Anger',r:'common',xp:10,e:'\uD83D\uDE24',v:-1,a:2,p:'anger',d:'ไฟที่ลุกขึ้นปกป้องสิ่งที่เราเชื่อ พลังงานที่ต้องการทิศทาง'},
+  {id:'fear',th:'ความกลัว',en:'Fear',r:'common',xp:10,e:'\uD83D\uDE28',v:-2,a:2,p:'fear',d:'สัญชาตญาณโบราณที่บอกให้ระวัง หัวใจเต้นแรง ร่างกายตื่นตัว'},
+  {id:'calm',th:'ความสงบ',en:'Calm',r:'common',xp:10,e:'\uD83D\uDE0C',v:1,a:-2,p:'trust',d:'ทะเลที่ราบเรียบ ลมหายใจที่เต็ม ความเงียบที่สบาย'},
+  {id:'love',th:'ความรัก',en:'Love',r:'common',xp:10,e:'\uD83E\uDD70',v:2,a:1,p:'joy',d:'ความอบอุ่นที่ขยายออก อยากเห็นคนนั้นมีความสุข'},
+  {id:'tired',th:'ความเหนื่อย',en:'Tired',r:'common',xp:10,e:'\uD83D\uDE34',v:-1,a:-2,p:'sadness',d:'ร่างกายหรือจิตใจที่ขอพัก สัญญาณว่าทุ่มเทมามาก'},
+  {id:'nostalgia',th:'ความคิดถึง',en:'Nostalgia',r:'uncommon',xp:20,e:'\uD83C\uDF05',v:0,a:-1,p:'sadness',d:'ยืนมองอดีตด้วยความหวานขม อยากสัมผัสสิ่งที่ผ่านไปแล้ว'},
+  {id:'hope',th:'ความหวัง',en:'Hope',r:'uncommon',xp:20,e:'\uD83C\uDF31',v:2,a:1,p:'anticipation',d:'ดอกไม้เล็กๆ ที่งอกในความมืด เชื่อว่าพรุ่งนี้อาจดีกว่า'},
+  {id:'loneliness',th:'ความโดดเดี่ยว',en:'Loneliness',r:'uncommon',xp:20,e:'\uD83C\uDF19',v:-2,a:-1,p:'sadness',d:'อยู่ในห้องเต็มคน แต่รู้สึกไม่มีใครเห็นเราอย่างที่เราเป็น'},
+  {id:'gratitude',th:'ความกตัญญู',en:'Gratitude',r:'uncommon',xp:20,e:'\uD83D\uDE4F',v:2,a:0,p:'trust',d:'หัวใจที่รู้ว่าสิ่งดีๆ เกิดขึ้นได้เพราะผู้อื่น'},
+  {id:'melancholy',th:'เมลังโคลี',en:'Melancholy',r:'uncommon',xp:20,e:'\uD83C\uDFAD',v:-1,a:-1,p:'sadness',d:'ความเศร้าที่มีความงดงาม ไม่ใช่ความเจ็บปวด แต่เป็นบทกวีเงียบๆ'},
+  {id:'awe',th:'ความตะลึง',en:'Awe',r:'rare',xp:30,e:'\uD83C\uDF0C',v:1,a:2,p:'surprise',d:'ยืนต่อหน้าสิ่งที่ใหญ่กว่าตัวเอง แล้วรู้สึกเล็กลงแต่ก็เป็นส่วนหนึ่ง'},
+  {id:'sonder',th:'ซอนเดอร์',en:'Sonder',r:'rare',xp:30,e:'\uD83C\uDFD9',v:0,a:0,p:'surprise',d:'ตระหนักว่าทุกคนที่เดินผ่านไปต่างมีชีวิตที่ซับซ้อนเหมือนเรา'},
+  {id:'hiraeth',th:'ฮิราเอธ',en:'Hiraeth',r:'rare',xp:30,e:'\uD83C\uDFD4',v:-1,a:-1,p:'sadness',d:'ความโหยหาบ้านที่อาจไม่เคยมีอยู่จริง ความรู้สึกแบบเวลส์โบราณ'},
+  {id:'sehnsucht',th:'เซ็นซุกท์',en:'Sehnsucht',r:'legendary',xp:50,e:'\u2728',v:0,a:1,p:'anticipation',d:'ความโหยหาอันลึกซึ้งที่ไร้ชื่อ ความรู้สึกว่าชีวิตสมบูรณ์แบบมีอยู่ที่ไหนสักที่'},
+  {id:'mamihlapinatapai',th:'มามิห์ลาปินาทาไป',en:'Mamihlapinatapai',r:'legendary',xp:50,e:'\uD83D\uDC41',v:1,a:-1,p:'trust',d:'ความเงียบระหว่างสองคนที่ต่างรอให้อีกฝ่ายพูดสิ่งที่รู้สึกร่วมกัน'},
+  /* ── HIDDEN / SEASONAL ── */
+  {id:'petrichor',th:'เพทริคอร์',en:'Petrichor',r:'rare',xp:35,e:'\uD83C\uDF27',v:2,a:0,p:'joy',hidden:true,cond:'night',d:'กลิ่นดินหลังฝนแรก ความรู้สึกสดชื่นปนความทรงจำ — ค้นพบได้ยามค่ำคืน'},
+  {id:'serenity',th:'เซเรนิตี้',en:'Serenity',r:'rare',xp:35,e:'\uD83C\uDF04',v:2,a:-2,p:'trust',hidden:true,cond:'morning',d:'ความสงบใสยามเช้าตรู่ ก่อนโลกตื่น — ค้นพบได้ยามรุ่งสาง'},
+  {id:'saudade',th:'ซาวดาจี',en:'Saudade',r:'legendary',xp:60,e:'\uD83D\uDD4A',v:-1,a:-1,p:'sadness',hidden:true,cond:'weekend',d:'ความคิดถึงอันอ่อนหวานถึงสิ่งที่อาจไม่กลับมา — ค้นพบได้วันหยุด'},
+  {id:'kenopsia',th:'เคนอปเซีย',en:'Kenopsia',r:'legendary',xp:60,e:'\uD83C\uDFDA',v:-2,a:-1,p:'fear',hidden:true,cond:'late',d:'บรรยากาศวังเวงของที่ที่เคยมีคนพลุกพล่าน แต่ตอนนี้เงียบงัน — ดึกแล้ว'}
 ];
 
 /* check if a hidden emotion's condition is met right now */
@@ -1850,6 +1947,16 @@ function renderRecap(){
   box.innerHTML=html;
 }
 
+function updatePlaceholderByLevel(){
+  var lv=Math.floor((ST.xp||0)/50)+1;
+  var ta=document.getElementById('feel-in');
+  if(!ta) return;
+  if(lv>=20) ta.placeholder='\u0E2D\u0E32\u0E23\u0E21\u0E13\u0E4C\u0E19\u0E35\u0E49\u0E1A\u0E2D\u0E01\u0E2D\u0E30\u0E44\u0E23\u0E40\u0E01\u0E35\u0E48\u0E22\u0E27\u0E01\u0E31\u0E1A\u0E04\u0E27\u0E32\u0E21\u0E40\u0E0A\u0E37\u0E48\u0E2D\u0E17\u0E35\u0E48\u0E25\u0E36\u0E01\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13...';
+  else if(lv>=10) ta.placeholder='\u0E40\u0E25\u0E48\u0E32\u0E43\u0E2B\u0E49\u0E1F\u0E31\u0E07... \u0E2D\u0E32\u0E23\u0E21\u0E13\u0E4C\u0E19\u0E35\u0E49\u0E40\u0E01\u0E34\u0E14\u0E02\u0E36\u0E49\u0E19\u0E1A\u0E48\u0E2D\u0E22\u0E41\u0E04\u0E48\u0E44\u0E2B\u0E19 \u0E23\u0E48\u0E32\u0E07\u0E01\u0E32\u0E22\u0E23\u0E39\u0E49\u0E2A\u0E36\u0E01\u0E22\u0E31\u0E07\u0E44\u0E07?';
+  else if(lv>=5) ta.placeholder='\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49\u0E40\u0E1B\u0E47\u0E19\u0E22\u0E31\u0E07\u0E44\u0E07? \u0E2D\u0E32\u0E23\u0E21\u0E13\u0E4C\u0E19\u0E35\u0E49\u0E04\u0E38\u0E49\u0E19\u0E40\u0E04\u0E22\u0E44\u0E2B\u0E21? \u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E2D\u0E30\u0E44\u0E23\u0E15\u0E2D\u0E19\u0E19\u0E35\u0E49?';
+  else ta.placeholder='\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49\u0E23\u0E39\u0E49\u0E2A\u0E36\u0E01\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E44\u0E23\u0E1A\u0E49\u0E32\u0E07...';
+}
+
 function applyTheme(){
   var t=localStorage.getItem('em_theme')||'light';
   document.documentElement.setAttribute('data-theme',t);
@@ -1924,6 +2031,7 @@ function hud(){
   document.getElementById('st-exp').textContent=ST.xp;
   document.getElementById('st-str').textContent=streak();
   updateAlpacaEvo();
+  updatePlaceholderByLevel();
 }
 
 /* ── ALPACA EVOLUTION ── accessory based on dominant emotion category */
@@ -2030,8 +2138,9 @@ function analyze(){
     +'แล้วเขียนคำวิเคราะห์ที่:\n'
     +'1) สะท้อนความรู้สึกของผู้ใช้อย่างเข้าใจ (validate)\n'
     +'2) อธิบายอารมณ์นี้เชิงจิตวิทยาสั้นๆ\n'
-    +'3) อ้างอิงแนวคิดจากนักจิตวิทยา 1 ท่าน (เช่น Carl Rogers, Brené Brown, Viktor Frankl, Carl Jung, Paul Ekman, Kristin Neff) ที่เกี่ยวข้อง พร้อมข้อคิดสั้นๆ\n\n'
-    +'ตอบเป็น JSON อย่างเดียว ห้ามมีข้อความอื่นนอก JSON:\n'
+    +'3) อ้างอิงแนวคิดจากนักจิตวิทยา 1 ท่าน (เช่น Carl Rogers, Brené Brown, Viktor Frankl, Carl Jung, Paul Ekman, Kristin Neff) ที่เกี่ยวข้อง พร้อมข้อคิดสั้นๆ\n'
+    +(getLevelPromptContext().extra ? '4) '+getLevelPromptContext().extra+'\n' : '')
+    +'\nตอบเป็น JSON อย่างเดียว ห้ามมีข้อความอื่นนอก JSON:\n'
     +'{"emotionId":"...","reason":"<คำวิเคราะห์อบอุ่น 3-4 ประโยค ภาษาไทย>","insight":"<ชื่อนักจิตวิทยา>: <ข้อคิด 1 ประโยค>"}';
 
   function resetBtn(){
@@ -2404,11 +2513,231 @@ function setCalView(v){
   ST.calView=v;
   document.getElementById('caltab-month').classList.toggle('on',v==='month');
   document.getElementById('caltab-timeline').classList.toggle('on',v==='timeline');
-  document.getElementById('cal-month-view').style.display = v==='month'?'block':'none';
-  document.getElementById('cal-timeline-view').style.display = v==='timeline'?'block':'none';
+  document.getElementById('caltab-trend').classList.toggle('on',v==='trend');
+  document.getElementById('cal-month-view').style.display=v==='month'?'block':'none';
+  document.getElementById('cal-timeline-view').style.display=v==='timeline'?'block':'none';
+  document.getElementById('cal-trend-view').style.display=v==='trend'?'block':'none';
   if(v==='month') renderCal();
-  else renderTimeline();
+  else if(v==='timeline') renderTimeline();
+  else if(v==='trend') renderTrend(ST.trendDays||30);
 }
+
+/* ── TREND CHART ── */
+var TREND_DAYS=30;
+function setTrendRange(days,btn){
+  TREND_DAYS=days;
+  document.querySelectorAll('.trend-tab').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  renderTrend(days);
+}
+
+function renderTrend(days){
+  var container=document.getElementById('trend-chart');
+  var now=new Date(); now.setHours(23,59,59,999);
+  var cutoff=new Date(now);
+  if(days>0) cutoff.setDate(cutoff.getDate()-days);
+  else cutoff=new Date(0);
+
+  /* group by date */
+  var dayMap={};
+  ST.hist.forEach(function(h){
+    var d=h.date.slice(0,10);
+    var dt=new Date(d);
+    if(dt<cutoff) return;
+    var em=EMOTIONS.filter(function(e){return e.id===h.emotionId;})[0];
+    if(!em) return;
+    if(!dayMap[d]) dayMap[d]={xp:0,count:0,pos:0,neg:0};
+    dayMap[d].xp+=em.xp||10;
+    dayMap[d].count++;
+    var posEms=['joy','love','calm','proud','grateful','excited','curious','playful'];
+    if(posEms.indexOf(em.id)>=0) dayMap[d].pos++;
+    else dayMap[d].neg++;
+  });
+
+  var dates=Object.keys(dayMap).sort();
+  if(dates.length<2){
+    container.innerHTML='<div class="trend-empty">ต้องการข้อมูลอย่างน้อย 2 วัน<br>เพื่อแสดงกราฟ</div>';
+    return;
+  }
+
+  /* build SVG line chart */
+  var W=320,H=120,pad=24;
+  var vals=dates.map(function(d){return dayMap[d].xp;});
+  var minV=Math.min.apply(null,vals);
+  var maxV=Math.max.apply(null,vals);
+  if(maxV===minV){maxV=minV+10;}
+  var n=dates.length;
+
+  function px(i){return pad+(i/(n-1))*(W-pad*2);}
+  function py(v){return H-pad-((v-minV)/(maxV-minV))*(H-pad*2);}
+
+  var areaPath='M'+px(0)+','+H+' L'+px(0)+','+py(vals[0]);
+  var linePath='M'+px(0)+','+py(vals[0]);
+  var dots='';
+  var labels='';
+
+  for(var i=1;i<n;i++){
+    linePath+=' L'+px(i)+','+py(vals[i]);
+    areaPath+=' L'+px(i)+','+py(vals[i]);
+  }
+  areaPath+=' L'+px(n-1)+','+H+' Z';
+
+  /* dots + labels every N points */
+  var step=Math.max(1,Math.floor(n/6));
+  for(var i=0;i<n;i++){
+    dots+='<circle class="trend-dot" cx="'+px(i)+'" cy="'+py(vals[i])+'" r="3"/>';
+    if(i%step===0||i===n-1){
+      var d=dates[i].slice(5); /* MM-DD */
+      labels+='<text class="trend-label" x="'+px(i)+'" y="'+(H-6)+'">'+d+'</text>';
+    }
+  }
+
+  container.innerHTML='<svg class="trend-svg" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">'
+    +'<defs><linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">'
+    +'<stop offset="0%" stop-color="var(--coral)" stop-opacity="0.5"/>'
+    +'<stop offset="100%" stop-color="var(--coral)" stop-opacity="0"/>'
+    +'</linearGradient></defs>'
+    +'<path class="trend-area" d="'+areaPath+'"/>'
+    +'<path class="trend-line" d="'+linePath+'"/>'
+    +dots+labels
+    +'</svg>'
+    +'<div style="font-size:10px;color:var(--dim);text-align:right;margin-top:4px;">แกน Y = XP ต่อวัน</div>';
+}
+
+/* ── WEEKLY SUMMARY ── */
+function genWeekSummary(){
+  if(!aiEnabled()){toast('AI ยังไม่ได้ตั้งค่า');return;}
+  var body=document.getElementById('ws-body');
+  body.className='ws-body';
+  body.textContent='AI กำลังคิด...';
+  var now=new Date();
+  var cutoff=new Date(now); cutoff.setDate(cutoff.getDate()-7);
+  var weekEnts=ST.hist.filter(function(h){return new Date(h.date)>=cutoff;});
+  if(!weekEnts.length){
+    body.className='ws-body empty';
+    body.textContent='ยังไม่มีบันทึกสัปดาห์นี้';
+    return;
+  }
+  var freq={};
+  weekEnts.forEach(function(h){
+    var em=EMOTIONS.filter(function(e){return e.id===h.emotionId;})[0];
+    if(em){if(!freq[em.th])freq[em.th]={e:em.e,count:0};freq[em.th].count++;}
+  });
+  var sorted=Object.keys(freq).sort(function(a,b){return freq[b].count-freq[a].count;});
+  var topList=sorted.slice(0,4).map(function(k){return freq[k].e+k+'('+freq[k].count+')';}).join(' ');
+  var prompt='สัปดาห์นี้ผู้ใช้บันทึกอารมณ์ '+weekEnts.length+' ครั้ง\n'
+    +'อารมณ์ที่พบมากที่สุด: '+topList+'\n\n'
+    +'วิเคราะห์สั้นๆ ว่าสัปดาห์นี้เราเป็นยังไง ตอบ 3-4 ประโยค ภาษาไทย อบอุ่น ไม่ต้องมี header ไม่ต้องมี bullet\n'
+    +'เริ่มด้วยประโยคที่รู้สึกถึงพลังงานโดยรวมของสัปดาห์ แล้วค่อยอธิบายละเอียด';
+  aiChat([{role:'user',content:prompt}],function(txt){
+    body.className='ws-body';
+    body.textContent=txt;
+    /* cache */
+    try{localStorage.setItem('em_week_sum',JSON.stringify({t:txt,d:now.toISOString().slice(0,10)}));}catch(e){}
+  },function(){
+    body.className='ws-body empty';
+    body.textContent='ไม่สามารถวิเคราะห์ได้ขณะนี้';
+  });
+}
+
+/* ── EMOTION PROFILE ── */
+function cxFilter(f,btn){
+  ST.cxFilter=f;
+  document.querySelectorAll('.codex-tab').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  var isProfile=(f==='profile');
+  document.getElementById('cx-grid').style.display=isProfile?'none':'grid';
+  document.getElementById('profile-panel').style.display=isProfile?'block':'none';
+  if(isProfile){ renderProfile(); return; }
+  renderCodex();
+}
+
+function renderProfile(){
+  var total=ST.hist.length;
+  var stats=document.getElementById('profile-stats');
+  /* basic stats */
+  var freq={};
+  var streak=0; var maxStreak=0; var prevD=null;
+  var posCount=0;
+  var posEms=['joy','love','calm','proud','grateful','excited','curious','playful'];
+  ST.hist.forEach(function(h){
+    var em=EMOTIONS.filter(function(e){return e.id===h.emotionId;})[0];
+    if(!em) return;
+    freq[em.id]=(freq[em.id]||0)+1;
+    if(posEms.indexOf(em.id)>=0) posCount++;
+    var d=h.date.slice(0,10);
+    if(prevD){
+      var diff=(new Date(d)-new Date(prevD))/(1000*86400);
+      if(diff===1){streak++; if(streak>maxStreak)maxStreak=streak;}
+      else streak=0;
+    }
+    prevD=d;
+  });
+  var topId=Object.keys(freq).sort(function(a,b){return freq[b]-freq[a];})[0];
+  var topEm=topId?EMOTIONS.filter(function(e){return e.id===topId;})[0]:null;
+  var posRatio=total?Math.round(posCount/total*100):0;
+
+  stats.innerHTML='<div class="profile-stat"><div class="ps-val">'+total+'</div><div class="ps-lbl">บันทึกทั้งหมด</div></div>'
+    +'<div class="profile-stat"><div class="ps-val">'+(maxStreak+1)+'</div><div class="ps-lbl">สถิติวันต่อเนื่อง</div></div>'
+    +'<div class="profile-stat"><div class="ps-val">'+posRatio+'%</div><div class="ps-lbl">อารมณ์เชิงบวก</div>'
+    +'<div class="ps-bar"><div class="ps-fill" style="width:'+posRatio+'%"></div></div></div>'
+    +'<div class="profile-stat"><div class="ps-val">'+(topEm?topEm.e:'—')+'</div><div class="ps-lbl">'+(topEm?topEm.th:'อารมณ์เด่น')+'</div></div>';
+
+  /* restore cached profile text */
+  try{
+    var cached=JSON.parse(localStorage.getItem('em_profile')||'null');
+    if(cached&&cached.type){
+      document.getElementById('profile-badge').textContent=cached.badge||'\uD83C\uDF31';
+      document.getElementById('profile-type').textContent=cached.type;
+      document.getElementById('profile-desc').textContent=cached.desc;
+    }
+  }catch(e){}
+}
+
+function genEmotionProfile(){
+  if(!aiEnabled()){toast('AI ยังไม่ได้ตั้งค่า');return;}
+  if(ST.hist.length<5){toast('ต้องการบันทึกอย่างน้อย 5 ครั้ง');return;}
+  document.getElementById('profile-type').textContent='กำลังวิเคราะห์...';
+  document.getElementById('profile-desc').textContent='';
+  var totalV=0,totalA=0,n=0;
+  var plutchikCount={joy:0,sadness:0,anger:0,fear:0,trust:0,disgust:0,surprise:0,anticipation:0};
+  var freqMap={};
+  ST.hist.forEach(function(h){
+    var em=EMOTIONS.filter(function(e){return e.id===h.emotionId;})[0];
+    if(!em) return;
+    if(em.v!==undefined){totalV+=em.v;totalA+=em.a;n++;}
+    if(em.p) plutchikCount[em.p]=(plutchikCount[em.p]||0)+1;
+    freqMap[em.th]=(freqMap[em.th]||0)+1;
+  });
+  var avgV=n?totalV/n:0; var avgA=n?totalA/n:0;
+  var quadrant='';
+  if(avgV>=0&&avgA>=0) quadrant='High Valence / High Arousal (สุขตื่นตัว)';
+  else if(avgV>=0&&avgA<0) quadrant='High Valence / Low Arousal (สุขสงบ)';
+  else if(avgV<0&&avgA>=0) quadrant='Low Valence / High Arousal (เครียดตื่นตัว)';
+  else quadrant='Low Valence / Low Arousal (เศร้าเงียบ)';
+  var plutNames={joy:'ความสุข',sadness:'ความเศร้า',anger:'ความโกรธ',fear:'ความกลัว',trust:'ความไว้ใจ',disgust:'ความรังเกียจ',surprise:'ความประหลาดใจ',anticipation:'ความคาดหวัง'};
+  var plutTop=Object.keys(plutchikCount).sort(function(a,b){return plutchikCount[b]-plutchikCount[a];});
+  var plutSummary=plutTop.slice(0,3).filter(function(k){return plutchikCount[k]>0;}).map(function(k){return plutNames[k]+'('+plutchikCount[k]+')';}).join(', ');
+  var topEmList=Object.keys(freqMap).sort(function(a,b){return freqMap[b]-freqMap[a];}).slice(0,5).map(function(k){return k+'('+freqMap[k]+')';}).join(', ');
+  var prompt='วิเคราะห์ Emotion Profile:\n\n'
+    +'[Russell Circumplex]\nValence: '+(avgV>0?'+':'')+avgV.toFixed(2)+' Arousal: '+(avgA>0?'+':'')+avgA.toFixed(2)+'\nQuadrant: '+quadrant+'\n\n'
+    +'[Plutchik Wheel]\nอารมณ์หลัก: '+plutSummary+'\n\n'
+    +'[ข้อมูล]\nบ่อยที่สุด: '+topEmList+'\nรวม: '+ST.hist.length+' ครั้ง\n\n'
+    +'ตอบ JSON เท่านั้น: {"badge":"emoji1ตัว","type":"ชื่อ profile ภาษาไทยสร้างสรรค์","desc":"3 ประโยค อ้างอิง Russell/Plutchik ภาษาไทย","russell":"1 ประโยค","plutchik":"1 ประโยค"}';
+  aiChat([{role:'user',content:prompt}],function(txt){
+    try{
+      var clean=txt.replace(/```json|```/g,'').trim();
+      var obj=JSON.parse(clean);
+      document.getElementById('profile-badge').textContent=obj.badge||'\uD83C\uDF31';
+      document.getElementById('profile-type').textContent=obj.type||'นักสำรวจอารมณ์';
+      var full=(obj.desc||'')+'\n\n\uD83D\uDCD0 Russell: '+(obj.russell||quadrant)+'\n\uD83C\uDFB6 Plutchik: '+(obj.plutchik||plutSummary);
+      document.getElementById('profile-desc').textContent=full;
+      localStorage.setItem('em_profile',JSON.stringify({badge:obj.badge,type:obj.type,desc:full}));
+      toast('\u2726 Profile อัพเดตแล้ว');
+    }catch(e){document.getElementById('profile-type').textContent='วิเคราะห์ไม่ได้ ลองใหม่';}
+  },function(){document.getElementById('profile-type').textContent='ลองใหม่อีกครั้ง';});
+}
+
 
 function renderCal(){
   var mos=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
@@ -2597,15 +2926,10 @@ function escapeHtml(s){
 function pad(n){return n<10?'0'+n:String(n);}
 
 /* ═══════════════ CODEX ═══════════════ */
-function cxFilter(f,el){
-  ST.cxFilter=f;
-  document.querySelectorAll('.codex-tab').forEach(function(b){b.classList.remove('on');});
-  el.classList.add('on');
-  renderCodex();
-}
 function renderCodex(){
   var disc=Object.keys(ST.disc).length;
   document.getElementById('cx-prog').textContent='ค้นพบ '+disc+' / '+EMOTIONS.length+' อารมณ์';
+  if(ST.cxFilter==='profile') return; /* handled by renderProfile */
   var list=EMOTIONS.filter(function(e){return ST.cxFilter==='all'||e.r===ST.cxFilter;});
   var cCls={common:'c-c',uncommon:'c-u',rare:'c-r',legendary:'c-l'};
   var rCls={common:'r-c',uncommon:'r-u',rare:'r-r',legendary:'r-l'};
@@ -2683,6 +3007,11 @@ function init(){
   rollQuests();
   renderQuests();
   renderRecap();
+  /* restore cached weekly summary */
+  try{
+    var ws=JSON.parse(localStorage.getItem('em_week_sum')||'null');
+    if(ws&&ws.t){var wb=document.getElementById('ws-body');if(wb){wb.className='ws-body';wb.textContent=ws.t;}}
+  }catch(e){}
   checkDailyReminder();
   checkMilestone();
   var ob=document.getElementById('onboard');
@@ -2852,10 +3181,103 @@ function tlSetFilter(f){ST.tlFilter=f;document.querySelectorAll('.tl-filter').fo
 
 /* ── DAILY REMINDER / MILESTONES ── */
 function checkDailyReminder(){var el=document.getElementById('daily-reminder');if(!el)return;var tk=todayKey();el.style.display=ST.hist.some(function(h){return h.date.slice(0,10)===tk;})?'none':'block';}
-var MILESTONES=[{d:3,e:'\uD83C\uDF31',t:'3 \u0E27\u0E31\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07',m:'\u0E40\u0E23\u0E34\u0E48\u0E21\u0E40\u0E1B\u0E47\u0E19\u0E19\u0E34\u0E2A\u0E31\u0E22\u0E41\u0E25\u0E49\u0E27!'},{d:7,e:'\u2B50',t:'1 \u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C',m:'\u0E40\u0E22\u0E35\u0E48\u0E22\u0E21\u0E21\u0E32\u0E01!'},{d:30,e:'\uD83C\uDFC6',t:'1 \u0E40\u0E14\u0E37\u0E2D\u0E19\u0E40\u0E15\u0E47\u0E21',m:'\u0E04\u0E27\u0E32\u0E21\u0E21\u0E38\u0E48\u0E07\u0E21\u0E31\u0E48\u0E19\u0E17\u0E35\u0E48\u0E41\u0E17\u0E49\u0E08\u0E23\u0E34\u0E07!'},{d:100,e:'\uD83D\uDC51',t:'100 \u0E27\u0E31\u0E19',m:'\u0E04\u0E38\u0E13\u0E04\u0E37\u0E2D\u0E15\u0E33\u0E19\u0E32\u0E19 \u2726'}];
-function checkMilestone(){var s=streak();var hit=null;MILESTONES.forEach(function(ms){if(ms.d===s)hit=ms;});if(hit){var seen=localStorage.getItem('em_ms_'+hit.d);if(!seen){localStorage.setItem('em_ms_'+hit.d,'1');setTimeout(function(){showMilestone(hit);},800);}}}
+var MILESTONES=[
+  {id:'s3',type:'streak',d:3,e:'\uD83C\uDF31',t:'3 \u0E27\u0E31\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07',m:'\u0E40\u0E23\u0E34\u0E48\u0E21\u0E40\u0E1B\u0E47\u0E19\u0E19\u0E34\u0E2A\u0E31\u0E22\u0E41\u0E25\u0E49\u0E27! \u2726'},
+  {id:'s7',type:'streak',d:7,e:'\u2B50',t:'1 \u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E40\u0E15\u0E47\u0E21',m:'\u0E40\u0E22\u0E35\u0E48\u0E22\u0E21\u0E21\u0E32\u0E01! \u2726'},
+  {id:'s30',type:'streak',d:30,e:'\uD83C\uDFC6',t:'1 \u0E40\u0E14\u0E37\u0E2D\u0E19\u0E40\u0E15\u0E47\u0E21',m:'\u0E04\u0E27\u0E32\u0E21\u0E21\u0E38\u0E48\u0E07\u0E21\u0E31\u0E48\u0E19! \u2726'},
+  {id:'s100',type:'streak',d:100,e:'\uD83D\uDC51',t:'100 \u0E27\u0E31\u0E19',m:'\u0E04\u0E38\u0E13\u0E04\u0E37\u0E2D\u0E15\u0E33\u0E19\u0E32\u0E19 \u2726'},
+  {id:'lv5',type:'level',lv:5,e:'\uD83D\uDD13',t:'Level 5',m:'\u0E1B\u0E25\u0E14\u0E25\u0E47\u0E2D\u0E01 prompt \u0E23\u0E30\u0E14\u0E31\u0E1A 2! \u2726'},
+  {id:'lv10',type:'level',lv:10,e:'\uD83E\uDDE0',t:'Level 10',m:'\u0E1B\u0E25\u0E14\u0E25\u0E47\u0E2D\u0E01 prompt \u0E23\u0E30\u0E14\u0E31\u0E1A 3! \u2726'},
+  {id:'lv20',type:'level',lv:20,e:'\uD83C\uDF0C',t:'Level 20',m:'\u0E1B\u0E25\u0E14\u0E25\u0E47\u0E2D\u0E01 prompt \u0E23\u0E30\u0E14\u0E31\u0E1A 4! \u2726'},
+  {id:'rare3',type:'rare',count:3,e:'\uD83C\uDF1F',t:'\u0E04\u0E49\u0E19\u0E1E\u0E1A Rare 3',m:'\u0E04\u0E27\u0E32\u0E21\u0E25\u0E36\u0E01\u0E43\u0E19\u0E15\u0E31\u0E27\u0E04\u0E38\u0E13\u0E40\u0E23\u0E34\u0E48\u0E21\u0E40\u0E1C\u0E22\u0E15\u0E31\u0E27 \u2726'},
+  {id:'legendary1',type:'legendary',count:1,e:'\u2728',t:'\u0E1E\u0E1A Legendary \u0E41\u0E23\u0E01',m:'\u0E2D\u0E32\u0E23\u0E21\u0E13\u0E4C\u0E19\u0E35\u0E49\u0E21\u0E35\u0E04\u0E19\u0E19\u0E49\u0E2D\u0E22\u0E17\u0E35\u0E48\u0E40\u0E04\u0E22\u0E23\u0E39\u0E49\u0E2A\u0E36\u0E01 \u2726'},
+  {id:'legendary2',type:'legendary',count:2,e:'\uD83D\uDC41',t:'Legendary \u0E04\u0E23\u0E1A 2',m:'\u0E08\u0E34\u0E15\u0E43\u0E08\u0E0B\u0E31\u0E1A\u0E0B\u0E49\u0E2D\u0E19\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E2A\u0E27\u0E22\u0E07\u0E32\u0E21 \u2726'},
+  {id:'long50',type:'long',chars:50,e:'\u270D',t:'\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01\u0E22\u0E32\u0E27\u0E41\u0E23\u0E01',m:'\u0E22\u0E34\u0E48\u0E07\u0E40\u0E02\u0E35\u0E22\u0E19\u0E21\u0E32\u0E01 \u0E22\u0E34\u0E48\u0E07\u0E23\u0E39\u0E49\u0E08\u0E31\u0E01\u0E15\u0E31\u0E27\u0E40\u0E2D\u0E07\u0E21\u0E32\u0E01 \u2726'},
+  {id:'long10x',type:'longcount',count:10,e:'\uD83D\uDCDD',t:'\u0E40\u0E02\u0E35\u0E22\u0E19\u0E22\u0E32\u0E27 10 \u0E04\u0E23\u0E31\u0E49\u0E07',m:'\u0E04\u0E38\u0E13\u0E40\u0E1B\u0E47\u0E19\u0E19\u0E31\u0E01\u0E44\u0E14\u0E2D\u0E32\u0E23\u0E35\u0E48\u0E17\u0E35\u0E48\u0E41\u0E17\u0E49\u0E08\u0E23\u0E34\u0E07 \u2726'}
+];
+function getLevelPromptContext(){
+  var lv=Math.floor((ST.xp||0)/50)+1;
+  if(lv>=20) return {tier:4,extra:'\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49 LV.'+lv+' \u2014 \u0E16\u0E32\u0E21\u0E40\u0E0A\u0E34\u0E07\u0E1B\u0E23\u0E31\u0E0A\u0E0D\u0E32\u0E08\u0E34\u0E15\u0E27\u0E34\u0E17\u0E22\u0E32\u0E25\u0E36\u0E01\u0E21\u0E32\u0E01 \u0E40\u0E0A\u0E48\u0E19 core belief \u0E2B\u0E23\u0E37\u0E2D\u0E15\u0E31\u0E27\u0E25\u0E30\u0E04\u0E23\u0E43\u0E19\u0E0A\u0E35\u0E27\u0E34\u0E15 \u0E43\u0E0A\u0E49\u0E41\u0E19\u0E27\u0E04\u0E34\u0E14 Jungian'};
+  if(lv>=10) return {tier:3,extra:'\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49 LV.'+lv+' \u2014 \u0E40\u0E0A\u0E37\u0E48\u0E2D\u0E21\u0E2D\u0E32\u0E23\u0E21\u0E13\u0E4C\u0E01\u0E31\u0E1A\u0E1E\u0E24\u0E15\u0E34\u0E01\u0E23\u0E23\u0E21\u0E41\u0E25\u0E30\u0E04\u0E27\u0E32\u0E21\u0E40\u0E0A\u0E37\u0E48\u0E2D \u0E43\u0E0A\u0E49 CBT'};
+  if(lv>=5) return {tier:2,extra:'\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49 LV.'+lv+' \u2014 \u0E40\u0E1E\u0E34\u0E48\u0E21\u0E04\u0E33\u0E16\u0E32\u0E21\u0E2A\u0E30\u0E17\u0E49\u0E2D\u0E19\u0E01\u0E25\u0E31\u0E1A \u0E40\u0E0A\u0E48\u0E19 \u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E2D\u0E30\u0E44\u0E23\u0E15\u0E2D\u0E19\u0E19\u0E35\u0E49'};
+  return {tier:1,extra:''};
+}
+function checkMilestone(){
+  var lv=Math.floor((ST.xp||0)/50)+1;
+  var s=streak();
+  var rareCount=Object.keys(ST.disc).filter(function(id){var em=EMOTIONS.filter(function(e){return e.id===id;})[0];return em&&em.r==='rare'&&!em.hidden;}).length;
+  var legendCount=Object.keys(ST.disc).filter(function(id){var em=EMOTIONS.filter(function(e){return e.id===id;})[0];return em&&em.r==='legendary';}).length;
+  var longCount=ST.hist.filter(function(h){return h.note&&h.note.length>=50;}).length;
+  MILESTONES.forEach(function(ms){
+    var hit=false;
+    if(ms.type==='streak'&&ms.d===s) hit=true;
+    else if(ms.type==='level'&&lv===ms.lv) hit=true;
+    else if(ms.type==='rare'&&rareCount>=ms.count) hit=true;
+    else if(ms.type==='legendary'&&legendCount>=ms.count) hit=true;
+    else if(ms.type==='long'&&ST.hist.some(function(h){return h.note&&h.note.length>=ms.chars;})) hit=true;
+    else if(ms.type==='longcount'&&longCount>=ms.count) hit=true;
+    if(hit){var seen=localStorage.getItem('em_ms_'+ms.id);if(!seen){localStorage.setItem('em_ms_'+ms.id,'1');setTimeout(function(){showMilestone(ms);},800);}}
+  });
+}
+
 function showMilestone(ms){var ov=document.getElementById('milestone-overlay');document.getElementById('ms-emoji').textContent=ms.e;document.getElementById('ms-title').textContent=ms.t;document.getElementById('ms-msg').textContent=ms.m;ov.classList.add('show');}
 function closeMilestone(){document.getElementById('milestone-overlay').classList.remove('show');}
+
+/* ── PETS SYSTEM ── */
+var PETS=[
+  {id:'duck',e:'\uD83D\uDC23',name:'\u0E25\u0E39\u0E01\u0E40\u0E1B\u0E14\u0E19\u0E49\u0E2D\u0E22',story:'\u0E40\u0E1B\u0E47\u0E19\u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E19\u0E41\u0E23\u0E01\u0E17\u0E35\u0E48\u0E2D\u0E22\u0E39\u0E48\u0E01\u0E31\u0E1A\u0E04\u0E38\u0E13\u0E15\u0E31\u0E49\u0E07\u0E41\u0E15\u0E48\u0E40\u0E23\u0E34\u0E48\u0E21\u0E15\u0E49\u0E19 \u0E21\u0E31\u0E19\u0E40\u0E15\u0E49\u0E19\u0E23\u0E31\u0E1A\u0E17\u0E38\u0E01\u0E2D\u0E32\u0E23\u0E21\u0E13\u0E4C\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13\u0E42\u0E14\u0E22\u0E44\u0E21\u0E48\u0E15\u0E31\u0E14\u0E2A\u0E34\u0E19',cond:'\u0E40\u0E23\u0E34\u0E48\u0E21\u0E15\u0E49\u0E19\u0E43\u0E0A\u0E49\u0E41\u0E2D\u0E1B',check:function(){return true;}},
+  {id:'cat',e:'\uD83D\uDC31',name:'\u0E41\u0E21\u0E27\u0E19\u0E49\u0E2D\u0E22\u0E19\u0E31\u0E01\u0E2A\u0E31\u0E07\u0E40\u0E01\u0E15',story:'\u0E21\u0E31\u0E01\u0E19\u0E31\u0E48\u0E07\u0E14\u0E39\u0E04\u0E38\u0E13\u0E2D\u0E22\u0E39\u0E48\u0E40\u0E07\u0E35\u0E22\u0E1A\u0E46 \u0E27\u0E31\u0E19\u0E44\u0E2B\u0E19\u0E17\u0E35\u0E48\u0E04\u0E38\u0E13\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01\u0E04\u0E27\u0E32\u0E21\u0E2A\u0E07\u0E1A/\u0E40\u0E28\u0E23\u0E49\u0E32 5 \u0E04\u0E23\u0E31\u0E49\u0E07 \u0E21\u0E31\u0E19\u0E40\u0E14\u0E34\u0E19\u0E2D\u0E2D\u0E01\u0E21\u0E32',cond:'Level 3 \u0E2B\u0E23\u0E37\u0E2D\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01 calm/sadness 5 \u0E04\u0E23\u0E31\u0E49\u0E07',check:function(){var lv=Math.floor((ST.xp||0)/50)+1;var n=ST.hist.filter(function(h){return h.emotionId==='calm'||h.emotionId==='sadness'||h.emotionId==='melancholy';}).length;return lv>=3||n>=5;}},
+  {id:'rabbit',e:'\uD83D\uDC30',name:'\u0E01\u0E23\u0E30\u0E15\u0E48\u0E32\u0E22\u0E1C\u0E39\u0E49\u0E21\u0E35\u0E04\u0E27\u0E32\u0E21\u0E2B\u0E27\u0E31\u0E07',story:'\u0E21\u0E31\u0E19\u0E40\u0E14\u0E49\u0E07\u0E40\u0E02\u0E49\u0E32\u0E21\u0E32\u0E40\u0E21\u0E37\u0E48\u0E2D\u0E2B\u0E31\u0E27\u0E43\u0E08\u0E04\u0E38\u0E13\u0E40\u0E15\u0E47\u0E21\u0E44\u0E1B\u0E14\u0E49\u0E27\u0E22\u0E04\u0E27\u0E32\u0E21\u0E2A\u0E38\u0E02\u0E41\u0E25\u0E30\u0E04\u0E27\u0E32\u0E21\u0E2B\u0E27\u0E31\u0E07',cond:'\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01 joy/hope/love 10 \u0E04\u0E23\u0E31\u0E49\u0E07',check:function(){return ST.hist.filter(function(h){return h.emotionId==='joy'||h.emotionId==='hope'||h.emotionId==='love'||h.emotionId==='gratitude';}).length>=10;}},
+  {id:'fox',e:'\uD83E\uDD8A',name:'\u0E08\u0E34\u0E49\u0E07\u0E08\u0E2D\u0E21\u0E19\u0E31\u0E01\u0E0A\u0E48\u0E32\u0E07\u0E2A\u0E31\u0E07\u0E40\u0E01\u0E15',story:'\u0E2B\u0E39\u0E41\u0E2B\u0E25\u0E21 \u0E15\u0E32\u0E40\u0E09\u0E35\u0E22\u0E1A \u0E40\u0E14\u0E34\u0E19\u0E40\u0E02\u0E49\u0E32\u0E21\u0E32\u0E2B\u0E32\u0E04\u0E38\u0E13\u0E40\u0E21\u0E37\u0E48\u0E2D\u0E04\u0E38\u0E13\u0E1E\u0E1A\u0E2D\u0E32\u0E23\u0E21\u0E13\u0E4C\u0E17\u0E35\u0E48\u0E0B\u0E31\u0E1A\u0E0B\u0E49\u0E2D\u0E19',cond:'Level 7 \u0E2B\u0E23\u0E37\u0E2D\u0E04\u0E49\u0E19\u0E1E\u0E1A\u0E2D\u0E32\u0E23\u0E21\u0E13\u0E4C Uncommon 5 \u0E2D\u0E22\u0E48\u0E32\u0E07',check:function(){var lv=Math.floor((ST.xp||0)/50)+1;var unc=Object.keys(ST.disc).filter(function(id){var em=EMOTIONS.filter(function(e){return e.id===id;})[0];return em&&em.r==='uncommon';}).length;return lv>=7||unc>=5;}},
+  {id:'deer',e:'\uD83E\uDD8C',name:'\u0E01\u0E27\u0E32\u0E07\u0E19\u0E49\u0E2D\u0E22\u0E1C\u0E39\u0E49\u0E2D\u0E48\u0E2D\u0E19\u0E42\u0E22\u0E19',story:'\u0E19\u0E38\u0E48\u0E21\u0E19\u0E27\u0E25\u0E41\u0E25\u0E30\u0E15\u0E48\u0E2D\u0E19\u0E23\u0E31\u0E1A \u0E1B\u0E23\u0E32\u0E01\u0E0F\u0E15\u0E31\u0E27\u0E40\u0E21\u0E37\u0E48\u0E2D\u0E04\u0E38\u0E13\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07\u0E44\u0E1B\u0E40\u0E23\u0E37\u0E48\u0E2D\u0E22\u0E46',cond:'Streak 7 \u0E27\u0E31\u0E19',check:function(){return streak()>=7;}},
+  {id:'owl',e:'\uD83E\uDD89',name:'\u0E19\u0E01\u0E40\u0E04\u0E49\u0E32\u0E41\u0E2B\u0E48\u0E07\u0E04\u0E27\u0E32\u0E21\u0E25\u0E36\u0E01',story:'\u0E40\u0E1D\u0E49\u0E32\u0E21\u0E2D\u0E07\u0E14\u0E39\u0E04\u0E38\u0E13\u0E44\u0E07\u0E48\u0E40\u0E07\u0E35\u0E22\u0E1A \u0E1B\u0E23\u0E32\u0E01\u0E0F\u0E40\u0E21\u0E37\u0E48\u0E2D\u0E04\u0E38\u0E13\u0E04\u0E49\u0E19\u0E1E\u0E1A Rare \u0E04\u0E23\u0E1A 3',cond:'\u0E04\u0E49\u0E19\u0E1E\u0E1A\u0E2D\u0E32\u0E23\u0E21\u0E13\u0E4C Rare 3 \u0E2D\u0E22\u0E48\u0E32\u0E07',check:function(){return Object.keys(ST.disc).filter(function(id){var em=EMOTIONS.filter(function(e){return e.id===id;})[0];return em&&em.r==='rare'&&!em.hidden;}).length>=3;}},
+  {id:'dragon',e:'\uD83D\uDC32',name:'\u0E21\u0E31\u0E07\u0E01\u0E23\u0E40\u0E2A\u0E19\u0E2D\u0E32\u0E01\u0E32\u0E28',story:'\u0E1B\u0E23\u0E32\u0E01\u0E0F\u0E40\u0E21\u0E37\u0E48\u0E2D\u0E43\u0E08\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13\u0E40\u0E15\u0E34\u0E1A\u0E42\u0E15\u0E1E\u0E2D\u0E17\u0E35\u0E48\u0E08\u0E30\u0E2A\u0E23\u0E49\u0E32\u0E07\u0E21\u0E31\u0E07\u0E01\u0E23\u0E44\u0E14\u0E49 \u0E2B\u0E32\u0E22\u0E32\u0E01\u0E40\u0E1B\u0E47\u0E19 Legendary',cond:'\u0E04\u0E49\u0E19\u0E1E\u0E1A\u0E2D\u0E32\u0E23\u0E21\u0E13\u0E4C Legendary \u0E2D\u0E22\u0E48\u0E32\u0E07\u0E43\u0E14\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E2B\u0E19\u0E36\u0E48\u0E07',check:function(){return Object.keys(ST.disc).some(function(id){var em=EMOTIONS.filter(function(e){return e.id===id;})[0];return em&&em.r==='legendary';});}},
+  {id:'wolf',e:'\uD83D\uDC3A',name:'\u0E2B\u0E21\u0E32\u0E1B\u0E48\u0E32\u0E41\u0E2B\u0E48\u0E07\u0E04\u0E27\u0E32\u0E21\u0E40\u0E02\u0E49\u0E21\u0E41\u0E02\u0E47\u0E07',story:'\u0E2D\u0E22\u0E39\u0E48\u0E40\u0E04\u0E35\u0E22\u0E07\u0E02\u0E49\u0E32\u0E07\u0E40\u0E2A\u0E21\u0E2D \u0E1B\u0E23\u0E32\u0E01\u0E0F\u0E40\u0E21\u0E37\u0E48\u0E2D\u0E04\u0E38\u0E13\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07 30 \u0E27\u0E31\u0E19',cond:'Streak 30 \u0E27\u0E31\u0E19',check:function(){return streak()>=30;}}
+];
+
+function isPetUnlocked(pet){ try{return pet.check();}catch(e){return false;} }
+
+function cxFilter(f,btn){
+  ST.cxFilter=f;
+  document.querySelectorAll('.codex-tab').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  var isPets=(f==='pets');
+  var isProfile=(f==='profile');
+  document.getElementById('cx-grid').style.display=(isPets||isProfile)?'none':'grid';
+  document.getElementById('profile-panel').style.display=isProfile?'block':'none';
+  document.getElementById('pets-panel').style.display=isPets?'block':'none';
+  if(isPets){ renderPets(); return; }
+  if(isProfile){ renderProfile(); return; }
+  renderCodex();
+}
+
+function renderPets(){
+  var grid=document.getElementById('pets-grid');
+  var html='';
+  PETS.forEach(function(pet){
+    var ok=isPetUnlocked(pet);
+    var lockHtml=ok?'<div class="pet-badge">NEW<\/div>':'<div class="pet-locked-icon">\uD83D\uDD12<\/div>';
+    html+='<div class="pet-card '+(ok?'unlocked':'locked')+'" onclick="showPetDetail(\''+pet.id+'\')">'+
+      '<span class="pet-emoji">'+pet.e+'<\/span>'+
+      '<div class="pet-name">'+pet.name+'<\/div>'+
+      '<div class="pet-cond">'+(ok?'\u2714 \u0E1B\u0E25\u0E14\u0E25\u0E47\u0E2D\u0E01\u0E41\u0E25\u0E49\u0E27':pet.cond)+'<\/div>'+
+      lockHtml+'<\/div>';
+  });
+  grid.innerHTML=html;
+}
+
+function showPetDetail(id){
+  var pet=PETS.filter(function(p){return p.id===id;})[0];
+  if(!pet) return;
+  var ok=isPetUnlocked(pet);
+  document.getElementById('pd-emoji').textContent=pet.e;
+  document.getElementById('pd-name').textContent=pet.name;
+  document.getElementById('pd-story').textContent=ok?pet.story:'\uD83D\uDD12 \u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E1B\u0E25\u0E14\u0E25\u0E47\u0E2D\u0E01';
+  document.getElementById('pd-cond').textContent='\u0E40\u0E07\u0E37\u0E48\u0E2D\u0E19\u0E44\u0E02: '+pet.cond;
+  document.getElementById('pet-detail-overlay').classList.add('show');
+}
+function closePetDetail(){document.getElementById('pet-detail-overlay').classList.remove('show');}
+
 
 /* ── SPINFORTUNE AI ── */
 function spinFortuneAI(){if(!aiEnabled()){toast('AI \u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E15\u0E31\u0E49\u0E07\u0E04\u0E48\u0E32');return;}var aiBtn=document.getElementById('fortune-ai-btn');var card=document.getElementById('fortune-card');aiBtn.disabled=true;aiBtn.textContent='\u23F3 \u0E01\u0E33\u0E25\u0E31\u0E07\u0E2A\u0E23\u0E49\u0E32\u0E07...';card.classList.add('spinning');var lbl=FORTUNE_TYPE_LABELS[FORTUNE_TYPE];var prompt='\u0E2A\u0E23\u0E49\u0E32\u0E07\u0E02\u0E49\u0E2D\u0E04\u0E27\u0E32\u0E21\u0E01\u0E33\u0E25\u0E31\u0E07\u0E43\u0E08\u0E20\u0E32\u0E29\u0E32\u0E44\u0E17\u0E22 2-3 \u0E1A\u0E23\u0E23\u0E17\u0E31\u0E14\u0E21\u0E32\u0E43\u0E2B\u0E49 (\u0E1B\u0E23\u0E30\u0E40\u0E20\u0E17: '+lbl.n+') \u0E15\u0E2D\u0E1A\u0E40\u0E09\u0E1E\u0E32\u0E30\u0E02\u0E49\u0E2D\u0E04\u0E27\u0E32\u0E21 \u0E44\u0E21\u0E48\u0E15\u0E49\u0E2D\u0E07\u0E21\u0E35\u0E04\u0E33\u0E19\u0E33';aiCall({messages:[{role:'user',content:prompt}],raw:true,max_tokens:200},function(res,err){card.classList.remove('spinning');aiBtn.disabled=false;aiBtn.textContent='\u2728 AI \u0E2A\u0E23\u0E49\u0E32\u0E07\u0E43\u0E2B\u0E49';if(err||!res){toast('\u0E40\u0E0A\u0E37\u0E48\u0E2D\u0E21\u0E15\u0E48\u0E2D\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49 \u0E25\u0E2D\u0E07\u0E43\u0E2B\u0E21\u0E48\u0E19\u0E30');return;}var text=res.trim();var aiItem={t:text,s:'AI',a:''};ST_FORTUNE={item:aiItem,type:FORTUNE_TYPE};document.getElementById('fortune-type-lbl').textContent=lbl.e+' '+lbl.n+' \u2726 AI';document.getElementById('fortune-text').textContent=text;document.getElementById('fortune-attr').textContent='';openFCard(aiItem,FORTUNE_TYPE);});}
@@ -2924,6 +3346,16 @@ function spinFortuneAI(){if(!aiEnabled()){toast('AI \u0E22\u0E31\u0E07\u0E44\u0E
     <div class="ms-title" id="ms-title"></div>
     <div class="ms-msg" id="ms-msg"></div>
     <button class="ms-btn" onclick="closeMilestone()">เยี่ยม! ✦</button>
+  </div>
+</div>
+<!-- PET DETAIL OVERLAY -->
+<div class="pet-detail-overlay" id="pet-detail-overlay">
+  <div class="pet-detail-box">
+    <div class="pd-emoji" id="pd-emoji">🐱</div>
+    <div class="pd-name" id="pd-name"></div>
+    <div class="pd-story" id="pd-story"></div>
+    <div class="pd-cond" id="pd-cond"></div>
+    <button class="pd-close" onclick="closePetDetail()">ปิด</button>
   </div>
 </div>
 <!-- CARD IMAGE PREVIEW -->

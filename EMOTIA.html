@@ -943,7 +943,10 @@ body{
   <div class="ob-tag">GACHAPON พลังบวก</div>
   <div class="ob-title">EMOTIA</div>
   <div class="ob-sub">เล่าความรู้สึกให้อัลปาก้าฟัง<br>แล้วค้นพบอารมณ์ที่ซ่อนอยู่<br>สะสม 17 อารมณ์ เลเวลอัพ พูดคุย ✦</div>
-  <button class="ob-btn" onclick="startGame()">เริ่มต้น</button>
+  <div style="display:flex;flex-direction:column;gap:10px;align-items:center;width:100%;max-width:280px;margin-top:8px;">
+  <button class="ob-btn" onclick="loginGoogle()" style="background:white;color:var(--coral);border:2px solid var(--coral);width:100%;">🔐 เข้าสู่ระบบด้วย Google <span style="font-size:10px;display:block;opacity:0.7">เพื่อ Sync ข้ามเครื่อง</span></button>
+  <button class="ob-btn" onclick="startGame()" style="background:var(--soft,#EDE0CC);color:var(--ink2,#7A5C3D);font-size:13px;width:100%;">เริ่มต้นโดยไม่ล็อกอิน</button>
+</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -2629,15 +2632,7 @@ function genWeekSummary(){
     +'อารมณ์ที่พบมากที่สุด: '+topList+'\n\n'
     +'วิเคราะห์สั้นๆ ว่าสัปดาห์นี้เราเป็นยังไง ตอบ 3-4 ประโยค ภาษาไทย อบอุ่น ไม่ต้องมี header ไม่ต้องมี bullet\n'
     +'เริ่มด้วยประโยคที่รู้สึกถึงพลังงานโดยรวมของสัปดาห์ แล้วค่อยอธิบายละเอียด';
-  aiChat([{role:'user',content:prompt}],function(txt){
-    body.className='ws-body';
-    body.textContent=txt;
-    /* cache */
-    try{localStorage.setItem('em_week_sum',JSON.stringify({t:txt,d:now.toISOString().slice(0,10)}));}catch(e){}
-  },function(){
-    body.className='ws-body empty';
-    body.textContent='ไม่สามารถวิเคราะห์ได้ขณะนี้';
-  });
+  aiCall({messages:[{role:'user',content:prompt}],raw:true,max_tokens:500},function(res,err){if(err||!res){body.className='ws-body empty';body.textContent='ไม่สามารถวิเคราะห์ได้';return;}body.className='ws-body';body.textContent=res;try{localStorage.setItem('em_week_sum',JSON.stringify({t:res,d:now.toISOString().slice(0,10)}));}catch(e){}});
 }
 
 /* ── EMOTION PROFILE ── */
@@ -2724,18 +2719,7 @@ function genEmotionProfile(){
     +'[Plutchik Wheel]\nอารมณ์หลัก: '+plutSummary+'\n\n'
     +'[ข้อมูล]\nบ่อยที่สุด: '+topEmList+'\nรวม: '+ST.hist.length+' ครั้ง\n\n'
     +'ตอบ JSON เท่านั้น: {"badge":"emoji1ตัว","type":"ชื่อ profile ภาษาไทยสร้างสรรค์","desc":"3 ประโยค อ้างอิง Russell/Plutchik ภาษาไทย","russell":"1 ประโยค","plutchik":"1 ประโยค"}';
-  aiChat([{role:'user',content:prompt}],function(txt){
-    try{
-      var clean=txt.replace(/```json|```/g,'').trim();
-      var obj=JSON.parse(clean);
-      document.getElementById('profile-badge').textContent=obj.badge||'\uD83C\uDF31';
-      document.getElementById('profile-type').textContent=obj.type||'นักสำรวจอารมณ์';
-      var full=(obj.desc||'')+'\n\n\uD83D\uDCD0 Russell: '+(obj.russell||quadrant)+'\n\uD83C\uDFB6 Plutchik: '+(obj.plutchik||plutSummary);
-      document.getElementById('profile-desc').textContent=full;
-      localStorage.setItem('em_profile',JSON.stringify({badge:obj.badge,type:obj.type,desc:full}));
-      toast('\u2726 Profile อัพเดตแล้ว');
-    }catch(e){document.getElementById('profile-type').textContent='วิเคราะห์ไม่ได้ ลองใหม่';}
-  },function(){document.getElementById('profile-type').textContent='ลองใหม่อีกครั้ง';});
+  aiCall({messages:[{role:'user',content:prompt}],raw:true,max_tokens:600},function(res,err){if(err||!res){document.getElementById('profile-type').textContent='ลองใหม่';return;}try{var clean=res.replace(/```json|```/g,'').trim();var obj=JSON.parse(clean);document.getElementById('profile-badge').textContent=obj.badge||'\uD83C\uDF31';document.getElementById('profile-type').textContent=obj.type||'นักสำรวจ';var full=(obj.desc||'')+'\n\n\uD83D\uDCD0 Russell: '+(obj.russell||'')+'\uD83C\uDFB6 Plutchik: '+(obj.plutchik||'');document.getElementById('profile-desc').textContent=full;localStorage.setItem('em_profile',JSON.stringify({badge:obj.badge,type:obj.type,desc:full}));toast('✦ Profile อัพเดตแล้ว');}catch(e){document.getElementById('profile-type').textContent='วิเคราะห์ไม่ได้';}});
 }
 
 
@@ -2822,13 +2806,7 @@ function genMonthProfile(){
     +'2. อธิบายแบบอ่อนโยนว่าเราอยู่ในช่วงชีวิตแบบไหน 2-3 ประโยค\n'
     +'3. ข้อสังเกตเล็กๆ ที่น่าสนใจ 1 ประโยค\n'
     +'ห้ามใช้ bullet หรือ markdown ตอบเป็นข้อความธรรมดา สั้น อ่านง่าย อบอุ่น';
-  aiChat([{role:'user',content:prompt}],function(txt){
-    body.className='mp-body';
-    body.textContent=txt;
-  },function(err){
-    body.className='mp-body';
-    body.textContent='วิเคราะห์ไม่ได้ในขณะนี้ — '+err;
-  });
+  aiCall({messages:[{role:'user',content:prompt}],raw:true,max_tokens:500},function(res,err){if(err||!res){body.className='mp-body';body.textContent='วิเคราะห์ไม่ได้';return;}body.className='mp-body';body.textContent=res;});
 }
 
 function calDay(d){
@@ -3251,17 +3229,31 @@ function cxFilter(f,btn){
   renderCodex();
 }
 
+function getPetState(id){
+  var ps=JSON.parse(localStorage.getItem('em_pets_state')||'{}');
+  var p=ps[id]||{hunger:80,happy:80,lastFed:Date.now()};
+  var h=(Date.now()-(p.lastFed||Date.now()))/3600000;
+  p.hunger=Math.max(0,p.hunger-Math.min(50,Math.floor(h*5)));
+  p.happy=Math.max(0,p.happy-Math.min(30,Math.floor(h*3)));
+  return p;
+}
+function savePetState(id,ps){
+  var all=JSON.parse(localStorage.getItem('em_pets_state')||'{}');
+  all[id]=ps; localStorage.setItem('em_pets_state',JSON.stringify(all));
+}
 function renderPets(){
   var grid=document.getElementById('pets-grid');
   var html='';
   PETS.forEach(function(pet){
     var ok=isPetUnlocked(pet);
-    var lockHtml=ok?'<div class="pet-badge">NEW<\/div>':'<div class="pet-locked-icon">\uD83D\uDD12<\/div>';
+    var ps=ok?getPetState(pet.id):{hunger:0,happy:0};
+    var mood=ok?(ps.happy>60?'\uD83D\uDE0A':ps.happy>30?'\uD83D\uDE10':'\uD83D\uDE22'):'';
+    var info=ok?('\uD83C\uDF56 '+ps.hunger+'% \uD83D\uDE0A '+ps.happy+'%'):pet.cond;
+    var lock=ok?'':'<div class="pet-locked-icon">\uD83D\uDD12<\/div>';
     html+='<div class="pet-card '+(ok?'unlocked':'locked')+'" onclick="showPetDetail(\''+pet.id+'\')">'+
-      '<span class="pet-emoji">'+pet.e+'<\/span>'+
+      '<span class="pet-emoji">'+pet.e+(ok?' '+mood:'')+'<\/span>'+
       '<div class="pet-name">'+pet.name+'<\/div>'+
-      '<div class="pet-cond">'+(ok?'\u2714 \u0E1B\u0E25\u0E14\u0E25\u0E47\u0E2D\u0E01\u0E41\u0E25\u0E49\u0E27':pet.cond)+'<\/div>'+
-      lockHtml+'<\/div>';
+      '<div class="pet-cond">'+info+'<\/div>'+lock+'<\/div>';
   });
   grid.innerHTML=html;
 }
@@ -3270,13 +3262,35 @@ function showPetDetail(id){
   var pet=PETS.filter(function(p){return p.id===id;})[0];
   if(!pet) return;
   var ok=isPetUnlocked(pet);
+  var box=document.getElementById('pet-detail-box');
+  var ab=box.querySelector('.pd-actions');if(ab)ab.remove();
   document.getElementById('pd-emoji').textContent=pet.e;
   document.getElementById('pd-name').textContent=pet.name;
-  document.getElementById('pd-story').textContent=ok?pet.story:'\uD83D\uDD12 \u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E1B\u0E25\u0E14\u0E25\u0E47\u0E2D\u0E01';
-  document.getElementById('pd-cond').textContent='\u0E40\u0E07\u0E37\u0E48\u0E2D\u0E19\u0E44\u0E02: '+pet.cond;
+  if(ok){
+    var ps=getPetState(id);
+    var mood=ps.happy>60?'\uD83D\uDE0A มีความสุข':ps.happy>30?'\uD83D\uDE10 เฉยๆ':'\uD83D\uDE22 อยากอาหาร';
+    document.getElementById('pd-story').textContent=pet.story;
+    document.getElementById('pd-cond').textContent=mood+' | \uD83C\uDF56 '+ps.hunger+'% | \uD83D\uDE0A '+ps.happy+'%';
+    var d=document.createElement('div');d.className='pd-actions';
+    d.style.cssText='display:flex;gap:8px;justify-content:center;margin:12px 0 4px;';
+    d.innerHTML='<button onclick="petAct(\''+id+'\',\'feed\')" style="background:var(--coral);color:white;border:none;border-radius:16px;padding:10px 18px;cursor:pointer;font-size:13px;">\uD83C\uDF56 ให้อาหาร<\/button><button onclick="petAct(\''+id+'\',\'play\')" style="background:#E8C460;color:#3D2B1A;border:none;border-radius:16px;padding:10px 18px;cursor:pointer;font-size:13px;">\uD83C\uDFAE เล่นด้วยกัน<\/button>';
+    var cl=box.querySelector('.pd-close');box.insertBefore(d,cl);
+  }else{
+    document.getElementById('pd-story').textContent='\uD83D\uDD12 ยังไม่ได้ปลดล็อก';
+    document.getElementById('pd-cond').textContent='เงื่อนไข: '+pet.cond;
+  }
   document.getElementById('pet-detail-overlay').classList.add('show');
 }
-function closePetDetail(){document.getElementById('pet-detail-overlay').classList.remove('show');}
+function petAct(id,a){
+  var ps=getPetState(id);
+  if(a==='feed'){ps.hunger=Math.min(100,ps.hunger+35);ps.lastFed=Date.now();toast('\uD83C\uDF56 ให้อาหารแล้ว ✦');}
+  else{ps.happy=Math.min(100,ps.happy+30);ps.hunger=Math.max(0,ps.hunger-8);toast('\uD83C\uDFAE เล่นด้วยกันแล้ว ✦');}
+  savePetState(id,ps);closePetDetail();setTimeout(function(){showPetDetail(id);renderPets();},80);
+}
+function closePetDetail(){
+  var ov=document.getElementById('pet-detail-overlay');if(ov)ov.classList.remove('show');
+  var box=document.getElementById('pet-detail-box');var ab=box&&box.querySelector('.pd-actions');if(ab)ab.remove();
+}
 
 
 /* ── SPINFORTUNE AI ── */
@@ -3326,15 +3340,9 @@ function spinFortuneAI(){if(!aiEnabled()){toast('AI \u0E22\u0E31\u0E07\u0E44\u0E
   <div class="ql-backdrop" onclick="closeSettings()"></div>
   <div class="ql-modal">
     <div class="ql-title">⚙️ ตั้งค่า</div>
-    <div class="set-row"><div class="set-info"><div class="set-name">🔐 บัญชี Google</div><div class="set-desc" id="auth-status">ยังไม่ได้เข้าสู่ระบบ</div></div><button class="set-btn" id="auth-login-btn" onclick="loginGoogle()">เข้าสู่ระบบ</button><button class="set-btn" id="auth-logout-btn" onclick="logout()" style="display:none">ออก</button></div>
+    <div class="set-row"><div class="set-info"><div class="set-name" id="auth-status">🔐 ยังไม่ได้เข้าสู่ระบบ</div><div class="set-desc">ล็อกอิน Google เพื่อ Sync ข้ามเครื่อง</div></div><button class="set-btn" id="auth-logout-btn" onclick="logout()" style="display:none">ออก</button></div>
     <div class="set-row"><div class="set-info"><div class="set-name">🌙 ธีมมืด</div><div class="set-desc">สลับโหมดสว่าง/มืด</div></div><button class="set-btn" onclick="toggleTheme()">สลับ</button></div>
-    <div class="set-row"><div class="set-info"><div class="set-name">☁️ Sync ขึ้น Cloud</div><div class="set-desc">บันทึกข้อมูลไว้บน Supabase</div></div><button class="set-btn" onclick="syncUp();toast('กำลัง sync...')">Sync ↑</button></div>
-    <div class="set-row"><div class="set-info"><div class="set-name">📥 ดึงข้อมูลจาก Cloud</div><div class="set-desc">ใช้เมื่อเปลี่ยนเครื่องหรือ browser</div></div><button class="set-btn" onclick="syncDown()">Sync ↓</button></div>
-    <div class="set-row"><div class="set-info"><div class="set-name">🔑 Device Key</div><div class="set-desc" id="device-key-display" onclick="copyDeviceKey()" style="cursor:pointer;word-break:break-all">กดเพื่อดู</div></div><button class="set-btn" onclick="copyDeviceKey()">คัดลอก</button></div>
-    <div class="set-row"><div class="set-info"><div class="set-name">🔗 ใช้ Key อื่น</div><div class="set-desc">ดึงข้อมูลจากเครื่องอื่นโดยใส่ key</div></div><button class="set-btn" onclick="importDeviceKey()">ใส่ Key</button></div>
     <div class="set-row"><div class="set-info"><div class="set-name">💾 สำรองข้อมูล</div><div class="set-desc">ดาวน์โหลดบันทึกทั้งหมด</div></div><button class="set-btn" onclick="exportData()">Export</button></div>
-    <div class="set-row"><div class="set-info"><div class="set-name">📥 นำเข้าข้อมูล</div><div class="set-desc">กู้คืนจากไฟล์สำรอง</div></div><button class="set-btn" onclick="importData()">Import</button></div>
-    <div class="set-row"><div class="set-info"><div class="set-name">🐱 หน้าต้อนรับ</div><div class="set-desc">ดูหน้าเริ่มต้นอีกครั้ง</div></div><button class="set-btn" onclick="showOnboard()">ดู</button></div>
     <button class="ql-close" onclick="closeSettings()">ปิด</button>
   </div>
 </div>

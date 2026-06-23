@@ -1170,7 +1170,7 @@ function cleanupStaleRecipeIngredients(){
 async function loadCarryForward(branch){
   const today = todayDateStr();
   try {
-    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${today}&select=material_id,actual_big,actual_small,note,count_date&order=count_date.desc`);
+    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${today}&select=material_id,actual_big,actual_small,note,count_date&order=count_date.desc,id.desc`);
     if (!rows) return;
     const seen = new Set();
     rows.forEach(r => {
@@ -1255,22 +1255,21 @@ async function saveDailyCount(matId){
   const mat = materialById(matId);
   setSyncStatus('syncing');
   try {
-    await sb('daily_counts?on_conflict=branch,count_date,material_id', {
-      method: 'POST',
-      body: JSON.stringify([{
-        branch, count_date: todayDateStr(), material_id: matId,
-        received: parseFloat(ri.received) || 0,
-        actual_big: evalExpr(ri.actualBig) + (ri.creditBig || 0),
-        actual_small: evalExpr(ri.actualSmall) + (ri.creditSmall || 0),
-        pos_sale: parseFloat(ri.posSale) || 0,
-        note: (ri.note || '') + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + (ri.actualBig||'') + '|' + (ri.actualSmall||'') : ''),
-        reviewed: !!ri.reviewed,
-        reviewed_at: ri.reviewedAt || null,
-        reviewed_note: ri.reviewedNote || '',
-        updated_at: new Date().toISOString(),
-      }]),
-      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-    });
+    const _sp = { branch, count_date: todayDateStr(), material_id: matId,
+      received: parseFloat(ri.received) || 0,
+      actual_big: evalExpr(ri.actualBig) + (ri.creditBig || 0),
+      actual_small: evalExpr(ri.actualSmall) + (ri.creditSmall || 0),
+      pos_sale: parseFloat(ri.posSale) || 0,
+      note: (ri.note || '') + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + (ri.actualBig||'') + '|' + (ri.actualSmall||'') : ''),
+      reviewed: !!ri.reviewed, reviewed_at: ri.reviewedAt || null, reviewed_note: ri.reviewedNote || '',
+      updated_at: new Date().toISOString(),
+    };
+    if (ri._dbId) {
+      await sb(`daily_counts?id=eq.${ri._dbId}`, { method: 'PATCH', body: JSON.stringify(_sp) });
+    } else {
+      const _nr = await sb('daily_counts', { method: 'POST', body: JSON.stringify([_sp]), headers: { 'Prefer': 'return=representation' } });
+      if (_nr && _nr[0] && _nr[0].id) rawInputs[matId]._dbId = _nr[0].id;
+    }
     setSyncStatus('online');
     pushToGoogleSheet({
       type: 'daily_count',
@@ -2334,7 +2333,7 @@ async function saveMenuSaleForDate(recipeId){
         totals[ing.materialId] = (totals[ing.materialId] || 0) + stockQty * sold;
       });
     });
-    const existingCountRows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${date}&select=*`);
+    const existingCountRows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${date}&select=*&order=id.desc`);
     const existingByMat = {};
     (existingCountRows || []).forEach(r => { existingByMat[r.material_id] = r; });
     const countRows = Object.keys(totals).map(matId => {
@@ -3350,7 +3349,7 @@ async function viewHistoricalAudit(){
   setSyncStatus('syncing');
   try {
     const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${date}&select=*`);
-    const priorRows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${date}&select=material_id,actual_big,actual_small,count_date&order=count_date.desc`);
+    const priorRows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${date}&select=material_id,actual_big,actual_small,count_date&order=count_date.desc,id.desc`);
     setSyncStatus('online');
 
     const carryMap = {};
@@ -3508,7 +3507,9 @@ async function loadPastDate(){
   try {
     const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${date}&select=*`);
     (rows || []).forEach(r => {
+      if (pastInputs[r.material_id]) return;
       pastInputs[r.material_id] = {
+        _dbId: r.id,
         received: r.received ? String(r.received) : '',
         actualBig: (r.actual_big !== null && r.actual_big !== undefined) ? String(r.actual_big) : '',
         actualSmall: r.actual_small ? String(r.actual_small) : '',
@@ -3531,19 +3532,20 @@ async function savePastDailyCount(matId){
   const ri = pastInputs[matId] || {};
   setSyncStatus('syncing');
   try {
-    await sb('daily_counts?on_conflict=branch,count_date,material_id', {
-      method: 'POST',
-      body: JSON.stringify([{
-        branch, count_date: date, material_id: matId,
-        received: parseFloat(ri.received) || 0,
-        actual_big: evalExpr(ri.actualBig) + (ri.creditBig || 0),
-        actual_small: evalExpr(ri.actualSmall) + (ri.creditSmall || 0),
-        pos_sale: parseFloat(ri.posSale) || 0,
-        note: (ri.note || '') + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + (ri.actualBig||'') + '|' + (ri.actualSmall||'') : ''),
-        updated_at: new Date().toISOString(),
-      }]),
-      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-    });
+    const _pp = { branch, count_date: date, material_id: matId,
+      received: parseFloat(ri.received) || 0,
+      actual_big: evalExpr(ri.actualBig) + (ri.creditBig || 0),
+      actual_small: evalExpr(ri.actualSmall) + (ri.creditSmall || 0),
+      pos_sale: parseFloat(ri.posSale) || 0,
+      note: (ri.note || '') + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + (ri.actualBig||'') + '|' + (ri.actualSmall||'') : ''),
+      updated_at: new Date().toISOString(),
+    };
+    if (ri._dbId) {
+      await sb('daily_counts?id=eq.' + ri._dbId, { method: 'PATCH', body: JSON.stringify(_pp) });
+    } else {
+      const _pnr = await sb('daily_counts', { method: 'POST', body: JSON.stringify([_pp]), headers: { 'Prefer': 'return=representation' } });
+      if (_pnr && _pnr[0] && _pnr[0].id) pastInputs[matId]._dbId = _pnr[0].id;
+    }
     setSyncStatus('online');
     const el = document.getElementById('pastsavemsg_' + matId);
     if (el) { el.textContent = 'บันทึกแล้ว ✓'; clearTimeout(pastSaveTimers['flash_'+matId]); pastSaveTimers['flash_'+matId] = setTimeout(() => { el.textContent=''; }, 1500); }

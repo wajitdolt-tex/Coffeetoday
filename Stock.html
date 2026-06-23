@@ -3802,11 +3802,17 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
     if (e.target.closest('#addRecipeDetails > summary')) populateNewRecipeCategory();
   });
 
-  document.getElementById('saveNewRecipeBtn').addEventListener('click', async () => {
-    const name = document.getElementById('newRecipeName').value.trim();
+  document.getElementById('saveNewRecipeBtn').addEventListener('click', async (ev) => {
+    ev.preventDefault(); ev.stopPropagation();
+    const nameEl = document.getElementById('newRecipeName');
+    const name = nameEl ? nameEl.value.trim() : '';
     if (!name) { alert('กรุณาระบุชื่อเมนูก่อน'); return; }
-    const size = document.getElementById('newRecipeSize').value.trim();
-    const category = document.getElementById('newRecipeCategory').value || 'เมนูอื่นๆ';
+    const sizeEl = document.getElementById('newRecipeSize');
+    const catEl  = document.getElementById('newRecipeCategory');
+    const size     = sizeEl ? sizeEl.value.trim() : '';
+    const category = (catEl && catEl.value) ? catEl.value : 'เมนูอื่นๆ';
+    const btn = document.getElementById('saveNewRecipeBtn');
+    btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก…';
     const id = 'custom_' + Date.now();
     const recipe = { id, name, size, category, ingredients: [] };
     RECIPES.push(recipe);
@@ -3815,21 +3821,22 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
       await upsertRecipe(recipe);
       setSyncStatus('online');
       showToast('เพิ่มเมนู "' + name + '" แล้ว ✓ แก้ไขสูตรได้ในรายการด้านล่าง', 'success');
-      // Reset form
-      document.getElementById('newRecipeName').value = '';
-      document.getElementById('newRecipeSize').value = '';
-      document.getElementById('addRecipeDetails').removeAttribute('open');
-      // Refresh lists
-      renderRecipeEditList(recipeEditSearchEl.value);
-      renderMenuList(menuSearchEl ? menuSearchEl.value : '');
-      if (frontMenuSearchEl) renderFrontMenuList(frontMenuSearchEl.value);
-      renderFrontMenuChips();
-      populateCategoryFilter();
-      refreshCategoryDatalist();
+      if (nameEl) nameEl.value = '';
+      if (sizeEl) sizeEl.value = '';
+      const det = document.getElementById('addRecipeDetails');
+      if (det) det.removeAttribute('open');
+      try { if (recipeEditSearchEl) renderRecipeEditList(recipeEditSearchEl.value || ''); } catch(_){}
+      try { renderFrontMenuChips(); } catch(_){}
+      try { if (frontMenuSearchEl) renderFrontMenuList(frontMenuSearchEl.value || ''); } catch(_){}
+      try { populateCategoryFilter(); } catch(_){}
+      try { refreshCategoryDatalist(); } catch(_){}
     } catch(e) {
       console.error('saveNewRecipe failed', e);
+      RECIPES.splice(RECIPES.findIndex(r => r.id === id), 1);
       setSyncStatus('error');
-      showToast('บันทึกไม่สำเร็จ', 'warn');
+      showToast('บันทึกไม่สำเร็จ: ' + (e.message || e), 'warn');
+    } finally {
+      btn.disabled = false; btn.textContent = 'บันทึกเมนูใหม่';
     }
   });
 })();

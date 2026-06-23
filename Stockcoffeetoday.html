@@ -950,6 +950,30 @@ const RECIPES = [
   RCP('snack_fruitjelly','เยลลี่ผลไม้','1 ถุง','เบเกอรี่/ขนม',[ing('fruitjelly',1,'g')]),
   RCP('snack_cornflake','คอนเฟรก','1 ถุง','เบเกอรี่/ขนม',[ing('cornflake',1,'g')]),
   RCP('snack_graincracker','แครเกอร์ธัญพืช','1 ถุง','เบเกอรี่/ขนม',[ing('graincracker',1,'g')]),
+
+  // ---------- ชามะนาวน้ำผึ้ง ----------
+  RCP('honeylemon_hot_8','น้ำผึ้งมะนาวร้อน','8oz','ชามะนาวน้ำผึ้ง',[ing('freshlime',1,'g'),ing('syruphoney',1,'g')]),
+  RCP('honeylemon_soda_22','น้ำผึ้งมะนาวโซดาเย็น','22oz','ชามะนาวน้ำผึ้ง',[ing('freshlime',1,'g'),ing('syruphoney',1,'g'),ing('soda',6,'g')]),
+  RCP('honeylemon_blend_22','น้ำผึ้งมะนาวปั่น','22oz','ชามะนาวน้ำผึ้ง',[ing('freshlime',1,'g'),ing('syruphoney',1,'g')]),
+
+  // ---------- เฉาก๊วยนมสด ----------
+  RCP('chaokuay_milk_16','เฉาก๊วยนมสด','16oz','เมนูพิเศษ',[ing('milk',4,'g'),ing('napukasauce',2,'g'),ing('chaokuay',60,'g')]),
+  RCP('chaokuay_milk_22','เฉาก๊วยนมสด','22oz','เมนูพิเศษ',[ing('milk',6,'g'),ing('napukasauce',2,'g'),ing('chaokuay',60,'g')]),
+  RCP('chaokuay_brownsugar_22','เฉาก๊วยนมสดบราวน์ชูการ์','22oz','เมนูพิเศษ',[ing('milk',6,'g'),ing('syrupbrownsugar',1,'g'),ing('chaokuay',60,'g')]),
+
+  // ---------- นมโอ๊ต ----------
+  RCP('matcha_oatmilk_22','มัทฉะลาเต้นมโอ๊ต','22oz','นมโอ๊ต',[ing('matcha',5,'g'),ing('oatmilk',3,'g')]),
+  RCP('greenmilktea_oatmilk_22','ชาเขียวนมโอ๊ต','22oz','นมโอ๊ต',[ing('greenmilktea',20,'g'),ing('oatmilk',3,'g')]),
+  RCP('thaitea_oatmilk_22','ชาไทยนมโอ๊ต','22oz','นมโอ๊ต',[ing('thaitea',20,'g'),ing('oatmilk',3,'g')]),
+  RCP('cocoa_oatmilk_22','โกโก้นมโอ๊ต','22oz','นมโอ๊ต',[ing('cocoapowder',15,'g'),ing('oatmilk',3,'g')]),
+  RCP('coffee_oatmilk_16','กาแฟนมโอ๊ต','16oz','นมโอ๊ต',[ing('td3',18,'g'),ing('oatmilk',3,'g')]),
+
+  // ---------- อเมริกาโน่โซดา ----------
+  RCP('americano_soda_22','อเมริกาโน่โซดา','22oz','กาแฟเย็น',[ing('td1',18,'g'),ing('soda',6,'g')]),
+
+  // ---------- สมูทตี้ผลไม้ ----------
+  RCP('strawberry_smoothie_16','สตรอเบอรี่สมูทตี้','16oz','สมูทตี้และน้ำผลไม้',[ing('strawberryfrozen',100,'g'),ing('syrupstrawberry',1,'g')]),
+  RCP('mixberry_smoothie_16','มิกซ์เบอรี่สมูทตี้','16oz','สมูทตี้และน้ำผลไม้',[ing('mixberryfrozen',100,'g'),ing('syrupstrawberry',1,'g')]),
   // ---------- แอดเพิ่ม (Add-ons) ----------
   // Add Shot กาแฟ (10g ต่อ 1 shot)
   RCP('addshot_td1','Add Shot กาแฟ TD1','','แอดเพิ่ม',[ing('td1',10,'g')]),
@@ -1170,7 +1194,7 @@ function cleanupStaleRecipeIngredients(){
 async function loadCarryForward(branch){
   const today = todayDateStr();
   try {
-    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${today}&select=material_id,actual_big,actual_small,note,count_date&order=count_date.desc`);
+    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${today}&select=material_id,actual_big,actual_small,note,count_date&order=count_date.desc,id.desc`);
     if (!rows) return;
     const seen = new Set();
     rows.forEach(r => {
@@ -1255,22 +1279,21 @@ async function saveDailyCount(matId){
   const mat = materialById(matId);
   setSyncStatus('syncing');
   try {
-    await sb('daily_counts?on_conflict=branch,count_date,material_id', {
-      method: 'POST',
-      body: JSON.stringify([{
-        branch, count_date: todayDateStr(), material_id: matId,
-        received: parseFloat(ri.received) || 0,
-        actual_big: evalExpr(ri.actualBig) + (ri.creditBig || 0),
-        actual_small: evalExpr(ri.actualSmall) + (ri.creditSmall || 0),
-        pos_sale: parseFloat(ri.posSale) || 0,
-        note: (ri.note || '') + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + (ri.actualBig||'') + '|' + (ri.actualSmall||'') : ''),
-        reviewed: !!ri.reviewed,
-        reviewed_at: ri.reviewedAt || null,
-        reviewed_note: ri.reviewedNote || '',
-        updated_at: new Date().toISOString(),
-      }]),
-      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-    });
+    const _sp = { branch, count_date: todayDateStr(), material_id: matId,
+      received: parseFloat(ri.received) || 0,
+      actual_big: evalExpr(ri.actualBig) + (ri.creditBig || 0),
+      actual_small: evalExpr(ri.actualSmall) + (ri.creditSmall || 0),
+      pos_sale: parseFloat(ri.posSale) || 0,
+      note: (ri.note || '') + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + (ri.actualBig||'') + '|' + (ri.actualSmall||'') : ''),
+      reviewed: !!ri.reviewed, reviewed_at: ri.reviewedAt || null, reviewed_note: ri.reviewedNote || '',
+      updated_at: new Date().toISOString(),
+    };
+    if (ri._dbId) {
+      await sb(`daily_counts?id=eq.${ri._dbId}`, { method: 'PATCH', body: JSON.stringify(_sp) });
+    } else {
+      const _nr = await sb('daily_counts', { method: 'POST', body: JSON.stringify([_sp]), headers: { 'Prefer': 'return=representation' } });
+      if (_nr && _nr[0] && _nr[0].id) rawInputs[matId]._dbId = _nr[0].id;
+    }
     setSyncStatus('online');
     pushToGoogleSheet({
       type: 'daily_count',
@@ -2334,7 +2357,7 @@ async function saveMenuSaleForDate(recipeId){
         totals[ing.materialId] = (totals[ing.materialId] || 0) + stockQty * sold;
       });
     });
-    const existingCountRows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${date}&select=*`);
+    const existingCountRows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${date}&select=*&order=id.desc`);
     const existingByMat = {};
     (existingCountRows || []).forEach(r => { existingByMat[r.material_id] = r; });
     const countRows = Object.keys(totals).map(matId => {
@@ -3350,7 +3373,7 @@ async function viewHistoricalAudit(){
   setSyncStatus('syncing');
   try {
     const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${date}&select=*`);
-    const priorRows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${date}&select=material_id,actual_big,actual_small,count_date&order=count_date.desc`);
+    const priorRows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${date}&select=material_id,actual_big,actual_small,count_date&order=count_date.desc,id.desc`);
     setSyncStatus('online');
 
     const carryMap = {};
@@ -3508,7 +3531,9 @@ async function loadPastDate(){
   try {
     const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${date}&select=*`);
     (rows || []).forEach(r => {
+      if (pastInputs[r.material_id]) return;
       pastInputs[r.material_id] = {
+        _dbId: r.id,
         received: r.received ? String(r.received) : '',
         actualBig: (r.actual_big !== null && r.actual_big !== undefined) ? String(r.actual_big) : '',
         actualSmall: r.actual_small ? String(r.actual_small) : '',
@@ -3531,19 +3556,20 @@ async function savePastDailyCount(matId){
   const ri = pastInputs[matId] || {};
   setSyncStatus('syncing');
   try {
-    await sb('daily_counts?on_conflict=branch,count_date,material_id', {
-      method: 'POST',
-      body: JSON.stringify([{
-        branch, count_date: date, material_id: matId,
-        received: parseFloat(ri.received) || 0,
-        actual_big: evalExpr(ri.actualBig) + (ri.creditBig || 0),
-        actual_small: evalExpr(ri.actualSmall) + (ri.creditSmall || 0),
-        pos_sale: parseFloat(ri.posSale) || 0,
-        note: (ri.note || '') + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + (ri.actualBig||'') + '|' + (ri.actualSmall||'') : ''),
-        updated_at: new Date().toISOString(),
-      }]),
-      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-    });
+    const _pp = { branch, count_date: date, material_id: matId,
+      received: parseFloat(ri.received) || 0,
+      actual_big: evalExpr(ri.actualBig) + (ri.creditBig || 0),
+      actual_small: evalExpr(ri.actualSmall) + (ri.creditSmall || 0),
+      pos_sale: parseFloat(ri.posSale) || 0,
+      note: (ri.note || '') + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + (ri.actualBig||'') + '|' + (ri.actualSmall||'') : ''),
+      updated_at: new Date().toISOString(),
+    };
+    if (ri._dbId) {
+      await sb('daily_counts?id=eq.' + ri._dbId, { method: 'PATCH', body: JSON.stringify(_pp) });
+    } else {
+      const _pnr = await sb('daily_counts', { method: 'POST', body: JSON.stringify([_pp]), headers: { 'Prefer': 'return=representation' } });
+      if (_pnr && _pnr[0] && _pnr[0].id) pastInputs[matId]._dbId = _pnr[0].id;
+    }
     setSyncStatus('online');
     const el = document.getElementById('pastsavemsg_' + matId);
     if (el) { el.textContent = 'บันทึกแล้ว ✓'; clearTimeout(pastSaveTimers['flash_'+matId]); pastSaveTimers['flash_'+matId] = setTimeout(() => { el.textContent=''; }, 1500); }
@@ -3800,11 +3826,17 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
     if (e.target.closest('#addRecipeDetails > summary')) populateNewRecipeCategory();
   });
 
-  document.getElementById('saveNewRecipeBtn').addEventListener('click', async () => {
-    const name = document.getElementById('newRecipeName').value.trim();
+  document.getElementById('saveNewRecipeBtn').addEventListener('click', async (ev) => {
+    ev.preventDefault(); ev.stopPropagation();
+    const nameEl = document.getElementById('newRecipeName');
+    const name = nameEl ? nameEl.value.trim() : '';
     if (!name) { alert('กรุณาระบุชื่อเมนูก่อน'); return; }
-    const size = document.getElementById('newRecipeSize').value.trim();
-    const category = document.getElementById('newRecipeCategory').value || 'เมนูอื่นๆ';
+    const sizeEl = document.getElementById('newRecipeSize');
+    const catEl  = document.getElementById('newRecipeCategory');
+    const size     = sizeEl ? sizeEl.value.trim() : '';
+    const category = (catEl && catEl.value) ? catEl.value : 'เมนูอื่นๆ';
+    const btn = document.getElementById('saveNewRecipeBtn');
+    btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก…';
     const id = 'custom_' + Date.now();
     const recipe = { id, name, size, category, ingredients: [] };
     RECIPES.push(recipe);
@@ -3813,21 +3845,22 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
       await upsertRecipe(recipe);
       setSyncStatus('online');
       showToast('เพิ่มเมนู "' + name + '" แล้ว ✓ แก้ไขสูตรได้ในรายการด้านล่าง', 'success');
-      // Reset form
-      document.getElementById('newRecipeName').value = '';
-      document.getElementById('newRecipeSize').value = '';
-      document.getElementById('addRecipeDetails').removeAttribute('open');
-      // Refresh lists
-      renderRecipeEditList(recipeEditSearchEl.value);
-      renderMenuList(menuSearchEl ? menuSearchEl.value : '');
-      if (frontMenuSearchEl) renderFrontMenuList(frontMenuSearchEl.value);
-      renderFrontMenuChips();
-      populateCategoryFilter();
-      refreshCategoryDatalist();
+      if (nameEl) nameEl.value = '';
+      if (sizeEl) sizeEl.value = '';
+      const det = document.getElementById('addRecipeDetails');
+      if (det) det.removeAttribute('open');
+      try { if (recipeEditSearchEl) renderRecipeEditList(recipeEditSearchEl.value || ''); } catch(_){}
+      try { renderFrontMenuChips(); } catch(_){}
+      try { if (frontMenuSearchEl) renderFrontMenuList(frontMenuSearchEl.value || ''); } catch(_){}
+      try { populateCategoryFilter(); } catch(_){}
+      try { refreshCategoryDatalist(); } catch(_){}
     } catch(e) {
       console.error('saveNewRecipe failed', e);
+      RECIPES.splice(RECIPES.findIndex(r => r.id === id), 1);
       setSyncStatus('error');
-      showToast('บันทึกไม่สำเร็จ', 'warn');
+      showToast('บันทึกไม่สำเร็จ: ' + (e.message || e), 'warn');
+    } finally {
+      btn.disabled = false; btn.textContent = 'บันทึกเมนูใหม่';
     }
   });
 })();

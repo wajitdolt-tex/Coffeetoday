@@ -1683,7 +1683,7 @@ function aiCall(payload, cb){
 
   fetch(url, opts).then(function(r){
     if(timer) clearTimeout(timer);
-    if(!r.ok){ return r.text().then(function(t){ throw new Error('HTTP '+r.status+' '+t); }); }
+    if(!r.ok){ return r.text().then(function(t){ throw new Error('HTTP '+r.status+': '+t.slice(0,100)); }); }
     return r.json();
   }).then(function(data){
     var text='';
@@ -1691,14 +1691,21 @@ function aiCall(payload, cb){
       if(data && data.content && data.content[0] && data.content[0].text) text=data.content[0].text;
       else if(data && data.error) throw new Error(data.error.message||'API error');
     }else{
-      /* Fin proxy returns { result: "..." } or { error: "..." } */
+      /* try every possible format Fin proxy might return */
       if(data && typeof data.result==='string') text=data.result;
-      else if(data && data.error) throw new Error(data.error);
+      else if(data && typeof data.text==='string') text=data.text;
+      else if(data && typeof data.content==='string') text=data.content;
+      else if(data && data.choices && data.choices[0]) text=data.choices[0].message&&data.choices[0].message.content||data.choices[0].text||'';
+      else if(data && data.content && data.content[0] && data.content[0].text) text=data.content[0].text;
+      else if(data && data.error) throw new Error(String(data.error));
+      else{ console.log('unknown proxy response:',JSON.stringify(data).slice(0,300)); throw new Error('\u0E23\u0E39\u0E1B\u0E41\u0E1A\u0E1A\u0E15\u0E2D\u0E1A\u0E01\u0E25\u0E31\u0E1A\u0E44\u0E21\u0E48\u0E23\u0E39\u0E49\u0E08\u0E31\u0E01'); }
     }
+    if(!text){ throw new Error('\u0E44\u0E21\u0E48\u0E21\u0E35\u0E02\u0E49\u0E2D\u0E04\u0E27\u0E32\u0E21\u0E15\u0E2D\u0E1A\u0E01\u0E25\u0E31\u0E1A'); }
     cb(text,null);
   }).catch(function(err){
     if(timer) clearTimeout(timer);
-    var msg=(err && err.name==='AbortError') ? 'หมดเวลาเชื่อมต่อ' : (err.message||'เชื่อมต่อไม่ได้');
+    var msg=(err && err.name==='AbortError') ? '\u0E2B\u0E21\u0E14\u0E40\u0E27\u0E25\u0E32\u0E40\u0E0A\u0E37\u0E48\u0E2D\u0E21\u0E15\u0E48\u0E2D' : (err.message||'\u0E40\u0E0A\u0E37\u0E48\u0E2D\u0E21\u0E15\u0E48\u0E2D\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49');
+    console.log('aiCall error:',msg,'url:',url.slice(-40));
     cb(null,msg);
   });
 }
@@ -2165,7 +2172,12 @@ function analyze(){
 
   aiCall({messages:[{role:'user',content:prompt}], raw:true, max_tokens:700}, function(res,err){
     resetBtn();
-    if(err || !res){ toast('เชื่อมต่อไม่ได้ ลองใหม่นะ \uD83E\uDD99'); return; }
+    if(err || !res){
+      var errMsg=err||'ไม่มีข้อมูลตอบกลับ';
+      console.log('analyze error:',errMsg);
+      toast('\u0E40\u0E0A\u0E37\u0E48\u0E2D\u0E21\u0E15\u0E48\u0E2D\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49 \u2014 '+String(errMsg).slice(0,40));
+      return;
+    }
     var obj=null, em=null, reason='', insight='';
     // attempt 1: clean JSON parse
     try{

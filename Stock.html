@@ -922,10 +922,10 @@ const RECIPES = [
   RCP('lychee_cherrymint_22','Lychee Cherry Blossom Mint','22oz','ลิ้นจี่พิเศษ', [ing('syrupmint',0.5,'g'), ing('syruplychee',1.5,'g'), ing('soda',6,'g'), ing('sakura',60,'g')]),
 
   // ---------- เมนูฮอลิเดย์ / มะพร้าว ----------
-  RCP('holiday_hohoho_matcha_22','Ho Ho Ho! Matcha','22oz','เมนูฮอลิเดย์', [ing('matcha',5,'g')]),
-  RCP('holiday_jinglebell_22','Jingle bell Yuzu & Matcha','22oz','เมนูฮอลิเดย์', [ing('matcha',5,'g'), ing('syrupyuzu',1,'g')]),
-  RCP('holiday_matchacoconut_22','Matcha Coconut snowy','22oz','เมนูฮอลิเดย์', [ing('matcha',5,'g'), ing('milk',1,'g'), ing('whipcream500',10,'g'), ing('cocomax',7,'g')]),
-  RCP('holiday_darknight_22','Dark night Coconut','22oz','เมนูฮอลิเดย์', [ing('td3',9,'g'), ing('cocomax',7,'g')]),
+  RCP('holiday_hohoho_matcha_22','Ho Ho Ho! Matcha','22oz','เมนูฮอลิเดย์', [ing('matcha',5,'g'),ing('cup22oz',1,'g')]),
+  RCP('holiday_jinglebell_22','Jingle bell Yuzu & Matcha','22oz','เมนูฮอลิเดย์', [ing('matcha',5,'g'),ing('syrupyuzu',1,'g'),ing('cup22oz',1,'g')]),
+  RCP('holiday_matchacoconut_22','Matcha Coconut snowy','22oz','เมนูฮอลิเดย์', [ing('matcha',5,'g'),ing('milk',1,'g'),ing('whipcream500',10,'g'),ing('cocomax',7,'g'),ing('cup22oz',1,'g')]),
+  RCP('holiday_darknight_22','Dark night Coconut','22oz','เมนูฮอลิเดย์', [ing('td3',9,'g'),ing('cocomax',7,'g'),ing('cup22oz',1,'g')]),
 
   // ---------- Freppe 22oz ----------
   RCP('freppe_matchastrawberry_22','Matcha Strawberry Snowy (Freppe)','22oz','Freppe', [ing('matcha',10,'g'), ing('milk',5,'g'), ing('napukasauce',2,'g'), ing('syrupstrawberry',1,'g')]),
@@ -3877,11 +3877,12 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
       if (sizeEl) sizeEl.value = '';
       const det = document.getElementById('addRecipeDetails');
       if (det) det.removeAttribute('open');
-      try { if (recipeEditSearchEl) renderRecipeEditList(recipeEditSearchEl.value || ''); } catch(_){}
-      try { renderFrontMenuChips(); } catch(_){}
-      try { if (frontMenuSearchEl) renderFrontMenuList(frontMenuSearchEl.value || ''); } catch(_){}
-      try { populateCategoryFilter(); } catch(_){}
-      try { refreshCategoryDatalist(); } catch(_){}
+      // defer render ไม่ให้บล็อก UI — front menu จะ render ใหม่ตอนกลับหน้าหลัก
+      setTimeout(() => {
+        try { if (recipeEditSearchEl) renderRecipeEditList(recipeEditSearchEl.value || ''); } catch(_){}
+        try { populateCategoryFilter(); } catch(_){}
+        try { refreshCategoryDatalist(); } catch(_){}
+      }, 100);
     } catch(e) {
       console.error('saveNewRecipe failed', e);
       RECIPES.splice(RECIPES.findIndex(r => r.id === id), 1);
@@ -3972,6 +3973,21 @@ function bindQFToggles(wrap){
   });
 }
 
+
+async function fixMissingCupsOnce(){
+  if (localStorage.getItem('cupsFixed_v2')) return;
+  const toFix = ['holiday_hohoho_matcha_22','holiday_jinglebell_22','holiday_matchacoconut_22','holiday_darknight_22'];
+  for (const id of toFix){
+    const r = RECIPES.find(x => x.id === id);
+    if (!r) continue;
+    if (!r.ingredients.find(i => i.materialId === 'cup22oz')){
+      r.ingredients = [...r.ingredients, ing('cup22oz',1,'g')];
+    }
+    try { await upsertRecipe(r); } catch(e){ console.error(e); }
+  }
+  localStorage.setItem('cupsFixed_v2','1');
+}
+
 /* ===========================================================
    Init
 =========================================================== */
@@ -3999,6 +4015,7 @@ function bindQFToggles(wrap){
     await loadMaterialsFromDB();
     await seedRecipesIfEmpty();
     await loadRecipesFromDB();
+    await fixMissingCupsOnce();
     cleanupStaleRecipeIngredients();
     setSyncStatus('online');
     if (syncMsg) syncMsg.textContent = 'พร้อมใช้งาน — เชื่อมต่อฐานข้อมูลสำเร็จ';

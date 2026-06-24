@@ -1075,7 +1075,7 @@ function materialToRow(mat){
     ratio: mat.ratio, carry: mat.carry,
     sub_unit: mat.subUnit || null, sub_ratio: mat.subRatio || null,
     no_fraction: !!mat.noFraction, fast_moving: !!mat.fastMoving,
-    quick_fill_sizes: qf.sizes && qf.sizes.length ? qf.sizes : null,
+    quick_fill_sizes: mat.quickFill === null ? [] : (qf.sizes && qf.sizes.length ? qf.sizes : null),
     updated_at: new Date().toISOString(),
   };
 }
@@ -1115,13 +1115,15 @@ async function loadMaterialsFromDB(){
 
       if (r.quick_fill_sizes && r.quick_fill_sizes.length) {
         mat.quickFill = { sizes: r.quick_fill_sizes };
+      } else if (Array.isArray(r.quick_fill_sizes)) {
+        // [] = ผู้ใช้ปิดตัวช่วยกรอกเร็วตั้งใจ → ไม่ใช้ DEFAULT
+        mat.quickFill = null;
       } else if (r.quick_fill_mode) {
-        // ข้อมูลรูปแบบเก่า (ก่อนรองรับหลายขนาด) -> แปลงเป็นรูปแบบใหม่แล้วดันขึ้น DB ครั้งเดียว
         const migrated = migrateQuickFill({ mode: r.quick_fill_mode, rate1: r.quick_fill_rate1, rate2: r.quick_fill_rate2, label: r.quick_fill_label });
         mat.quickFill = migrated;
         if (migrated) toBackfill.push(mat);
       } else if (DEFAULT_QUICK_FILL[r.id]) {
-        // คอลัมน์นี้ยังไม่เคยถูกตั้งค่าใน DB (เพิ่งเพิ่มคอลัมน์ใหม่) -> ใช้ค่าเริ่มต้นในเครื่อง แล้วดันขึ้น DB ครั้งเดียว
+        // null = ยังไม่เคยตั้งค่าเลย → ใช้ค่าเริ่มต้น
         mat.quickFill = DEFAULT_QUICK_FILL[r.id];
         toBackfill.push(mat);
       } else {

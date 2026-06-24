@@ -511,8 +511,8 @@ body{
 .mp-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 .mp-title{font-size:13px;font-weight:700;color:var(--ink);}
 .mp-refresh{background:var(--coral);color:white;border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;}
-.mp-body{font-size:13px;color:var(--ink2);line-height:1.7;white-space:pre-wrap;}
-.mp-body.loading{color:var(--dim);font-style:italic;}
+.mp-body{font-size:13px;color:var(--ink2);line-height:1.8;white-space:pre-wrap;background:var(--cream,#FDF8F0);border-radius:14px;padding:14px;border-left:3px solid var(--coral);margin-top:4px;}
+.mp-body.loading{color:var(--dim);font-style:italic;background:none;border:none;padding:0;}
 .mp-type{font-size:18px;font-weight:800;color:var(--coral);margin-bottom:6px;font-family:var(--font-d);}
 
 
@@ -944,7 +944,7 @@ body{
   <div class="ob-title">EMOTIA</div>
   <div class="ob-sub">เล่าความรู้สึกให้อัลปาก้าฟัง<br>แล้วค้นพบอารมณ์ที่ซ่อนอยู่<br>สะสม 17 อารมณ์ เลเวลอัพ พูดคุย ✦</div>
   <div style="display:flex;flex-direction:column;gap:10px;align-items:center;width:100%;max-width:280px;margin-top:8px;">
-  <button class="ob-btn" onclick="loginGoogle()" style="background:white;color:var(--coral);border:2px solid var(--coral);width:100%;">🔐 เข้าสู่ระบบด้วย Google <span style="font-size:10px;display:block;opacity:0.7">เพื่อ Sync ข้ามเครื่อง</span></button>
+  <button class="ob-btn" onclick="loginGoogle()" style="background:white;color:var(--coral);border:2px solid var(--coral);width:100%;">📧 เข้าสู่ระบบด้วย Email <span style="font-size:10px;display:block;opacity:0.7">เพื่อ Sync ข้ามเครื่อง — ไม่ต้องตั้งค่า</span></button>
   <button class="ob-btn" onclick="startGame()" style="background:var(--soft,#EDE0CC);color:var(--ink2,#7A5C3D);font-size:13px;width:100%;">เริ่มต้นโดยไม่ล็อกอิน</button>
 </div>
 </div>
@@ -1421,6 +1421,33 @@ body{
   </button>
 </div>
 
+<!-- MAGIC LINK OVERLAY -->
+<div class="ql-overlay" id="magiclink-overlay">
+  <div class="ql-backdrop" onclick="closeMagicLink()"></div>
+  <div class="ql-modal" style="padding:28px 24px;">
+    <div class="ql-head">
+      <span class="ql-title">📧 เข้าสู่ระบบ</span>
+      <button class="ql-close" onclick="closeMagicLink()">✕</button>
+    </div>
+    <div id="ml-form">
+      <p style="font-size:13px;color:var(--ink2);margin:0 0 16px;line-height:1.6;">ใส่ email แล้วกด "ส่ง Link" — ระบบจะส่งลิงก์มาให้ทาง email<br>กดลิงก์นั้นเพื่อล็อกอิน ทุกเครื่องใช้ email เดียวกันก็ Sync ได้</p>
+      <input id="ml-email" type="email" placeholder="your@email.com"
+        style="width:100%;box-sizing:border-box;padding:12px 16px;border-radius:14px;border:1.5px solid var(--soft);font-size:15px;margin-bottom:12px;background:var(--cream);"
+        onkeypress="if(event.key==='Enter')sendMagicLink()">
+      <button id="ml-send-btn" onclick="sendMagicLink()"
+        style="width:100%;background:var(--coral);color:white;border:none;border-radius:20px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;">
+        ส่ง Link
+      </button>
+    </div>
+    <div id="ml-sent-msg" style="display:none;text-align:center;padding:16px 0;">
+      <div style="font-size:40px;margin-bottom:12px;">📨</div>
+      <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:8px;">ส่งแล้ว!</div>
+      <div style="font-size:13px;color:var(--ink2);line-height:1.6;">เช็ค email แล้วกดลิงก์ที่ได้รับ<br>แค่เปิดบนเดียวกับที่เห็นหน้านี้ได้เลย</div>
+      <button onclick="closeMagicLink()" style="margin-top:16px;background:var(--soft);border:none;border-radius:16px;padding:10px 24px;cursor:pointer;font-size:13px;">ปิด</button>
+    </div>
+  </div>
+</div>
+
 <script>
 
 /* ═══════════════ CONFIG ═══════════════ */
@@ -1463,14 +1490,36 @@ function saveSession(session){
   updateAuthUI();
 }
 
-/* Google OAuth login — redirect flow */
+/* Magic Link login — ส่ง link ทาง email */
 function loginGoogle(){
-  var redirect=window.location.href.split('?')[0].split('#')[0];
-  var url=CONFIG.SB_URL+'/auth/v1/authorize?provider=google'
-    +'&redirect_to='+encodeURIComponent(redirect)
-    +'&response_type=token';
-  window.location.href=url;
+  /* เปิด email input overlay */
+  var ov=document.getElementById('magiclink-overlay');
+  if(ov){ ov.classList.add('show'); document.getElementById('ml-email').value=''; document.getElementById('ml-email').focus(); }
 }
+
+function sendMagicLink(){
+  var email=document.getElementById('ml-email').value.trim();
+  if(!email||email.indexOf('@')<0){ toast('\u0E43\u0E2A\u0E48 email \u0E43\u0E2B\u0E49\u0E16\u0E39\u0E01\u0E15\u0E49\u0E2D\u0E07'); return; }
+  var btn=document.getElementById('ml-send-btn');
+  btn.disabled=true; btn.textContent='\u0E01\u0E33\u0E25\u0E31\u0E07\u0E2A\u0E48\u0E07...';
+  var redirect=window.location.href.split('?')[0].split('#')[0];
+  fetch(CONFIG.SB_URL+'/auth/v1/magiclink',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':CONFIG.SB_KEY},
+    body:JSON.stringify({email:email,options:{emailRedirectTo:redirect}})
+  }).then(function(r){
+    btn.disabled=false; btn.textContent='\u0E2A\u0E48\u0E07 Link';
+    if(r.ok||r.status===200||r.status===204){
+      document.getElementById('ml-sent-msg').style.display='block';
+      document.getElementById('ml-form').style.display='none';
+      toast('\uD83D\uDCE7 \u0E2A\u0E48\u0E07 link \u0E44\u0E1B\u0E17\u0E35\u0E48 '+email+' \u0E41\u0E25\u0E49\u0E27!');
+    }else{
+      r.json().then(function(d){ toast('\u0E1C\u0E34\u0E14\u0E1E\u0E25\u0E32\u0E14: '+(d.msg||d.error_description||'ลองใหม่')); });
+    }
+  }).catch(function(){ btn.disabled=false; btn.textContent='\u0E2A\u0E48\u0E07 Link'; toast('\u0E40\u0E0A\u0E37\u0E48\u0E2D\u0E21\u0E15\u0E48\u0E2D\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49'); });
+}
+
+function closeMagicLink(){ var ov=document.getElementById('magiclink-overlay'); if(ov) ov.classList.remove('show'); }
 
 function logout(){
   if(!confirm('ออกจากระบบ?')) return;
@@ -1503,30 +1552,35 @@ function parseAuthHash(){
       saveSession(session);
       /* clean URL */
       window.history.replaceState(null,'',window.location.pathname);
-      toast('\uD83D\uDC4B \u0E22\u0E34\u0E19\u0E14\u0E35\u0E15\u0E49\u0E2D\u0E19\u0E23\u0E31\u0E1A '+( user.email||''));
-      /* sync down with new user */
-      setTimeout(function(){ syncDown(true); },500);
+      toast('\uD83D\uDC4B \u0E22\u0E34\u0E19\u0E14\u0E35\u0E15\u0E49\u0E2D\u0E19\u0E23\u0E31\u0E1A '+(user.email||''));
+      /* push local data first (preserve existing entries), then pull to merge */
+      setTimeout(function(){
+        if(ST.hist && ST.hist.length>0){
+          toast('\u2601\uFE0F \u0E01\u0E33\u0E25\u0E31\u0E07\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E40\u0E01\u0E48\u0E32...');
+          syncUp();
+          setTimeout(function(){ syncDown(false); },1500);
+        }else{
+          syncDown(false);
+        }
+      },600);
     }).catch(function(){ window.history.replaceState(null,'',window.location.pathname); });
   }
 }
 
 function updateAuthUI(){
   var el=document.getElementById('auth-status');
-  var loginBtn=document.getElementById('auth-login-btn');
   var logoutBtn=document.getElementById('auth-logout-btn');
   var homeBtn=document.getElementById('home-auth-btn');
   if(isLoggedIn()){
     var name=AUTH.user.email||(AUTH.user.user_metadata&&AUTH.user.user_metadata.full_name)||'\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49';
-    var short=name.split('@')[0].slice(0,10);
-    if(el) el.textContent=name;
-    if(loginBtn) loginBtn.style.display='none';
+    var short=name.split('@')[0].slice(0,12);
+    if(el) el.textContent='\u2714 '+short;
     if(logoutBtn) logoutBtn.style.display='';
-    if(homeBtn){ homeBtn.textContent='\u2714 '+short; homeBtn.style.borderColor='#4CAF50'; homeBtn.style.color='#4CAF50'; }
+    if(homeBtn){homeBtn.textContent='\u2714 '+short;homeBtn.style.borderColor='#4CAF50';homeBtn.style.color='#4CAF50';}
   }else{
-    if(el) el.textContent='\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E40\u0E02\u0E49\u0E32\u0E2A\u0E39\u0E48\u0E23\u0E30\u0E1A\u0E1A';
-    if(loginBtn) loginBtn.style.display='';
+    if(el) el.textContent='\uD83D\uDD10 \u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E40\u0E02\u0E49\u0E32\u0E2A\u0E39\u0E48\u0E23\u0E30\u0E1A\u0E1A';
     if(logoutBtn) logoutBtn.style.display='none';
-    if(homeBtn){ homeBtn.textContent='\u0E40\u0E02\u0E49\u0E32\u0E2A\u0E39\u0E48\u0E23\u0E30\u0E1A\u0E1A'; homeBtn.style.borderColor='var(--coral)'; homeBtn.style.color='var(--coral)'; }
+    if(homeBtn){homeBtn.textContent='\u0E40\u0E02\u0E49\u0E32\u0E2A\u0E39\u0E48\u0E23\u0E30\u0E1A\u0E1A';homeBtn.style.borderColor='var(--coral)';homeBtn.style.color='var(--coral)';}
   }
 }
 
@@ -1683,29 +1737,34 @@ function aiCall(payload, cb){
 
   fetch(url, opts).then(function(r){
     if(timer) clearTimeout(timer);
-    if(!r.ok){ return r.text().then(function(t){ throw new Error('HTTP '+r.status+': '+t.slice(0,100)); }); }
+    if(!r.ok){
+      return r.text().then(function(t){
+        console.log('aiCall HTTP error:',r.status,t.slice(0,200));
+        throw new Error('HTTP '+r.status+': '+t.slice(0,80));
+      });
+    }
     return r.json();
   }).then(function(data){
+    console.log('aiCall response keys:',Object.keys(data||{}).join(','),'status:',data&&data.status);
     var text='';
     if(CONFIG.MODE==='direct'){
       if(data && data.content && data.content[0] && data.content[0].text) text=data.content[0].text;
       else if(data && data.error) throw new Error(data.error.message||'API error');
     }else{
-      /* try every possible format Fin proxy might return */
       if(data && typeof data.result==='string') text=data.result;
       else if(data && typeof data.text==='string') text=data.text;
       else if(data && typeof data.content==='string') text=data.content;
       else if(data && data.choices && data.choices[0]) text=data.choices[0].message&&data.choices[0].message.content||data.choices[0].text||'';
       else if(data && data.content && data.content[0] && data.content[0].text) text=data.content[0].text;
       else if(data && data.error) throw new Error(String(data.error));
-      else{ console.log('unknown proxy response:',JSON.stringify(data).slice(0,300)); throw new Error('\u0E23\u0E39\u0E1B\u0E41\u0E1A\u0E1A\u0E15\u0E2D\u0E1A\u0E01\u0E25\u0E31\u0E1A\u0E44\u0E21\u0E48\u0E23\u0E39\u0E49\u0E08\u0E31\u0E01'); }
+      else{ console.log('unknown proxy response full:',JSON.stringify(data).slice(0,500)); throw new Error('\u0E23\u0E39\u0E1B\u0E41\u0E1A\u0E1A\u0E15\u0E2D\u0E1A\u0E01\u0E25\u0E31\u0E1A\u0E44\u0E21\u0E48\u0E23\u0E39\u0E49\u0E08\u0E31\u0E01'); }
     }
-    if(!text){ throw new Error('\u0E44\u0E21\u0E48\u0E21\u0E35\u0E02\u0E49\u0E2D\u0E04\u0E27\u0E32\u0E21\u0E15\u0E2D\u0E1A\u0E01\u0E25\u0E31\u0E1A'); }
+    if(!text){ console.log('empty text, full data:',JSON.stringify(data).slice(0,300)); throw new Error('\u0E44\u0E21\u0E48\u0E21\u0E35\u0E02\u0E49\u0E2D\u0E04\u0E27\u0E32\u0E21\u0E15\u0E2D\u0E1A\u0E01\u0E25\u0E31\u0E1A'); }
     cb(text,null);
   }).catch(function(err){
     if(timer) clearTimeout(timer);
-    var msg=(err && err.name==='AbortError') ? '\u0E2B\u0E21\u0E14\u0E40\u0E27\u0E25\u0E32\u0E40\u0E0A\u0E37\u0E48\u0E2D\u0E21\u0E15\u0E48\u0E2D' : (err.message||'\u0E40\u0E0A\u0E37\u0E48\u0E2D\u0E21\u0E15\u0E48\u0E2D\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49');
-    console.log('aiCall error:',msg,'url:',url.slice(-40));
+    var msg=(err && err.name==='AbortError') ? '\u0E2B\u0E21\u0E14\u0E40\u0E27\u0E25\u0E32' : (err.message||'\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49');
+    console.log('aiCall catch:',msg);
     cb(null,msg);
   });
 }
@@ -2818,7 +2877,19 @@ function genMonthProfile(){
     +'2. อธิบายแบบอ่อนโยนว่าเราอยู่ในช่วงชีวิตแบบไหน 2-3 ประโยค\n'
     +'3. ข้อสังเกตเล็กๆ ที่น่าสนใจ 1 ประโยค\n'
     +'ห้ามใช้ bullet หรือ markdown ตอบเป็นข้อความธรรมดา สั้น อ่านง่าย อบอุ่น';
-  aiCall({messages:[{role:'user',content:prompt}],raw:true,max_tokens:500},function(res,err){if(err||!res){body.className='mp-body';body.textContent='วิเคราะห์ไม่ได้';return;}body.className='mp-body';body.textContent=res;});
+  aiCall({messages:[{role:'user',content:prompt}],raw:true,max_tokens:500},function(res,err){
+    if(err||!res){body.className='mp-body';body.textContent='\u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49';return;}
+    /* strip markdown bold/italic/headers */
+    var clean=res
+      .replace(/\*\*([^*]+)\*\*/g,'$1')
+      .replace(/\*([^*]+)\*/g,'$1')
+      .replace(/#{1,3}\s*/g,'')
+      .replace(/^\s*[-•]\s*/gm,'')
+      .trim();
+    body.className='mp-body';
+    body.textContent=clean;
+    body.setAttribute('data-m',ST.calY+'-'+ST.calM);
+  });
 }
 
 function calDay(d){
@@ -3005,8 +3076,9 @@ function init(){
   checkDailyReminder();
   checkMilestone();
   var ob=document.getElementById('onboard');
-  if(ST.onboarded){ob.style.display='none';ob.classList.add('hidden');}
-  else{ob.style.display='';ob.classList.remove('hidden');}
+  /* โชว์หน้าเริ่มต้นทุกครั้งที่เปิดแอป */
+  ob.style.display='';
+  ob.classList.remove('hidden');
   /* auto pull from cloud on load — skip if in sandboxed webview */
   setTimeout(function(){
     if(!CONFIG.SB_KEY||CONFIG.SB_KEY==='PASTE_ANON_KEY_HERE') return;

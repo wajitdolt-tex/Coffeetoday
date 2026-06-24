@@ -3975,19 +3975,34 @@ function bindQFToggles(wrap){
 
 
 async function fixMissingCupsOnce(){
-  if (localStorage.getItem('cupsFixed_v3')) return;
-  // ค้นหาด้วย category + size แทน ID เพื่อรองรับทั้ง hardcoded และ custom recipes
-  const toFix = RECIPES.filter(r =>
-    r.category === 'เมนูฮอลิเดย์' &&
+  if (localStorage.getItem('cupsFixed_v4')) return;
+  // หมวดที่ไม่ใช้แก้วในสูตร (ของกินที่ขาย / add-on / เครื่องดื่มสำเร็จรูปขวด)
+  const NO_CUP_CATS = new Set(['แอดเพิ่ม','เบเกอรี่/ขนม','เครื่องดื่มสำเร็จรูป','สมาชิก/เอกสาร']);
+  const toFix22 = RECIPES.filter(r =>
+    !NO_CUP_CATS.has(r.category) &&
     r.size && r.size.includes('22') &&
     !r.ingredients.find(i => i.materialId === 'cup22oz')
   );
-  for (const r of toFix){
-    r.ingredients = [...r.ingredients, ing('cup22oz',1,'g')];
+  const toFix8 = RECIPES.filter(r =>
+    !NO_CUP_CATS.has(r.category) &&
+    r.size && r.size.includes('8') && !r.size.includes('16') && !r.size.includes('22') &&
+    !r.ingredients.find(i => i.materialId === 'cup8oz')
+  );
+  const toFix12 = RECIPES.filter(r =>
+    !NO_CUP_CATS.has(r.category) &&
+    r.size && r.size.includes('12') &&
+    !r.ingredients.find(i => i.materialId === 'cup12oz')
+  );
+  const allFix = [
+    ...toFix22.map(r => { r.ingredients=[...r.ingredients, ing('cup22oz',1,'g')]; return r; }),
+    ...toFix8.map(r  => { r.ingredients=[...r.ingredients, ing('cup8oz',1,'g')];  return r; }),
+    ...toFix12.map(r => { r.ingredients=[...r.ingredients, ing('cup12oz',1,'g')]; return r; }),
+  ];
+  for (const r of allFix){
     try { await upsertRecipe(r); } catch(e){ console.error('fixCups:', e); }
   }
-  if (toFix.length) console.log('fixMissingCups: added cup22oz to', toFix.map(r=>r.name).join(', '));
-  localStorage.setItem('cupsFixed_v3','1');
+  if (allFix.length) console.log('fixMissingCups v4: patched', allFix.map(r=>r.name+'('+r.size+')').join(', '));
+  localStorage.setItem('cupsFixed_v4','1');
 }
 
 /* ===========================================================

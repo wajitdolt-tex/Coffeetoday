@@ -2317,10 +2317,14 @@ menuSearchEl.addEventListener('input', () => renderMenuList(menuSearchEl.value))
 
 function applyRecipeUsageToMaterials(){
   const totals = {};
+  const CUP_IDS_SET = new Set(['cup22oz','cup16oz','cup12oz','cup8oz']);
   RECIPES.forEach(recipe => {
     const sold = menuSales[recipe.id];
     if (!sold) return;
+    // รีฟิล = ลูกค้าเอาแก้วมาเอง ไม่นับแก้วร้าน
+    const isRefill = recipe.name.includes('รีฟิล') || recipe.name.toLowerCase().includes('refill');
     recipe.ingredients.forEach(ing => {
+      if (isRefill && CUP_IDS_SET.has(ing.materialId)) return; // skip cup สำหรับ refill
       const mat = materialById(ing.materialId);
       const stockQty = mat ? ozRecipeToStockQty(mat, ing.qty) : ing.qty;
       totals[ing.materialId] = (totals[ing.materialId] || 0) + stockQty * sold;

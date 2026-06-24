@@ -4016,6 +4016,7 @@ async function fixMissingCupsOnce(){
     await seedRecipesIfEmpty();
     await loadRecipesFromDB();
     await fixMissingCupsOnce();
+    applyRecipeUsageToMaterials(); // recalculate หลัง fix cup ใน recipe
     cleanupStaleRecipeIngredients();
     setSyncStatus('online');
     if (syncMsg) syncMsg.textContent = 'พร้อมใช้งาน — เชื่อมต่อฐานข้อมูลสำเร็จ';

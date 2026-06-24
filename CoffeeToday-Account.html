@@ -1292,7 +1292,7 @@ async function submitDaily() {
   };
 
   try {
-    await gsPost(cfg.gsUrl, payload);
+    await safePost(cfg.gsUrl, payload);
     toast(isEditMode ? 'อัปเดตข้อมูลสำเร็จ ✓' : 'บันทึกสำเร็จ ✓', 'success');
     isEditMode = false;
     editRowIndex = -1;
@@ -1529,22 +1529,19 @@ function renderPayables() {
   });
 }
 
+async function safePost(url, payload) {
+  var encoded = encodeURIComponent(JSON.stringify(payload));
+  if (encoded.length > 6000) {
+    await fetch(url, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  } else {
+    await gsPost(url, payload);
+  }
+}
+
 async function syncToSheets(type, branch, branchName, items) {
   if (!cfg.gsUrl) return;
   try {
-    var payload = { type: type, branch: branch, branchName: branchName, items: items, timestamp: new Date().toISOString() };
-    var encoded = encodeURIComponent(JSON.stringify(payload));
-    if (encoded.length > 6000) {
-      // payload ใหญ่เกิน — ใช้ POST no-cors แทน JSONP
-      await fetch(cfg.gsUrl, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    } else {
-      await gsPost(cfg.gsUrl, payload);
-    }
+    await safePost(cfg.gsUrl, { type: type, branch: branch, branchName: branchName, items: items, timestamp: new Date().toISOString() });
   } catch(err) { console.log('sync error', type, err); }
 }
 
@@ -1929,7 +1926,7 @@ async function saveLinemanSun() {
         note: note,
         timestamp: new Date().toISOString()
       });
-      await gsPost(cfg.gsUrl, JSON.parse(lmPayload));
+      await safePost(cfg.gsUrl, JSON.parse(lmPayload));
     } catch(e) { console.log('lineman sync error', e); }
   }
 
@@ -2705,7 +2702,7 @@ function addRepayment(id) {
       items: itemsToSync,
       timestamp: new Date().toISOString()
     });
-    gsPost(cfg.gsUrl, JSON.parse(payload))
+    safePost(cfg.gsUrl, JSON.parse(payload))
       .then(function() { toast('ซิงค์รายการคืนเงินแล้ว ✓', 'success'); })
       .catch(function() { toast('บันทึกการคืนเงินแล้ว แต่ sync ไม่สำเร็จ', 'error'); });
   } else {
@@ -3349,7 +3346,7 @@ async function syncCoupons(showToast, btn) {
     for (var i = 0; i < branchKeys.length; i++) {
       var br = branchKeys[i];
       try {
-        await gsPost(cfg.gsUrl, { type: 'coupon_batch', branch: br, branchName: BRANCH_NAMES[br], items: byBranch[br] });
+        await safePost(cfg.gsUrl, { type: 'coupon_batch', branch: br, branchName: BRANCH_NAMES[br], items: byBranch[br] });
       } catch(e) { errors++; console.log('coupon batch error', br, e); }
     }
     if (errors === 0) {

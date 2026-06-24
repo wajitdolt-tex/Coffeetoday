@@ -2002,10 +2002,6 @@ function bindMaterialInputDelegation(container){
     const editBtn = e.target.closest('[data-editname]');
     if (editBtn) editMaterialName(editBtn.dataset.editname);
   });
-  container.addEventListener('toggle', (e) => {
-    const det = e.target.closest('details[id^="qfd_"]');
-    if (det) setQFOpen(det.id.replace('qfd_',''), det.open);
-  }, true);
   container.addEventListener('change', (e) => {
     if (e.target.dataset.toggleMatid) {
       const matId = e.target.dataset.toggleMatid;
@@ -3948,6 +3944,16 @@ document.getElementById('resetCatOrderBtn').addEventListener('click', () => {
   renderCatSortList();
   refreshMatCategoryDatalist();
   populateCategoryFilter();
+});
+
+
+// จำสถานะเปิด/ปิดตัวช่วยกรอกเร็ว (รองรับ Safari)
+document.addEventListener('click', (e) => {
+  const summary = e.target.closest('summary');
+  if (!summary) return;
+  const det = summary.closest('details[id^="qfd_"]');
+  if (!det) return;
+  setTimeout(() => setQFOpen(det.id.replace('qfd_', ''), det.open), 0);
 });
 
 /* ===========================================================

@@ -943,10 +943,7 @@ body{
   <div class="ob-tag">GACHAPON พลังบวก</div>
   <div class="ob-title">EMOTIA</div>
   <div class="ob-sub">เล่าความรู้สึกให้อัลปาก้าฟัง<br>แล้วค้นพบอารมณ์ที่ซ่อนอยู่<br>สะสม 17 อารมณ์ เลเวลอัพ พูดคุย ✦</div>
-  <div style="display:flex;flex-direction:column;gap:10px;align-items:center;width:100%;max-width:280px;margin-top:8px;">
-  <button class="ob-btn" onclick="loginGoogle()" style="background:white;color:var(--coral);border:2px solid var(--coral);width:100%;">📧 เข้าสู่ระบบด้วย Email <span style="font-size:10px;display:block;opacity:0.7">เพื่อ Sync ข้ามเครื่อง — ไม่ต้องตั้งค่า</span></button>
-  <button class="ob-btn" onclick="startGame()" style="background:var(--soft,#EDE0CC);color:var(--ink2,#7A5C3D);font-size:13px;width:100%;">เริ่มต้นโดยไม่ล็อกอิน</button>
-</div>
+  <button class="ob-btn" onclick="startGame()">เริ่มต้น</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -963,7 +960,6 @@ body{
     <div class="home-brand">EMOTIA</div>
     <div class="lv-pill" id="lv-pill">LV. 1</div>
     <span id="sync-status" style="font-size:10px;color:var(--dim,#A08060);opacity:0;transition:opacity 0.5s;margin-left:6px;"></span>
-    <button id="home-auth-btn" onclick="openSettings()" style="margin-left:auto;background:none;border:1.5px solid var(--coral);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--coral);cursor:pointer;font-weight:600;">เข้าสู่ระบบ</button>
   </div>
 
   <div class="exp-row">
@@ -1460,9 +1456,7 @@ var CONFIG = {
   MODE: 'fin',
   FIN_PROXY: 'https://tedzucgqmitfmddxqvge.supabase.co/functions/v1/chat-proxy',
   MODEL: 'claude-sonnet-4-20250514',
-  TIMEOUT_MS: 30000,
-  SB_URL: 'https://ummtqzweedmotrffqrhw.supabase.co',
-  SB_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtbXRxendlZWRtb3RyZmZxcmh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MjU4NjcsImV4cCI6MjA5NTUwMTg2N30.5tVWX6v3bw70Jvi8xrVxS51ogdjaGIppQP0aRhaA5Ug'
+  TIMEOUT_MS: 30000
 };
 
 /* ── AUTH STATE ── */
@@ -2063,8 +2057,6 @@ function save(){
     localStorage.setItem('em_qdate',ST.questDate);
     if(ST.onboarded) localStorage.setItem('em_onb','1');
   }catch(e){}
-  /* auto sync to cloud after every save */
-  setTimeout(syncUp,500);
 }
 
 /* ═══════════════ ONBOARD ═══════════════ */
@@ -3079,14 +3071,7 @@ function init(){
   /* โชว์หน้าเริ่มต้นทุกครั้งที่เปิดแอป */
   ob.style.display='';
   ob.classList.remove('hidden');
-  /* auto pull from cloud on load — skip if in sandboxed webview */
-  setTimeout(function(){
-    if(!CONFIG.SB_KEY||CONFIG.SB_KEY==='PASTE_ANON_KEY_HERE') return;
-    /* detect Claude/iframe sandbox where fetch is blocked */
-    var host=window.location.hostname;
-    var isSandbox=(host===''||host==='localhost'||host.indexOf('claude.ai')>=0||window.self!==window.top);
-    if(!isSandbox) syncDown(true);
-  },1200);
+
 }
 if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded',init);
@@ -3424,7 +3409,6 @@ function spinFortuneAI(){if(!aiEnabled()){toast('AI \u0E22\u0E31\u0E07\u0E44\u0E
   <div class="ql-backdrop" onclick="closeSettings()"></div>
   <div class="ql-modal">
     <div class="ql-title">⚙️ ตั้งค่า</div>
-    <div class="set-row"><div class="set-info"><div class="set-name" id="auth-status">🔐 ยังไม่ได้เข้าสู่ระบบ</div><div class="set-desc">ล็อกอิน Google เพื่อ Sync ข้ามเครื่อง</div></div><button class="set-btn" id="auth-logout-btn" onclick="logout()" style="display:none">ออก</button></div>
     <div class="set-row"><div class="set-info"><div class="set-name">🌙 ธีมมืด</div><div class="set-desc">สลับโหมดสว่าง/มืด</div></div><button class="set-btn" onclick="toggleTheme()">สลับ</button></div>
     <div class="set-row"><div class="set-info"><div class="set-name">💾 สำรองข้อมูล</div><div class="set-desc">ดาวน์โหลดบันทึกทั้งหมด</div></div><button class="set-btn" onclick="exportData()">Export</button></div>
     <button class="ql-close" onclick="closeSettings()">ปิด</button>

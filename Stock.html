@@ -114,6 +114,7 @@
         <button data-admintab="audit" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">📊 ตาราง Audit</button>
         <button data-admintab="menu" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">🍵 ยอดขายเมนู</button>
         <button data-admintab="add" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">➕ เพิ่มวัตถุดิบ</button>
+        <button data-admintab="addmenu" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">🍵 เพิ่มเมนู</button>
         <button data-admintab="edit" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">✏️ แก้ไข/ยกมา</button>
         <button data-admintab="recipe" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">📝 แก้ไขสูตร</button>
         <button data-admintab="past" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">📅 ย้อนหลัง</button>
@@ -281,7 +282,40 @@
         </div>
 
         <!-- แก้ไขสูตรเมนู -->
-        <div id="adminTabRecipe" class="admin-tab-panel">
+        <!-- เพิ่มเมนูใหม่ -->
+        <div id="adminTabAddmenu" class="admin-tab-panel">
+          <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2.5">
+            <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">🍵</span>
+            <h2 class="font-heading font-semibold text-slate-900">เพิ่มเมนูใหม่</h2>
+          </div>
+          <div class="p-5 bg-slate-50/60">
+            <p class="text-xs text-slate-500 mb-4">เพิ่มรายการเมนูที่ต้องการกรอกจำนวนขาย — เพิ่มส่วนผสมได้ที่แท็บ "แก้ไขสูตร" ภายหลัง</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อเมนู <span class="text-red-400">*</span></label>
+                <input id="newRecipeName" type="text" placeholder="เช่น น้ำแตงโม" class="input-base input-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">ขนาด/รายละเอียด</label>
+                <input id="newRecipeSize" type="text" placeholder="เช่น 16oz หรือ 1 แก้ว" class="input-base input-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">หมวดหมู่</label>
+                <select id="newRecipeCategory" class="input-base input-sm">
+                  <option value="">เลือกหมวด</option>
+                </select>
+              </div>
+              <div class="sm:col-span-3 flex items-center gap-3">
+                <button id="saveNewRecipeBtn" class="bg-accent-600 hover:bg-accent-700 text-white font-semibold text-sm rounded-lg px-5 h-9 transition">
+                  บันทึกเมนูใหม่
+                </button>
+                <span class="text-xs text-slate-400">บันทึกแล้วไปเพิ่มส่วนผสมที่แท็บ "แก้ไขสูตร"</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+                <div id="adminTabRecipe" class="admin-tab-panel">
           <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2.5">
             <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">📝</span>
             <h2 class="font-heading font-semibold text-slate-900">แก้ไขสูตรเมนู</h2>
@@ -289,35 +323,6 @@
           <div class="p-5 pb-3 bg-slate-50/60 space-y-3">
             <p class="text-xs text-slate-500">แก้ชื่อเมนู ขนาด หรือรายการวัตถุดิบ+ปริมาณในสูตรได้โดยตรง — แก้แล้วบันทึกอัตโนมัติ</p>
             <input id="recipeEditSearch" type="text" placeholder="ค้นหาเมนูที่ต้องการแก้ไขสูตร" class="input-base">
-            <details id="addRecipeDetails" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-              <summary class="px-4 py-3 flex items-center gap-2 cursor-pointer hover:bg-slate-50 transition list-none">
-                <svg class="chevron w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
-                <span class="text-sm font-semibold text-accent-700">➕ เพิ่มเมนูใหม่</span>
-                <span class="text-xs text-slate-400 ml-1">เพิ่มรายการที่ต้องการกรอกจำนวนขาย</span>
-              </summary>
-              <div class="p-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อเมนู <span class="text-red-400">*</span></label>
-                  <input id="newRecipeName" type="text" placeholder="เช่น น้ำแตงโม" class="input-base input-sm">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-slate-600 mb-1">ขนาด/รายละเอียด</label>
-                  <input id="newRecipeSize" type="text" placeholder="เช่น 16oz หรือ 1 แก้ว" class="input-base input-sm">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-slate-600 mb-1">หมวดหมู่</label>
-                  <select id="newRecipeCategory" class="input-base input-sm">
-                    <option value="">เลือกหมวด</option>
-                  </select>
-                </div>
-                <div class="sm:col-span-3">
-                  <p class="text-[10px] text-slate-400 mb-2">เพิ่มส่วนผสมทีหลังได้ในรายการด้านล่าง — กด "บันทึก" เพื่อสร้างเมนูก่อนได้เลย</p>
-                  <button id="saveNewRecipeBtn" class="bg-accent-600 hover:bg-accent-700 text-white font-semibold text-sm rounded-lg px-5 h-9 transition">
-                    บันทึกเมนูใหม่
-                  </button>
-                </div>
-              </div>
-            </details>
           </div>
           <div id="recipeEditListWrap" class="px-5 pb-5 space-y-4 bg-slate-50/60"></div>
         </div>
@@ -1511,7 +1516,7 @@ document.getElementById('closeAdminBtn').addEventListener('click', () => {
   adminModal.classList.add('hidden');
 });
 
-const ADMIN_TABS = ['audit', 'menu', 'add', 'edit', 'recipe', 'past', 'export'];
+const ADMIN_TABS = ['audit', 'menu', 'add', 'addmenu', 'edit', 'recipe', 'past', 'export'];
 function showAdminTab(tab){
   ADMIN_TABS.forEach(t => {
     const panel = document.getElementById('adminTab' + t.charAt(0).toUpperCase() + t.slice(1));
@@ -1723,10 +1728,12 @@ function slowItemHTML(mat){
 }
 
 function renderCategoryChips(){
-  const cats = categories().filter(cat => MATERIALS.some(m => m.category === cat && m.fastMoving));
-  chipsWrap.innerHTML = cats.map((cat, i) => `
-    <button data-jump="catsec_${i}" class="chip text-[11px] font-medium text-slate-500 bg-slate-100 hover:bg-accent-50 hover:text-accent-700 rounded-full px-3 py-1.5 transition">${cat}</button>
-  `).join('');
+  const allCats = categories();
+  const cats = allCats.filter(cat => MATERIALS.some(m => m.category === cat && m.fastMoving));
+  chipsWrap.innerHTML = cats.map(cat => {
+    const i = allCats.indexOf(cat); // ใช้ index จาก all categories ให้ตรงกับ renderFastMoving
+    return `<button data-jump="catsec_${i}" class="chip text-[11px] font-medium text-slate-500 bg-slate-100 hover:bg-accent-50 hover:text-accent-700 rounded-full px-3 py-1.5 transition">${cat}</button>`;
+  }).join('');
   chipsWrap.querySelectorAll('button[data-jump]').forEach(btn => {
     btn.addEventListener('click', () => {
       const el = document.getElementById(btn.dataset.jump);
@@ -3444,6 +3451,7 @@ function updateStats(){
    แก้ไข/เพิ่มข้อมูลย้อนหลัง (วันที่อื่นที่ไม่ใช่วันนี้)
 =========================================================== */
 const pastInputs = {};
+const pastCarry = {}; // ยกมาสำหรับวันย้อนหลัง
 const pastDateInputEl = document.getElementById('pastDateInput');
 const pastSearchEl = document.getElementById('pastSearch');
 const pastListWrap = document.getElementById('pastListWrap');
@@ -3468,7 +3476,8 @@ function pastCardHTML(mat){
   return `
   <div class="border border-slate-200 rounded-lg p-3 bg-white">
     <p class="font-semibold text-slate-900 text-sm leading-snug">${mat.name}</p>
-    <p class="text-[11px] text-slate-400 mb-2">${mat.noFraction ? `หน่วยนับ: ${mat.bigUnit}` : `1 ${mat.bigUnit} = ${fmtNum(mat.ratio)} ${mat.smallUnit}`}</p>
+    <p class="text-[11px] text-slate-400">${mat.noFraction ? `หน่วยนับ: ${mat.bigUnit}` : `1 ${mat.bigUnit} = ${fmtNum(mat.ratio)} ${mat.smallUnit}`}</p>
+    ${pastCarry[mat.id] !== undefined ? `<p class="text-[11px] text-slate-500 mb-2">ยกมา: <span class="font-semibold">${formatAsBigSmall(mat, pastCarry[mat.id])}</span></p>` : '<div class="mb-2"></div>'}
     <div class="grid ${gridCols} gap-1.5">
       <div>
         <label class="block text-[10px] text-slate-400 mb-0.5">รับเข้า (${mat.bigUnit})</label>
@@ -3528,7 +3537,8 @@ async function loadPastDate(){
   Object.keys(pastInputs).forEach(k => delete pastInputs[k]);
   setSyncStatus('syncing');
   try {
-    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${date}&select=*`);
+    // โหลดข้อมูลวันที่เลือก
+    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${date}&select=*&order=id.desc`);
     (rows || []).forEach(r => {
       if (pastInputs[r.material_id]) return;
       pastInputs[r.material_id] = {
@@ -3537,11 +3547,19 @@ async function loadPastDate(){
         actualBig: (r.actual_big !== null && r.actual_big !== undefined) ? String(r.actual_big) : '',
         actualSmall: r.actual_small ? String(r.actual_small) : '',
         posSale: r.pos_sale ? String(r.pos_sale) : '',
-        note: r.note || '',
+        note: r.note ? r.note.split('\u200b')[0] : '',
       };
-      if (r.material_id === 'napukasauce') {
-        pastInputs.napukasauce.creditedBatches = pastInputs.napukasauce.actualBig || '0';
-      }
+    });
+    // โหลดยอดยกมา (วันก่อนหน้า)
+    Object.keys(pastCarry).forEach(k => delete pastCarry[k]);
+    const priorRows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${date}&select=material_id,actual_big,actual_small,count_date&order=count_date.desc,id.desc`);
+    const seen = new Set();
+    (priorRows || []).forEach(r => {
+      if (seen.has(r.material_id)) return;
+      seen.add(r.material_id);
+      const mat = materialById(r.material_id);
+      if (!mat) return;
+      pastCarry[r.material_id] = (Number(r.actual_big)||0)*mat.ratio + (mat.noFraction?0:(Number(r.actual_small)||0));
     });
     setSyncStatus('online');
   } catch (e) { console.error('loadPastDate failed', e); setSyncStatus('error'); }
@@ -3820,9 +3838,7 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
     }
   }
 
-  document.getElementById('adminTabRecipe').addEventListener('click', (e) => {
-    if (e.target.closest('#addRecipeDetails > summary')) populateNewRecipeCategory();
-  });
+  document.getElementById('adminTabAddmenu').addEventListener('click', () => { populateNewRecipeCategory(); });
 
   document.getElementById('saveNewRecipeBtn').addEventListener('click', async (ev) => {
     ev.preventDefault(); ev.stopPropagation();

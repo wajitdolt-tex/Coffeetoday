@@ -418,6 +418,7 @@ tr:hover td{background:var(--bg3);}
           <option value="free_greenmilk">ฟรีชาเขียวนม (50฿)</option>
           <option value="discount50">ส่วนลด 50%</option>
           <option value="buy1get1">1ฟรี1 / ส่วนลดเครื่องดื่ม 1ฟรี1</option>
+          <option value="free_monday">ฟรีกาแฟพรีเมี่ยม MondayBeans (65฿)</option>
         </select>
       </div>
       <div class="form-row" id="cp-amount-row" style="display:none;width:150px;margin-bottom:0;">
@@ -3116,7 +3117,8 @@ var CP_TYPES = {
   free_thai:     { label: 'ฟรีชาไทย',                amount: 50,  fixed: true },
   free_greenmilk:{ label: 'ฟรีชาเขียวนม',            amount: 50,  fixed: true },
   discount50:    { label: 'ส่วนลด 50%',              amount: 0,   fixed: false },
-  buy1get1:      { label: '1ฟรี1 / ส่วนลดเครื่องดื่ม 1ฟรี1', amount: 0, fixed: false }
+  buy1get1:      { label: '1ฟรี1 / ส่วนลดเครื่องดื่ม 1ฟรี1', amount: 0, fixed: false },
+  free_monday:   { label: 'ฟรีกาแฟพรีเมี่ยม MondayBeans', amount: 65, fixed: true }
 };
 
 function onCpTypeChange() {

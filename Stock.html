@@ -3975,21 +3975,22 @@ function bindQFToggles(wrap){
 
 
 async function fixMissingCupsOnce(){
-  if (localStorage.getItem('cupsFixed_v4')) return;
+  if (localStorage.getItem('cupsFixed_v5')) return;
   // หมวดที่ไม่ใช้แก้วในสูตร (ของกินที่ขาย / add-on / เครื่องดื่มสำเร็จรูปขวด)
   const NO_CUP_CATS = new Set(['แอดเพิ่ม','เบเกอรี่/ขนม','เครื่องดื่มสำเร็จรูป','สมาชิก/เอกสาร']);
+  const noRefill = r => !r.name.includes('รีฟิล') && !r.name.toLowerCase().includes('refill');
   const toFix22 = RECIPES.filter(r =>
-    !NO_CUP_CATS.has(r.category) &&
+    !NO_CUP_CATS.has(r.category) && noRefill(r) &&
     r.size && r.size.includes('22') &&
     !r.ingredients.find(i => i.materialId === 'cup22oz')
   );
   const toFix8 = RECIPES.filter(r =>
-    !NO_CUP_CATS.has(r.category) &&
+    !NO_CUP_CATS.has(r.category) && noRefill(r) &&
     r.size && r.size.includes('8') && !r.size.includes('16') && !r.size.includes('22') &&
     !r.ingredients.find(i => i.materialId === 'cup8oz')
   );
   const toFix12 = RECIPES.filter(r =>
-    !NO_CUP_CATS.has(r.category) &&
+    !NO_CUP_CATS.has(r.category) && noRefill(r) &&
     r.size && r.size.includes('12') &&
     !r.ingredients.find(i => i.materialId === 'cup12oz')
   );
@@ -4001,8 +4002,20 @@ async function fixMissingCupsOnce(){
   for (const r of allFix){
     try { await upsertRecipe(r); } catch(e){ console.error('fixCups:', e); }
   }
-  if (allFix.length) console.log('fixMissingCups v4: patched', allFix.map(r=>r.name+'('+r.size+')').join(', '));
-  localStorage.setItem('cupsFixed_v4','1');
+  // ลบ cup22/8/12oz ออกจาก refill recipes ที่อาจถูกเพิ่มโดย fix เวอร์ชันก่อน
+  const CUP_IDS = ['cup22oz','cup8oz','cup12oz'];
+  const refillFix = RECIPES.filter(r =>
+    (r.name.includes('รีฟิล') || r.name.toLowerCase().includes('refill')) &&
+    r.ingredients.find(i => CUP_IDS.includes(i.materialId))
+  );
+  for (const r of refillFix){
+    r.ingredients = r.ingredients.filter(i => !CUP_IDS.includes(i.materialId));
+    try { await upsertRecipe(r); } catch(e){ console.error('fixRefill:', e); }
+  }
+  if (allFix.length || refillFix.length)
+    console.log('fixMissingCups v5: added cups to', allFix.map(r=>r.name).join(', '),
+      '| removed from refill:', refillFix.map(r=>r.name).join(', '));
+  localStorage.setItem('cupsFixed_v5','1');
 }
 
 /* ===========================================================

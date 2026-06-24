@@ -1532,7 +1532,19 @@ function renderPayables() {
 async function syncToSheets(type, branch, branchName, items) {
   if (!cfg.gsUrl) return;
   try {
-    await gsPost(cfg.gsUrl, { type: type, branch: branch, branchName: branchName, items: items, timestamp: new Date().toISOString() });
+    var payload = { type: type, branch: branch, branchName: branchName, items: items, timestamp: new Date().toISOString() };
+    var encoded = encodeURIComponent(JSON.stringify(payload));
+    if (encoded.length > 6000) {
+      // payload ใหญ่เกิน — ใช้ POST no-cors แทน JSONP
+      await fetch(cfg.gsUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } else {
+      await gsPost(cfg.gsUrl, payload);
+    }
   } catch(err) { console.log('sync error', type, err); }
 }
 

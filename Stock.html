@@ -1518,6 +1518,7 @@ document.getElementById('closeAdminBtn').addEventListener('click', () => {
 
 const ADMIN_TABS = ['audit', 'menu', 'add', 'addmenu', 'edit', 'recipe', 'past', 'export'];
 function showAdminTab(tab){
+  if (tab === 'addmenu') populateNewRecipeCategory();
   ADMIN_TABS.forEach(t => {
     const panel = document.getElementById('adminTab' + t.charAt(0).toUpperCase() + t.slice(1));
     const btn = document.querySelector(`.admin-tab-btn[data-admintab="${t}"]`);
@@ -3838,7 +3839,7 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
     }
   }
 
-  document.getElementById('adminTabAddmenu').addEventListener('click', () => { populateNewRecipeCategory(); });
+  // populateNewRecipeCategory จะถูกเรียกใน showAdminTab แทน
 
   document.getElementById('saveNewRecipeBtn').addEventListener('click', async (ev) => {
     ev.preventDefault(); ev.stopPropagation();

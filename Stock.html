@@ -2087,6 +2087,12 @@ function getAdminMenuQty(recipeId){
   return adminMenuViewDate ? (adminMenuSalesCache[recipeId] ?? '') : (menuSales[recipeId] ?? '');
 }
 
+
+function hasCupIngredient(recipe){
+  var CUPS = ['cup22oz','cup16oz','cup12oz','cup8oz'];
+  return recipe.ingredients && recipe.ingredients.some(function(i){ return CUPS.indexOf(i.materialId) >= 0; });
+}
+
 function menuCardHTML(recipe){
   const qty = getAdminMenuQty(recipe.id);
   const dateLabel = adminMenuViewDate ? `จำนวนที่ขายวันที่ ${adminMenuViewDate} (แก้ว)` : 'จำนวนที่ขายวันนี้ (แก้ว)';
@@ -2105,7 +2111,13 @@ function menuCardHTML(recipe){
       <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${qty}"
         data-recipeid="${recipe.id}" class="menu-qty-input w-full input-base input-sm !h-10 font-num text-center">
     </div>
-    <p id="menulive_${recipe.id}" class="text-[11px] mt-1.5 ${qty ? 'text-green-600 font-medium' : 'text-slate-400'}">${qty ? `บันทึกแล้ว ✓ ขาย ${fmtNum(qty)} แก้ว` : 'ยังไม่ได้กรอก'}</p>
+    ${hasCupIngredient(recipe) ? `
+    <div class="mt-1.5 flex items-center gap-1.5">
+      <label class="text-[10px] text-slate-400 whitespace-nowrap">หักรีฟิล (ใบ)</label>
+      <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${getMenuRefill(recipe.id) || ''}"
+        data-recipeid="${recipe.id}" class="menu-refill-input flex-1 input-base input-sm !h-8 font-num text-center text-xs">
+    </div>` : ''}
+    <p id="menulive_${recipe.id}" class="text-[11px] mt-1.5 ${qty ? 'text-green-600 font-medium' : 'text-slate-400'}">${qty ? `บันทึกแล้ว ✓ ขาย ${fmtNum(qty)} แก้ว${getMenuRefill(recipe.id) ? ` (หักรีฟิล ${getMenuRefill(recipe.id)})` : ''}` : 'ยังไม่ได้กรอก'}</p>
   </div>`;
 }
 
@@ -2328,6 +2340,14 @@ function renderMenuList(filterText){
 
 menuSearchEl.addEventListener('input', () => renderMenuList(menuSearchEl.value));
 
+
+// เก็บจำนวนรีฟิลต่อ recipe (หักออกจากยอดแก้ว)
+var menuRefills = {};
+function getMenuRefill(recipeId){ return menuRefills[recipeId] || 0; }
+function setMenuRefill(recipeId, val){
+  if (val > 0) menuRefills[recipeId] = val; else delete menuRefills[recipeId];
+}
+
 function applyRecipeUsageToMaterials(){
   const totals = {};
   const CUP_IDS_SET = new Set(['cup22oz','cup16oz','cup12oz','cup8oz']);
@@ -2340,7 +2360,11 @@ function applyRecipeUsageToMaterials(){
       if (isRefill && CUP_IDS_SET.has(ing.materialId)) return; // skip cup สำหรับ refill
       const mat = materialById(ing.materialId);
       const stockQty = mat ? ozRecipeToStockQty(mat, ing.qty) : ing.qty;
-      totals[ing.materialId] = (totals[ing.materialId] || 0) + stockQty * sold;
+      // สำหรับแก้ว: หักจำนวนรีฟิลที่กรอกแยกออก
+      const effectiveSold = CUP_IDS_SET.has(ing.materialId)
+        ? Math.max(0, sold - getMenuRefill(recipe.id))
+        : sold;
+      totals[ing.materialId] = (totals[ing.materialId] || 0) + stockQty * effectiveSold;
     });
   });
   Object.keys(totals).forEach(matId => {
@@ -2448,6 +2472,14 @@ menuListWrap.addEventListener('input', (e) => {
   const id = e.target.dataset.recipeid;
   if (!id) return;
   const v = parseFloat(e.target.value) || 0;
+
+  // ช่องหักรีฟิล
+  if (e.target.classList.contains('menu-refill-input')) {
+    setMenuRefill(id, v);
+    applyRecipeUsageToMaterials();
+    updateMenuLive(id);
+    return;
+  }
 
   if (adminMenuViewDate) {
     if (v > 0) adminMenuSalesCache[id] = v; else delete adminMenuSalesCache[id];

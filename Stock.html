@@ -955,6 +955,7 @@ const RECIPES = [
   RCP('snack_crispybread1','ขนมปังกรอบพริกเผาหมูหยอง','1 ถุง','เบเกอรี่/ขนม',[ing('crispybread1',1,'g')]),
   RCP('snack_crispybreadbutter','ขนมปังกรอบรสเนย','1 ถุง','เบเกอรี่/ขนม',[ing('crispybreadbutter',1,'g')]),
   RCP('snack_crispybreadsugar','ขนมปังกรอบเนยน้ำตาล','1 ถุง','เบเกอรี่/ขนม',[ing('crispybreadsugar',1,'g')]),
+  RCP('snack_crispybreadgarlic','ขนมปังกรอบเนยกระเทียม','1 ถุง','เบเกอรี่/ขนม',[ing('crispybreadgarlic',1,'g')]),
   RCP('snack_bananachips','กล้วยฉาบ','1 ถุง','เบเกอรี่/ขนม',[ing('bananachips',1,'g')]),
   RCP('snack_tarochips','เผือกฉาบ','1 ถุง','เบเกอรี่/ขนม',[ing('tarochips',1,'g')]),
   RCP('snack_pineappletart','ทาร์ตสับปะรด','1 กล่อง','เบเกอรี่/ขนม',[ing('pineappletart',1,'g')]),
@@ -3852,20 +3853,21 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
   function populateNewRecipeCategory(){
     const sel = document.getElementById('newRecipeCategory');
     if (!sel) return;
-    const existing = [...sel.options].map(o => o.value);
-    recipeCategories().forEach(cat => {
-      if (!existing.includes(cat)) {
-        const opt = document.createElement('option');
-        opt.value = opt.textContent = cat;
-        sel.appendChild(opt);
-      }
+    if (sel.dataset.populated) return; // ทำแค่ครั้งเดียว
+    // หยุด event ไม่ให้ bubble ไปถึง container handler (ป้องกัน crash บน Safari)
+    sel.addEventListener('change', function(e){ e.stopPropagation(); });
+    const cats = recipeCategories();
+    cats.forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = opt.textContent = cat;
+      sel.appendChild(opt);
     });
-    // Add fallback
-    if (!existing.includes('เมนูอื่นๆ')) {
+    if (!cats.includes('เมนูอื่นๆ')) {
       const opt = document.createElement('option');
       opt.value = opt.textContent = 'เมนูอื่นๆ';
       sel.appendChild(opt);
     }
+    sel.dataset.populated = '1';
   }
 
   // populateNewRecipeCategory จะถูกเรียกใน showAdminTab แทน

@@ -117,6 +117,7 @@
         <button data-admintab="addmenu" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">🍵 เพิ่มเมนู</button>
         <button data-admintab="edit" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">✏️ แก้ไข/ยกมา</button>
         <button data-admintab="recipe" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">📝 แก้ไขสูตร</button>
+        <button data-admintab="borrow" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">🔄 ยืม/คืน</button>
         <button data-admintab="past" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">📅 ย้อนหลัง</button>
         <button data-admintab="export" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">📥 ส่งออก</button>
       </div>
@@ -325,6 +326,11 @@
             <input id="recipeEditSearch" type="text" placeholder="ค้นหาเมนูที่ต้องการแก้ไขสูตร" class="input-base">
           </div>
           <div id="recipeEditListWrap" class="px-5 pb-5 space-y-4 bg-slate-50/60"></div>
+        </div>
+
+        <!-- ยืม/คืนของ -->
+        <div id="adminTabBorrow" class="admin-tab-panel">
+          <div id="borrowTabContent" class="p-4"><p class="text-slate-400 text-sm">กำลังโหลด...</p></div>
         </div>
 
         <!-- แก้ไขข้อมูลย้อนหลัง -->
@@ -1518,7 +1524,7 @@ document.getElementById('closeAdminBtn').addEventListener('click', () => {
   adminModal.classList.add('hidden');
 });
 
-const ADMIN_TABS = ['audit', 'menu', 'add', 'addmenu', 'edit', 'recipe', 'past', 'export'];
+const ADMIN_TABS = ['audit', 'menu', 'add', 'addmenu', 'edit', 'recipe', 'borrow', 'past', 'export'];
 function showAdminTab(tab){
   ADMIN_TABS.forEach(t => {
     const panel = document.getElementById('adminTab' + t.charAt(0).toUpperCase() + t.slice(1));
@@ -1533,6 +1539,7 @@ function showAdminTab(tab){
     }
   });
   if (tab === 'addmenu') { try { populateNewRecipeCategory(); } catch(_){} }
+  if (tab === 'borrow') renderBorrowTab();
 }
 document.querySelectorAll('.admin-tab-btn').forEach(btn => {
   btn.addEventListener('click', () => showAdminTab(btn.dataset.admintab));
@@ -3977,6 +3984,200 @@ function bindQFToggles(wrap){
   });
 }
 
+
+
+/* ============================================================
+   ยืม/คืนของ (Borrow & Lend Tracking)
+============================================================ */
+function getBorrowKey(){ return 'borrowLogs_' + (currentBranch || 'default'); }
+function loadBorrowLogs(){ try { return JSON.parse(localStorage.getItem(getBorrowKey()) || '[]'); } catch(e){ return []; } }
+function saveBorrowLogsData(logs){ try { localStorage.setItem(getBorrowKey(), JSON.stringify(logs)); } catch(e){} }
+
+function todayISO(){ return new Date().toLocaleDateString('sv-SE'); }
+
+function renderBorrowTab(){
+  const wrap = document.getElementById('borrowTabContent');
+  if (!wrap) return;
+  const logs = loadBorrowLogs().sort((a,b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  const pending = logs.filter(l => l.status === 'pending');
+  const done    = logs.filter(l => l.status === 'completed');
+  const matOpts = MATERIALS.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+
+  wrap.innerHTML = `
+<div class="space-y-4">
+  <h3 class="font-bold text-slate-700 text-base">🔄 บันทึกการยืม-คืนของ</h3>
+
+  <details id="borrowFormDetails" class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+    <summary class="px-4 py-3 text-sm font-semibold text-accent-700 cursor-pointer list-none flex items-center gap-2">
+      <span class="text-lg">+</span> เพิ่มรายการ
+    </summary>
+    <div class="px-4 pb-4 space-y-3 border-t border-slate-100 pt-3">
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="text-[11px] text-slate-500 font-semibold">ประเภท</label>
+          <select id="bType" class="input-base input-sm w-full mt-0.5">
+            <option value="borrow_in">📥 ยืมมา (เพิ่มสต็อก)</option>
+            <option value="lend_out">📤 ให้ยืม (ลดสต็อก)</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[11px] text-slate-500 font-semibold">วันที่</label>
+          <input type="date" id="bDate" value="${todayISO()}" class="input-base input-sm w-full mt-0.5">
+        </div>
+      </div>
+      <div>
+        <label class="text-[11px] text-slate-500 font-semibold">วัตถุดิบ</label>
+        <select id="bMaterial" class="input-base input-sm w-full mt-0.5">
+          <option value="">-- เลือกวัตถุดิบ --</option>
+          ${matOpts}
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="text-[11px] text-slate-500 font-semibold" id="bBigLabel">จำนวน (หน่วยใหญ่)</label>
+          <input type="number" id="bQtyBig" min="0" step="1" placeholder="0" class="input-base input-sm w-full mt-0.5 font-num">
+        </div>
+        <div id="bSmallWrap">
+          <label class="text-[11px] text-slate-500 font-semibold" id="bSmallLabel">เศษ (หน่วยเล็ก)</label>
+          <input type="number" id="bQtySmall" min="0" step="any" placeholder="0" class="input-base input-sm w-full mt-0.5 font-num">
+        </div>
+      </div>
+      <div>
+        <label class="text-[11px] text-slate-500 font-semibold">สาขา/บุคคล</label>
+        <input type="text" id="bCounterpart" placeholder="เช่น โลตัสระยอง" class="input-base input-sm w-full mt-0.5">
+      </div>
+      <div>
+        <label class="text-[11px] text-slate-500 font-semibold">หมายเหตุ</label>
+        <input type="text" id="bNote" placeholder="ไม่บังคับ" class="input-base input-sm w-full mt-0.5">
+      </div>
+      <p class="text-[10px] text-slate-400">⚠️ ถ้ายืมวันอื่น (ย้อนหลัง) ยอดสต็อกจะไม่ถูกปรับอัตโนมัติ ต้องแก้ใน "ย้อนหลัง" เอง</p>
+      <button id="bSaveBtn" class="w-full py-2.5 rounded-xl bg-accent-600 text-white font-semibold text-sm">บันทึก</button>
+    </div>
+  </details>
+
+  <div>
+    <p class="text-sm font-semibold text-slate-700 mb-2">⏳ ค้างอยู่ ${pending.length > 0 ? `<span class="text-accent-600">(${pending.length})</span>` : ''}</p>
+    ${pending.length === 0
+      ? '<p class="text-xs text-slate-400 text-center py-6 bg-slate-50 rounded-xl">ไม่มีรายการค้าง ✓</p>'
+      : '<div class="space-y-2">' + pending.map(borrowRowHTML).join('') + '</div>'}
+  </div>
+
+  ${done.length > 0 ? `
+  <details>
+    <summary class="text-sm font-semibold text-slate-400 cursor-pointer list-none">✓ เสร็จแล้ว (${done.length})</summary>
+    <div class="mt-2 space-y-2">${done.map(borrowRowHTML).join('')}</div>
+  </details>` : ''}
+</div>`;
+
+  const matSel = document.getElementById('bMaterial');
+  if (matSel) matSel.addEventListener('change', function(){
+    const m = materialById(this.value);
+    if (!m) return;
+    document.getElementById('bBigLabel').textContent = 'จำนวน (' + m.bigUnit + ')';
+    document.getElementById('bSmallLabel').textContent = 'เศษ (' + m.smallUnit + ')';
+    document.getElementById('bSmallWrap').style.display = m.noFraction ? 'none' : '';
+  });
+
+  const saveBtn = document.getElementById('bSaveBtn');
+  if (saveBtn) saveBtn.addEventListener('click', saveBorrowLog);
+
+  wrap.querySelectorAll('[data-baction]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id = this.dataset.bid, action = this.dataset.baction;
+      if (action === 'complete') completeBorrowLog(id);
+      if (action === 'delete')   deleteBorrowLog(id);
+    });
+  });
+}
+
+function borrowRowHTML(l){
+  var mat     = materialById(l.materialId);
+  var qtyStr  = mat ? formatAsBigSmall(mat, l.qtyBig * mat.ratio + (l.qtySmall || 0))
+                    : l.qtyBig + (l.qtySmall ? ' + ' + l.qtySmall : '');
+  var typeLabel = l.type === 'borrow_in' ? '📥 ยืมมา' : '📤 ให้ยืม';
+  var typeColor = l.type === 'borrow_in' ? 'bg-green-50 text-green-700 border-green-200'
+                                         : 'bg-orange-50 text-orange-700 border-orange-200';
+  var done = l.status === 'completed';
+  return '<div class="bg-white border ' + (done ? 'border-slate-100 opacity-50' : 'border-slate-200') + ' rounded-xl p-3 space-y-1.5">' +
+    '<div class="flex items-center justify-between">' +
+      '<span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ' + typeColor + '">' + typeLabel + '</span>' +
+      '<span class="text-[10px] text-slate-400 font-num">' + l.date + '</span>' +
+    '</div>' +
+    '<p class="text-sm font-semibold text-slate-800">' + l.materialName + ' <span class="text-accent-700 font-num">' + qtyStr + '</span></p>' +
+    '<p class="text-xs text-slate-500">' + (l.counterpart || '-') + (l.note ? ' · ' + l.note : '') + '</p>' +
+    (done
+      ? '<p class="text-[11px] text-green-600">✓ ' + (l.type === 'borrow_in' ? 'คืนแล้ว' : 'รับคืนแล้ว') + (l.completedDate ? ' ' + l.completedDate : '') + '</p>'
+      : '<div class="flex gap-2 pt-1">' +
+          '<button data-bid="' + l.id + '" data-baction="complete" class="flex-1 text-xs py-1.5 rounded-lg bg-green-50 text-green-700 font-semibold border border-green-200">' +
+            (l.type === 'borrow_in' ? '✓ คืนแล้ว' : '✓ รับคืนแล้ว') +
+          '</button>' +
+          '<button data-bid="' + l.id + '" data-baction="delete" class="px-3 py-1.5 rounded-lg bg-red-50 text-red-500 text-xs border border-red-100">🗑</button>' +
+        '</div>'
+    ) +
+  '</div>';
+}
+
+function saveBorrowLog(){
+  var matId = document.getElementById('bMaterial').value;
+  if (!matId){ alert('กรุณาเลือกวัตถุดิบ'); return; }
+  var mat     = materialById(matId);
+  var type    = document.getElementById('bType').value;
+  var date    = document.getElementById('bDate').value || todayISO();
+  var qtyBig  = parseFloat(document.getElementById('bQtyBig').value) || 0;
+  var qtySmall= parseFloat(document.getElementById('bQtySmall').value) || 0;
+  if (qtyBig === 0 && qtySmall === 0){ alert('กรุณาใส่จำนวน'); return; }
+  var log = {
+    id: Date.now().toString(), date: date, type: type,
+    materialId: matId, materialName: mat ? mat.name : matId,
+    qtyBig: qtyBig, qtySmall: qtySmall,
+    counterpart: document.getElementById('bCounterpart').value.trim(),
+    note: document.getElementById('bNote').value.trim(),
+    status: 'pending', completedDate: null
+  };
+  var logs = loadBorrowLogs(); logs.push(log); saveBorrowLogsData(logs);
+  if (date === todayISO()) applyBorrowStockImpact(log, false);
+  showToast('บันทึกแล้ว ✓', 'success');
+  document.getElementById('borrowFormDetails').removeAttribute('open');
+  document.getElementById('bMaterial').value = '';
+  document.getElementById('bQtyBig').value = '';
+  document.getElementById('bQtySmall').value = '';
+  document.getElementById('bCounterpart').value = '';
+  document.getElementById('bNote').value = '';
+  renderBorrowTab();
+}
+
+function completeBorrowLog(id){
+  var logs = loadBorrowLogs();
+  var log  = logs.find(function(l){ return l.id === id; });
+  if (!log) return;
+  log.status = 'completed'; log.completedDate = todayISO();
+  saveBorrowLogsData(logs);
+  if (todayISO() >= log.date) applyBorrowStockImpact(log, true);
+  showToast(log.type === 'borrow_in' ? 'คืนของแล้ว ✓' : 'รับคืนแล้ว ✓', 'success');
+  renderBorrowTab();
+}
+
+function deleteBorrowLog(id){
+  if (!confirm('ลบรายการนี้?')) return;
+  var logs = loadBorrowLogs();
+  var idx  = logs.findIndex(function(l){ return l.id === id; });
+  if (idx >= 0) logs.splice(idx, 1);
+  saveBorrowLogsData(logs);
+  renderBorrowTab();
+}
+
+function applyBorrowStockImpact(log, reverse){
+  var mat = materialById(log.materialId); if (!mat) return;
+  if (!rawInputs[log.materialId]) rawInputs[log.materialId] = {};
+  var ri = rawInputs[log.materialId];
+  // borrow_in=ยืมมา=เพิ่ม, lend_out=ให้ยืม=ลด; reverse=คืน/รับคืน
+  var sign = (log.type === 'borrow_in' ? 1 : -1) * (reverse ? -1 : 1);
+  ri.received = String(Math.max(0, (parseFloat(ri.received) || 0) + sign * log.qtyBig));
+  recomputeMaterial(log.materialId);
+  clearTimeout(saveTimers['dc_' + log.materialId]);
+  saveTimers['dc_' + log.materialId] = setTimeout(function(){ saveDailyCount(log.materialId); }, 800);
+  renderFastMoving(materialSearchEl ? materialSearchEl.value : '');
+}
 
 async function fixMissingCupsOnce(){
   if (localStorage.getItem('cupsFixed_v5')) return;

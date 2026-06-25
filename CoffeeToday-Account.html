@@ -3130,7 +3130,20 @@ async function syncAcctExp(btn) {
       var branchName = BRANCH_NAMES[branch];
       var itemsToSync = acctExps.filter(function(x) { return x.branch === branch; });
       if (!itemsToSync.length) continue;
-      await syncToSheets('acctexp', branch, branchName, itemsToSync);
+      // ส่งเป็น chunk ละ 20 รายการ ป้องกัน payload ใหญ่เกิน
+      var CHUNK = 20;
+      for (var i = 0; i < itemsToSync.length; i += CHUNK) {
+        var chunk = itemsToSync.slice(i, i + CHUNK);
+        var isFirst = (i === 0);
+        await safePost(cfg.gsUrl, {
+          type: 'acctexp_upsert',
+          branch: branch,
+          branchName: branchName,
+          items: chunk,
+          clearFirst: isFirst, // ลบข้อมูลเดิมเฉพาะ chunk แรก
+          timestamp: new Date().toISOString()
+        });
+      }
     }
     toast('ซิงค์บัญชีร้านขึ้น Sheets แล้ว ✓', 'success');
   } finally {

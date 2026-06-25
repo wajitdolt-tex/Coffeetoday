@@ -1593,9 +1593,12 @@ function liveStatusHTML(id){
   const ri = rawInputs[id] || {};
   if (!rec) return '<span class="text-slate-400">ยังไม่ได้กรอกยอดนับ</span>';
 
+  // ครีมเทียม: ติดลบเพราะ credit น้ำคาปู แสดงเป็น 0 แทน
+  const displayUsed = (mat.id === 'creamer' && rec.usedActual < 0) ? 0 : rec.usedActual;
+
   const posTouched = ri.posSale !== undefined && ri.posSale !== '';
   if (!posTouched) {
-    return `ใช้ไปจริง <span class="font-num font-semibold text-slate-900">${fmtNum(rec.usedActual)}</span> ${mat.smallUnit}
+    return `ใช้ไปจริง <span class="font-num font-semibold text-slate-900">${fmtNum(displayUsed)}</span> ${mat.smallUnit}
       <span class="text-slate-300 mx-1">·</span><span class="text-slate-400">ยอดขายตามสูตรยังไม่เข้า</span>`;
   }
 
@@ -1607,7 +1610,7 @@ function liveStatusHTML(id){
   return `<span class="inline-flex items-center gap-1.5 font-num font-semibold ${color}">
       <span class="w-1.5 h-1.5 rounded-full ${dot}"></span>${signedDisplay} ${mat.smallUnit} · ${label}
     </span>
-    <span class="block text-slate-400 mt-0.5">ใช้ไปจริง ${fmtNum(rec.usedActual)} ${mat.smallUnit}</span>`;
+    <span class="block text-slate-400 mt-0.5">ใช้ไปจริง ${fmtNum(displayUsed)} ${mat.smallUnit}</span>`;
 }
 
 // ค่าเริ่มต้นของ "ตัวช่วยกรอกเร็ว" — หลังบ้านปรับ/เปิด-ปิด/เพิ่มขนาดเองได้ที่แท็บ "แก้ไข/ยกมา"

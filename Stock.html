@@ -4222,7 +4222,7 @@ function applyBorrowStockImpact(log, reverse){
 }
 
 async function fixMissingCupsOnce(){
-  if (localStorage.getItem('cupsFixed_v5')) return;
+  // รันทุก session — filter เฉพาะ recipe ที่ยังไม่มี cup จะ upsert แค่ที่จำเป็น
   // หมวดที่ไม่ใช้แก้วในสูตร (ของกินที่ขาย / add-on / เครื่องดื่มสำเร็จรูปขวด)
   const NO_CUP_CATS = new Set(['แอดเพิ่ม','เบเกอรี่/ขนม','เครื่องดื่มสำเร็จรูป','สมาชิก/เอกสาร']);
   const noRefill = r => !r.name.includes('รีฟิล') && !r.name.toLowerCase().includes('refill');
@@ -4262,7 +4262,7 @@ async function fixMissingCupsOnce(){
   if (allFix.length || refillFix.length)
     console.log('fixMissingCups v5: added cups to', allFix.map(r=>r.name).join(', '),
       '| removed from refill:', refillFix.map(r=>r.name).join(', '));
-  localStorage.setItem('cupsFixed_v5','1');
+  // ไม่ใช้ localStorage flag แล้ว — รันทุก session เพื่อจับ recipe ใหม่
 }
 
 /* ===========================================================

@@ -1232,7 +1232,8 @@ async function loadDailyCounts(branch){
         actualBig: (r.actual_big !== null && r.actual_big !== undefined) ? String(r.actual_big) : '',
         actualSmall: r.actual_small ? String(r.actual_small) : '',
         posSale: r.pos_sale ? String(r.pos_sale) : '',
-        note: r.note ? r.note.split('\u200b')[0] : '',
+        note: r.note ? r.note.split('\u200b')[0].split('\u200c')[0] : '',
+        borrowNote: r.note && r.note.includes('\u200c') ? r.note.split('\u200c')[1] : null,
         reviewed: !!r.reviewed,
         reviewedAt: r.reviewed_at || '',
         reviewedNote: r.reviewed_note || '',
@@ -1300,7 +1301,7 @@ async function saveDailyCount(matId){
         actual_big: evalExpr(ri.actualBig) + (ri.creditBig || 0),
         actual_small: evalExpr(ri.actualSmall) + (ri.creditSmall || 0),
         pos_sale: parseFloat(ri.posSale) || 0,
-        note: (ri.note || '').split('\u200b')[0] + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + (ri.actualBig||'') + '|' + (ri.actualSmall||'') : ''),
+        note: (ri.note || '').split('\u200b')[0].split('\u200c')[0] + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + (ri.actualBig||'') + '|' + (ri.actualSmall||'') : '') + (ri.borrowNote ? '\u200c' + ri.borrowNote : ''),
         reviewed: !!ri.reviewed, reviewed_at: ri.reviewedAt || null, reviewed_note: ri.reviewedNote || '',
         updated_at: new Date().toISOString(),
       }]),
@@ -1728,6 +1729,7 @@ function materialCardHTML(mat){
       </div>
     </div>
     <p id="live_${mat.id}" class="text-[11px] mt-1.5 leading-relaxed">${liveStatusHTML(mat.id)}</p>
+    ${ri.borrowNote ? `<p class="mt-1 text-[11px] font-semibold text-blue-600 bg-blue-50 rounded-lg px-2 py-1">🔄 ${ri.borrowNote}</p>` : ''}
   </div>`;
 }
 
@@ -3606,7 +3608,7 @@ async function savePastDailyCount(matId){
         actual_big: evalExpr(ri.actualBig) + (ri.creditBig || 0),
         actual_small: evalExpr(ri.actualSmall) + (ri.creditSmall || 0),
         pos_sale: parseFloat(ri.posSale) || 0,
-        note: (ri.note || '').split('\u200b')[0] + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + (ri.actualBig||'') + '|' + (ri.actualSmall||'') : ''),
+        note: (ri.note || '').split('\u200b')[0].split('\u200c')[0] + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + (ri.actualBig||'') + '|' + (ri.actualSmall||'') : '') + (ri.borrowNote ? '\u200c' + ri.borrowNote : ''),
         updated_at: new Date().toISOString(),
       }]),
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
@@ -4182,7 +4184,7 @@ async function completeBorrowLog(id){
   if (!log) return;
   log.status = 'completed'; log.completedDate = todayISO();
   try { await upsertBorrowLog(log); } catch(e){ showToast('บันทึกไม่สำเร็จ', 'warn'); return; }
-  if (todayISO() >= log.date) applyBorrowStockImpact(log, true);
+  if (log.date === todayISO()) applyBorrowStockImpact(log, true); // ปรับสต็อกเฉพาะรายการวันนี้เท่านั้น
   showToast(log.type === 'borrow_in' ? 'คืนของแล้ว ✓' : 'รับคืนแล้ว ✓', 'success');
   await renderBorrowTab();
 }
@@ -4197,9 +4199,17 @@ function applyBorrowStockImpact(log, reverse){
   var mat = materialById(log.materialId); if (!mat) return;
   if (!rawInputs[log.materialId]) rawInputs[log.materialId] = {};
   var ri = rawInputs[log.materialId];
-  // borrow_in=ยืมมา=เพิ่ม, lend_out=ให้ยืม=ลด; reverse=คืน/รับคืน
   var sign = (log.type === 'borrow_in' ? 1 : -1) * (reverse ? -1 : 1);
   ri.received = String(Math.max(0, (parseFloat(ri.received) || 0) + sign * log.qtyBig));
+
+  // สร้าง badge แสดงสาเหตุการปรับสต็อก
+  var qtyStr = log.qtyBig + (log.qtySmall ? '+' + log.qtySmall : '');
+  var who = log.counterpart || '';
+  var actionLabel = reverse
+    ? (log.type === 'borrow_in' ? '📤 คืน' + (who ? ' ' + who : '') : '📥 รับคืนจาก' + (who ? ' ' + who : ''))
+    : (log.type === 'borrow_in' ? '📥 ยืมจาก' + (who ? ' ' + who : '') : '📤 ให้ยืม' + (who ? ' ' + who : ''));
+  ri.borrowNote = actionLabel + ' ' + qtyStr + ' ' + mat.bigUnit;
+
   recomputeMaterial(log.materialId);
   clearTimeout(saveTimers['dc_' + log.materialId]);
   saveTimers['dc_' + log.materialId] = setTimeout(function(){ saveDailyCount(log.materialId); }, 800);

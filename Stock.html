@@ -1539,7 +1539,7 @@ function showAdminTab(tab){
     }
   });
   if (tab === 'addmenu') { try { populateNewRecipeCategory(); } catch(_){} }
-  if (tab === 'borrow') renderBorrowTab();
+  if (tab === 'borrow') renderBorrowTab().catch(function(e){ console.error(e); });
 }
 document.querySelectorAll('.admin-tab-btn').forEach(btn => {
   btn.addEventListener('click', () => showAdminTab(btn.dataset.admintab));
@@ -3989,16 +3989,44 @@ function bindQFToggles(wrap){
 /* ============================================================
    ยืม/คืนของ (Borrow & Lend Tracking)
 ============================================================ */
-function getBorrowKey(){ return 'borrowLogs_' + (currentBranch || 'default'); }
-function loadBorrowLogs(){ try { return JSON.parse(localStorage.getItem(getBorrowKey()) || '[]'); } catch(e){ return []; } }
-function saveBorrowLogsData(logs){ try { localStorage.setItem(getBorrowKey(), JSON.stringify(logs)); } catch(e){} }
+function getBorrowKey(){ return 'borrowLogs_' + ((branchSelectEl && branchSelectEl.value) || 'default'); } // legacy
+async function loadBorrowLogs(){
+  try {
+    const data = await sb('borrow_logs?order=date.desc,id.desc&limit=200');
+    return Array.isArray(data) ? data.map(function(r){ return {
+      id: r.id, date: r.date, type: r.type,
+      materialId: r.material_id, materialName: r.material_name,
+      qtyBig: Number(r.qty_big||0), qtySmall: Number(r.qty_small||0),
+      counterpart: r.counterpart||'', note: r.note||'',
+      status: r.status||'pending', completedDate: r.completed_date||null,
+      branch: r.branch
+    }; }) : [];
+  } catch(e){ console.error('loadBorrowLogs',e); return []; }
+}
+async function saveBorrowLogsData(logs){} // ไม่ใช้แล้ว — save ผ่าน upsertBorrowLog
+
+async function upsertBorrowLog(log){
+  const branch = (branchSelectEl && branchSelectEl.value) || '';
+  await sb('borrow_logs?on_conflict=id', {
+    method: 'POST',
+    headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({
+      id: log.id, branch: log.branch || branch, date: log.date, type: log.type,
+      material_id: log.materialId, material_name: log.materialName,
+      qty_big: log.qtyBig, qty_small: log.qtySmall,
+      counterpart: log.counterpart, note: log.note,
+      status: log.status, completed_date: log.completedDate || null
+    })
+  });
+}
 
 function todayISO(){ return new Date().toLocaleDateString('sv-SE'); }
 
-function renderBorrowTab(){
+async function renderBorrowTab(){
   const wrap = document.getElementById('borrowTabContent');
   if (!wrap) return;
-  const logs = loadBorrowLogs().sort((a,b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  wrap.innerHTML = '<p class="text-slate-400 text-sm p-4">กำลังโหลด...</p>';
+  const logs = (await loadBorrowLogs()).sort(function(a,b){ return b.date.localeCompare(a.date) || b.id.localeCompare(a.id); });
   const pending = logs.filter(l => l.status === 'pending');
   const done    = logs.filter(l => l.status === 'completed');
   const matOpts = MATERIALS.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
@@ -4079,13 +4107,13 @@ function renderBorrowTab(){
   });
 
   const saveBtn = document.getElementById('bSaveBtn');
-  if (saveBtn) saveBtn.addEventListener('click', saveBorrowLog);
+  if (saveBtn) saveBtn.addEventListener('click', function(){ saveBorrowLog().catch(function(e){ console.error(e); }); });
 
   wrap.querySelectorAll('[data-baction]').forEach(function(btn){
     btn.addEventListener('click', function(){
       var id = this.dataset.bid, action = this.dataset.baction;
-      if (action === 'complete') completeBorrowLog(id);
-      if (action === 'delete')   deleteBorrowLog(id);
+      if (action === 'complete') completeBorrowLog(id).catch(function(e){ console.error(e); });
+      if (action === 'delete')   deleteBorrowLog(id).catch(function(e){ console.error(e); });
     });
   });
 }
@@ -4117,7 +4145,7 @@ function borrowRowHTML(l){
   '</div>';
 }
 
-function saveBorrowLog(){
+async function saveBorrowLog(){
   var matId = document.getElementById('bMaterial').value;
   if (!matId){ alert('กรุณาเลือกวัตถุดิบ'); return; }
   var mat     = materialById(matId);
@@ -4134,7 +4162,9 @@ function saveBorrowLog(){
     note: document.getElementById('bNote').value.trim(),
     status: 'pending', completedDate: null
   };
-  var logs = loadBorrowLogs(); logs.push(log); saveBorrowLogsData(logs);
+  var branch = (branchSelectEl && branchSelectEl.value) || '';
+  log.branch = branch;
+  try { await upsertBorrowLog(log); } catch(e){ showToast('บันทึกไม่สำเร็จ: ' + e.message, 'warn'); return; }
   if (date === todayISO()) applyBorrowStockImpact(log, false);
   showToast('บันทึกแล้ว ✓', 'success');
   document.getElementById('borrowFormDetails').removeAttribute('open');
@@ -4143,27 +4173,24 @@ function saveBorrowLog(){
   document.getElementById('bQtySmall').value = '';
   document.getElementById('bCounterpart').value = '';
   document.getElementById('bNote').value = '';
-  renderBorrowTab();
+  await renderBorrowTab();
 }
 
-function completeBorrowLog(id){
-  var logs = loadBorrowLogs();
-  var log  = logs.find(function(l){ return l.id === id; });
+async function completeBorrowLog(id){
+  var allLogs = await loadBorrowLogs();
+  var log = allLogs.find(function(l){ return l.id === id; });
   if (!log) return;
   log.status = 'completed'; log.completedDate = todayISO();
-  saveBorrowLogsData(logs);
+  try { await upsertBorrowLog(log); } catch(e){ showToast('บันทึกไม่สำเร็จ', 'warn'); return; }
   if (todayISO() >= log.date) applyBorrowStockImpact(log, true);
   showToast(log.type === 'borrow_in' ? 'คืนของแล้ว ✓' : 'รับคืนแล้ว ✓', 'success');
-  renderBorrowTab();
+  await renderBorrowTab();
 }
 
-function deleteBorrowLog(id){
+async function deleteBorrowLog(id){
   if (!confirm('ลบรายการนี้?')) return;
-  var logs = loadBorrowLogs();
-  var idx  = logs.findIndex(function(l){ return l.id === id; });
-  if (idx >= 0) logs.splice(idx, 1);
-  saveBorrowLogsData(logs);
-  renderBorrowTab();
+  try { await sb('borrow_logs?id=eq.' + id, { method: 'DELETE' }); } catch(e){ showToast('ลบไม่สำเร็จ', 'warn'); return; }
+  await renderBorrowTab();
 }
 
 function applyBorrowStockImpact(log, reverse){

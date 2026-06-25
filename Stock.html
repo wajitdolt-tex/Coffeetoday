@@ -2536,7 +2536,13 @@ function frontMenuCardHTML(recipe){
     <label class="block text-[10px] text-slate-400 mb-0.5">จำนวนที่ขายวันนี้ (แก้ว)</label>
     <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${qty}"
       data-frontrecipeid="${recipe.id}" class="front-menu-qty-input w-full input-base input-sm !h-10 font-num text-center">
-    <p id="frontmenulive_${recipe.id}" class="text-[11px] mt-1.5 ${qty ? 'text-green-600 font-medium' : 'text-slate-400'}">${qty ? `บันทึกแล้ว ✓ ขาย ${fmtNum(qty)} แก้ว` : 'ยังไม่ได้กรอก'}</p>
+    ${(recipe.size && (recipe.size.includes('22') || recipe.size.includes('12') || recipe.size.includes('8'))) ? `
+    <div class="mt-1.5 flex items-center gap-1.5">
+      <label class="text-[10px] text-slate-400 whitespace-nowrap">หักรีฟิล (ใบ)</label>
+      <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${getMenuRefill(recipe.id) || ''}"
+        data-frontrecipeid="${recipe.id}" class="front-menu-refill-input flex-1 input-base input-sm !h-8 font-num text-center text-xs">
+    </div>` : ''}
+    <p id="frontmenulive_${recipe.id}" class="text-[11px] mt-1.5 ${qty ? 'text-green-600 font-medium' : 'text-slate-400'}">${qty ? `บันทึกแล้ว ✓ ขาย ${fmtNum(qty)} แก้ว${getMenuRefill(recipe.id) ? ` (หักรีฟิล ${getMenuRefill(recipe.id)})` : ''}` : 'ยังไม่ได้กรอก'}</p>
   </div>`;
 }
 
@@ -2607,6 +2613,13 @@ frontMenuListWrap.addEventListener('input', (e) => {
   const id = e.target.dataset.frontrecipeid;
   if (!id) return;
   const v = parseFloat(e.target.value) || 0;
+  if (e.target.classList.contains('front-menu-refill-input')) {
+    setMenuRefill(id, v);
+    applyRecipeUsageToMaterials();
+    updateFrontMenuLive(id);
+    updateMenuLive(id);
+    return;
+  }
   if (v > 0) menuSales[id] = v; else delete menuSales[id];
   applyRecipeUsageToMaterials();
   updateFrontMenuLive(id);

@@ -2111,7 +2111,7 @@ function menuCardHTML(recipe){
       <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${qty}"
         data-recipeid="${recipe.id}" class="menu-qty-input w-full input-base input-sm !h-10 font-num text-center">
     </div>
-    ${hasCupIngredient(recipe) ? `
+    ${(recipe.size && (recipe.size.includes('22') || recipe.size.includes('12') || recipe.size.includes('8'))) ? `
     <div class="mt-1.5 flex items-center gap-1.5">
       <label class="text-[10px] text-slate-400 whitespace-nowrap">หักรีฟิล (ใบ)</label>
       <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${getMenuRefill(recipe.id) || ''}"

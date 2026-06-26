@@ -2116,9 +2116,17 @@ function hasCupIngredient(recipe){
   return recipe.ingredients && recipe.ingredients.some(function(i){ return CUPS.indexOf(i.materialId) >= 0; });
 }
 
+
+function recipeUnit(recipe){
+  if (!recipe || !recipe.size) return 'แก้ว';
+  if (recipe.size.includes('oz')) return 'แก้ว';
+  var m = recipe.size.match(/^\d+\s*(.+)$/);
+  return (m && m[1]) ? m[1].trim() : 'แก้ว';
+}
+
 function menuCardHTML(recipe){
   const qty = getAdminMenuQty(recipe.id);
-  const dateLabel = adminMenuViewDate ? `จำนวนที่ขายวันที่ ${adminMenuViewDate} (แก้ว)` : 'จำนวนที่ขายวันนี้ (แก้ว)';
+  const dateLabel = adminMenuViewDate ? `จำนวนที่ขายวันที่ ${adminMenuViewDate} (${recipeUnit(recipe)})` : `จำนวนที่ขายวันนี้ (${recipeUnit(recipe)})`;
   return `
   <div class="border border-slate-200 rounded-lg p-3 bg-white" id="menucard_${recipe.id}">
     <div class="flex items-start gap-1.5">
@@ -2140,7 +2148,7 @@ function menuCardHTML(recipe){
       <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${getMenuRefill(recipe.id) || ''}"
         data-recipeid="${recipe.id}" class="menu-refill-input flex-1 input-base input-sm !h-8 font-num text-center text-xs">
     </div>` : ''}
-    <p id="menulive_${recipe.id}" class="text-[11px] mt-1.5 ${qty ? 'text-green-600 font-medium' : 'text-slate-400'}">${qty ? `บันทึกแล้ว ✓ ขาย ${fmtNum(qty)} แก้ว${getMenuRefill(recipe.id) ? ` (หักรีฟิล ${getMenuRefill(recipe.id)})` : ''}` : 'ยังไม่ได้กรอก'}</p>
+    <p id="menulive_${recipe.id}" class="text-[11px] mt-1.5 ${qty ? 'text-green-600 font-medium' : 'text-slate-400'}">${qty ? `บันทึกแล้ว ✓ ขาย ${fmtNum(qty)} ${recipeUnit(recipe)}${getMenuRefill(recipe.id) ? ` (หักรีฟิล ${getMenuRefill(recipe.id)})` : ''}` : 'ยังไม่ได้กรอก'}</p>
   </div>`;
 }
 
@@ -2413,7 +2421,8 @@ function updateMenuLive(recipeId){
   if (!el) return;
   const qty = getAdminMenuQty(recipeId);
   if (qty > 0) {
-    el.textContent = `บันทึกแล้ว ✓ ขาย ${fmtNum(qty)} แก้ว`;
+    const _rcp1 = RECIPES.find(r => r.id === recipeId);
+  el.textContent = `บันทึกแล้ว ✓ ขาย ${fmtNum(qty)} ${recipeUnit(_rcp1)}`;
     el.className = 'text-[11px] mt-1.5 text-green-600 font-medium';
   } else {
     el.textContent = 'ยังไม่ได้กรอก';
@@ -2574,7 +2583,7 @@ function frontMenuCardHTML(recipe){
       <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${getMenuRefill(recipe.id) || ''}"
         data-frontrecipeid="${recipe.id}" class="front-menu-refill-input flex-1 input-base input-sm !h-8 font-num text-center text-xs">
     </div>` : ''}
-    <p id="frontmenulive_${recipe.id}" class="text-[11px] mt-1.5 ${qty ? 'text-green-600 font-medium' : 'text-slate-400'}">${qty ? `บันทึกแล้ว ✓ ขาย ${fmtNum(qty)} แก้ว${getMenuRefill(recipe.id) ? ` (หักรีฟิล ${getMenuRefill(recipe.id)})` : ''}` : 'ยังไม่ได้กรอก'}</p>
+    <p id="frontmenulive_${recipe.id}" class="text-[11px] mt-1.5 ${qty ? 'text-green-600 font-medium' : 'text-slate-400'}">${qty ? `บันทึกแล้ว ✓ ขาย ${fmtNum(qty)} ${recipeUnit(recipe)}${getMenuRefill(recipe.id) ? ` (หักรีฟิล ${getMenuRefill(recipe.id)})` : ''}` : 'ยังไม่ได้กรอก'}</p>
   </div>`;
 }
 
@@ -2629,7 +2638,8 @@ function updateFrontMenuLive(recipeId){
   if (el) {
     const qty = menuSales[recipeId];
     if (qty > 0) {
-      el.textContent = `บันทึกแล้ว ✓ ขาย ${fmtNum(qty)} แก้ว`;
+      const _rcp2 = RECIPES.find(r => r.id === recipeId);
+      el.textContent = `บันทึกแล้ว ✓ ขาย ${fmtNum(qty)} ${recipeUnit(_rcp2)}`;
       el.className = 'text-[11px] mt-1.5 text-green-600 font-medium';
     } else {
       el.textContent = 'ยังไม่ได้กรอก';

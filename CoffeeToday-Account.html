@@ -163,6 +163,7 @@ tr:hover td{background:var(--bg3);}
       <div class="form-row"><label>QR Payment (฿)</label><input type="number" id="d-qr" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
       <div class="form-row"><label>Line Man (฿) <span style="font-weight:400;color:var(--text3);">(ยอดก่อนหัก GP)</span></label><input type="number" id="d-lineman" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
       <div class="form-row"><label>By Cash — ยอดปิดกะ (฿)</label><input type="number" id="d-cash" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
+      <div class="form-row"><label>ไทยช่วยไทยพลัส (฿)</label><input type="number" id="d-thaithai" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
     </div>
     <hr class="divider">
     <div class="sec-label">แยกประเภทยอดขาย</div>
@@ -570,6 +571,7 @@ tr:hover td{background:var(--bg3);}
           <div class="stat-box"><div class="stat-label">QR Payment</div><div class="stat-value" id="ss-qr-total">฿0</div></div>
           <div class="stat-box"><div class="stat-label">Line Man (รวม)</div><div class="stat-value" id="ss-lineman-total">฿0</div></div>
           <div class="stat-box"><div class="stat-label">Cash (ยอดปิดกะ)</div><div class="stat-value" id="ss-cash-total">฿0</div></div>
+          <div class="stat-box"><div class="stat-label">ไทยช่วยไทยพลัส</div><div class="stat-value" id="ss-thaithai-total">฿0</div></div>
         </div>
         <div style="background:var(--blue-t);border:1px solid rgba(37,99,168,.2);border-radius:var(--r-sm);padding:14px 16px;">
           <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;">💳 Line Man — ยอดเข้าบัญชีคุณซัน</div>
@@ -1276,7 +1278,7 @@ async function submitDaily() {
     subtotal: n('d-subtotal'), discount: n('d-discount'), rounding: n('d-rounding'),
     beforeTax: parseFloat(document.getElementById('d-before-tax').value) || 0,
     totalSales: n('d-total-sales'),
-    qr: n('d-qr'), lineman: n('d-lineman'), cash: n('d-cash'),
+    qr: n('d-qr'), lineman: n('d-lineman'), cash: n('d-cash'), thaithai: n('d-thaithai'),
     drinks: parseFloat(document.getElementById('d-drinks').value) || 0,
     snacks: n('d-snacks'), promo: n('d-promo'),
     shopExp: n('d-shop-exp'), diff: n('d-diff'),
@@ -1311,7 +1313,7 @@ async function submitDaily() {
 function clearDaily() {
   ['d-subtotal','d-discount','d-rounding','d-total-sales','d-qr','d-lineman','d-cash',
    'd-snacks','d-promo','d-shop-exp','d-account','d-note',
-   'b-void','b-free','b-coupon','d-cashier','d-ice-bill'].forEach(function(id) {
+   'b-void','b-free','b-coupon','d-cashier','d-ice-bill','d-thaithai'].forEach(function(id) {
     var el = document.getElementById(id); if (el) el.value = '';
   });
   document.getElementById('d-before-tax').value = '';
@@ -1985,7 +1987,7 @@ function renderSummary(rows, acctExpRows, branchKey) {
   }
   empty.style.display='none'; stats.style.display='block';
 
-  var tSales=0, tExp=0, tStdExp=0, tExtraExp=0, tPayIn=0, tQr=0, tLineman=0, tCash=0;
+  var tSales=0, tExp=0, tStdExp=0, tExtraExp=0, tPayIn=0, tQr=0, tLineman=0, tCash=0, tThaithai=0;
   var tCftd=0,tIce=0,tMeji=0,tJinda=0,tSugar=0,tSoda=0,tYogurt=0,tBakery=0,tLime=0,tCoconut=0;
   var maxQr=0, maxQrDate='-', maxSale=0, maxSaleDate='-';
   var extraDetailLines = [];
@@ -2004,7 +2006,7 @@ function renderSummary(rows, acctExpRows, branchKey) {
     var extraExp=p(r,30);
     var iceAmt=p(r,20);
     tSales+=sales; tPayIn+=pi;
-    tQr+=qr; tLineman+=lineman; tCash+=cash;
+    tQr+=qr; tLineman+=lineman; tCash+=cash; tThaithai+=p(r,38);
     tExtraExp+=extraExp;
     tExp += exp;  // ShopExp รวม extra อยู่แล้ว ไม่บวกซ้ำ
     tCftd  +=p(r,19); tIce   +=iceAmt;
@@ -2213,6 +2215,7 @@ function renderSummary(rows, acctExpRows, branchKey) {
   document.getElementById('ss-qr-total').textContent     = fmtS(tQr);
   document.getElementById('ss-lineman-total').textContent= fmtS(tLineman);
   document.getElementById('ss-cash-total').textContent   = fmtS(tCash);
+  document.getElementById('ss-thaithai-total').textContent = fmtS(tThaithai);
   var noteUnpaid = document.getElementById('ss-note-unpaid');
   if (noteUnpaid) noteUnpaid.textContent = fmtS(tPayableUnpaid);
 
@@ -2986,6 +2989,7 @@ function fillDailyForm(row) {
   document.getElementById('d-qr').value        = p(7) || '';
   document.getElementById('d-lineman').value   = p(9) || '';
   document.getElementById('d-cash').value      = p(10) || '';
+  document.getElementById('d-thaithai').value  = p(38) || '';
   document.getElementById('d-snacks').value    = p(12) || '';
   document.getElementById('d-promo').value     = p(13) || '';
   var loadedExtraTotal = p(30);

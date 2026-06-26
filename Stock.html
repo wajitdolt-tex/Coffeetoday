@@ -1208,16 +1208,25 @@ function cleanupStaleRecipeIngredients(){
 async function loadCarryForward(branch){
   const today = todayDateStr();
   try {
-    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${today}&select=material_id,actual_big,actual_small,note,count_date&order=count_date.desc,id.desc`);
+    // โหลด received และ pos_sale ด้วย เพื่อ fallback กรณีไม่ได้นับจริง
+    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${today}&select=material_id,actual_big,actual_small,received,pos_sale,note,count_date&order=count_date.desc,id.desc`);
     if (!rows) return;
-    const seen = new Set();
+    // สำหรับแต่ละ material: หา record ที่นับจริง (actual_big > 0) ก่อน
+    // ถ้าไม่มี ให้ใช้ record ล่าสุดและคำนวณ carry จาก received/pos_sale
+    const byMat = {};
     rows.forEach(r => {
-      if (seen.has(r.material_id)) return;
-      seen.add(r.material_id);
-      const mat = materialById(r.material_id);
+      if (!byMat[r.material_id]) byMat[r.material_id] = [];
+      byMat[r.material_id].push(r);
+    });
+    Object.entries(byMat).forEach(([matId, matRows]) => {
+      const mat = materialById(matId);
       if (!mat) return;
-      mat.carry = (Number(r.actual_big) || 0) * mat.ratio + (mat.noFraction ? 0 : (Number(r.actual_small) || 0));
-      mat.carryExpr = r.note && r.note.includes('\u200b') ? r.note.split('\u200b')[1].split('|')[0] : null;
+      // หา record ที่มีการนับจริง (actual_big > 0 หรือ actual_small > 0)
+      const counted = matRows.find(r => Number(r.actual_big) > 0 || Number(r.actual_small) > 0);
+      const latest  = matRows[0]; // record ล่าสุดสุด (อาจไม่ได้นับ)
+      const useRow  = counted || latest;
+      mat.carry = (Number(useRow.actual_big) || 0) * mat.ratio + (mat.noFraction ? 0 : (Number(useRow.actual_small) || 0));
+      mat.carryExpr = useRow.note && useRow.note.includes('\u200b') ? useRow.note.split('\u200b')[1].split('|')[0] : null;
     });
   } catch (e) { console.error('loadCarryForward failed', e); }
 }
@@ -1327,7 +1336,11 @@ async function loadMenuSales(branch){
   try {
     const rows = await sb(`menu_sales?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${today}&select=*`);
     if (!rows) return;
-    rows.forEach(r => { if (r.qty > 0) menuSales[r.recipe_id] = Number(r.qty); });
+    rows.forEach(r => {
+      if (r.qty > 0) menuSales[r.recipe_id] = Number(r.qty);
+      if (r.refill_qty > 0) menuRefills[r.recipe_id] = Number(r.refill_qty);
+    });
+    try { localStorage.setItem(_refillKey(), JSON.stringify(menuRefills)); } catch(e){}
   } catch (e) { console.error('loadMenuSales failed', e); }
 }
 
@@ -1342,7 +1355,7 @@ async function saveMenuSale(recipeId){
   try {
     await sb('menu_sales?on_conflict=branch,count_date,recipe_id', {
       method: 'POST',
-      body: JSON.stringify([{ branch, count_date: todayDateStr(), recipe_id: recipeId, qty: menuSales[recipeId] || 0, updated_at: new Date().toISOString() }]),
+      body: JSON.stringify([{ branch, count_date: todayDateStr(), recipe_id: recipeId, qty: menuSales[recipeId] || 0, refill_qty: menuRefills[recipeId] || 0, updated_at: new Date().toISOString() }]),
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
     });
     setSyncStatus('online');
@@ -1429,6 +1442,7 @@ async function activateBranch(branch){
   frontContent.classList.remove('hidden');
   branchModal.classList.add('hidden');
 
+  loadMenuRefills(); // โหลดยอดรีฟิลที่บันทึกไว้
   setSyncStatus('syncing');
   try {
     await loadCarryForward(branch);
@@ -2341,11 +2355,19 @@ function renderMenuList(filterText){
 menuSearchEl.addEventListener('input', () => renderMenuList(menuSearchEl.value));
 
 
-// เก็บจำนวนรีฟิลต่อ recipe (หักออกจากยอดแก้ว)
+// เก็บจำนวนรีฟิลต่อ recipe (หักออกจากยอดแก้ว) — persist ใน localStorage ตาม branch+date
 var menuRefills = {};
+function _refillKey(){
+  var b = (branchSelectEl && branchSelectEl.value) || 'default';
+  return 'menuRefills_' + b + '_' + todayDateStr();
+}
+function loadMenuRefills(){
+  try { menuRefills = JSON.parse(localStorage.getItem(_refillKey()) || '{}'); } catch(e){ menuRefills = {}; }
+}
 function getMenuRefill(recipeId){ return menuRefills[recipeId] || 0; }
 function setMenuRefill(recipeId, val){
   if (val > 0) menuRefills[recipeId] = val; else delete menuRefills[recipeId];
+  try { localStorage.setItem(_refillKey(), JSON.stringify(menuRefills)); } catch(e){}
 }
 
 function applyRecipeUsageToMaterials(){
@@ -2478,6 +2500,7 @@ menuListWrap.addEventListener('input', (e) => {
     setMenuRefill(id, v);
     applyRecipeUsageToMaterials();
     updateMenuLive(id);
+    scheduleSaveMenuSale(id);
     return;
   }
 
@@ -2618,6 +2641,7 @@ frontMenuListWrap.addEventListener('input', (e) => {
     applyRecipeUsageToMaterials();
     updateFrontMenuLive(id);
     updateMenuLive(id);
+    scheduleSaveMenuSale(id);
     return;
   }
   if (v > 0) menuSales[id] = v; else delete menuSales[id];

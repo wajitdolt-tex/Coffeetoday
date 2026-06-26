@@ -4309,6 +4309,17 @@ function applyBorrowStockImpact(log, reverse){
   renderFastMoving(materialSearchEl ? materialSearchEl.value : '');
 }
 
+
+async function upsertRecipeSilent(recipe){
+  try {
+    await sb('recipes?on_conflict=id', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ id: recipe.id, name: recipe.name, size: recipe.size, category: recipe.category, ingredients: recipe.ingredients }])
+    });
+  } catch(e){ console.warn('upsertRecipeSilent failed:', e); } // ไม่ set sync status
+}
+
 async function fixMissingCupsOnce(){
   // รันทุก session — filter เฉพาะ recipe ที่ยังไม่มี cup จะ upsert แค่ที่จำเป็น
   // หมวดที่ไม่ใช้แก้วในสูตร (ของกินที่ขาย / add-on / เครื่องดื่มสำเร็จรูปขวด)
@@ -4335,7 +4346,7 @@ async function fixMissingCupsOnce(){
     ...toFix12.map(r => { r.ingredients=[...r.ingredients, ing('cup12oz',1,'g')]; return r; }),
   ];
   for (const r of allFix){
-    try { await upsertRecipe(r); } catch(e){ console.error('fixCups:', e); }
+    try { await upsertRecipeSilent(r); } catch(e){ console.warn('fixCups:', e); }
   }
   // ลบ cup22/8/12oz ออกจาก refill recipes ที่อาจถูกเพิ่มโดย fix เวอร์ชันก่อน
   const CUP_IDS = ['cup22oz','cup8oz','cup12oz'];
@@ -4345,7 +4356,7 @@ async function fixMissingCupsOnce(){
   );
   for (const r of refillFix){
     r.ingredients = r.ingredients.filter(i => !CUP_IDS.includes(i.materialId));
-    try { await upsertRecipe(r); } catch(e){ console.error('fixRefill:', e); }
+    try { await upsertRecipeSilent(r); } catch(e){ console.warn('fixRefill:', e); }
   }
   if (allFix.length || refillFix.length)
     console.log('fixMissingCups v5: added cups to', allFix.map(r=>r.name).join(', '),

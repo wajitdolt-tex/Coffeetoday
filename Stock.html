@@ -1509,6 +1509,11 @@ async function pollForExternalChanges(){
       });
       if (changed) {
         rawInputs[matId] = current;
+        // strip credit จาก actual_big สำหรับ evapmilk และ creamer (ค่าใน DB รวม credit ไว้แล้ว)
+        const _cBig = (rawInputs[matId] || {}).creditBig || 0;
+        if (_cBig && (matId === 'evapmilk' || matId === 'creamer') && current.actualBig !== '') {
+          current.actualBig = String(Math.max(0, parseFloat(current.actualBig) - _cBig));
+        }
         recomputeMaterialLocal(matId); // ไม่ใช้ recomputeMaterial เพราะไม่ต้อง save วนกลับขึ้น Supabase/Sheet ซ้ำ
         ['received', 'actualBig', 'actualSmall', 'posSale', 'note'].forEach(f => syncCardInputDOM(matId, f, current[f] ?? ''));
         updateCardLive(matId);

@@ -660,7 +660,6 @@ const MATERIALS = [
   NF('crispybreadbutter','ขนมปังกรอบรสเนย','เบเกอรี่/ขนม','ถุง',10),
   NF('crispybreadsugar','ขนมปังกรอบเนยน้ำตาล','เบเกอรี่/ขนม','ถุง',10),
   NF('crispybreadgarlic','ขนมปังกรอบเนยกระเทียม','เบเกอรี่/ขนม','ถุง',10),
-  FR('toastbread','ขนมปังปิ้ง (แผ่น)','เบเกอรี่/ขนม','แถว','แผ่น',12,0),
   NF('jamstrawberry','แยมสตรอเบอร์รี่','เบเกอรี่/ขนม','ขวด',1),
   NF('jamorange','แยมส้ม','เบเกอรี่/ขนม','ขวด',1),
   NF('softcookies','Soft Cookies','เบเกอรี่/ขนม','กล่อง',8),
@@ -959,13 +958,13 @@ const RECIPES = [
   RCP('snack_crispybreadbutter','ขนมปังกรอบรสเนย','1 ถุง','เบเกอรี่/ขนม',[ing('crispybreadbutter',1,'g')]),
   RCP('snack_crispybreadsugar','ขนมปังกรอบเนยน้ำตาล','1 ถุง','เบเกอรี่/ขนม',[ing('crispybreadsugar',1,'g')]),
   RCP('snack_crispybreadgarlic','ขนมปังกรอบเนยกระเทียม','1 ถุง','เบเกอรี่/ขนม',[ing('crispybreadgarlic',1,'g')]),
-  RCP('toast_butter','ขนมปังปิ้งเนย','1 แผ่น','ขนมปังปิ้ง',[ing('toastbread',1,'g')]),
-  RCP('toast_butter_condensed','ขนมปังปิ้งเนย+นมข้น','1 แผ่น','ขนมปังปิ้ง',[ing('toastbread',1,'g')]),
-  RCP('toast_butter_sugar','ขนมปังปิ้งเนย+น้ำตาล','1 แผ่น','ขนมปังปิ้ง',[ing('toastbread',1,'g')]),
-  RCP('toast_jam_strawberry','ขนมปังปิ้งแยมสตรอเบอร์รี่','1 แผ่น','ขนมปังปิ้ง',[ing('toastbread',1,'g'),ing('jamstrawberry',1,'g')]),
-  RCP('toast_jam_orange','ขนมปังปิ้งแยมส้ม','1 แผ่น','ขนมปังปิ้ง',[ing('toastbread',1,'g'),ing('jamorange',1,'g')]),
-  RCP('toast_chocolate','ขนมปังปิ้งช็อกโกแลต','1 แผ่น','ขนมปังปิ้ง',[ing('toastbread',1,'g'),ing('chocsauce',1,'g')]),
-  RCP('toast_caramel','ขนมปังปิ้งคาราเมล','1 แผ่น','ขนมปังปิ้ง',[ing('toastbread',1,'g'),ing('caramelsauce',1,'g')]),
+  RCP('toast_butter','ขนมปังปิ้งเนย','1 แผ่น','ขนมปังปิ้ง',[]),
+  RCP('toast_butter_condensed','ขนมปังปิ้งเนย+นมข้น','1 แผ่น','ขนมปังปิ้ง',[]),
+  RCP('toast_butter_sugar','ขนมปังปิ้งเนย+น้ำตาล','1 แผ่น','ขนมปังปิ้ง',[]),
+  RCP('toast_jam_strawberry','ขนมปังปิ้งแยมสตรอเบอร์รี่','1 แผ่น','ขนมปังปิ้ง',[ing('jamstrawberry',1,'g')]),
+  RCP('toast_jam_orange','ขนมปังปิ้งแยมส้ม','1 แผ่น','ขนมปังปิ้ง',[ing('jamorange',1,'g')]),
+  RCP('toast_chocolate','ขนมปังปิ้งช็อกโกแลต','1 แผ่น','ขนมปังปิ้ง',[ing('chocsauce',1,'g')]),
+  RCP('toast_caramel','ขนมปังปิ้งคาราเมล','1 แผ่น','ขนมปังปิ้ง',[ing('caramelsauce',1,'g')]),
   RCP('snack_bananachips','กล้วยฉาบ','1 ถุง','เบเกอรี่/ขนม',[ing('bananachips',1,'g')]),
   RCP('snack_tarochips','เผือกฉาบ','1 ถุง','เบเกอรี่/ขนม',[ing('tarochips',1,'g')]),
   RCP('snack_pineappletart','ทาร์ตสับปะรด','1 กล่อง','เบเกอรี่/ขนม',[ing('pineappletart',1,'g')]),
@@ -2566,7 +2565,7 @@ function frontMenuCardHTML(recipe){
   return `
   <div class="border border-slate-200 rounded-lg p-3 bg-white">
     <p class="font-semibold text-slate-900 text-sm leading-snug mb-1.5">${recipe.name} <span class="text-slate-400 font-normal">(${recipe.size})</span></p>
-    <label class="block text-[10px] text-slate-400 mb-0.5">จำนวนที่ขายวันนี้ (แก้ว)</label>
+    <label class="block text-[10px] text-slate-400 mb-0.5">จำนวนที่ขายวันนี้ (${recipe.size && !recipe.size.includes('oz') ? recipe.size.replace(/^\d+\s*/, '') || 'แก้ว' : 'แก้ว'})</label>
     <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${qty}"
       data-frontrecipeid="${recipe.id}" class="front-menu-qty-input w-full input-base input-sm !h-10 font-num text-center">
     ${(recipe.size && (recipe.size.includes('22') || recipe.size.includes('12') || recipe.size.includes('8'))) ? `

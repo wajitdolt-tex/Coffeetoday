@@ -1175,10 +1175,34 @@ async function loadMaterialsFromDB(){
         MATERIALS.push(mat);
       }
       mat.name = r.name; mat.category = r.category;
-      mat.bigUnit = r.big_unit; mat.smallUnit = r.small_unit;
-      mat.ratio = Number(r.ratio); mat.carry = Number(r.carry);
-      mat.subUnit = r.sub_unit || undefined; mat.subRatio = r.sub_ratio ? Number(r.sub_ratio) : undefined;
+
+      // วัตถุดิบบางตัวมี unit/ratio ที่กำหนดไว้ในโค้ด (hardcode) แน่นอน
+      // ถ้า DB มีค่าเก่าค้างอยู่ (เช่น milk เคยบันทึกเป็น กรัม/2000) ให้ใช้ค่าจาก hardcode แทน
+      // โดยเช็คจาก MATERIALS ที่ยังไม่ถูก DB ทับ (ก่อน push ใหม่)
+      const UNIT_LOCKED = new Set([
+        'milk','condensedmilk','evapmilk',  // นมและของเหลว — หน่วยออนซ์
+        'napukasauce',                        // น้ำคาปู — หน่วยออนซ์
+        'soda',                               // โซดา — หน่วยออนซ์
+        'vitamilk','oatmilk',                 // เครื่องดื่ม — ลัง/กรัม
+        'orangetipco','cocomax',              // เครื่องดื่ม — ขวด/กรัม
+      ]);
+      const hardcoded = UNIT_LOCKED.has(r.id)
+        ? (function(){ var h = MATERIALS.find(function(m){ return m.id === r.id && m.smallUnit && m.ratio; }); return h; })()
+        : null;
+
+      mat.bigUnit   = (hardcoded && hardcoded.bigUnit)   ? hardcoded.bigUnit   : r.big_unit;
+      mat.smallUnit = (hardcoded && hardcoded.smallUnit)  ? hardcoded.smallUnit : r.small_unit;
+      mat.ratio     = (hardcoded && hardcoded.ratio)      ? hardcoded.ratio     : Number(r.ratio);
+      mat.subUnit   = (hardcoded && hardcoded.subUnit)    ? hardcoded.subUnit   : (r.sub_unit || undefined);
+      mat.subRatio  = (hardcoded && hardcoded.subRatio)   ? hardcoded.subRatio  : (r.sub_ratio ? Number(r.sub_ratio) : undefined);
+
+      mat.carry = Number(r.carry);
       mat.noFraction = !!r.no_fraction; mat.fastMoving = !!r.fast_moving;
+
+      // ถ้า DB มีค่าผิด ให้ backfill unit ที่ถูกต้องกลับขึ้น DB ด้วย
+      if (hardcoded && (r.small_unit !== mat.smallUnit || Number(r.ratio) !== mat.ratio)) {
+        toBackfill.push(mat);
+      }
 
       if (r.quick_fill_sizes && r.quick_fill_sizes.length) {
         mat.quickFill = { sizes: r.quick_fill_sizes };

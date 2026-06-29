@@ -2695,7 +2695,7 @@ const frontMenuListWrap = document.getElementById('frontMenuListWrap');
 
 function frontMenuCardHTML(recipe){
   const qty = menuSales[recipe.id] ?? '';
-  const handle = _frontSortMode
+  const handle = (document.body.dataset.frontSortMode === '1')
     ? `<div data-draghandle="${recipe.id}" class="flex justify-center items-center mb-2 py-1.5 rounded-lg bg-slate-100 cursor-grab active:cursor-grabbing touch-none select-none">
         <svg width="20" height="14" viewBox="0 0 20 14" fill="none"><circle cx="6" cy="3" r="1.5" fill="#94a3b8"/><circle cx="6" cy="7" r="1.5" fill="#94a3b8"/><circle cx="6" cy="11" r="1.5" fill="#94a3b8"/><circle cx="14" cy="3" r="1.5" fill="#94a3b8"/><circle cx="14" cy="7" r="1.5" fill="#94a3b8"/><circle cx="14" cy="11" r="1.5" fill="#94a3b8"/></svg>
        </div>` : '';
@@ -2736,6 +2736,7 @@ let _drag = null; // { recipeId, ghost, startY, lastTargetId }
 
 function toggleFrontSortMode(){
   _frontSortMode = !_frontSortMode;
+  document.body.dataset.frontSortMode = _frontSortMode ? '1' : '0';
   const btn = document.getElementById('frontMenuSortBtn');
   if (btn) {
     btn.textContent = _frontSortMode ? '✓ เสร็จแล้ว' : '▲▼ จัดเรียงเมนู';
@@ -2754,7 +2755,7 @@ document.addEventListener('click', e => {
 // Touch drag-and-drop
 document.addEventListener('touchstart', e => {
   const handle = e.target.closest('[data-draghandle]');
-  if (!handle || !_frontSortMode) return;
+  if (!handle || document.body.dataset.frontSortMode !== '1') return;
   e.preventDefault();
   const recipeId = handle.dataset.draghandle;
   const card = handle.closest('[data-frontcard]');

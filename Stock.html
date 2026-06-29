@@ -501,11 +501,13 @@
               <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">🍵</span>
               <h2 class="font-heading font-semibold text-slate-900">จำนวนแก้วที่ขายวันนี้</h2>
               <span id="frontMenuCountBadge" class="text-[11px] font-semibold text-slate-400 bg-slate-100 rounded-full px-2 py-0.5">0 เมนู</span>
-              <button id="frontMenuSortBtn" class="ml-auto text-[11px] font-semibold text-slate-400 hover:text-accent-600 transition px-2 py-1 rounded-lg hover:bg-accent-50">▲▼ จัดเรียง</button>
             </div>
             <span class="text-slate-400 text-[11px]">แตะเพื่อเปิด/ปิด</span>
           </summary>
           <div class="border-t border-slate-100">
+            <div class="px-5 pt-3 pb-1 flex items-center justify-between">
+              <button id="frontMenuSortBtn" class="text-[11px] font-semibold text-slate-400 hover:text-accent-600 transition px-2 py-1 rounded-lg hover:bg-accent-50 border border-slate-200">▲▼ จัดเรียงเมนู</button>
+            </div>
             <div class="px-5 pt-4 pb-2 flex items-center justify-between gap-2">
               <p class="text-xs text-slate-500">กรอกจำนวนแก้วที่ขายของแต่ละเมนู ระบบจะคำนวณยอดวัตถุดิบที่ควรใช้ไปให้อัตโนมัติ ไม่ต้องคำนวณเอง</p>
               <button id="clearFrontMenuSalesBtn" class="text-xs font-semibold text-slate-500 hover:text-red-600 border border-slate-300 hover:border-red-300 rounded-lg px-3 h-9 transition shrink-0">
@@ -2693,8 +2695,13 @@ const frontMenuListWrap = document.getElementById('frontMenuListWrap');
 
 function frontMenuCardHTML(recipe){
   const qty = menuSales[recipe.id] ?? '';
+  const handle = _frontSortMode
+    ? `<div data-draghandle="${recipe.id}" class="flex justify-center items-center mb-2 py-1.5 rounded-lg bg-slate-100 cursor-grab active:cursor-grabbing touch-none select-none">
+        <svg width="20" height="14" viewBox="0 0 20 14" fill="none"><circle cx="6" cy="3" r="1.5" fill="#94a3b8"/><circle cx="6" cy="7" r="1.5" fill="#94a3b8"/><circle cx="6" cy="11" r="1.5" fill="#94a3b8"/><circle cx="14" cy="3" r="1.5" fill="#94a3b8"/><circle cx="14" cy="7" r="1.5" fill="#94a3b8"/><circle cx="14" cy="11" r="1.5" fill="#94a3b8"/></svg>
+       </div>` : '';
   return `
-  <div class="border border-slate-200 rounded-lg p-3 bg-white">
+  <div data-frontcard="${recipe.id}" class="border border-slate-200 rounded-lg p-3 bg-white transition-shadow">
+    ${handle}
     <p class="font-semibold text-slate-900 text-sm leading-snug mb-1.5">${recipe.name} <span class="text-slate-400 font-normal">(${recipe.size})</span></p>
     <label class="block text-[10px] text-slate-400 mb-0.5">จำนวนที่ขายวันนี้ (${recipe.size && !recipe.size.includes('oz') ? recipe.size.replace(/^\d+\s*/, '') || 'แก้ว' : 'แก้ว'})</label>
     <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${qty}"
@@ -2723,17 +2730,18 @@ function renderFrontMenuChips(){
   });
 }
 
-// ===== Front menu sort mode =====
+// ===== Front menu sort mode - touch drag and drop =====
 let _frontSortMode = false;
+let _drag = null; // { recipeId, ghost, startY, lastTargetId }
 
 function toggleFrontSortMode(){
   _frontSortMode = !_frontSortMode;
   const btn = document.getElementById('frontMenuSortBtn');
   if (btn) {
-    btn.textContent = _frontSortMode ? '✓ เสร็จแล้ว' : '▲▼ จัดเรียง';
+    btn.textContent = _frontSortMode ? '✓ เสร็จแล้ว' : '▲▼ จัดเรียงเมนู';
     btn.className = _frontSortMode
-      ? 'ml-auto text-[11px] font-semibold text-accent-700 bg-accent-50 transition px-2 py-1 rounded-lg'
-      : 'ml-auto text-[11px] font-semibold text-slate-400 hover:text-accent-600 transition px-2 py-1 rounded-lg hover:bg-accent-50';
+      ? 'text-[11px] font-semibold text-white bg-accent-600 transition px-3 py-1.5 rounded-lg'
+      : 'text-[11px] font-semibold text-slate-400 hover:text-accent-600 transition px-2 py-1 rounded-lg hover:bg-accent-50 border border-slate-200';
   }
   renderFrontMenuList(document.getElementById('frontMenuSearch') ? document.getElementById('frontMenuSearch').value : '');
 }
@@ -2743,36 +2751,89 @@ document.addEventListener('click', e => {
   if (btn) toggleFrontSortMode();
 });
 
-async function saveFrontMenuOrder(){
-  // บันทึก sortOrder ของทุก recipe ที่มีการเปลี่ยนแปลง
-  const changed = RECIPES.filter(r => r._sortDirty);
-  for (const r of changed) {
-    r._sortDirty = false;
-    upsertRecipeSilent(r);
-  }
-}
+// Touch drag-and-drop
+document.addEventListener('touchstart', e => {
+  const handle = e.target.closest('[data-draghandle]');
+  if (!handle || !_frontSortMode) return;
+  e.preventDefault();
+  const recipeId = handle.dataset.draghandle;
+  const card = handle.closest('[data-frontcard]');
+  if (!card) return;
 
-function moveFrontRecipe(recipeId, direction){
-  // หา category และ items ปัจจุบัน
-  const recipe = RECIPES.find(r => r.id === recipeId);
-  if (!recipe) return;
-  const cat = recipe.category;
-  const items = RECIPES.filter(r => r.category === cat && !r.hideFromSales)
+  const rect = card.getBoundingClientRect();
+  const ghost = card.cloneNode(true);
+  ghost.style.cssText = `position:fixed;top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;opacity:0.85;box-shadow:0 8px 24px rgba(0,0,0,0.18);z-index:9999;pointer-events:none;transition:none;`;
+  document.body.appendChild(ghost);
+  card.style.opacity = '0.3';
+
+  _drag = { recipeId, ghost, card, offsetY: e.touches[0].clientY - rect.top };
+}, { passive: false });
+
+document.addEventListener('touchmove', e => {
+  if (!_drag) return;
+  e.preventDefault();
+  const touch = e.touches[0];
+  const y = touch.clientY - _drag.offsetY;
+  _drag.ghost.style.top = y + 'px';
+
+  // find card under touch point
+  _drag.ghost.style.display = 'none';
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  _drag.ghost.style.display = '';
+  const targetCard = el && el.closest('[data-frontcard]');
+  const targetId = targetCard ? targetCard.dataset.frontcard : null;
+
+  // show drop indicator
+  document.querySelectorAll('[data-frontcard]').forEach(c => {
+    c.style.borderTopColor = '';
+    c.style.borderTopWidth = '';
+  });
+  if (targetCard && targetId !== _drag.recipeId) {
+    targetCard.style.borderTopColor = '#7c3aed';
+    targetCard.style.borderTopWidth = '3px';
+    _drag.lastTargetId = targetId;
+  }
+}, { passive: false });
+
+document.addEventListener('touchend', e => {
+  if (!_drag) return;
+  const { recipeId, ghost, card, lastTargetId } = _drag;
+  ghost.remove();
+  card.style.opacity = '';
+  document.querySelectorAll('[data-frontcard]').forEach(c => {
+    c.style.borderTopColor = '';
+    c.style.borderTopWidth = '';
+  });
+  _drag = null;
+
+  if (!lastTargetId || lastTargetId === recipeId) return;
+
+  // Reorder within category
+  const src = RECIPES.find(r => r.id === recipeId);
+  const tgt = RECIPES.find(r => r.id === lastTargetId);
+  if (!src || !tgt || src.category !== tgt.category) return;
+
+  const items = RECIPES.filter(r => r.category === src.category && !r.hideFromSales)
     .sort((a,b) => (a.sortOrder||0) - (b.sortOrder||0));
-  const idx = items.findIndex(r => r.id === recipeId);
-  const swapIdx = direction === 'up' ? idx-1 : idx+1;
-  if (swapIdx < 0 || swapIdx >= items.length) return;
-  // swap sortOrder
-  const a = items[idx], b = items[swapIdx];
-  const tmp = a.sortOrder || 0;
-  a.sortOrder = b.sortOrder || 0;
-  b.sortOrder = tmp;
-  // ถ้า sortOrder เหมือนกัน ให้ใช้ index แทน
-  if (a.sortOrder === b.sortOrder) { a.sortOrder = idx; b.sortOrder = swapIdx; }
-  a._sortDirty = true; b._sortDirty = true;
+
+  // re-assign sortOrder: insert src before tgt
+  const srcIdx = items.findIndex(r => r.id === recipeId);
+  items.splice(srcIdx, 1);
+  const tgtIdx = items.findIndex(r => r.id === lastTargetId);
+  items.splice(tgtIdx, 0, src);
+  items.forEach((r, i) => { r.sortOrder = i + 1; r._sortDirty = true; });
+
   saveFrontMenuOrder();
   renderFrontMenuList(document.getElementById('frontMenuSearch') ? document.getElementById('frontMenuSearch').value : '');
+});
+
+async function saveFrontMenuOrder(){
+  const changed = RECIPES.filter(r => r._sortDirty);
+  changed.forEach(r => { r._sortDirty = false; });
+  for (const r of changed) { upsertRecipeSilent(r); }
 }
+
+function moveFrontRecipe(){} // stub (ไม่ใช้แล้ว)
 
 function updateFrontMenuCountBadge(){
   const badge = document.getElementById('frontMenuCountBadge');

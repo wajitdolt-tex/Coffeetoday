@@ -1505,7 +1505,28 @@ function computeRecord(mat, { received, actualBig, actualSmall, posSale, note })
 }
 
 function categories(){ return [...new Set(MATERIALS.map(m => m.category))]; }
-function recipeCategories(){ return [...new Set(RECIPES.map(r => r.category))]; }
+
+/* หมวดหมู่เมนู — รองรับการเรียงลำดับ */
+let _recipeCategoryOrder = null; // null = ใช้ order จาก RECIPES
+
+function recipeCategories(){
+  const raw = [...new Set(RECIPES.map(r => r.category))];
+  if (!_recipeCategoryOrder) return raw;
+  const ordered = _recipeCategoryOrder.filter(c => raw.includes(c));
+  const rest = raw.filter(c => !_recipeCategoryOrder.includes(c));
+  return [...ordered, ...rest];
+}
+
+function saveRecipeCategoryOrder(){
+  try { localStorage.setItem('recipeCategoryOrder', JSON.stringify(_recipeCategoryOrder)); } catch(e){}
+}
+
+function loadRecipeCategoryOrder(){
+  try {
+    const v = localStorage.getItem('recipeCategoryOrder');
+    if (v) _recipeCategoryOrder = JSON.parse(v);
+  } catch(e){}
+}
 
 /* หมวดหมู่วัตถุดิบ — ดึงจาก MATERIALS + รองรับการเรียงลำดับ */
 let _categoryOrder = null; // null = ใช้ order จาก MATERIALS
@@ -1665,11 +1686,11 @@ function showAdminTab(tab){
     }
   });
   if (tab === 'addmenu') {
-    // defer หนักมากๆ เพื่อไม่บล็อก input focus บน Safari
+    // defer เพื่อไม่บล็อก animation ของ tab transition บน Safari
     setTimeout(() => {
       try { populateNewRecipeCategory(); } catch(_){}
       try { if (window._renderNewRecipeIngList) window._renderNewRecipeIngList(); } catch(_){}
-    }, 400);
+    }, 50);
   }
   if (tab === 'borrow') renderBorrowTab().catch(function(e){ console.error(e); });
 }
@@ -4432,12 +4453,77 @@ function renderRecipeCatList(){
   if (!ul) return;
   const cats = recipeCategories();
   ul.innerHTML = cats.map(cat => `
-    <li data-rcat="${cat}" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+    <li data-rcat="${cat}" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 touch-none select-none">
+      <span data-rcathandle="${cat}" class="cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 shrink-0 flex items-center px-0.5" title="ลากเพื่อเรียงใหม่">
+        <svg width="12" height="16" viewBox="0 0 12 16" fill="none"><circle cx="3" cy="3" r="1.5" fill="currentColor"/><circle cx="3" cy="8" r="1.5" fill="currentColor"/><circle cx="3" cy="13" r="1.5" fill="currentColor"/><circle cx="9" cy="3" r="1.5" fill="currentColor"/><circle cx="9" cy="8" r="1.5" fill="currentColor"/><circle cx="9" cy="13" r="1.5" fill="currentColor"/></svg>
+      </span>
       <span class="text-sm font-medium text-slate-700 flex-1">${cat}</span>
       <span class="text-[10px] text-slate-400">${RECIPES.filter(r=>r.category===cat).length} เมนู</span>
       <button type="button" data-renamercat="${cat}" class="text-slate-400 hover:text-accent-600 text-sm px-1.5" title="แก้ชื่อหมวดเมนู">✎</button>
     </li>`).join('');
 
+  // --- Touch drag-and-drop ---
+  let _rcDrag = null;
+  ul.addEventListener('touchstart', function(e){
+    const handle = e.target.closest('[data-rcathandle]');
+    if (!handle) return;
+    e.preventDefault();
+    const li = handle.closest('li[data-rcat]');
+    if (!li) return;
+    const rect = li.getBoundingClientRect();
+    const ghost = li.cloneNode(true);
+    ghost.style.cssText = 'position:fixed;top:'+rect.top+'px;left:'+rect.left+'px;width:'+rect.width+'px;opacity:0.85;box-shadow:0 6px 20px rgba(0,0,0,0.15);z-index:9999;pointer-events:none;transition:none;border-radius:8px;';
+    document.body.appendChild(ghost);
+    li.style.opacity = '0.3';
+    _rcDrag = { cat: li.dataset.rcat, ghost, li, offsetY: e.touches[0].clientY - rect.top, lastTarget: null };
+  }, { passive: false });
+
+  ul.addEventListener('touchmove', function(e){
+    if (!_rcDrag) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    _rcDrag.ghost.style.top = (touch.clientY - _rcDrag.offsetY) + 'px';
+    _rcDrag.ghost.style.display = 'none';
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    _rcDrag.ghost.style.display = '';
+    const targetLi = el && el.closest('li[data-rcat]');
+    const targetCat = targetLi ? targetLi.dataset.rcat : null;
+    ul.querySelectorAll('li[data-rcat]').forEach(function(l){ l.style.borderTopColor=''; l.style.borderTopWidth=''; });
+    if (targetLi && targetCat !== _rcDrag.cat) {
+      targetLi.style.borderTopColor = '#7c3aed';
+      targetLi.style.borderTopWidth = '3px';
+      _rcDrag.lastTarget = targetCat;
+    }
+  }, { passive: false });
+
+  ul.addEventListener('touchend', function(e){
+    if (!_rcDrag) return;
+    const { cat, ghost, li, lastTarget } = _rcDrag;
+    ghost.remove();
+    li.style.opacity = '';
+    ul.querySelectorAll('li[data-rcat]').forEach(function(l){ l.style.borderTopColor=''; l.style.borderTopWidth=''; });
+    _rcDrag = null;
+    if (!lastTarget || lastTarget === cat) return;
+
+    // คำนวณ order ใหม่
+    const current = recipeCategories();
+    const srcIdx = current.indexOf(cat);
+    current.splice(srcIdx, 1);
+    const tgtIdx = current.indexOf(lastTarget);
+    current.splice(tgtIdx, 0, cat);
+    _recipeCategoryOrder = current;
+    saveRecipeCategoryOrder();
+
+    renderRecipeCatList();
+    // re-render ส่วนที่ใช้ recipeCategories()
+    try { renderMenuList(menuSearchEl.value); } catch(_){}
+    try { renderFrontMenuList(document.getElementById('frontMenuSearch') ? document.getElementById('frontMenuSearch').value : ''); } catch(_){}
+    try { renderFrontMenuChips(); } catch(_){}
+    try { populateNewRecipeCategory(); } catch(_){}
+    showToast('เรียงหมวดเมนูใหม่แล้ว ✓', 'success');
+  }, { passive: false });
+
+  // --- Rename buttons ---
   ul.querySelectorAll('[data-renamercat]').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.preventDefault(); e.stopPropagation();
@@ -4446,9 +4532,13 @@ function renderRecipeCatList(){
       if (newCat === null) return;
       const trimmed = newCat.trim();
       if (!trimmed || trimmed === oldCat) return;
-      // เปลี่ยนทุก recipe ในหมวดนี้
       const affected = RECIPES.filter(r => r.category === oldCat);
       affected.forEach(r => { r.category = trimmed; });
+      // อัป _recipeCategoryOrder ถ้ามี
+      if (Array.isArray(_recipeCategoryOrder)) {
+        _recipeCategoryOrder = _recipeCategoryOrder.map(c => c === oldCat ? trimmed : c);
+        saveRecipeCategoryOrder();
+      }
       setSyncStatus('syncing');
       try {
         for (const r of affected) { await upsertRecipeSilent(r); }
@@ -4794,6 +4884,7 @@ async function ensureAppSchema(){
   const _em = document.getElementById('exportMonthInput');
   if (_em) _em.value = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0');
   loadCategoryOrder();
+  loadRecipeCategoryOrder();
   refreshMatCategoryDatalist();
   // sync export branch dropdown เมื่อ branch หลักเปลี่ยน
   branchSelectEl.addEventListener('change', () => {

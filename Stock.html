@@ -1446,10 +1446,23 @@ async function loadMenuSales(branch){
     if (!rows) return;
     rows.forEach(r => {
       if (r.qty > 0) menuSales[r.recipe_id] = Number(r.qty);
-      if (r.refill_qty > 0) menuRefills[r.recipe_id] = Number(r.refill_qty);
+      // refill_qty อาจยังไม่มี column ใน DB → ตรวจก่อนใช้
+      if (r.refill_qty != null && r.refill_qty > 0) menuRefills[r.recipe_id] = Number(r.refill_qty);
     });
     try { localStorage.setItem(_refillKey(), JSON.stringify(menuRefills)); } catch(e){}
-  } catch (e) { console.error('loadMenuSales failed', e); }
+  } catch (e) {
+    // ถ้า error เพราะ column refill_qty ยังไม่มี → โหลดใหม่โดยไม่ select refill_qty
+    if (String(e.message).includes('refill_qty') || String(e.message).includes('42703') || String(e.message).includes('column')) {
+      try {
+        const rows2 = await sb(`menu_sales?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${today}&select=recipe_id,qty`);
+        if (!rows2) return;
+        rows2.forEach(r => { if (r.qty > 0) menuSales[r.recipe_id] = Number(r.qty); });
+        console.warn('loadMenuSales: loaded without refill_qty (column missing)');
+      } catch(e2) { console.error('loadMenuSales fallback failed', e2); }
+    } else {
+      console.error('loadMenuSales failed', e);
+    }
+  }
 }
 
 const pendingMenuSaves = new Set(); // recipeId ที่ยังไม่ได้ sync
@@ -1474,7 +1487,8 @@ async function saveMenuSale(recipeId, _retry){
     setSyncStatus('online');
   } catch (e) {
     // ถ้า error เพราะ column refill_qty ยังไม่มีใน DB → ลองใหม่โดยไม่ส่ง refill_qty
-    if (String(e.message).includes('refill_qty') || String(e.message).includes('42703')) {
+    const errMsg = String(e.message || e);
+    if (errMsg.includes('refill_qty') || errMsg.includes('42703') || errMsg.includes('column') || errMsg.includes('400') || errMsg.includes('schema')) {
       try {
         await sb('menu_sales?on_conflict=branch,count_date,recipe_id', {
           method: 'POST',

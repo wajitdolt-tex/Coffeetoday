@@ -1638,13 +1638,13 @@ async function activateBranch(branch){
     setSyncStatus('online');
   } catch (e) { console.error(e); setSyncStatus('error'); }
 
+  applyRecipeUsageToMaterials(); // คำนวณ POS จากยอดขายเมนูที่โหลดมาก่อน render
   renderFastMoving('');
   renderSlowMoving('');
   renderCategoryChips();
   renderFrontMenuChips();
-  renderFrontMenuList('');
+  renderFrontMenuList(''); // render พร้อมข้อมูล menuSales ที่ครบแล้ว
   renderTable();
-  applyRecipeUsageToMaterials();
   startGoogleSheetsPoll();
 }
 

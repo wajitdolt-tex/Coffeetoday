@@ -4546,13 +4546,16 @@ function renderRecipeCatList(){
     </li>`).join('');
 
   // --- Touch drag-and-drop ---
+  // แทน ul ด้วย node ใหม่เพื่อล้าง event listeners เก่าทั้งหมด ป้องกัน listener สะสม
+  const fresh = ul.cloneNode(true);
+  ul.parentNode.replaceChild(fresh, ul);
+
   let _rcDrag = null;
 
-  // ใช้ flag แทน passive:false เพื่อไม่บล็อก scroll ของ Safari
-  ul.addEventListener('touchstart', function(e){
+  fresh.addEventListener('touchstart', function(e){
     const handle = e.target.closest('[data-rcathandle]');
-    if (!handle) return; // ไม่ใช่ handle → ไม่ทำอะไร scroll ปกติ
-    e.preventDefault(); // จำเป็นเฉพาะตอนจับ handle
+    if (!handle) return;
+    e.preventDefault();
     const li = handle.closest('li[data-rcat]');
     if (!li) return;
     const rect = li.getBoundingClientRect();
@@ -4563,8 +4566,8 @@ function renderRecipeCatList(){
     _rcDrag = { cat: li.dataset.rcat, ghost, li, offsetY: e.touches[0].clientY - rect.top, lastTarget: null };
   }, { passive: false });
 
-  ul.addEventListener('touchmove', function(e){
-    if (!_rcDrag) return; // ไม่ได้ drag → ไม่ preventDefault ให้ scroll ได้ปกติ
+  fresh.addEventListener('touchmove', function(e){
+    if (!_rcDrag) return;
     e.preventDefault();
     const touch = e.touches[0];
     _rcDrag.ghost.style.top = (touch.clientY - _rcDrag.offsetY) + 'px';
@@ -4573,7 +4576,7 @@ function renderRecipeCatList(){
     _rcDrag.ghost.style.display = '';
     const targetLi = el && el.closest('li[data-rcat]');
     const targetCat = targetLi ? targetLi.dataset.rcat : null;
-    ul.querySelectorAll('li[data-rcat]').forEach(function(l){ l.style.borderTopColor=''; l.style.borderTopWidth=''; });
+    fresh.querySelectorAll('li[data-rcat]').forEach(function(l){ l.style.borderTopColor=''; l.style.borderTopWidth=''; });
     if (targetLi && targetCat !== _rcDrag.cat) {
       targetLi.style.borderTopColor = '#7c3aed';
       targetLi.style.borderTopWidth = '3px';
@@ -4585,14 +4588,13 @@ function renderRecipeCatList(){
     if (!_rcDrag) return;
     try { _rcDrag.ghost.remove(); } catch(_){}
     try { _rcDrag.li.style.opacity = ''; } catch(_){}
-    ul.querySelectorAll('li[data-rcat]').forEach(function(l){ l.style.borderTopColor=''; l.style.borderTopWidth=''; });
+    fresh.querySelectorAll('li[data-rcat]').forEach(function(l){ l.style.borderTopColor=''; l.style.borderTopWidth=''; });
     _rcDrag = null;
   }
 
-  // touchcancel กัน ghost ค้างเมื่อ Safari interrupt (เช่น notification)
-  ul.addEventListener('touchcancel', function(){ _rcDragCleanup(); }, { passive: true });
+  fresh.addEventListener('touchcancel', function(){ _rcDragCleanup(); }, { passive: true });
 
-  ul.addEventListener('touchend', function(e){
+  fresh.addEventListener('touchend', function(e){
     if (!_rcDrag) return;
     const lastTarget = _rcDrag.lastTarget;
     const cat = _rcDrag.cat;
@@ -4616,7 +4618,7 @@ function renderRecipeCatList(){
   }, { passive: true });
 
   // --- Rename buttons ---
-  ul.querySelectorAll('[data-renamercat]').forEach(btn => {
+  fresh.querySelectorAll('[data-renamercat]').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.preventDefault(); e.stopPropagation();
       const oldCat = btn.dataset.renamercat;

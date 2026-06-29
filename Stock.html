@@ -4532,10 +4532,12 @@ function renderRecipeCatList(){
 
   // --- Touch drag-and-drop ---
   let _rcDrag = null;
+
+  // ใช้ flag แทน passive:false เพื่อไม่บล็อก scroll ของ Safari
   ul.addEventListener('touchstart', function(e){
     const handle = e.target.closest('[data-rcathandle]');
-    if (!handle) return;
-    e.preventDefault();
+    if (!handle) return; // ไม่ใช่ handle → ไม่ทำอะไร scroll ปกติ
+    e.preventDefault(); // จำเป็นเฉพาะตอนจับ handle
     const li = handle.closest('li[data-rcat]');
     if (!li) return;
     const rect = li.getBoundingClientRect();
@@ -4547,7 +4549,7 @@ function renderRecipeCatList(){
   }, { passive: false });
 
   ul.addEventListener('touchmove', function(e){
-    if (!_rcDrag) return;
+    if (!_rcDrag) return; // ไม่ได้ drag → ไม่ preventDefault ให้ scroll ได้ปกติ
     e.preventDefault();
     const touch = e.touches[0];
     _rcDrag.ghost.style.top = (touch.clientY - _rcDrag.offsetY) + 'px';
@@ -4564,16 +4566,24 @@ function renderRecipeCatList(){
     }
   }, { passive: false });
 
-  ul.addEventListener('touchend', function(e){
+  function _rcDragCleanup(){
     if (!_rcDrag) return;
-    const { cat, ghost, li, lastTarget } = _rcDrag;
-    ghost.remove();
-    li.style.opacity = '';
+    try { _rcDrag.ghost.remove(); } catch(_){}
+    try { _rcDrag.li.style.opacity = ''; } catch(_){}
     ul.querySelectorAll('li[data-rcat]').forEach(function(l){ l.style.borderTopColor=''; l.style.borderTopWidth=''; });
     _rcDrag = null;
+  }
+
+  // touchcancel กัน ghost ค้างเมื่อ Safari interrupt (เช่น notification)
+  ul.addEventListener('touchcancel', function(){ _rcDragCleanup(); }, { passive: true });
+
+  ul.addEventListener('touchend', function(e){
+    if (!_rcDrag) return;
+    const lastTarget = _rcDrag.lastTarget;
+    const cat = _rcDrag.cat;
+    _rcDragCleanup();
     if (!lastTarget || lastTarget === cat) return;
 
-    // คำนวณ order ใหม่
     const current = recipeCategories();
     const srcIdx = current.indexOf(cat);
     current.splice(srcIdx, 1);
@@ -4583,13 +4593,12 @@ function renderRecipeCatList(){
     saveRecipeCategoryOrder();
 
     renderRecipeCatList();
-    // re-render ส่วนที่ใช้ recipeCategories()
     try { renderMenuList(menuSearchEl.value); } catch(_){}
     try { renderFrontMenuList(document.getElementById('frontMenuSearch') ? document.getElementById('frontMenuSearch').value : ''); } catch(_){}
     try { renderFrontMenuChips(); } catch(_){}
     try { populateNewRecipeCategory(); } catch(_){}
     showToast('เรียงหมวดเมนูใหม่แล้ว ✓', 'success');
-  }, { passive: false });
+  }, { passive: true });
 
   // --- Rename buttons ---
   ul.querySelectorAll('[data-renamercat]').forEach(btn => {

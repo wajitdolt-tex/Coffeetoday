@@ -2860,7 +2860,7 @@ document.addEventListener('touchstart', e => {
   document.body.appendChild(ghost);
   card.style.opacity = '0.3';
 
-  _drag = { recipeId, ghost, card, offsetY: e.touches[0].clientY - rect.top };
+  _drag = { recipeId, ghost, card, offsetY: e.touches[0].clientY - rect.top, lastTargetId: null };
 }, { passive: false });
 
 document.addEventListener('touchmove', e => {
@@ -2903,6 +2903,8 @@ document.addEventListener('touchcancel', e => {
 document.addEventListener('touchend', e => {
   if (!_drag) return;
   const { recipeId, ghost, card, lastTargetId } = _drag;
+  // เก็บ lastTargetId ก่อน cleanup เพราะ ghost.remove() อาจทำให้ค่าหาย
+  const savedTargetId = lastTargetId;
   ghost.remove();
   card.style.opacity = '';
   document.querySelectorAll('[data-frontcard]').forEach(c => {
@@ -2911,20 +2913,23 @@ document.addEventListener('touchend', e => {
   });
   _drag = null;
 
-  if (!lastTargetId || lastTargetId === recipeId) return;
+  if (!savedTargetId || savedTargetId === recipeId) return;
 
   // Reorder within category
   const src = RECIPES.find(r => r.id === recipeId);
-  const tgt = RECIPES.find(r => r.id === lastTargetId);
-  if (!src || !tgt || src.category !== tgt.category) return;
+  const tgt = RECIPES.find(r => r.id === savedTargetId);
+  if (!src || !tgt) return;
+  // อนุญาตให้ลากข้าม category ได้ถ้าอยาก แต่ถ้าไม่อยากให้ค้าง category เดิม uncomment บรรทัดล่าง
+  // if (src.category !== tgt.category) return;
 
   const items = RECIPES.filter(r => r.category === src.category && !r.hideFromSales)
     .sort((a,b) => (a.sortOrder||0) - (b.sortOrder||0));
 
-  // re-assign sortOrder: insert src before tgt
   const srcIdx = items.findIndex(r => r.id === recipeId);
+  if (srcIdx === -1) return;
   items.splice(srcIdx, 1);
-  const tgtIdx = items.findIndex(r => r.id === lastTargetId);
+  const tgtIdx = items.findIndex(r => r.id === savedTargetId);
+  if (tgtIdx === -1) return;
   items.splice(tgtIdx, 0, src);
   items.forEach((r, i) => { r.sortOrder = i + 1; r._sortDirty = true; });
 

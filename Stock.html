@@ -1464,6 +1464,20 @@ async function saveMenuSale(recipeId, _retry){
     pendingMenuSaves.delete(recipeId);
     setSyncStatus('online');
   } catch (e) {
+    // ถ้า error เพราะ column refill_qty ยังไม่มีใน DB → ลองใหม่โดยไม่ส่ง refill_qty
+    if (String(e.message).includes('refill_qty') || String(e.message).includes('42703')) {
+      try {
+        await sb('menu_sales?on_conflict=branch,count_date,recipe_id', {
+          method: 'POST',
+          body: JSON.stringify([{ branch, count_date: todayDateStr(), recipe_id: recipeId, qty: menuSales[recipeId] || 0, updated_at: new Date().toISOString() }]),
+          headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        });
+        pendingMenuSaves.delete(recipeId);
+        setSyncStatus('online');
+        console.warn('saveMenuSale: saved without refill_qty (column missing) — กรุณาเพิ่ม column refill_qty ใน table menu_sales');
+        return;
+      } catch (e2) { console.error('saveMenuSale fallback failed', e2); }
+    }
     console.error('saveMenuSale failed (attempt ' + (retryCount+1) + ')', e);
     if (retryCount < 3) {
       // retry ใน 1.5 วินาที
@@ -4901,6 +4915,23 @@ async function ensureAppSchema(){
   try { await sb('rpc/ensure_app_schema', { method:'POST', body:'{}' }); } catch(e){ /* ไม่มี RPC ก็ไม่เป็นไร */ }
 }
 
+// เพิ่ม column refill_qty ใน menu_sales ถ้ายังไม่มี (ทดสอบโดย insert แถวทดสอบแล้ว rollback)
+let _refillQtyColChecked = false;
+async function ensureRefillQtyColumn(){
+  if (_refillQtyColChecked) return;
+  _refillQtyColChecked = true;
+  try {
+    // ลอง select refill_qty — ถ้า column ไม่มีจะ error
+    await sb('menu_sales?select=refill_qty&limit=1');
+    // ถ้าไม่ error แปลว่ามี column แล้ว
+  } catch(e){
+    if (String(e.message).includes('refill_qty') || String(e.message).includes('42703')){
+      // column ยังไม่มี → แจ้งใน console และให้ fallback ทำงานต่อไป
+      console.warn('ensureRefillQtyColumn: column refill_qty ยังไม่มีใน menu_sales — กรุณารัน SQL นี้ใน Supabase SQL Editor:\nALTER TABLE menu_sales ADD COLUMN IF NOT EXISTS refill_qty integer NOT NULL DEFAULT 0;');
+    }
+  }
+}
+
 (async function init(){
   const today = new Date();
   document.getElementById('dateInput').value = today.toLocaleDateString('th-TH', { day:'2-digit', month:'long', year:'numeric' });
@@ -4924,6 +4955,7 @@ async function ensureAppSchema(){
   try {
     // สร้าง column ที่จำเป็นอัตโนมัติถ้ายังไม่มี
     await ensureAppSchema().catch(e => console.warn('ensureAppSchema:', e));
+    await ensureRefillQtyColumn().catch(e => console.warn('ensureRefillQtyColumn:', e));
     await seedMaterialsIfEmpty();
     await loadMaterialsFromDB();
     await seedRecipesIfEmpty();

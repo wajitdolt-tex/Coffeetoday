@@ -16,8 +16,8 @@
   -webkit-tap-highlight-color: transparent;
 }
 /* pre-render addmenu panel — ใช้ visibility แทน display:none
-   ทำให้ Safari layout DOM ล่วงหน้า keyboard จึงตอบสนองทันที */
-.admin-tab-panel { display: block !important; }
+   ทำให้ Safari layout DOM ล่วงหน้า keyboard จึงตอบสนองทันที
+   ใช้เฉพาะ .tab-hidden ไม่ใช่ .hidden เพื่อไม่ทับ panel อื่น */
 .admin-tab-panel.tab-hidden {
   visibility: hidden;
   position: absolute;

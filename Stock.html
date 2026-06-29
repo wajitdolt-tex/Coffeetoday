@@ -948,8 +948,13 @@ const RECIPES = [
 
 
   // ---------- เครื่องดื่มสำเร็จรูป ----------
-  RCP('drink_water600','น้ำดื่ม','600ml','เครื่องดื่มสำเร็จรูป',[ing('water600',1,'g')]),
-  RCP('drink_water1500','น้ำดื่ม','1500ml','เครื่องดื่มสำเร็จรูป',[ing('water1500',1,'g')]),
+  // === Maple Autumn ===
+  RCP('maple_latte','เมเปิลลาเต้คอฟฟี่','22oz','กาแฟเย็น',[ing('td1',18,'g'),ing('milk',3,'g'),ing('syrupmaple',1,'g'),ing('cup22oz',1,'g')]),
+  RCP('maple_thaitea','ชาไทยเมเปิล','22oz','ชาเย็น',[ing('thaitea',20,'g'),ing('milk',3,'g'),ing('syrupmaple',1,'g'),ing('cup22oz',1,'g')]),
+  RCP('maple_greentea','ชาเขียวนมเมเปิล','22oz','ชาเย็น',[ing('greenmilktea',20,'g'),ing('milk',3,'g'),ing('syrupmaple',1,'g'),ing('cup22oz',1,'g')]),
+  RCP('drink_water600','น้ำดื่ม (600ml)','1 ขวด','เครื่องดื่มสำเร็จรูป',[ing('water600',1,'g')]),
+  RCP('drink_water1500','น้ำดื่ม (1500ml)','1 ขวด','เครื่องดื่มสำเร็จรูป',[ing('water1500',1,'g')]),
+  RCP('snack_mama','มาม่า','1 คัพ','เครื่องดื่มสำเร็จรูป',[ing('mama',1,'g')]),
   RCP('drink_soda','โซดา','1 ขวด','เครื่องดื่มสำเร็จรูป',[ing('soda',10.83,'g')]),
   RCP('drink_vitamilk','ไวตามิลค์เจ','1 กล่อง','เครื่องดื่มสำเร็จรูป',[ing('vitamilk',6.67,'g')]),
   RCP('drink_oatmilk','นมโอ๊ต','1 กล่อง','เครื่องดื่มสำเร็จรูป',[ing('oatmilk',6.67,'g')]),
@@ -1156,6 +1161,16 @@ async function loadMaterialsFromDB(){
   } catch (e) { console.error('loadMaterialsFromDB failed', e); throw e; }
 }
 
+async function upsertMaterialSilent(mat){
+  try {
+    await sb('materials?on_conflict=id', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([materialToRow(mat)])
+    });
+  } catch(e){ console.warn('upsertMaterialSilent failed:', e); }
+}
+
 async function upsertMaterial(mat){
   setSyncStatus('syncing');
   try {
@@ -1233,7 +1248,10 @@ async function loadCarryForward(branch){
       // หา record ที่มีการนับจริง (actual_big > 0 หรือ actual_small > 0)
       const counted = matRows.find(r => Number(r.actual_big) > 0 || Number(r.actual_small) > 0);
       const latest  = matRows[0]; // record ล่าสุดสุด (อาจไม่ได้นับ)
-      const useRow  = counted || latest;
+      // ถ้า record ล่าสุดนับแล้วได้ 0 ทั้งคู่ (ตั้งใจกรอก 0) ให้ใช้ 0 ไม่ใช้ counted เก่า
+      const latestIsExplicitZero = latest && Number(latest.actual_big) === 0 && Number(latest.actual_small) === 0
+        && counted && counted.count_date < latest.count_date;
+      const useRow  = latestIsExplicitZero ? latest : (counted || latest);
       mat.carry = (Number(useRow.actual_big) || 0) * mat.ratio + (mat.noFraction ? 0 : (Number(useRow.actual_small) || 0));
       mat.carryExpr = useRow.note && useRow.note.includes('\u200b') ? useRow.note.split('\u200b')[1].split('|')[0] : null;
     });
@@ -1353,13 +1371,17 @@ async function loadMenuSales(branch){
   } catch (e) { console.error('loadMenuSales failed', e); }
 }
 
+const pendingMenuSaves = new Set(); // recipeId ที่ยังไม่ได้ sync
+
 function scheduleSaveMenuSale(recipeId){
   clearTimeout(saveTimers['ms_' + recipeId]);
   saveTimers['ms_' + recipeId] = setTimeout(() => saveMenuSale(recipeId), 600);
 }
-async function saveMenuSale(recipeId){
+
+async function saveMenuSale(recipeId, _retry){
   const branch = branchSelectEl.value;
   if (!branch) return;
+  const retryCount = _retry || 0;
   setSyncStatus('syncing');
   try {
     await sb('menu_sales?on_conflict=branch,count_date,recipe_id', {
@@ -1367,9 +1389,35 @@ async function saveMenuSale(recipeId){
       body: JSON.stringify([{ branch, count_date: todayDateStr(), recipe_id: recipeId, qty: menuSales[recipeId] || 0, refill_qty: menuRefills[recipeId] || 0, updated_at: new Date().toISOString() }]),
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
     });
+    pendingMenuSaves.delete(recipeId);
     setSyncStatus('online');
-  } catch (e) { console.error('saveMenuSale failed', e); setSyncStatus('error'); }
+  } catch (e) {
+    console.error('saveMenuSale failed (attempt ' + (retryCount+1) + ')', e);
+    if (retryCount < 3) {
+      // retry ใน 1.5 วินาที
+      setTimeout(() => saveMenuSale(recipeId, retryCount + 1), 1500);
+    } else {
+      // หลังจาก 3 ครั้งยังไม่ได้ → เก็บใน queue ซิงค์ใหม่ทีหลัง
+      pendingMenuSaves.add(recipeId);
+      setSyncStatus('error');
+      console.warn('saveMenuSale queued for retry:', recipeId);
+    }
+  }
 }
+
+// retry pending saves ทุก 15 วินาที และเมื่อ tab กลับมา active
+setInterval(() => {
+  if (pendingMenuSaves.size > 0) {
+    console.log('retrying pending menu saves:', [...pendingMenuSaves]);
+    pendingMenuSaves.forEach(id => saveMenuSale(id));
+  }
+}, 15000);
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && pendingMenuSaves.size > 0) {
+    pendingMenuSaves.forEach(id => saveMenuSale(id));
+  }
+});
 
 /* ===========================================================
    Helpers
@@ -2437,7 +2485,7 @@ function updateMenuLive(recipeId){
 
 // บันทึกยอดขายเมนู 1 รายการของ "วันที่ย้อนหลัง" ที่เลือกไว้ แล้วคำนวณ POS ของวัตถุดิบใหม่จากยอดขายรวมทั้งวันนั้น
 const adminMenuDateSaveTimers = {};
-async function saveMenuSaleForDate(recipeId){
+async function saveMenuSaleForDate(recipeId, _retry){
   const branch = branchSelectEl.value;
   const date = adminMenuViewDate;
   if (!branch || !date) return;
@@ -2483,7 +2531,12 @@ async function saveMenuSaleForDate(recipeId){
       });
     }
     setSyncStatus('online');
-  } catch (e) { console.error('saveMenuSaleForDate failed', e); setSyncStatus('error'); }
+  } catch (e) {
+    console.error('saveMenuSaleForDate failed', e);
+    const retryCount = _retry || 0;
+    if (retryCount < 3) { setTimeout(() => saveMenuSaleForDate(recipeId, retryCount+1), 1500); }
+    else { setSyncStatus('error'); }
+  }
 }
 
 async function loadAdminMenuSalesForDate(date){
@@ -4389,7 +4442,7 @@ async function fixMissingCupsOnce(){
   populateCategoryFilter();
   refreshCategoryDatalist();
 
-  setSyncStatus('syncing');
+  // silent
   const syncMsg = document.getElementById('branchModalSyncMsg');
   try {
     await seedMaterialsIfEmpty();
@@ -4399,11 +4452,11 @@ async function fixMissingCupsOnce(){
     await fixMissingCupsOnce();
     applyRecipeUsageToMaterials(); // recalculate หลัง fix cup ใน recipe
     cleanupStaleRecipeIngredients();
-    setSyncStatus('online');
+    // silent
     if (syncMsg) syncMsg.textContent = 'พร้อมใช้งาน — เชื่อมต่อฐานข้อมูลสำเร็จ';
   } catch (e) {
     console.error('init sync failed', e);
-    setSyncStatus('error');
+    // silent
     if (syncMsg) syncMsg.textContent = 'เชื่อมต่อฐานข้อมูลไม่สำเร็จ (ใช้งานแบบออฟไลน์ในเครื่องนี้ได้ แต่จะไม่ซิงค์ข้ามเครื่อง)';
   }
 

@@ -1478,35 +1478,34 @@ async function saveMenuSale(recipeId, _retry){
   const retryCount = _retry || 0;
   setSyncStatus('syncing');
   try {
+    // บันทึก qty ก่อนเสมอ ไม่รวม refill_qty เพื่อให้ทุกเมนูซิงค์ได้แน่นอน
     await sb('menu_sales?on_conflict=branch,count_date,recipe_id', {
       method: 'POST',
-      body: JSON.stringify([{ branch, count_date: todayDateStr(), recipe_id: recipeId, qty: menuSales[recipeId] || 0, refill_qty: menuRefills[recipeId] || 0, updated_at: new Date().toISOString() }]),
+      body: JSON.stringify([{ branch, count_date: todayDateStr(), recipe_id: recipeId, qty: menuSales[recipeId] || 0, updated_at: new Date().toISOString() }]),
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
     });
     pendingMenuSaves.delete(recipeId);
     setSyncStatus('online');
-  } catch (e) {
-    // ถ้า error เพราะ column refill_qty ยังไม่มีใน DB → ลองใหม่โดยไม่ส่ง refill_qty
-    const errMsg = String(e.message || e);
-    if (errMsg.includes('refill_qty') || errMsg.includes('42703') || errMsg.includes('column') || errMsg.includes('400') || errMsg.includes('schema')) {
+
+    // ถ้ามีรีฟิล ให้ลอง save refill_qty แยก (column อาจยังไม่มีใน DB เก่า)
+    const refillVal = menuRefills[recipeId] || 0;
+    if (refillVal > 0) {
       try {
         await sb('menu_sales?on_conflict=branch,count_date,recipe_id', {
           method: 'POST',
-          body: JSON.stringify([{ branch, count_date: todayDateStr(), recipe_id: recipeId, qty: menuSales[recipeId] || 0, updated_at: new Date().toISOString() }]),
+          body: JSON.stringify([{ branch, count_date: todayDateStr(), recipe_id: recipeId, qty: menuSales[recipeId] || 0, refill_qty: refillVal, updated_at: new Date().toISOString() }]),
           headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
         });
-        pendingMenuSaves.delete(recipeId);
-        setSyncStatus('online');
-        console.warn('saveMenuSale: saved without refill_qty (column missing) — กรุณาเพิ่ม column refill_qty ใน table menu_sales');
-        return;
-      } catch (e2) { console.error('saveMenuSale fallback failed', e2); }
+      } catch(eRefill) {
+        // column refill_qty ยังไม่มี — qty บันทึกไปแล้ว ไม่ถือว่า error
+        console.warn('saveMenuSale: refill_qty column missing, qty saved OK');
+      }
     }
+  } catch (e) {
     console.error('saveMenuSale failed (attempt ' + (retryCount+1) + ')', e);
     if (retryCount < 3) {
-      // retry ใน 1.5 วินาที
       setTimeout(() => saveMenuSale(recipeId, retryCount + 1), 1500);
     } else {
-      // หลังจาก 3 ครั้งยังไม่ได้ → เก็บใน queue ซิงค์ใหม่ทีหลัง
       pendingMenuSaves.add(recipeId);
       setSyncStatus('error');
       console.warn('saveMenuSale queued for retry:', recipeId);

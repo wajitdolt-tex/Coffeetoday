@@ -1103,7 +1103,7 @@ const menuSales = {};
 const SUPABASE_URL = 'https://ummtqzweedmotrffqrhw.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_yIUQ7A8IjCXKSp7OgKoGjw_65k3iO-X';
 
-function setSyncStatus(state){
+function setSyncStatus(state, errMsg){
   // state: 'online' | 'syncing' | 'offline' | 'error'
   const dot = document.getElementById('syncDot');
   const label = document.getElementById('syncStatus');
@@ -1117,6 +1117,10 @@ function setSyncStatus(state){
   const m = map[state] || map.offline;
   dot.className = `sync-dot ${m.cls}`;
   label.textContent = m.text;
+  // แสดง error message บนหน้าจอเพื่อ debug บน iPad
+  if (state === 'error' && errMsg) {
+    showToast('❌ ' + String(errMsg).slice(0, 120), 'warn');
+  }
 }
 
 async function sb(path, options = {}) {
@@ -1259,7 +1263,7 @@ async function upsertMaterial(mat){
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
     });
     setSyncStatus('online');
-  } catch (e) { console.error('upsertMaterial failed', e); setSyncStatus('error'); }
+  } catch (e) { console.error('upsertMaterial failed', e); setSyncStatus('error', 'upsertMaterial: ' + e.message); }
 }
 
 async function seedRecipesIfEmpty(){
@@ -1436,7 +1440,7 @@ async function saveDailyCount(matId){
       pos_sale: parseFloat(ri.posSale) || 0,
       note: ri.note || '',
     });
-  } catch (e) { console.error('saveDailyCount failed', e); setSyncStatus('error'); }
+  } catch (e) { console.error('saveDailyCount failed', e); setSyncStatus('error', 'saveDailyCount: ' + e.message); }
 }
 
 async function loadMenuSales(branch){
@@ -1507,7 +1511,7 @@ async function saveMenuSale(recipeId, _retry){
       setTimeout(() => saveMenuSale(recipeId, retryCount + 1), 1500);
     } else {
       pendingMenuSaves.add(recipeId);
-      setSyncStatus('error');
+      setSyncStatus('error', 'saveMenuSale: ' + e.message);
       console.warn('saveMenuSale queued for retry:', recipeId);
     }
   }
@@ -2367,7 +2371,7 @@ async function upsertRecipe(recipe){
       });
       setSyncStatus('online');
       console.warn('upsertRecipe: saved without hide_from_sales (column missing)');
-    } catch (e2) { console.error('upsertRecipe failed', e2); setSyncStatus('error'); }
+    } catch (e2) { console.error('upsertRecipe failed', e2); setSyncStatus('error', 'upsertRecipe: ' + e2.message); }
   }
 }
 
@@ -2703,7 +2707,7 @@ async function loadAdminMenuSalesForDate(date){
     const rows = await sb(`menu_sales?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${date}&select=*`);
     (rows || []).forEach(r => { adminMenuSalesCache[r.recipe_id] = Number(r.qty) || 0; });
     setSyncStatus('online');
-  } catch (e) { console.error('loadAdminMenuSalesForDate failed', e); setSyncStatus('error'); }
+  } catch (e) { console.error('loadAdminMenuSalesForDate failed', e); setSyncStatus('error', 'loadAdminMenuSales: ' + e.message); }
 }
 
 document.getElementById('adminMenuDateLoadBtn').addEventListener('click', async () => {
@@ -4043,7 +4047,7 @@ async function savePastDailyCount(matId){
     setSyncStatus('online');
     const el = document.getElementById('pastsavemsg_' + matId);
     if (el) { el.textContent = 'บันทึกแล้ว ✓'; clearTimeout(pastSaveTimers['flash_'+matId]); pastSaveTimers['flash_'+matId] = setTimeout(() => { el.textContent=''; }, 1500); }
-  } catch (e) { console.error('savePastDailyCount failed', e); setSyncStatus('error'); }
+  } catch (e) { console.error('savePastDailyCount failed', e); setSyncStatus('error', 'savePastCount: ' + e.message); }
 }
 
 document.getElementById('pastLoadBtn').addEventListener('click', loadPastDate);

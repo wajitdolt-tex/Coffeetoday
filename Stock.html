@@ -340,8 +340,11 @@
                 </summary>
                 <div class="border-t border-slate-100 p-4">
                   <p class="text-xs text-slate-500 mb-3">ลากแถบเพื่อเรียงใหม่ · แตะปุ่ม ✎ เพื่อเปลี่ยนชื่อหมวด — มีผลกับหน้านับสต็อก, ฟิลเตอร์, และ Excel export</p>
-                  <ul id="catSortList" class="space-y-1.5"></ul>
-                  <button id="resetCatOrderBtn" class="mt-3 text-xs text-slate-400 hover:text-red-500 transition">↩ รีเซ็ตลำดับเดิม</button>
+                  <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">หมวดหมู่วัตถุดิบ</p>
+                  <ul id="catSortList" class="space-y-1.5 mb-4"></ul>
+                  <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">หมวดหมู่เมนู (กรอกยอดขาย)</p>
+                  <ul id="recipeCatList" class="space-y-1.5 mb-2"></ul>
+                  <button id="resetCatOrderBtn" class="mt-1 text-xs text-slate-400 hover:text-red-500 transition">↩ รีเซ็ตลำดับวัตถุดิบ</button>
                 </div>
               </details>
             </div>
@@ -1650,13 +1653,11 @@ function showAdminTab(tab){
     }
   });
   if (tab === 'addmenu') {
-    // defer เพื่อให้ tab transition เสร็จก่อน ป้องกัน freeze บน Safari
-    setTimeout(() => {
+    // ทำแค่สิ่งที่จำเป็นตอน switch tab — ส่วนที่หนักค่อย lazy load
+    requestAnimationFrame(() => {
       try { populateNewRecipeCategory(); } catch(_){}
-      try { if (window._refreshNewIngDatalist) window._refreshNewIngDatalist(); } catch(_){}
       try { if (window._renderNewRecipeIngList) window._renderNewRecipeIngList(); } catch(_){}
-      try { refreshMatCategoryDatalist(); } catch(_){}
-    }, 50);
+    });
   }
   if (tab === 'borrow') renderBorrowTab().catch(function(e){ console.error(e); });
 }
@@ -4086,11 +4087,11 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
 
   // Custom ingredient dropdown (ไม่ใช้ native datalist เพราะ Safari ช้า)
   let _selectedIngMat = null;
-  function setupIngSearch(){
+  // Lazy init: bind เฉพาะตอน focus ครั้งแรก ไม่ให้ block tab transition
+  function bindIngSearch(){
     const inp = document.getElementById('newIngSearch');
     const dd  = document.getElementById('newIngDropdown');
-    if (!inp || !dd) return;
-    if (inp.dataset.bound) return; // bind ครั้งเดียว
+    if (!inp || !dd || inp.dataset.bound) return;
     inp.dataset.bound = '1';
     inp.addEventListener('input', () => {
       const q = inp.value.trim().toLowerCase();
@@ -4111,9 +4112,15 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
       dd.classList.add('hidden');
     });
     inp.addEventListener('blur', () => setTimeout(() => dd.classList.add('hidden'), 150));
+    // ถ้ามีค่าอยู่แล้วตอน focus ให้ filter ทันที
     inp.addEventListener('focus', () => { if (inp.value.trim()) inp.dispatchEvent(new Event('input')); });
   }
-  function refreshNewIngDatalist(){ setupIngSearch(); } // compat alias
+  // bind lazy on first focus
+  document.addEventListener('focusin', e => {
+    if (e.target && e.target.id === 'newIngSearch') bindIngSearch();
+  });
+  function setupIngSearch(){ bindIngSearch(); }
+  function refreshNewIngDatalist(){ /* lazy — bound on focus */ }
 
   function renderNewRecipeIngList(){
     const wrap = document.getElementById('newRecipeIngList');
@@ -4293,8 +4300,43 @@ function renderCatSortList(){
 }
 
 document.getElementById('catOrderDetails').addEventListener('toggle', function(){
-  if (this.open) renderCatSortList();
+  if (this.open) { renderCatSortList(); renderRecipeCatList(); }
 });
+
+function renderRecipeCatList(){
+  const ul = document.getElementById('recipeCatList');
+  if (!ul) return;
+  const cats = recipeCategories();
+  ul.innerHTML = cats.map(cat => `
+    <li data-rcat="${cat}" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+      <span class="text-sm font-medium text-slate-700 flex-1">${cat}</span>
+      <span class="text-[10px] text-slate-400">${RECIPES.filter(r=>r.category===cat).length} เมนู</span>
+      <button type="button" data-renamercat="${cat}" class="text-slate-400 hover:text-accent-600 text-sm px-1.5" title="แก้ชื่อหมวดเมนู">✎</button>
+    </li>`).join('');
+
+  ul.querySelectorAll('[data-renamercat]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const oldCat = btn.dataset.renamercat;
+      const newCat = prompt('แก้ชื่อหมวดเมนู "' + oldCat + '" เป็น:', oldCat);
+      if (newCat === null) return;
+      const trimmed = newCat.trim();
+      if (!trimmed || trimmed === oldCat) return;
+      // เปลี่ยนทุก recipe ในหมวดนี้
+      const affected = RECIPES.filter(r => r.category === oldCat);
+      affected.forEach(r => { r.category = trimmed; });
+      setSyncStatus('syncing');
+      try {
+        for (const r of affected) { await upsertRecipeSilent(r); }
+        setSyncStatus('online');
+        showToast('เปลี่ยนชื่อหมวดเมนูเป็น "' + trimmed + '" แล้ว (' + affected.length + ' เมนู)', 'success');
+      } catch(err) { console.error(err); setSyncStatus('error'); }
+      renderRecipeCatList();
+      try { populateCategoryFilter(); } catch(_){}
+      try { populateNewRecipeCategory(); } catch(_){}
+    });
+  });
+}
 
 document.getElementById('resetCatOrderBtn').addEventListener('click', () => {
   _categoryOrder = null;

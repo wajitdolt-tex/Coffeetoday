@@ -2860,7 +2860,7 @@ document.addEventListener('touchstart', e => {
 }, { passive: false });
 
 document.addEventListener('touchmove', e => {
-  if (!_drag) return;
+  if (!_drag) return; // ไม่ได้ drag → ไม่ preventDefault ให้ scroll ได้ปกติ
   e.preventDefault();
   const touch = e.touches[0];
   const y = touch.clientY - _drag.offsetY;
@@ -2884,6 +2884,17 @@ document.addEventListener('touchmove', e => {
     _drag.lastTargetId = targetId;
   }
 }, { passive: false });
+
+document.addEventListener('touchcancel', e => {
+  if (!_drag) return;
+  try { _drag.ghost.remove(); } catch(_){}
+  try { _drag.card.style.opacity = ''; } catch(_){}
+  document.querySelectorAll('[data-frontcard]').forEach(c => {
+    c.style.borderTopColor = '';
+    c.style.borderTopWidth = '';
+  });
+  _drag = null;
+}, { passive: true });
 
 document.addEventListener('touchend', e => {
   if (!_drag) return;

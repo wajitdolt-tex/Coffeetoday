@@ -2006,7 +2006,7 @@ function renderSummary(rows, acctExpRows, branchKey) {
     var extraExp=p(r,30);
     var iceAmt=p(r,20);
     tSales+=sales; tPayIn+=pi;
-    tQr+=qr; tLineman+=lineman; tCash+=cash; tThaithai+=p(r,38);
+    tQr+=qr; tLineman+=lineman; tCash+=cash; tThaithai+=p(r,37);
     tExtraExp+=extraExp;
     tExp += exp;  // ShopExp รวม extra อยู่แล้ว ไม่บวกซ้ำ
     tCftd  +=p(r,19); tIce   +=iceAmt;
@@ -2989,7 +2989,7 @@ function fillDailyForm(row) {
   document.getElementById('d-qr').value        = p(7) || '';
   document.getElementById('d-lineman').value   = p(9) || '';
   document.getElementById('d-cash').value      = p(10) || '';
-  document.getElementById('d-thaithai').value  = p(38) || '';
+  document.getElementById('d-thaithai').value  = p(37) || '';
   document.getElementById('d-snacks').value    = p(12) || '';
   document.getElementById('d-promo').value     = p(13) || '';
   var loadedExtraTotal = p(30);

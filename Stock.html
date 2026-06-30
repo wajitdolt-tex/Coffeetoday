@@ -93,10 +93,6 @@
   <!-- ===== Modal: หลังบ้าน (PIN gate + admin tools) ===== -->
   <div id="toastWrap" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-2 pointer-events-none w-full px-4"></div>
 
-  <!-- Debug log panel ชั่วคราว สำหรับ debug บน iPad ที่ไม่มี Mac ต่อ Web Inspector -->
-  <button id="debugLogToggle" type="button" style="position:fixed;bottom:8px;right:8px;z-index:9998;width:36px;height:36px;border-radius:50%;background:#1e293b;color:#fff;font-size:14px;border:none;opacity:0.5;">🐞</button>
-  <pre id="debugLogPanel" style="display:none;position:fixed;top:8px;left:8px;right:8px;bottom:52px;z-index:9998;background:rgba(15,23,42,0.95);color:#86efac;font-size:11px;line-height:1.4;padding:12px;overflow:auto;white-space:pre-wrap;border-radius:8px;font-family:monospace;"></pre>
-
   <iframe name="gsheetTargetFrame" style="display:none;"></iframe>
   <form id="gsheetForm" method="POST" target="gsheetTargetFrame" style="display:none;">
     <input type="hidden" name="payload" id="gsheetPayloadInput">
@@ -539,41 +535,12 @@
 <script>
 
 // กัน uncaught error / promise rejection ไม่ให้ทำให้ Safari ค้างหรือรีโหลดเอง
-// + log แบบถาวรบนหน้าจอ เพื่อ debug บน iPad ที่ไม่มี Mac ต่อ Web Inspector
-window._debugLogs = [];
-// กู้ log ของรอบก่อนหน้า (ถ้ามี) ก่อนเริ่ม log ใหม่ — ช่วยดู log ก่อนหน้าได้แม้ Safari kill tab แบบฉับพลัน
-try {
-  const saved = sessionStorage.getItem('_debugLogsBeforeReload');
-  if (saved) {
-    const arr = JSON.parse(saved);
-    if (Array.isArray(arr) && arr.length) {
-      window._debugLogs = arr.concat(['--- หน้าเว็บโหลดใหม่ ณ จุดนี้ (' + new Date().toLocaleTimeString() + ') ---']);
-    }
-  }
-} catch(_){}
-function _appendDebugLog(msg){
-  window._debugLogs.push(new Date().toLocaleTimeString() + ' — ' + msg);
-  if (window._debugLogs.length > 80) window._debugLogs.shift();
-  // เซฟลง sessionStorage ทันทีทุกครั้ง กัน Safari kill tab แบบไม่ทัน beforeunload
-  try { sessionStorage.setItem('_debugLogsBeforeReload', JSON.stringify(window._debugLogs)); } catch(_){}
-  try {
-    const panel = document.getElementById('debugLogPanel');
-    if (panel && panel.style.display !== 'none') {
-      panel.textContent = window._debugLogs.join('\n');
-      panel.scrollTop = panel.scrollHeight;
-    }
-  } catch(_){}
-}
 window.addEventListener('error', function(e){
-  const msg = 'ERROR: ' + (e.error ? (e.error.message + ' @ ' + (e.error.stack||'').split('\n')[1]) : e.message);
   console.error('Uncaught error:', e.error || e.message);
-  _appendDebugLog(msg);
   e.preventDefault();
 });
 window.addEventListener('unhandledrejection', function(e){
-  const msg = 'REJECTION: ' + (e.reason && e.reason.message ? e.reason.message : e.reason);
   console.error('Unhandled promise rejection:', e.reason);
-  _appendDebugLog(msg);
   e.preventDefault();
 });
 
@@ -4986,21 +4953,6 @@ async function ensureRefillQtyColumn(){
   renderSlowMoving('');
   renderTable();
 })();
-
-// Debug log panel toggle (ปุ่ม 🐞 มุมขวาล่าง)
-document.getElementById('debugLogToggle').addEventListener('click', function(){
-  const panel = document.getElementById('debugLogPanel');
-  const showing = panel.style.display !== 'none';
-  panel.style.display = showing ? 'none' : 'block';
-  if (!showing) {
-    panel.textContent = (window._debugLogs && window._debugLogs.length)
-      ? window._debugLogs.join('\n')
-      : 'ยังไม่มี error ใดๆ ถูกบันทึกไว้ (ดีแล้ว!)\n\nถ้าหน้าเว็บค้างหรือรีเฟรชเอง ให้กดปุ่มนี้ทันทีหลังเปิดมาใหม่ เพื่อดู log ก่อนหน้า';
-  }
-});
-window.addEventListener('beforeunload', function(){
-  try { sessionStorage.setItem('_debugLogsBeforeReload', JSON.stringify(window._debugLogs || [])); } catch(_){}
-});
 
 </script>
 </body>

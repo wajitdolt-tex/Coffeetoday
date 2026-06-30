@@ -242,15 +242,16 @@
               </div>
             </div>
 
-            <!-- ส่วนผสม -->
+            <!-- ส่วนผสม: เลือกวัตถุดิบจาก <select> ปกติ ไม่ใช้ dropdown กำหนดเอง -->
             <div class="bg-white border border-slate-200 rounded-xl p-4">
               <label class="block text-xs font-bold text-accent-700 mb-2">ส่วนผสม (วัตถุดิบในสูตร)</label>
               <div id="newRecipeIngList" class="space-y-2 mb-2"></div>
               <div class="flex gap-2 items-end flex-wrap">
-                <div class="flex-1 min-w-[150px] relative">
+                <div class="flex-1 min-w-[150px]">
                   <label class="block text-[10px] text-slate-400 mb-0.5">เลือกวัตถุดิบ</label>
-                  <input id="newIngSearch" type="text" placeholder="🔍 ค้นหาวัตถุดิบ…" autocomplete="off" class="input-base input-sm">
-                  <div id="newIngDropdown" class="hidden absolute z-50 left-0 right-0 top-full mt-0.5 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto text-sm"></div>
+                  <select id="newIngSelect" class="input-base input-sm">
+                    <option value="">เลือกวัตถุดิบ…</option>
+                  </select>
                 </div>
                 <div class="w-24">
                   <label class="block text-[10px] text-slate-400 mb-0.5">ปริมาณ</label>
@@ -290,12 +291,14 @@
                 <div class="border-t border-slate-100 p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อวัตถุดิบ</label>
-                    <input id="newName" type="text" placeholder="เช่น ไซรัปลาเวนเดอร์" class="input-base input-sm">
+                    <input id="newName" type="text" placeholder="เช่น ไซรัปลาเวนเดอร์" class="input-base input-sm" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">หมวดหมู่</label>
-                    <input id="newCategory" type="text" placeholder="พิมพ์หรือเลือกจากรายการ" list="matCategoryList" autocomplete="off" class="input-base input-sm">
-                    <datalist id="matCategoryList"></datalist>
+                    <select id="newCategorySelect" class="input-base input-sm">
+                      <option value="">เลือกหมวดเดิม หรือพิมพ์ใหม่ด้านล่าง</option>
+                    </select>
+                    <input id="newCategory" type="text" placeholder="หรือพิมพ์หมวดใหม่" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="input-base input-sm mt-1.5">
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">รูปแบบหน่วยนับ</label>
@@ -306,11 +309,11 @@
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">หน่วยใหญ่</label>
-                    <input id="newBigUnit" type="text" placeholder="เช่น ถุง / ลัง / ขวด" class="input-base input-sm">
+                    <input id="newBigUnit" type="text" placeholder="เช่น ถุง / ลัง / ขวด" class="input-base input-sm" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                   </div>
                   <div id="newSmallUnitWrap">
                     <label class="block text-xs font-semibold text-slate-600 mb-1">หน่วยเศษ</label>
-                    <input id="newSmallUnit" type="text" placeholder="เช่น กรัม / มล. / ใบ" class="input-base input-sm">
+                    <input id="newSmallUnit" type="text" placeholder="เช่น กรัม / มล. / ใบ" class="input-base input-sm" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                   </div>
                   <div id="newRatioWrap">
                     <label class="block text-xs font-semibold text-slate-600 mb-1">1 หน่วยใหญ่ = กี่หน่วยเศษ</label>
@@ -337,16 +340,16 @@
               </details>
             </div>
 
-            <!-- จัดเรียง/แก้ชื่อหมวดหมู่ (พับได้) -->
+            <!-- จัดเรียง/แก้ชื่อหมวดหมู่ (พับได้) — ใช้ปุ่มขึ้น/ลง ไม่มี drag เพื่อความเสถียรบน Safari iPad -->
             <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
               <details id="catOrderDetails">
                 <summary class="px-4 py-3 flex items-center gap-2 cursor-pointer hover:bg-slate-50 transition list-none">
                   <svg class="chevron w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
                   <span class="text-sm font-semibold text-slate-700">🗂 จัดเรียง/แก้ชื่อหมวดหมู่</span>
-                  <span class="text-xs text-slate-400 ml-1">ลากเพื่อเรียง · แตะ ✎ เพื่อแก้ชื่อ</span>
+                  <span class="text-xs text-slate-400 ml-1">แตะ ▲▼ เพื่อเรียง · แตะ ✎ เพื่อแก้ชื่อ</span>
                 </summary>
                 <div class="border-t border-slate-100 p-4">
-                  <p class="text-xs text-slate-500 mb-3">ลากแถบเพื่อเรียงใหม่ · แตะปุ่ม ✎ เพื่อเปลี่ยนชื่อหมวด — มีผลกับหน้านับสต็อก, ฟิลเตอร์, และ Excel export</p>
+                  <p class="text-xs text-slate-500 mb-3">แตะปุ่ม ▲▼ เพื่อเรียงใหม่ · แตะปุ่ม ✎ เพื่อเปลี่ยนชื่อหมวด — มีผลกับหน้านับสต็อก, ฟิลเตอร์, และ Excel export</p>
                   <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">หมวดหมู่วัตถุดิบ</p>
                   <ul id="catSortList" class="space-y-1.5 mb-4"></ul>
                   <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">หมวดหมู่เมนู (กรอกยอดขาย)</p>
@@ -1783,8 +1786,10 @@ function showAdminTab(tab){
   if (tab === 'addmenu') {
     // defer เล็กน้อยให้ tab transition (display:block) เสร็จก่อน ค่อย populate
     setTimeout(() => {
-      try { populateNewRecipeCategory(); } catch(_){}
+      try { if (window.populateNewRecipeCategory) window.populateNewRecipeCategory(); } catch(_){}
       try { if (window._renderNewRecipeIngList) window._renderNewRecipeIngList(); } catch(_){}
+      try { if (window.populateNewIngSelect) window.populateNewIngSelect(); } catch(_){}
+      try { populateNewCategorySelect(); } catch(_){}
     }, 30);
   }
   if (tab === 'borrow') renderBorrowTab().catch(function(e){ console.error(e); });
@@ -3303,6 +3308,20 @@ function toggleNewTypeFields(){
 newTypeEl.addEventListener('change', toggleNewTypeFields);
 toggleNewTypeFields();
 
+// populate select หมวดหมู่เดิม (เลือกได้) + ช่องพิมพ์เอง (ใหม่) แยกกัน ไม่ใช้ datalist เพราะ Safari iPad แสดงผลช้า
+function populateNewCategorySelect(){
+  const sel = document.getElementById('newCategorySelect');
+  if (!sel) return;
+  const cats = materialCategories();
+  const currentVal = sel.value;
+  sel.innerHTML = '<option value="">เลือกหมวดเดิม หรือพิมพ์ใหม่ด้านล่าง</option>' +
+    cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  if (currentVal && cats.includes(currentVal)) sel.value = currentVal;
+}
+document.getElementById('newCategorySelect').addEventListener('change', function(){
+  if (this.value) document.getElementById('newCategory').value = this.value;
+});
+
 document.getElementById('addMaterialBtn').addEventListener('click', () => {
   const name = document.getElementById('newName').value.trim();
   const category = document.getElementById('newCategory').value.trim() || 'วัตถุดิบเพิ่มเติม';
@@ -3335,6 +3354,8 @@ document.getElementById('addMaterialBtn').addEventListener('click', () => {
   renderEditList(document.getElementById('editSearch').value);
   populateCategoryFilter();
   refreshCategoryDatalist();
+  populateNewCategorySelect();
+  try { if (window.populateNewIngSelect) window.populateNewIngSelect(); } catch(_){}
 
   msgEl.textContent = `เพิ่ม "${name}" เข้าระบบเรียบร้อย และซิงค์ขึ้นฐานข้อมูลแล้ว`;
   msgEl.className = 'text-sm font-medium text-green-700';
@@ -4317,11 +4338,6 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
     const sig = cats.join('|');
     if (sig === _recipeCatSig && sel.options.length > 1) return; // ไม่เปลี่ยน ข้าม
     _recipeCatSig = sig;
-    // เพิ่ม event ครั้งเดียว
-    if (!sel.dataset.listenerAdded) {
-      sel.addEventListener('change', function(e){ e.stopPropagation(); });
-      sel.dataset.listenerAdded = '1';
-    }
     // ล้างแล้ว populate ใหม่ทุกครั้ง (ป้องกัน populate ตอน RECIPES ว่าง)
     const currentVal = sel.value;
     while (sel.options.length > 1) sel.remove(1); // เก็บ option แรก "เลือกหมวด"
@@ -4339,47 +4355,23 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
     if (currentVal) sel.value = currentVal;
   }
 
-  // populateNewRecipeCategory จะถูกเรียกใน showAdminTab แทน
-
-  // ===== ส่วนผสมของเมนูใหม่ (ingredient picker) =====
+  // ===== ส่วนผสมของเมนูใหม่ (ingredient picker — ใช้ <select> ธรรมดา ไม่ใช้ custom dropdown) =====
   let newRecipeIngredients = []; // [{materialId, qty}]
+  let _ingSelectSig = '';
 
-  // Custom ingredient dropdown (ไม่ใช้ native datalist เพราะ Safari ช้า)
-  let _selectedIngMat = null;
-  // Lazy init: bind เฉพาะตอน focus ครั้งแรก ไม่ให้ block tab transition
-  function bindIngSearch(){
-    const inp = document.getElementById('newIngSearch');
-    const dd  = document.getElementById('newIngDropdown');
-    if (!inp || !dd || inp.dataset.bound) return;
-    inp.dataset.bound = '1';
-    inp.addEventListener('input', () => {
-      const q = inp.value.trim().toLowerCase();
-      if (!q) { dd.classList.add('hidden'); return; }
-      const matches = MATERIALS.filter(m => m.name.toLowerCase().includes(q)).slice(0, 20);
-      if (!matches.length) { dd.classList.add('hidden'); return; }
-      dd.innerHTML = matches.map(m =>
-        `<div data-matid="${m.id}" data-matname="${m.name}" class="px-3 py-2 cursor-pointer hover:bg-accent-50 text-slate-700">${m.name}</div>`
-      ).join('');
-      dd.classList.remove('hidden');
-    });
-    dd.addEventListener('mousedown', e => {
-      const item = e.target.closest('[data-matid]');
-      if (!item) return;
-      e.preventDefault();
-      inp.value = item.dataset.matname;
-      _selectedIngMat = { id: item.dataset.matid, name: item.dataset.matname };
-      dd.classList.add('hidden');
-    });
-    inp.addEventListener('blur', () => setTimeout(() => dd.classList.add('hidden'), 150));
-    // ถ้ามีค่าอยู่แล้วตอน focus ให้ filter ทันที
-    inp.addEventListener('focus', () => { if (inp.value.trim()) inp.dispatchEvent(new Event('input')); });
+  function populateNewIngSelect(){
+    const sel = document.getElementById('newIngSelect');
+    if (!sel) return;
+    const sorted = MATERIALS.slice().sort((a,b) => a.name.localeCompare(b.name, 'th'));
+    const sig = sorted.map(m => m.id).join('|');
+    if (sig === _ingSelectSig && sel.options.length > 1) return;
+    _ingSelectSig = sig;
+    const currentVal = sel.value;
+    sel.innerHTML = '<option value="">เลือกวัตถุดิบ…</option>' +
+      sorted.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+    if (currentVal) sel.value = currentVal;
   }
-  // bind lazy on first focus
-  document.addEventListener('focusin', e => {
-    if (e.target && e.target.id === 'newIngSearch') bindIngSearch();
-  });
-  function setupIngSearch(){ bindIngSearch(); }
-  function refreshNewIngDatalist(){ /* lazy — bound on focus */ }
+  window.populateNewIngSelect = populateNewIngSelect;
 
   function renderNewRecipeIngList(){
     const wrap = document.getElementById('newRecipeIngList');
@@ -4403,15 +4395,13 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
 
   document.getElementById('addNewIngBtn').addEventListener('click', (e) => {
     e.preventDefault();
-    const searchEl = document.getElementById('newIngSearch');
+    const selectEl = document.getElementById('newIngSelect');
     const qtyEl = document.getElementById('newIngQty');
     const unitEl = document.getElementById('newIngUnit');
-    const matName = searchEl.value.trim();
-    // ใช้ selected จาก dropdown ก่อน ถ้าไม่มีค่อย find จากชื่อ
-    let mat = (_selectedIngMat && _selectedIngMat.name === matName)
-      ? MATERIALS.find(m => m.id === _selectedIngMat.id)
-      : MATERIALS.find(m => m.name === matName);
-    if (!mat) { alert('ไม่พบวัตถุดิบนี้ กรุณาเลือกจากรายการ'); return; }
+    const matId = selectEl.value;
+    if (!matId) { alert('กรุณาเลือกวัตถุดิบก่อน'); return; }
+    const mat = materialById(matId);
+    if (!mat) { alert('ไม่พบวัตถุดิบนี้'); return; }
     const qtyRaw = parseFloat(qtyEl.value) || 0;
     if (qtyRaw <= 0) { alert('กรุณาระบุปริมาณ'); return; }
     const unit = unitEl.value;
@@ -4420,7 +4410,7 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
     const existing = newRecipeIngredients.find(i => i.materialId === mat.id);
     if (existing) existing.qty = qty;
     else newRecipeIngredients.push({ materialId: mat.id, qty });
-    searchEl.value = ''; qtyEl.value = ''; _selectedIngMat = null;
+    selectEl.value = ''; qtyEl.value = '';
     renderNewRecipeIngList();
   });
 
@@ -4476,8 +4466,9 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
   });
 
   // expose สำหรับเรียกตอนเปิด tab
-  window._refreshNewIngDatalist = refreshNewIngDatalist;
   window._renderNewRecipeIngList = renderNewRecipeIngList;
+  window._populateNewRecipeCategory = populateNewRecipeCategory;
+  window.populateNewRecipeCategory = populateNewRecipeCategory;
 })();
 
 
@@ -4485,23 +4476,90 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
    จัดการหมวดหมู่วัตถุดิบ
 =========================================================== */
 function refreshMatCategoryDatalist(){
-  const dl = document.getElementById('matCategoryList');
-  if (!dl) return;
-  dl.innerHTML = '';
-  materialCategories().forEach(cat => {
-    const opt = document.createElement('option');
-    opt.value = cat;
-    dl.appendChild(opt);
-  });
+  // เปลี่ยนมาใช้ <select> ธรรมดาแทน <datalist> เพราะ Safari iPad แสดงผล datalist ช้า
+  try { populateNewCategorySelect(); } catch(_){}
 }
 
+function categoryArrayMove(arr, fromIdx, toIdx){
+  const item = arr[fromIdx];
+  arr.splice(fromIdx, 1);
+  arr.splice(toIdx, 0, item);
+  return arr;
+}
+
+// Touch drag-and-drop ใช้ร่วมกันทั้งหมวดวัตถุดิบและหมวดเมนู
+// preventDefault เฉพาะตอนจับ handle/กำลัง drag จริงๆ เท่านั้น ไม่บล็อก scroll ปกติ
+function bindCategoryDragList(ul, opts){
+  // opts: { itemAttr, handleAttr, getOrder, setOrder, save, rerender }
+  let drag = null;
+
+  ul.addEventListener('touchstart', function(e){
+    const handle = e.target.closest('[' + opts.handleAttr + ']');
+    if (!handle) return;
+    e.preventDefault();
+    const li = handle.closest('li[' + opts.itemAttr + ']');
+    if (!li) return;
+    const rect = li.getBoundingClientRect();
+    const ghost = li.cloneNode(true);
+    ghost.style.cssText = 'position:fixed;top:'+rect.top+'px;left:'+rect.left+'px;width:'+rect.width+'px;opacity:0.85;box-shadow:0 6px 20px rgba(0,0,0,0.15);z-index:9999;pointer-events:none;transition:none;border-radius:8px;';
+    document.body.appendChild(ghost);
+    li.style.opacity = '0.3';
+    drag = { cat: li.getAttribute(opts.itemAttr), ghost, li, offsetY: e.touches[0].clientY - rect.top, lastTarget: null };
+  }, { passive: false });
+
+  ul.addEventListener('touchmove', function(e){
+    if (!drag) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    drag.ghost.style.top = (touch.clientY - drag.offsetY) + 'px';
+    drag.ghost.style.display = 'none';
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    drag.ghost.style.display = '';
+    const targetLi = el && el.closest('li[' + opts.itemAttr + ']');
+    const targetCat = targetLi ? targetLi.getAttribute(opts.itemAttr) : null;
+    ul.querySelectorAll('li[' + opts.itemAttr + ']').forEach(function(l){ l.style.borderTopColor=''; l.style.borderTopWidth=''; });
+    if (targetLi && targetCat !== drag.cat) {
+      targetLi.style.borderTopColor = '#7c3aed';
+      targetLi.style.borderTopWidth = '3px';
+      drag.lastTarget = targetCat;
+    }
+  }, { passive: false });
+
+  function cleanup(){
+    if (!drag) return;
+    try { drag.ghost.remove(); } catch(_){}
+    try { drag.li.style.opacity = ''; } catch(_){}
+    ul.querySelectorAll('li[' + opts.itemAttr + ']').forEach(function(l){ l.style.borderTopColor=''; l.style.borderTopWidth=''; });
+    drag = null;
+  }
+
+  ul.addEventListener('touchcancel', cleanup, { passive: true });
+
+  ul.addEventListener('touchend', function(){
+    if (!drag) return;
+    const lastTarget = drag.lastTarget;
+    const cat = drag.cat;
+    cleanup();
+    if (!lastTarget || lastTarget === cat) return;
+
+    const current = opts.getOrder();
+    const srcIdx = current.indexOf(cat);
+    const tgtIdx = current.indexOf(lastTarget);
+    if (srcIdx === -1 || tgtIdx === -1) return;
+    categoryArrayMove(current, srcIdx, tgtIdx);
+    opts.setOrder(current);
+    opts.save();
+    opts.rerender();
+  }, { passive: true });
+}
+
+/* หมวดหมู่วัตถุดิบ — แตะ ⠿ เพื่อลาก, แตะ ✎ เพื่อแก้ชื่อ */
 function renderCatSortList(){
   const ul = document.getElementById('catSortList');
   if (!ul) return;
   const cats = materialCategories();
-  ul.innerHTML = cats.map((cat, i) => `
-    <li data-catidx="${i}" data-cat="${cat}"
-        class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 touch-none select-none">
+  ul.innerHTML = cats.map(cat => `
+    <li data-cat="${cat}" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 touch-none select-none">
       <span data-cathandle="${cat}" class="cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 shrink-0 flex items-center px-0.5" title="ลากเพื่อเรียงใหม่">
         <svg width="12" height="16" viewBox="0 0 12 16" fill="none"><circle cx="3" cy="3" r="1.5" fill="currentColor"/><circle cx="3" cy="8" r="1.5" fill="currentColor"/><circle cx="3" cy="13" r="1.5" fill="currentColor"/><circle cx="9" cy="3" r="1.5" fill="currentColor"/><circle cx="9" cy="8" r="1.5" fill="currentColor"/><circle cx="9" cy="13" r="1.5" fill="currentColor"/></svg>
       </span>
@@ -4514,74 +4572,22 @@ function renderCatSortList(){
   const fresh = ul.cloneNode(true);
   ul.parentNode.replaceChild(fresh, ul);
 
-  // --- Touch drag-and-drop (HTML5 native drag ใช้ไม่ได้บน iOS Safari) ---
-  let _matCatDrag = null;
+  bindCategoryDragList(fresh, {
+    itemAttr: 'data-cat',
+    handleAttr: 'data-cathandle',
+    getOrder: materialCategories,
+    setOrder: function(arr){ _categoryOrder = arr; },
+    save: saveCategoryOrder,
+    rerender: function(){
+      refreshMatCategoryDatalist();
+      populateCategoryFilter();
+      renderCatSortList();
+      renderFastMoving(document.getElementById('materialSearch') ? document.getElementById('materialSearch').value : '');
+      renderSlowMoving(document.getElementById('materialSearch') ? document.getElementById('materialSearch').value : '');
+      showToast('เรียงหมวดวัตถุดิบใหม่แล้ว ✓', 'success');
+    },
+  });
 
-  fresh.addEventListener('touchstart', function(e){
-    const handle = e.target.closest('[data-cathandle]');
-    if (!handle) return;
-    e.preventDefault();
-    const li = handle.closest('li[data-cat]');
-    if (!li) return;
-    const rect = li.getBoundingClientRect();
-    const ghost = li.cloneNode(true);
-    ghost.style.cssText = 'position:fixed;top:'+rect.top+'px;left:'+rect.left+'px;width:'+rect.width+'px;opacity:0.85;box-shadow:0 6px 20px rgba(0,0,0,0.15);z-index:9999;pointer-events:none;transition:none;border-radius:8px;';
-    document.body.appendChild(ghost);
-    li.style.opacity = '0.3';
-    _matCatDrag = { cat: li.dataset.cat, ghost, li, offsetY: e.touches[0].clientY - rect.top, lastTarget: null };
-  }, { passive: false });
-
-  fresh.addEventListener('touchmove', function(e){
-    if (!_matCatDrag) return;
-    e.preventDefault();
-    const touch = e.touches[0];
-    _matCatDrag.ghost.style.top = (touch.clientY - _matCatDrag.offsetY) + 'px';
-    _matCatDrag.ghost.style.display = 'none';
-    const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    _matCatDrag.ghost.style.display = '';
-    const targetLi = el && el.closest('li[data-cat]');
-    const targetCat = targetLi ? targetLi.dataset.cat : null;
-    fresh.querySelectorAll('li[data-cat]').forEach(function(l){ l.style.borderTopColor=''; l.style.borderTopWidth=''; });
-    if (targetLi && targetCat !== _matCatDrag.cat) {
-      targetLi.style.borderTopColor = '#7c3aed';
-      targetLi.style.borderTopWidth = '3px';
-      _matCatDrag.lastTarget = targetCat;
-    }
-  }, { passive: false });
-
-  function _matCatDragCleanup(){
-    if (!_matCatDrag) return;
-    try { _matCatDrag.ghost.remove(); } catch(_){}
-    try { _matCatDrag.li.style.opacity = ''; } catch(_){}
-    fresh.querySelectorAll('li[data-cat]').forEach(function(l){ l.style.borderTopColor=''; l.style.borderTopWidth=''; });
-    _matCatDrag = null;
-  }
-
-  fresh.addEventListener('touchcancel', function(){ _matCatDragCleanup(); }, { passive: true });
-
-  fresh.addEventListener('touchend', function(e){
-    if (!_matCatDrag) return;
-    const lastTarget = _matCatDrag.lastTarget;
-    const cat = _matCatDrag.cat;
-    _matCatDragCleanup();
-    if (!lastTarget || lastTarget === cat) return;
-
-    const current = materialCategories();
-    const srcIdx = current.indexOf(cat);
-    current.splice(srcIdx, 1);
-    const tgtIdx = current.indexOf(lastTarget);
-    current.splice(tgtIdx, 0, cat);
-    _categoryOrder = current;
-    saveCategoryOrder();
-    refreshMatCategoryDatalist();
-    populateCategoryFilter();
-    renderCatSortList();
-    renderFastMoving(document.getElementById('materialSearch') ? document.getElementById('materialSearch').value : '');
-    renderSlowMoving(document.getElementById('materialSearch') ? document.getElementById('materialSearch').value : '');
-    showToast('เรียงหมวดวัตถุดิบใหม่แล้ว ✓', 'success');
-  }, { passive: true });
-
-  // แก้ชื่อหมวด
   fresh.querySelectorAll('[data-renamecat]').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.preventDefault(); e.stopPropagation();
@@ -4590,15 +4596,12 @@ function renderCatSortList(){
       if (newCat === null) return;
       const trimmed = newCat.trim();
       if (!trimmed || trimmed === oldCat) return;
-      // เปลี่ยนทุก material ในหมวดนี้
       const affected = MATERIALS.filter(m => m.category === oldCat);
       affected.forEach(m => { m.category = trimmed; });
-      // อัปเดต _categoryOrder
       if (Array.isArray(_categoryOrder)) {
         _categoryOrder = _categoryOrder.map(c => c === oldCat ? trimmed : c);
         saveCategoryOrder();
       }
-      // บันทึกทุกตัวที่เปลี่ยนขึ้น DB
       setSyncStatus('syncing');
       try {
         for (const m of affected) { await upsertMaterialSilent(m); }
@@ -4614,10 +4617,7 @@ function renderCatSortList(){
   });
 }
 
-document.getElementById('catOrderDetails').addEventListener('toggle', function(){
-  if (this.open) { renderCatSortList(); renderRecipeCatList(); }
-});
-
+/* หมวดหมู่เมนู — แตะ ⠿ เพื่อลาก, แตะ ✎ เพื่อแก้ชื่อ */
 function renderRecipeCatList(){
   const ul = document.getElementById('recipeCatList');
   if (!ul) return;
@@ -4632,79 +4632,25 @@ function renderRecipeCatList(){
       <button type="button" data-renamercat="${cat}" class="text-slate-400 hover:text-accent-600 text-sm px-1.5" title="แก้ชื่อหมวดเมนู">✎</button>
     </li>`).join('');
 
-  // --- Touch drag-and-drop ---
-  // แทน ul ด้วย node ใหม่เพื่อล้าง event listeners เก่าทั้งหมด ป้องกัน listener สะสม
   const fresh = ul.cloneNode(true);
   ul.parentNode.replaceChild(fresh, ul);
 
-  let _rcDrag = null;
+  bindCategoryDragList(fresh, {
+    itemAttr: 'data-rcat',
+    handleAttr: 'data-rcathandle',
+    getOrder: recipeCategories,
+    setOrder: function(arr){ _recipeCategoryOrder = arr; },
+    save: saveRecipeCategoryOrder,
+    rerender: function(){
+      renderRecipeCatList();
+      try { renderMenuList(menuSearchEl.value); } catch(_){}
+      try { renderFrontMenuList(document.getElementById('frontMenuSearch') ? document.getElementById('frontMenuSearch').value : ''); } catch(_){}
+      try { renderFrontMenuChips(); } catch(_){}
+      try { if (window.populateNewRecipeCategory) window.populateNewRecipeCategory(); } catch(_){}
+      showToast('เรียงหมวดเมนูใหม่แล้ว ✓', 'success');
+    },
+  });
 
-  fresh.addEventListener('touchstart', function(e){
-    const handle = e.target.closest('[data-rcathandle]');
-    if (!handle) return;
-    e.preventDefault();
-    const li = handle.closest('li[data-rcat]');
-    if (!li) return;
-    const rect = li.getBoundingClientRect();
-    const ghost = li.cloneNode(true);
-    ghost.style.cssText = 'position:fixed;top:'+rect.top+'px;left:'+rect.left+'px;width:'+rect.width+'px;opacity:0.85;box-shadow:0 6px 20px rgba(0,0,0,0.15);z-index:9999;pointer-events:none;transition:none;border-radius:8px;';
-    document.body.appendChild(ghost);
-    li.style.opacity = '0.3';
-    _rcDrag = { cat: li.dataset.rcat, ghost, li, offsetY: e.touches[0].clientY - rect.top, lastTarget: null };
-  }, { passive: false });
-
-  fresh.addEventListener('touchmove', function(e){
-    if (!_rcDrag) return;
-    e.preventDefault();
-    const touch = e.touches[0];
-    _rcDrag.ghost.style.top = (touch.clientY - _rcDrag.offsetY) + 'px';
-    _rcDrag.ghost.style.display = 'none';
-    const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    _rcDrag.ghost.style.display = '';
-    const targetLi = el && el.closest('li[data-rcat]');
-    const targetCat = targetLi ? targetLi.dataset.rcat : null;
-    fresh.querySelectorAll('li[data-rcat]').forEach(function(l){ l.style.borderTopColor=''; l.style.borderTopWidth=''; });
-    if (targetLi && targetCat !== _rcDrag.cat) {
-      targetLi.style.borderTopColor = '#7c3aed';
-      targetLi.style.borderTopWidth = '3px';
-      _rcDrag.lastTarget = targetCat;
-    }
-  }, { passive: false });
-
-  function _rcDragCleanup(){
-    if (!_rcDrag) return;
-    try { _rcDrag.ghost.remove(); } catch(_){}
-    try { _rcDrag.li.style.opacity = ''; } catch(_){}
-    fresh.querySelectorAll('li[data-rcat]').forEach(function(l){ l.style.borderTopColor=''; l.style.borderTopWidth=''; });
-    _rcDrag = null;
-  }
-
-  fresh.addEventListener('touchcancel', function(){ _rcDragCleanup(); }, { passive: true });
-
-  fresh.addEventListener('touchend', function(e){
-    if (!_rcDrag) return;
-    const lastTarget = _rcDrag.lastTarget;
-    const cat = _rcDrag.cat;
-    _rcDragCleanup();
-    if (!lastTarget || lastTarget === cat) return;
-
-    const current = recipeCategories();
-    const srcIdx = current.indexOf(cat);
-    current.splice(srcIdx, 1);
-    const tgtIdx = current.indexOf(lastTarget);
-    current.splice(tgtIdx, 0, cat);
-    _recipeCategoryOrder = current;
-    saveRecipeCategoryOrder();
-
-    renderRecipeCatList();
-    try { renderMenuList(menuSearchEl.value); } catch(_){}
-    try { renderFrontMenuList(document.getElementById('frontMenuSearch') ? document.getElementById('frontMenuSearch').value : ''); } catch(_){}
-    try { renderFrontMenuChips(); } catch(_){}
-    try { populateNewRecipeCategory(); } catch(_){}
-    showToast('เรียงหมวดเมนูใหม่แล้ว ✓', 'success');
-  }, { passive: true });
-
-  // --- Rename buttons ---
   fresh.querySelectorAll('[data-renamercat]').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.preventDefault(); e.stopPropagation();
@@ -4715,7 +4661,6 @@ function renderRecipeCatList(){
       if (!trimmed || trimmed === oldCat) return;
       const affected = RECIPES.filter(r => r.category === oldCat);
       affected.forEach(r => { r.category = trimmed; });
-      // อัป _recipeCategoryOrder ถ้ามี
       if (Array.isArray(_recipeCategoryOrder)) {
         _recipeCategoryOrder = _recipeCategoryOrder.map(c => c === oldCat ? trimmed : c);
         saveRecipeCategoryOrder();
@@ -4728,10 +4673,14 @@ function renderRecipeCatList(){
       } catch(err) { console.error(err); setSyncStatus('error'); }
       renderRecipeCatList();
       try { populateCategoryFilter(); } catch(_){}
-      try { populateNewRecipeCategory(); } catch(_){}
+      try { if (window.populateNewRecipeCategory) window.populateNewRecipeCategory(); } catch(_){}
     });
   });
 }
+
+document.getElementById('catOrderDetails').addEventListener('toggle', function(){
+  if (this.open) { renderCatSortList(); renderRecipeCatList(); }
+});
 
 document.getElementById('resetCatOrderBtn').addEventListener('click', () => {
   _categoryOrder = null;

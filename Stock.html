@@ -15,16 +15,6 @@
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
-/* pre-render addmenu panel — ใช้ visibility แทน display:none
-   ทำให้ Safari layout DOM ล่วงหน้า keyboard จึงตอบสนองทันที
-   ใช้เฉพาะ .tab-hidden ไม่ใช่ .hidden เพื่อไม่ทับ panel อื่น */
-.admin-tab-panel.tab-hidden {
-  visibility: hidden;
-  position: absolute;
-  pointer-events: none;
-  height: 0;
-  overflow: hidden;
-}
 #adminTabAddmenu { -webkit-overflow-scrolling: touch; }
 </style>
 <style>
@@ -228,7 +218,7 @@
         </div>
 
         <!-- เพิ่มเมนูใหม่ (พร้อมส่วนผสม) -->
-        <div id="adminTabAddmenu" class="admin-tab-panel tab-hidden">
+        <div id="adminTabAddmenu" class="admin-tab-panel hidden">
           <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2.5">
             <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">🍵</span>
             <h2 class="font-heading font-semibold text-slate-900">เพิ่มเมนูใหม่</h2>
@@ -1702,6 +1692,10 @@ function startGoogleSheetsPoll(){
 async function pollForExternalChanges(){
   const branch = branchSelectEl.value;
   if (!branch) return;
+  // ข้าม poll ถ้าหลังบ้านเปิดอยู่ (กำลังกรอกฟอร์มเพิ่มเมนู/วัตถุดิบ ฯลฯ) — กัน renderTable() หนักๆ
+  // มาขัดจังหวะตอนพิมพ์ ซึ่งเป็นสาเหตุที่ทำให้ Safari ค้าง/รีโหลดเองบน iPad
+  const adminModalEl = document.getElementById('adminModal');
+  if (adminModalEl && !adminModalEl.classList.contains('hidden')) return;
   const today = todayDateStr();
   try {
     const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${today}&select=*`);
@@ -1775,22 +1769,13 @@ document.getElementById('closeAdminBtn').addEventListener('click', () => {
 });
 
 const ADMIN_TABS = ['audit', 'menu', 'addmenu', 'edit', 'recipe', 'borrow', 'past', 'export'];
-// แท็บที่ pre-render ไว้ล่วงหน้า (ซ่อนด้วย visibility แทน display:none เพื่อไม่ให้ Safari freeze)
-const PRERENDER_TABS = new Set(['addmenu']);
 
 function showAdminTab(tab){
   ADMIN_TABS.forEach(t => {
     const panel = document.getElementById('adminTab' + t.charAt(0).toUpperCase() + t.slice(1));
     const btn = document.querySelector(`.admin-tab-btn[data-admintab="${t}"]`);
     const active = t === tab;
-    if (panel) {
-      if (PRERENDER_TABS.has(t)) {
-        // ใช้ visibility แทน display:none — DOM ยังอยู่ Safari จึงไม่ต้อง layout ใหม่
-        panel.classList.toggle('tab-hidden', !active);
-      } else {
-        panel.classList.toggle('hidden', !active);
-      }
-    }
+    if (panel) panel.classList.toggle('hidden', !active);
     if (btn) {
       btn.classList.toggle('border-accent-600', active);
       btn.classList.toggle('text-accent-700', active);
@@ -1799,9 +1784,11 @@ function showAdminTab(tab){
     }
   });
   if (tab === 'addmenu') {
-    // ไม่ต้อง defer นานแล้วเพราะ DOM พร้อมอยู่แล้ว
-    try { populateNewRecipeCategory(); } catch(_){}
-    try { if (window._renderNewRecipeIngList) window._renderNewRecipeIngList(); } catch(_){}
+    // defer เล็กน้อยให้ tab transition (display:block) เสร็จก่อน ค่อย populate
+    setTimeout(() => {
+      try { populateNewRecipeCategory(); } catch(_){}
+      try { if (window._renderNewRecipeIngList) window._renderNewRecipeIngList(); } catch(_){}
+    }, 30);
   }
   if (tab === 'borrow') renderBorrowTab().catch(function(e){ console.error(e); });
 }

@@ -93,6 +93,10 @@
   <!-- ===== Modal: หลังบ้าน (PIN gate + admin tools) ===== -->
   <div id="toastWrap" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-2 pointer-events-none w-full px-4"></div>
 
+  <!-- Debug log panel ชั่วคราว สำหรับ debug บน iPad ที่ไม่มี Mac ต่อ Web Inspector -->
+  <button id="debugLogToggle" type="button" style="position:fixed;bottom:8px;right:8px;z-index:9998;width:36px;height:36px;border-radius:50%;background:#1e293b;color:#fff;font-size:14px;border:none;opacity:0.5;">🐞</button>
+  <pre id="debugLogPanel" style="display:none;position:fixed;top:8px;left:8px;right:8px;bottom:52px;z-index:9998;background:rgba(15,23,42,0.95);color:#86efac;font-size:11px;line-height:1.4;padding:12px;overflow:auto;white-space:pre-wrap;border-radius:8px;font-family:monospace;"></pre>
+
   <iframe name="gsheetTargetFrame" style="display:none;"></iframe>
   <form id="gsheetForm" method="POST" target="gsheetTargetFrame" style="display:none;">
     <input type="hidden" name="payload" id="gsheetPayloadInput">
@@ -120,7 +124,7 @@
       <div class="sticky top-[57px] sm:top-[64px] z-10 bg-white border-b border-slate-200 flex overflow-x-auto">
         <button data-admintab="audit" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">📊 ตาราง Audit</button>
         <button data-admintab="menu" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">🍵 ยอดขายเมนู</button>
-        <button data-admintab="addmenu" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">➕ เพิ่มเมนู/วัตถุดิบ</button>
+        <button data-admintab="addmenu" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">➕ เพิ่มวัตถุดิบ</button>
         <button data-admintab="edit" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">✏️ แก้ไข/ยกมา</button>
         <button data-admintab="recipe" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">📝 แก้ไขสูตร</button>
         <button data-admintab="borrow" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">🔄 ยืม/คืน</button>
@@ -217,69 +221,14 @@
           <div id="editListWrap" class="px-5 pb-5 space-y-4 bg-slate-50/60"></div>
         </div>
 
-        <!-- เพิ่มเมนูใหม่ (พร้อมส่วนผสม) -->
+        <!-- เพิ่มวัตถุดิบใหม่ + จัดเรียงหมวดหมู่ -->
         <div id="adminTabAddmenu" class="admin-tab-panel hidden">
           <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2.5">
-            <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">🍵</span>
-            <h2 class="font-heading font-semibold text-slate-900">เพิ่มเมนูใหม่</h2>
+            <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">📦</span>
+            <h2 class="font-heading font-semibold text-slate-900">เพิ่มวัตถุดิบ / จัดการหมวดหมู่</h2>
           </div>
           <div class="p-5 bg-slate-50/60 space-y-4">
-            <p class="text-xs text-slate-500">เพิ่มเมนูพร้อมเลือกวัตถุดิบในสูตรได้เลย — เลือกได้ว่าจะให้แสดงในหน้ากรอกจำนวนขายหรือไม่</p>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อเมนู <span class="text-red-400">*</span></label>
-                <input id="newRecipeName" type="text" placeholder="เช่น น้ำแตงโม" class="input-base input-sm" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">ขนาด/รายละเอียด</label>
-                <input id="newRecipeSize" type="text" placeholder="เช่น 16oz หรือ 1 แก้ว" class="input-base input-sm" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">หมวดหมู่</label>
-                <select id="newRecipeCategory" class="input-base input-sm">
-                  <option value="">เลือกหมวด</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- ส่วนผสม: เลือกวัตถุดิบจาก <select> ปกติ ไม่ใช้ dropdown กำหนดเอง -->
-            <div class="bg-white border border-slate-200 rounded-xl p-4">
-              <label class="block text-xs font-bold text-accent-700 mb-2">ส่วนผสม (วัตถุดิบในสูตร)</label>
-              <div id="newRecipeIngList" class="space-y-2 mb-2"></div>
-              <div class="flex gap-2 items-end flex-wrap">
-                <div class="flex-1 min-w-[150px]">
-                  <label class="block text-[10px] text-slate-400 mb-0.5">เลือกวัตถุดิบ</label>
-                  <select id="newIngSelect" class="input-base input-sm">
-                    <option value="">เลือกวัตถุดิบ…</option>
-                  </select>
-                </div>
-                <div class="w-24">
-                  <label class="block text-[10px] text-slate-400 mb-0.5">ปริมาณ</label>
-                  <input id="newIngQty" type="number" min="0" step="any" placeholder="0" class="input-base input-sm font-num">
-                </div>
-                <div class="w-20">
-                  <label class="block text-[10px] text-slate-400 mb-0.5">หน่วย</label>
-                  <select id="newIngUnit" class="input-base input-sm">
-                    <option value="g">g</option>
-                    <option value="oz">oz</option>
-                  </select>
-                </div>
-                <button id="addNewIngBtn" type="button" class="bg-accent-50 text-accent-700 hover:bg-accent-100 font-semibold text-xs rounded-lg px-3 h-9 transition shrink-0">+ เพิ่ม</button>
-              </div>
-            </div>
-
-            <!-- แสดงในหน้ากรอกจำนวนขายหรือไม่ -->
-            <label class="flex items-center gap-2.5 bg-white border border-slate-200 rounded-xl px-4 py-3 cursor-pointer">
-              <input id="newRecipeShowInSales" type="checkbox" checked class="w-4 h-4 accent-accent-600">
-              <span class="text-sm text-slate-700">แสดงเมนูนี้ในหน้ากรอกจำนวนขาย</span>
-            </label>
-
-            <div class="flex items-center gap-3">
-              <button id="saveNewRecipeBtn" class="bg-accent-600 hover:bg-accent-700 text-white font-semibold text-sm rounded-lg px-5 h-10 transition">
-                + บันทึกเมนู
-              </button>
-              <span class="text-xs text-slate-400">แก้ไขสูตรเพิ่มเติมได้ที่แท็บ "แก้ไขสูตร"</span>
-            </div>
+            <p class="text-xs text-slate-500">เพิ่มเมนูใหม่ทำได้ที่แท็บ "แก้ไขสูตร" — แท็บนี้สำหรับเพิ่มวัตถุดิบเข้าระบบและจัดเรียงหมวดหมู่เท่านั้น</p>
 
             <!-- เพิ่มวัตถุดิบใหม่ (พับได้) -->
             <div class="bg-white border border-slate-200 rounded-xl overflow-hidden mt-2">
@@ -367,6 +316,45 @@
             <h2 class="font-heading font-semibold text-slate-900">แก้ไขสูตรเมนู</h2>
           </div>
           <div class="p-5 pb-3 bg-slate-50/60 space-y-3">
+            <!-- เพิ่มเมนูใหม่ (พับได้) -->
+            <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+              <details id="addRecipeDetails">
+                <summary class="px-4 py-3 flex items-center gap-2 cursor-pointer hover:bg-slate-50 transition list-none">
+                  <svg class="chevron w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
+                  <span class="text-sm font-semibold text-slate-700">➕ เพิ่มเมนูใหม่</span>
+                </summary>
+                <div class="border-t border-slate-100 p-4 space-y-3">
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อเมนู <span class="text-red-400">*</span></label>
+                      <input id="addRecipeName" type="text" placeholder="เช่น น้ำแตงโม" class="input-base input-sm" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-600 mb-1">ขนาด/รายละเอียด</label>
+                      <input id="addRecipeSize" type="text" placeholder="เช่น 16oz หรือ 1 แก้ว" class="input-base input-sm" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-600 mb-1">หมวดหมู่</label>
+                      <select id="addRecipeCategory" class="input-base input-sm">
+                        <option value="">เลือกหมวดเดิม หรือพิมพ์ใหม่ด้านล่าง</option>
+                      </select>
+                      <input id="addRecipeCategoryNew" type="text" placeholder="หรือพิมพ์หมวดใหม่" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="input-base input-sm mt-1.5">
+                    </div>
+                  </div>
+                  <label class="flex items-center gap-2.5 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 cursor-pointer">
+                    <input id="addRecipeShowInSales" type="checkbox" checked class="w-4 h-4 accent-accent-600">
+                    <span class="text-sm text-slate-700">แสดงเมนูนี้ในหน้ากรอกจำนวนขาย</span>
+                  </label>
+                  <div class="flex items-center gap-3">
+                    <button id="addRecipeBtn" class="bg-accent-600 hover:bg-accent-700 text-white font-semibold text-sm rounded-lg px-5 h-10 transition">
+                      + เพิ่มเมนูนี้
+                    </button>
+                    <span id="addRecipeMsg" class="text-sm font-medium"></span>
+                  </div>
+                  <p class="text-[11px] text-slate-400">เพิ่มก่อนแล้วค่อยเลือกวัตถุดิบ+ปริมาณในสูตรได้จากรายการด้านล่าง (ค้นหาชื่อเมนูที่เพิ่งเพิ่ม)</p>
+                </div>
+              </details>
+            </div>
             <p class="text-xs text-slate-500">แก้ชื่อเมนู ขนาด หรือรายการวัตถุดิบ+ปริมาณในสูตรได้โดยตรง — แก้แล้วบันทึกอัตโนมัติ</p>
             <input id="recipeEditSearch" type="text" placeholder="ค้นหาเมนูที่ต้องการแก้ไขสูตร" class="input-base">
           </div>
@@ -587,12 +575,41 @@
 <script>
 
 // กัน uncaught error / promise rejection ไม่ให้ทำให้ Safari ค้างหรือรีโหลดเอง
+// + log แบบถาวรบนหน้าจอ เพื่อ debug บน iPad ที่ไม่มี Mac ต่อ Web Inspector
+window._debugLogs = [];
+// กู้ log ของรอบก่อนหน้า (ถ้ามี) ก่อนเริ่ม log ใหม่ — ช่วยดู log ก่อนหน้าได้แม้ Safari kill tab แบบฉับพลัน
+try {
+  const saved = sessionStorage.getItem('_debugLogsBeforeReload');
+  if (saved) {
+    const arr = JSON.parse(saved);
+    if (Array.isArray(arr) && arr.length) {
+      window._debugLogs = arr.concat(['--- หน้าเว็บโหลดใหม่ ณ จุดนี้ (' + new Date().toLocaleTimeString() + ') ---']);
+    }
+  }
+} catch(_){}
+function _appendDebugLog(msg){
+  window._debugLogs.push(new Date().toLocaleTimeString() + ' — ' + msg);
+  if (window._debugLogs.length > 80) window._debugLogs.shift();
+  // เซฟลง sessionStorage ทันทีทุกครั้ง กัน Safari kill tab แบบไม่ทัน beforeunload
+  try { sessionStorage.setItem('_debugLogsBeforeReload', JSON.stringify(window._debugLogs)); } catch(_){}
+  try {
+    const panel = document.getElementById('debugLogPanel');
+    if (panel && panel.style.display !== 'none') {
+      panel.textContent = window._debugLogs.join('\n');
+      panel.scrollTop = panel.scrollHeight;
+    }
+  } catch(_){}
+}
 window.addEventListener('error', function(e){
+  const msg = 'ERROR: ' + (e.error ? (e.error.message + ' @ ' + (e.error.stack||'').split('\n')[1]) : e.message);
   console.error('Uncaught error:', e.error || e.message);
+  _appendDebugLog(msg);
   e.preventDefault();
 });
 window.addEventListener('unhandledrejection', function(e){
+  const msg = 'REJECTION: ' + (e.reason && e.reason.message ? e.reason.message : e.reason);
   console.error('Unhandled promise rejection:', e.reason);
+  _appendDebugLog(msg);
   e.preventDefault();
 });
 
@@ -1780,12 +1797,13 @@ function showAdminTab(tab){
     }
   });
   if (tab === 'addmenu') {
-    // defer เล็กน้อยให้ tab transition (display:block) เสร็จก่อน ค่อย populate
     setTimeout(() => {
-      try { if (window.populateNewRecipeCategory) window.populateNewRecipeCategory(); } catch(_){}
-      try { if (window._renderNewRecipeIngList) window._renderNewRecipeIngList(); } catch(_){}
-      try { if (window.populateNewIngSelect) window.populateNewIngSelect(); } catch(_){}
       try { populateNewCategorySelect(); } catch(_){}
+    }, 30);
+  }
+  if (tab === 'recipe') {
+    setTimeout(() => {
+      try { populateAddRecipeCategory(); } catch(_){}
     }, 30);
   }
   if (tab === 'borrow') renderBorrowTab().catch(function(e){ console.error(e); });
@@ -2425,6 +2443,73 @@ menuListWrap.addEventListener('click', (e) => {
 const recipeEditSearchEl = document.getElementById('recipeEditSearch');
 const recipeEditListWrap = document.getElementById('recipeEditListWrap');
 const recipeSaveTimers = {};
+
+/* ===========================================================
+   เพิ่มเมนูใหม่ (แบบง่าย — ไม่มีส่วนผสมตอนเพิ่ม เพิ่มสูตรทีหลังจากรายการด้านล่าง)
+=========================================================== */
+function populateAddRecipeCategory(){
+  const sel = document.getElementById('addRecipeCategory');
+  if (!sel) return;
+  const cats = recipeCategories();
+  const currentVal = sel.value;
+  sel.innerHTML = '<option value="">เลือกหมวดเดิม หรือพิมพ์ใหม่ด้านล่าง</option>' +
+    cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  if (currentVal && cats.includes(currentVal)) sel.value = currentVal;
+}
+document.getElementById('addRecipeCategory').addEventListener('change', function(){
+  if (this.value) document.getElementById('addRecipeCategoryNew').value = this.value;
+});
+
+document.getElementById('addRecipeBtn').addEventListener('click', async () => {
+  const nameEl = document.getElementById('addRecipeName');
+  const sizeEl = document.getElementById('addRecipeSize');
+  const catSelEl = document.getElementById('addRecipeCategory');
+  const catNewEl = document.getElementById('addRecipeCategoryNew');
+  const showEl = document.getElementById('addRecipeShowInSales');
+  const msgEl = document.getElementById('addRecipeMsg');
+  const btn = document.getElementById('addRecipeBtn');
+
+  const name = nameEl.value.trim();
+  if (!name) {
+    msgEl.textContent = 'กรุณากรอกชื่อเมนูก่อน';
+    msgEl.className = 'text-sm font-medium text-red-600';
+    return;
+  }
+  const size = sizeEl.value.trim();
+  const category = catNewEl.value.trim() || catSelEl.value || 'เมนูอื่นๆ';
+  const showInSales = showEl.checked;
+
+  btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก…';
+  const id = 'custom_' + Date.now();
+  const recipe = { id, name, size, category, ingredients: [], hideFromSales: !showInSales };
+  RECIPES.push(recipe);
+
+  setSyncStatus('syncing');
+  try {
+    await upsertRecipe(recipe);
+    setSyncStatus('online');
+    msgEl.textContent = `เพิ่มเมนู "${name}" แล้ว ✓ — ค้นหาด้านล่างเพื่อเพิ่มวัตถุดิบในสูตร`;
+    msgEl.className = 'text-sm font-medium text-green-700';
+    nameEl.value = ''; sizeEl.value = ''; catNewEl.value = '';
+    showEl.checked = true;
+    populateCategoryFilter();
+    refreshCategoryDatalist();
+    populateAddRecipeCategory();
+    try { renderMenuList(menuSearchEl.value); } catch(_){}
+    try { if (typeof frontMenuSearchEl !== 'undefined' && frontMenuSearchEl) renderFrontMenuList(frontMenuSearchEl.value); } catch(_){}
+    // เลื่อนไปค้นหาเมนูที่เพิ่งเพิ่มในรายการแก้ไขสูตรด้านล่างทันที
+    recipeEditSearchEl.value = name;
+    renderRecipeEditList(name);
+  } catch (e) {
+    console.error('addRecipe failed', e);
+    RECIPES.splice(RECIPES.findIndex(r => r.id === id), 1);
+    setSyncStatus('error', 'addRecipe: ' + e.message);
+    msgEl.textContent = 'บันทึกไม่สำเร็จ: ' + (e.message || e);
+    msgEl.className = 'text-sm font-medium text-red-600';
+  } finally {
+    btn.disabled = false; btn.textContent = '+ เพิ่มเมนูนี้';
+  }
+});
 
 function materialOptionsHTML(selectedId){
   return categories().map(cat => {
@@ -3351,7 +3436,6 @@ document.getElementById('addMaterialBtn').addEventListener('click', () => {
   populateCategoryFilter();
   refreshCategoryDatalist();
   populateNewCategorySelect();
-  try { if (window.populateNewIngSelect) window.populateNewIngSelect(); } catch(_){}
 
   msgEl.textContent = `เพิ่ม "${name}" เข้าระบบเรียบร้อย และซิงค์ขึ้นฐานข้อมูลแล้ว`;
   msgEl.className = 'text-sm font-medium text-green-700';
@@ -4320,152 +4404,6 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
 });
 
 
-/* ===========================================================
-   เพิ่มเมนูใหม่ (custom recipe)
-=========================================================== */
-(function initAddRecipeForm(){
-  // Populate category dropdown
-  let _recipeCatSig = '';
-  function populateNewRecipeCategory(){
-    const sel = document.getElementById('newRecipeCategory');
-    if (!sel) return;
-    const cats = recipeCategories();
-    if (!cats.length) return; // RECIPES ยังไม่พร้อม ข้ามไปก่อน
-    const sig = cats.join('|');
-    if (sig === _recipeCatSig && sel.options.length > 1) return; // ไม่เปลี่ยน ข้าม
-    _recipeCatSig = sig;
-    // ล้างแล้ว populate ใหม่ทุกครั้ง (ป้องกัน populate ตอน RECIPES ว่าง)
-    const currentVal = sel.value;
-    while (sel.options.length > 1) sel.remove(1); // เก็บ option แรก "เลือกหมวด"
-    cats.forEach(cat => {
-      const opt = document.createElement('option');
-      opt.value = opt.textContent = cat;
-      sel.appendChild(opt);
-    });
-    if (!cats.includes('เมนูอื่นๆ')) {
-      const opt = document.createElement('option');
-      opt.value = opt.textContent = 'เมนูอื่นๆ';
-      sel.appendChild(opt);
-    }
-    // คืนค่าที่เลือกไว้ก่อนหน้า (ถ้ามี)
-    if (currentVal) sel.value = currentVal;
-  }
-
-  // ===== ส่วนผสมของเมนูใหม่ (ingredient picker — ใช้ <select> ธรรมดา ไม่ใช้ custom dropdown) =====
-  let newRecipeIngredients = []; // [{materialId, qty}]
-  let _ingSelectSig = '';
-
-  function populateNewIngSelect(){
-    const sel = document.getElementById('newIngSelect');
-    if (!sel) return;
-    const sorted = MATERIALS.slice().sort((a,b) => a.name.localeCompare(b.name, 'th'));
-    const sig = sorted.map(m => m.id).join('|');
-    if (sig === _ingSelectSig && sel.options.length > 1) return;
-    _ingSelectSig = sig;
-    const currentVal = sel.value;
-    sel.innerHTML = '<option value="">เลือกวัตถุดิบ…</option>' +
-      sorted.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
-    if (currentVal) sel.value = currentVal;
-  }
-  window.populateNewIngSelect = populateNewIngSelect;
-
-  function renderNewRecipeIngList(){
-    const wrap = document.getElementById('newRecipeIngList');
-    if (!wrap) return;
-    if (!newRecipeIngredients.length) {
-      wrap.innerHTML = '<p class="text-xs text-slate-300 italic">ยังไม่มีส่วนผสม (เพิ่มได้ภายหลังที่แท็บแก้ไขสูตร)</p>';
-      return;
-    }
-    wrap.innerHTML = newRecipeIngredients.map((ing, idx) => {
-      const mat = materialById(ing.materialId);
-      const matName = mat ? mat.name : ing.materialId;
-      const unit = (mat && OZ_RECIPE_MATERIALS.has(mat.id)) ? 'oz' : (mat ? mat.smallUnit : 'g');
-      const displayQty = unit === 'oz' ? Math.round((ing.qty/30)*100)/100 : ing.qty;
-      return `<div class="flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2 text-sm">
-        <span class="flex-1 text-slate-700">${matName}</span>
-        <span class="font-num text-slate-500">${displayQty} ${unit}</span>
-        <button type="button" data-delnewing="${idx}" class="text-red-400 hover:text-red-600 text-lg leading-none px-1">×</button>
-      </div>`;
-    }).join('');
-  }
-
-  document.getElementById('addNewIngBtn').addEventListener('click', (e) => {
-    e.preventDefault();
-    const selectEl = document.getElementById('newIngSelect');
-    const qtyEl = document.getElementById('newIngQty');
-    const unitEl = document.getElementById('newIngUnit');
-    const matId = selectEl.value;
-    if (!matId) { alert('กรุณาเลือกวัตถุดิบก่อน'); return; }
-    const mat = materialById(matId);
-    if (!mat) { alert('ไม่พบวัตถุดิบนี้'); return; }
-    const qtyRaw = parseFloat(qtyEl.value) || 0;
-    if (qtyRaw <= 0) { alert('กรุณาระบุปริมาณ'); return; }
-    const unit = unitEl.value;
-    const qty = unit === 'oz' ? Math.round(qtyRaw * 30 * 100) / 100 : qtyRaw;
-    // ถ้ามีวัตถุดิบนี้แล้ว อัปเดตปริมาณ
-    const existing = newRecipeIngredients.find(i => i.materialId === mat.id);
-    if (existing) existing.qty = qty;
-    else newRecipeIngredients.push({ materialId: mat.id, qty });
-    selectEl.value = ''; qtyEl.value = '';
-    renderNewRecipeIngList();
-  });
-
-  document.getElementById('newRecipeIngList').addEventListener('click', (e) => {
-    const delBtn = e.target.closest('[data-delnewing]');
-    if (!delBtn) return;
-    const idx = parseInt(delBtn.dataset.delnewing, 10);
-    newRecipeIngredients.splice(idx, 1);
-    renderNewRecipeIngList();
-  });
-
-  document.getElementById('saveNewRecipeBtn').addEventListener('click', async (ev) => {
-    ev.preventDefault(); ev.stopPropagation();
-    const nameEl = document.getElementById('newRecipeName');
-    const name = nameEl ? nameEl.value.trim() : '';
-    if (!name) { alert('กรุณาระบุชื่อเมนูก่อน'); return; }
-    const sizeEl = document.getElementById('newRecipeSize');
-    const catEl  = document.getElementById('newRecipeCategory');
-    const showEl = document.getElementById('newRecipeShowInSales');
-    const size     = sizeEl ? sizeEl.value.trim() : '';
-    const category = (catEl && catEl.value) ? catEl.value : 'เมนูอื่นๆ';
-    const showInSales = showEl ? showEl.checked : true;
-    const btn = document.getElementById('saveNewRecipeBtn');
-    btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก…';
-    const id = 'custom_' + Date.now();
-    const recipe = { id, name, size, category, ingredients: newRecipeIngredients.slice(), hideFromSales: !showInSales };
-    RECIPES.push(recipe);
-    setSyncStatus('syncing');
-    try {
-      await upsertRecipe(recipe);
-      setSyncStatus('online');
-      showToast('เพิ่มเมนู "' + name + '" แล้ว ✓', 'success');
-      if (nameEl) nameEl.value = '';
-      if (sizeEl) sizeEl.value = '';
-      if (showEl) showEl.checked = true;
-      newRecipeIngredients = [];
-      renderNewRecipeIngList();
-      setTimeout(() => {
-        try { if (recipeEditSearchEl) renderRecipeEditList(recipeEditSearchEl.value || ''); } catch(_){}
-        try { populateCategoryFilter(); } catch(_){}
-        try { refreshCategoryDatalist(); } catch(_){}
-        try { renderMenuList(menuSearchEl ? menuSearchEl.value : ''); } catch(_){}
-        try { if (frontMenuSearchEl) renderFrontMenuList(frontMenuSearchEl.value); } catch(_){}
-      }, 100);
-    } catch(e) {
-      console.error('saveNewRecipe failed', e);
-      RECIPES.splice(RECIPES.findIndex(r => r.id === id), 1);
-      setSyncStatus('error');
-      showToast('บันทึกไม่สำเร็จ: ' + (e.message || e), 'warn');
-    } finally {
-      btn.disabled = false; btn.textContent = '+ บันทึกเมนู';
-    }
-  });
-
-  // expose สำหรับเรียกตอนเปิด tab
-  window._renderNewRecipeIngList = renderNewRecipeIngList;
-  window._populateNewRecipeCategory = populateNewRecipeCategory;
-  window.populateNewRecipeCategory = populateNewRecipeCategory;
-})();
 
 
 /* ===========================================================
@@ -4642,7 +4580,6 @@ function renderRecipeCatList(){
       try { renderMenuList(menuSearchEl.value); } catch(_){}
       try { renderFrontMenuList(document.getElementById('frontMenuSearch') ? document.getElementById('frontMenuSearch').value : ''); } catch(_){}
       try { renderFrontMenuChips(); } catch(_){}
-      try { if (window.populateNewRecipeCategory) window.populateNewRecipeCategory(); } catch(_){}
       showToast('เรียงหมวดเมนูใหม่แล้ว ✓', 'success');
     },
   });
@@ -4669,7 +4606,6 @@ function renderRecipeCatList(){
       } catch(err) { console.error(err); setSyncStatus('error'); }
       renderRecipeCatList();
       try { populateCategoryFilter(); } catch(_){}
-      try { if (window.populateNewRecipeCategory) window.populateNewRecipeCategory(); } catch(_){}
     });
   });
 }
@@ -5074,6 +5010,22 @@ async function ensureRefillQtyColumn(){
   renderSlowMoving('');
   renderTable();
 })();
+
+// Debug log panel toggle (ปุ่ม 🐞 มุมขวาล่าง)
+document.getElementById('debugLogToggle').addEventListener('click', function(){
+  const panel = document.getElementById('debugLogPanel');
+  const showing = panel.style.display !== 'none';
+  panel.style.display = showing ? 'none' : 'block';
+  if (!showing) {
+    panel.textContent = (window._debugLogs && window._debugLogs.length)
+      ? window._debugLogs.join('\n')
+      : 'ยังไม่มี error ใดๆ ถูกบันทึกไว้ (ดีแล้ว!)\n\nถ้าหน้าเว็บค้างหรือรีเฟรชเอง ให้กดปุ่มนี้ทันทีหลังเปิดมาใหม่ เพื่อดู log ก่อนหน้า';
+  }
+});
+window.addEventListener('beforeunload', function(){
+  try { sessionStorage.setItem('_debugLogsBeforeReload', JSON.stringify(window._debugLogs || [])); } catch(_){}
+});
+
 </script>
 </body>
 </html>

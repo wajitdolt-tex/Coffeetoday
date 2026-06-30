@@ -311,50 +311,14 @@
         </div>
 
                 <div id="adminTabRecipe" class="admin-tab-panel">
-          <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2.5">
-            <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">📝</span>
-            <h2 class="font-heading font-semibold text-slate-900">แก้ไขสูตรเมนู</h2>
+          <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between gap-2.5">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">📝</span>
+              <h2 class="font-heading font-semibold text-slate-900">แก้ไขสูตรเมนู</h2>
+            </div>
+            <button id="addRecipeCardBtn" type="button" class="bg-accent-600 hover:bg-accent-700 text-white font-semibold text-xs sm:text-sm rounded-lg px-3.5 h-9 transition shrink-0">+ เพิ่มเมนูใหม่</button>
           </div>
           <div class="p-5 pb-3 bg-slate-50/60 space-y-3">
-            <!-- เพิ่มเมนูใหม่ (พับได้) -->
-            <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-              <details id="addRecipeDetails">
-                <summary class="px-4 py-3 flex items-center gap-2 cursor-pointer hover:bg-slate-50 transition list-none">
-                  <svg class="chevron w-3.5 h-3.5 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
-                  <span class="text-sm font-semibold text-slate-700">➕ เพิ่มเมนูใหม่</span>
-                </summary>
-                <div class="border-t border-slate-100 p-4 space-y-3">
-                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                      <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อเมนู <span class="text-red-400">*</span></label>
-                      <input id="addRecipeName" type="text" placeholder="เช่น น้ำแตงโม" class="input-base input-sm" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-                    </div>
-                    <div>
-                      <label class="block text-xs font-semibold text-slate-600 mb-1">ขนาด/รายละเอียด</label>
-                      <input id="addRecipeSize" type="text" placeholder="เช่น 16oz หรือ 1 แก้ว" class="input-base input-sm" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-                    </div>
-                    <div>
-                      <label class="block text-xs font-semibold text-slate-600 mb-1">หมวดหมู่</label>
-                      <select id="addRecipeCategory" class="input-base input-sm">
-                        <option value="">เลือกหมวดเดิม หรือพิมพ์ใหม่ด้านล่าง</option>
-                      </select>
-                      <input id="addRecipeCategoryNew" type="text" placeholder="หรือพิมพ์หมวดใหม่" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="input-base input-sm mt-1.5">
-                    </div>
-                  </div>
-                  <label class="flex items-center gap-2.5 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 cursor-pointer">
-                    <input id="addRecipeShowInSales" type="checkbox" checked class="w-4 h-4 accent-accent-600">
-                    <span class="text-sm text-slate-700">แสดงเมนูนี้ในหน้ากรอกจำนวนขาย</span>
-                  </label>
-                  <div class="flex items-center gap-3">
-                    <button id="addRecipeBtn" class="bg-accent-600 hover:bg-accent-700 text-white font-semibold text-sm rounded-lg px-5 h-10 transition">
-                      + เพิ่มเมนูนี้
-                    </button>
-                    <span id="addRecipeMsg" class="text-sm font-medium"></span>
-                  </div>
-                  <p class="text-[11px] text-slate-400">เพิ่มก่อนแล้วค่อยเลือกวัตถุดิบ+ปริมาณในสูตรได้จากรายการด้านล่าง (ค้นหาชื่อเมนูที่เพิ่งเพิ่ม)</p>
-                </div>
-              </details>
-            </div>
             <p class="text-xs text-slate-500">แก้ชื่อเมนู ขนาด หรือรายการวัตถุดิบ+ปริมาณในสูตรได้โดยตรง — แก้แล้วบันทึกอัตโนมัติ</p>
             <input id="recipeEditSearch" type="text" placeholder="ค้นหาเมนูที่ต้องการแก้ไขสูตร" class="input-base">
           </div>
@@ -1801,11 +1765,6 @@ function showAdminTab(tab){
       try { populateNewCategorySelect(); } catch(_){}
     }, 30);
   }
-  if (tab === 'recipe') {
-    setTimeout(() => {
-      try { populateAddRecipeCategory(); } catch(_){}
-    }, 30);
-  }
   if (tab === 'borrow') renderBorrowTab().catch(function(e){ console.error(e); });
 }
 document.querySelectorAll('.admin-tab-btn').forEach(btn => {
@@ -2445,70 +2404,43 @@ const recipeEditListWrap = document.getElementById('recipeEditListWrap');
 const recipeSaveTimers = {};
 
 /* ===========================================================
-   เพิ่มเมนูใหม่ (แบบง่าย — ไม่มีส่วนผสมตอนเพิ่ม เพิ่มสูตรทีหลังจากรายการด้านล่าง)
+   เพิ่มเมนูใหม่ — สร้างการ์ดเปล่าเข้าหมวด "เมนูอื่นๆ" ทันที แล้วโฟกัสช่องชื่อ
+   ใช้ pattern เดียวกับการแก้ไขสูตรปกติ (debounce save 600ms) ไม่มีฟอร์มแยก
 =========================================================== */
-function populateAddRecipeCategory(){
-  const sel = document.getElementById('addRecipeCategory');
-  if (!sel) return;
-  const cats = recipeCategories();
-  const currentVal = sel.value;
-  sel.innerHTML = '<option value="">เลือกหมวดเดิม หรือพิมพ์ใหม่ด้านล่าง</option>' +
-    cats.map(c => `<option value="${c}">${c}</option>`).join('');
-  if (currentVal && cats.includes(currentVal)) sel.value = currentVal;
-}
-document.getElementById('addRecipeCategory').addEventListener('change', function(){
-  if (this.value) document.getElementById('addRecipeCategoryNew').value = this.value;
-});
-
-document.getElementById('addRecipeBtn').addEventListener('click', async () => {
-  const nameEl = document.getElementById('addRecipeName');
-  const sizeEl = document.getElementById('addRecipeSize');
-  const catSelEl = document.getElementById('addRecipeCategory');
-  const catNewEl = document.getElementById('addRecipeCategoryNew');
-  const showEl = document.getElementById('addRecipeShowInSales');
-  const msgEl = document.getElementById('addRecipeMsg');
-  const btn = document.getElementById('addRecipeBtn');
-
-  const name = nameEl.value.trim();
-  if (!name) {
-    msgEl.textContent = 'กรุณากรอกชื่อเมนูก่อน';
-    msgEl.className = 'text-sm font-medium text-red-600';
-    return;
-  }
-  const size = sizeEl.value.trim();
-  const category = catNewEl.value.trim() || catSelEl.value || 'เมนูอื่นๆ';
-  const showInSales = showEl.checked;
-
-  btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก…';
+document.getElementById('addRecipeCardBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('addRecipeCardBtn');
+  btn.disabled = true;
   const id = 'custom_' + Date.now();
-  const recipe = { id, name, size, category, ingredients: [], hideFromSales: !showInSales };
+  const recipe = { id, name: 'เมนูใหม่', size: '', category: 'เมนูอื่นๆ', ingredients: [], hideFromSales: false };
   RECIPES.push(recipe);
 
   setSyncStatus('syncing');
   try {
     await upsertRecipe(recipe);
     setSyncStatus('online');
-    msgEl.textContent = `เพิ่มเมนู "${name}" แล้ว ✓ — ค้นหาด้านล่างเพื่อเพิ่มวัตถุดิบในสูตร`;
-    msgEl.className = 'text-sm font-medium text-green-700';
-    nameEl.value = ''; sizeEl.value = ''; catNewEl.value = '';
-    showEl.checked = true;
-    populateCategoryFilter();
-    refreshCategoryDatalist();
-    populateAddRecipeCategory();
-    try { renderMenuList(menuSearchEl.value); } catch(_){}
-    try { if (typeof frontMenuSearchEl !== 'undefined' && frontMenuSearchEl) renderFrontMenuList(frontMenuSearchEl.value); } catch(_){}
-    // เลื่อนไปค้นหาเมนูที่เพิ่งเพิ่มในรายการแก้ไขสูตรด้านล่างทันที
-    recipeEditSearchEl.value = name;
-    renderRecipeEditList(name);
   } catch (e) {
-    console.error('addRecipe failed', e);
+    console.error('addRecipeCard failed', e);
     RECIPES.splice(RECIPES.findIndex(r => r.id === id), 1);
-    setSyncStatus('error', 'addRecipe: ' + e.message);
-    msgEl.textContent = 'บันทึกไม่สำเร็จ: ' + (e.message || e);
-    msgEl.className = 'text-sm font-medium text-red-600';
-  } finally {
-    btn.disabled = false; btn.textContent = '+ เพิ่มเมนูนี้';
+    setSyncStatus('error', 'addRecipeCard: ' + e.message);
+    btn.disabled = false;
+    showToast('เพิ่มเมนูไม่สำเร็จ: ' + (e.message || e), 'warn');
+    return;
   }
+  btn.disabled = false;
+
+  // เคลียร์ตัวกรองค้นหา เพื่อให้เห็นการ์ดใหม่แน่นอน (อยู่หมวด "เมนูอื่นๆ")
+  recipeEditSearchEl.value = '';
+  renderRecipeEditList('');
+  populateCategoryFilter();
+  refreshCategoryDatalist();
+
+  // เลื่อนจอไปหาการ์ด แล้วโฟกัส + select ข้อความช่องชื่อให้พิมพ์ทับได้ทันที
+  setTimeout(() => {
+    const card = document.getElementById('recipeedit_' + id);
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const nameInput = recipeEditListWrap.querySelector(`input[data-recipeid="${id}"][data-recipefield="name"]`);
+    if (nameInput) { nameInput.focus(); nameInput.select(); }
+  }, 80);
 });
 
 function materialOptionsHTML(selectedId){
@@ -2537,24 +2469,47 @@ function recipeIngredientRowHTML(recipe, idx){
   </div>`;
 }
 
+function recipeCategoryOptionsHTML(selectedCat){
+  const cats = recipeCategories();
+  const opts = cats.map(c => `<option value="${c}" ${c === selectedCat ? 'selected' : ''}>${c}</option>`).join('');
+  const hasSelected = cats.includes(selectedCat);
+  return opts + (hasSelected ? '' : `<option value="${selectedCat}" selected>${selectedCat}</option>`);
+}
+
 function recipeEditRowHTML(recipe){
   return `
   <div class="border border-slate-200 rounded-lg p-3 bg-white" id="recipeedit_${recipe.id}">
     <div class="grid grid-cols-2 gap-1.5 mb-2">
       <div>
         <label class="block text-[10px] text-slate-400 mb-0.5">ชื่อเมนู</label>
-        <input type="text" value="${recipe.name}" data-recipeid="${recipe.id}" data-recipefield="name" class="input-base input-sm !h-9 !px-2 text-xs">
+        <input type="text" value="${recipe.name}" data-recipeid="${recipe.id}" data-recipefield="name" class="input-base input-sm !h-9 !px-2 text-xs" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
       </div>
       <div>
         <label class="block text-[10px] text-slate-400 mb-0.5">ขนาด</label>
-        <input type="text" value="${recipe.size}" data-recipeid="${recipe.id}" data-recipefield="size" class="input-base input-sm !h-9 !px-2 text-xs">
+        <input type="text" value="${recipe.size}" data-recipeid="${recipe.id}" data-recipefield="size" class="input-base input-sm !h-9 !px-2 text-xs" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      </div>
+    </div>
+    <div class="mb-2">
+      <label class="block text-[10px] text-slate-400 mb-0.5">หมวดหมู่ (เลือกเดิม หรือพิมพ์ใหม่)</label>
+      <div class="flex gap-1.5">
+        <select data-recipeid="${recipe.id}" data-recipefield="categoryselect" class="input-base input-sm !h-9 !px-2 text-xs flex-1 bg-white">
+          ${recipeCategoryOptionsHTML(recipe.category)}
+        </select>
+        <input type="text" placeholder="หรือพิมพ์หมวดใหม่" data-recipeid="${recipe.id}" data-recipefield="category" class="input-base input-sm !h-9 !px-2 text-xs flex-1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
       </div>
     </div>
     <label class="block text-[10px] text-slate-400 mb-1">วัตถุดิบในสูตร</label>
     <div class="space-y-1.5" id="recipeing_${recipe.id}">
       ${recipe.ingredients.map((ing, idx) => recipeIngredientRowHTML(recipe, idx)).join('')}
     </div>
-    <button data-addingredient="${recipe.id}" class="mt-2 text-xs font-semibold text-accent-700 hover:text-accent-800">+ เพิ่มวัตถุดิบในสูตร</button>
+    <div class="flex items-center justify-between mt-2 flex-wrap gap-2">
+      <button data-addingredient="${recipe.id}" class="text-xs font-semibold text-accent-700 hover:text-accent-800">+ เพิ่มวัตถุดิบในสูตร</button>
+      <button data-deleterecipe="${recipe.id}" class="text-xs font-semibold text-red-400 hover:text-red-600">🗑 ลบเมนูนี้</button>
+    </div>
+    <label class="flex items-center gap-2 mt-2 cursor-pointer">
+      <input type="checkbox" ${recipe.hideFromSales ? '' : 'checked'} data-recipeid="${recipe.id}" data-recipefield="showinsales" class="w-3.5 h-3.5 accent-accent-600">
+      <span class="text-[11px] text-slate-500">แสดงในหน้ากรอกจำนวนขาย</span>
+    </label>
     <p id="recipesavemsg_${recipe.id}" class="text-[10px] text-green-600 mt-1"></p>
   </div>`;
 }
@@ -2612,6 +2567,9 @@ recipeEditListWrap.addEventListener('input', (e) => {
   } else if (field === 'size') {
     recipe.size = e.target.value;
     renderMenuList(menuSearchEl.value);
+  } else if (field === 'category') {
+    const trimmed = e.target.value.trim();
+    if (trimmed) recipe.category = trimmed;
   } else if (field === 'ingqty') {
     const idx = parseInt(e.target.dataset.ingidx, 10);
     recipe.ingredients[idx].qty = parseFloat(e.target.value) || 0;
@@ -2626,10 +2584,28 @@ recipeEditListWrap.addEventListener('input', (e) => {
 // บันทึกทันทีตอนออกจากช่อง (blur) ด้วย ไม่รอแค่ debounce เฉยๆ — กันเคสพิมพ์เสร็จแล้วรีบสลับหน้า/ปิดก่อนครบ 600ms ทำให้ข้อมูลไม่ถูกบันทึก
 recipeEditListWrap.addEventListener('change', (e) => {
   const recipeId = e.target.dataset.recipeid;
+  const field = e.target.dataset.recipefield;
   if (!recipeId) return;
   clearTimeout(recipeSaveTimers[recipeId]);
   const recipe = RECIPES.find(r => r.id === recipeId);
-  if (recipe) { upsertRecipe(recipe); flashRecipeSaved(recipeId); }
+  if (!recipe) return;
+
+  if (field === 'categoryselect') {
+    recipe.category = e.target.value;
+    // เคลียร์ช่องพิมพ์หมวดใหม่เพราะเลือกจาก dropdown แล้ว
+    const textInput = recipeEditListWrap.querySelector(`input[data-recipeid="${recipeId}"][data-recipefield="category"]`);
+    if (textInput) textInput.value = '';
+  } else if (field === 'showinsales') {
+    recipe.hideFromSales = !e.target.checked;
+  }
+
+  upsertRecipe(recipe);
+  flashRecipeSaved(recipeId);
+  if (field === 'categoryselect' || field === 'showinsales') {
+    renderMenuList(menuSearchEl.value);
+    try { if (frontMenuSearchEl) renderFrontMenuList(frontMenuSearchEl.value); } catch(_){}
+    if (field === 'categoryselect') renderRecipeEditList(recipeEditSearchEl.value);
+  }
 });
 
 recipeEditListWrap.addEventListener('click', async (e) => {

@@ -1412,17 +1412,36 @@ function scheduleSaveDailyCount(matId){
 const GOOGLE_SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzb92khQoSnGLbPkdUsOJmU4DLpJF4HwN3_ddHFGGNSaod5bKkIND8vrqqhIyhyYF79/exec';
 
 // ส่งข้อมูลแถวนี้ขึ้น Google Sheet แบบ fire-and-forget (ไม่บล็อกการทำงานหลัก ถ้าพังก็แค่ log เฉยๆ)
+// คิว + debounce การ submit ฟอร์ม เพราะ form.submit() ซ้อนกันถี่ๆ (เช่นตอน applyRecipeUsageToMaterials
+// วนหลายวัตถุดิบพร้อมกัน) จะสร้าง iframe navigation ใหม่ทับเก่าซ้อนกันเรื่อยๆ จนกิน memory
+// มากบน Safari iPad จน iOS kill tab ("หน้าเว็บเกิดปัญหา")
+let _gsheetQueue = [];
+let _gsheetSubmitting = false;
 function pushToGoogleSheet(payload){
   if (!GOOGLE_SHEETS_WEBHOOK_URL) return;
-  // ใช้ฟอร์มซ่อน + iframe แทน fetch() เพราะ Apps Script Web App มี redirect ภายในที่ทำให้
-  // fetch() (ทั้งโหมด cors และ no-cors) ส่ง body ไปไม่ถึง doPost ได้ไม่แน่นอน
-  // การ submit ฟอร์มจริงๆ ไม่ถูกจำกัดด้วย CORS เลย เชื่อถือได้กว่ามาก
+  // ถ้ามี payload ของ material_id/recipe_id เดิมค้างใน queue อยู่แล้ว ให้แทนที่ด้วยอันใหม่ล่าสุด
+  // (ไม่ต้องส่งค่าเก่าที่ถูก override ไปแล้ว) ลดขนาด queue และจำนวน submit
+  const key = (payload.material_id || payload.recipe_id || '') + '|' + (payload.type || '');
+  if (key.trim() !== '|') {
+    const idx = _gsheetQueue.findIndex(p => ((p.material_id || p.recipe_id || '') + '|' + (p.type || '')) === key);
+    if (idx !== -1) { _gsheetQueue.splice(idx, 1); }
+  }
+  _gsheetQueue.push(payload);
+  _processGsheetQueue();
+}
+function _processGsheetQueue(){
+  if (_gsheetSubmitting) return; // กำลัง submit อยู่ รอรอบถัดไป
+  const payload = _gsheetQueue.shift();
+  if (!payload) return;
+  _gsheetSubmitting = true;
   try {
     const form = document.getElementById('gsheetForm');
     document.getElementById('gsheetPayloadInput').value = JSON.stringify(payload);
     form.action = GOOGLE_SHEETS_WEBHOOK_URL;
     form.submit();
   } catch (e) { console.error('pushToGoogleSheet failed', e); }
+  // เว้นจังหวะให้ iframe navigation รอบก่อนหน้าทำงานเสร็จก่อนเริ่มรอบใหม่
+  setTimeout(() => { _gsheetSubmitting = false; _processGsheetQueue(); }, 800);
 }
 
 async function saveDailyCount(matId){

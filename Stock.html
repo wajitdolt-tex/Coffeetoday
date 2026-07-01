@@ -1669,13 +1669,12 @@ async function activateBranch(branch){
     setSyncStatus('online');
   } catch (e) { console.error(e); setSyncStatus('error'); }
 
-  applyRecipeUsageToMaterials(); // คำนวณ POS จากยอดขายเมนูที่โหลดมาก่อน render
+  applyRecipeUsageToMaterials();
   renderFastMoving('');
   renderSlowMoving('');
   renderCategoryChips();
   renderFrontMenuChips();
-  renderFrontMenuList(''); // render พร้อมข้อมูล menuSales ที่ครบแล้ว
-  renderTable();
+  renderFrontMenuList('');
   startGoogleSheetsPoll();
 }
 
@@ -1782,6 +1781,24 @@ function showAdminTab(tab){
       btn.classList.toggle('text-slate-400', !active);
     }
   });
+  // Lazy render — render แต่ละแท็บเมื่อเปิดครั้งแรกเท่านั้น
+  if (tab === 'audit') {
+    setTimeout(() => { try { renderTable(); } catch(_){} }, 30);
+  }
+  if (tab === 'menu') {
+    setTimeout(() => { try { renderMenuList(menuSearchEl ? menuSearchEl.value : ''); } catch(_){} }, 30);
+  }
+  if (tab === 'edit') {
+    setTimeout(() => {
+      try { renderEditList(document.getElementById('editSearch') ? document.getElementById('editSearch').value : ''); } catch(_){}
+    }, 30);
+  }
+  if (tab === 'recipe') {
+    setTimeout(() => {
+      try { renderRecipeEditList(recipeEditSearchEl ? recipeEditSearchEl.value : ''); } catch(_){}
+      try { recipeCategoryOptionsHTML && renderRecipeCatList && renderRecipeCatList(); } catch(_){}
+    }, 30);
+  }
   if (tab === 'addmenu') {
     setTimeout(() => {
       try { populateNewCategorySelect(); } catch(_){}
@@ -1802,15 +1819,12 @@ document.getElementById('pinUnlockBtn').addEventListener('click', () => {
     document.getElementById('backOfficeWrap').classList.remove('hidden');
     document.getElementById('pinGateWrap').classList.add('hidden');
     msg.textContent = '';
-    // เพิ่งสร้าง DOM ของส่วนลับตอนปลดล็อกเท่านั้น ไม่ใช่ตั้งแต่โหลดหน้า
-    renderMenuList(menuSearchEl.value);
-    renderEditList(editSearchEl.value);
-    renderRecipeEditList(recipeEditSearchEl.value);
+    // ไม่ render ทุกอย่างพร้อมกันตอนปลดล็อก — แต่ละแท็บจะ render เมื่อเปิดเท่านั้น (lazy)
+    showAdminTab('audit'); // เปิด audit tab ซึ่งจะ trigger renderTable() อัตโนมัติ
     if (pendingFlaggedJump) {
       pendingFlaggedJump = false;
       statusFilterEl.value = 'flagged';
       showAdminTab('audit');
-      renderTable();
     }
   } else {
     msg.textContent = 'รหัสไม่ถูกต้อง';

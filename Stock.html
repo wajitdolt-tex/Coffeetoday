@@ -1105,9 +1105,15 @@ function todayDateStr(){
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
+function getCurrentBranch(){
+  // ดึง branch ที่เลือกอยู่ตอนนั้น เพื่อบันทึก carry ลง column ที่ถูก
+  try { return (document.getElementById('branchSelect') || {}).value || ''; } catch(_){ return ''; }
+}
+
 function materialToRow(mat){
   const qf = mat.quickFill || {};
-  return {
+  const branch = getCurrentBranch();
+  const row = {
     id: mat.id, name: mat.name, category: mat.category,
     big_unit: mat.bigUnit, small_unit: mat.smallUnit,
     ratio: mat.ratio, carry: mat.carry,
@@ -1116,6 +1122,17 @@ function materialToRow(mat){
     quick_fill_sizes: mat.quickFill === null ? [] : (qf.sizes && qf.sizes.length ? qf.sizes : null),
     updated_at: new Date().toISOString(),
   };
+  // บันทึก carry แยกตาม branch ด้วย
+  if (branch.includes('แพชชั่น') || branch.includes('passion')) {
+    row.carry_passion = mat.carry;
+  } else if (branch.includes('โลตัส') || branch.includes('lotus')) {
+    row.carry_lotus = mat.carry;
+  } else {
+    // ถ้าไม่รู้ branch บันทึกทั้งสองเผื่อไว้
+    row.carry_passion = mat.carry;
+    row.carry_lotus = mat.carry;
+  }
+  return row;
 }
 
 async function seedMaterialsIfEmpty(){
@@ -1133,10 +1150,30 @@ async function seedMaterialsIfEmpty(){
   } catch (e) { console.error('seedMaterialsIfEmpty failed', e); }
 }
 
+let _materialsDBRows = null; // เก็บ raw rows จาก DB ไว้ apply ซ้ำตอนเปลี่ยน branch
+
+function applyBranchCarry(branch){
+  if (!_materialsDBRows) return;
+  _materialsDBRows.forEach(r => {
+    const mat = materialById(r.id);
+    if (!mat) return;
+    if (branch.includes('แพชชั่น') || branch.includes('passion')) {
+      if (r.carry_passion != null) mat.carry = Number(r.carry_passion);
+      else mat.carry = Number(r.carry);
+    } else if (branch.includes('โลตัส') || branch.includes('lotus')) {
+      if (r.carry_lotus != null) mat.carry = Number(r.carry_lotus);
+      else mat.carry = Number(r.carry);
+    } else {
+      mat.carry = Number(r.carry);
+    }
+  });
+}
+
 async function loadMaterialsFromDB(){
   try {
     const rows = await sb('materials?select=*');
     if (!rows) return;
+    _materialsDBRows = rows; // เก็บไว้ใช้ซ้ำตอนเปลี่ยน branch
     const toBackfill = [];
     const dbIds = new Set(rows.map(r => r.id));
     rows.forEach(r => {
@@ -1164,6 +1201,13 @@ async function loadMaterialsFromDB(){
       mat.subRatio  = (hardcoded && hardcoded.subRatio)   ? hardcoded.subRatio  : (r.sub_ratio ? Number(r.sub_ratio) : undefined);
 
       mat.carry = Number(r.carry);
+      // โหลด carry ตาม branch ที่เลือกอยู่ (ถ้ามี column แยก branch แล้ว)
+      const curBranch = getCurrentBranch();
+      if (curBranch.includes('แพชชั่น') || curBranch.includes('passion')) {
+        if (r.carry_passion != null) mat.carry = Number(r.carry_passion);
+      } else if (curBranch.includes('โลตัส') || curBranch.includes('lotus')) {
+        if (r.carry_lotus != null) mat.carry = Number(r.carry_lotus);
+      }
       mat.noFraction = !!r.no_fraction; mat.fastMoving = !!r.fast_moving;
 
       // ถ้า DB มีค่าผิด ให้ backfill unit ที่ถูกต้องกลับขึ้น DB ด้วย
@@ -1606,6 +1650,7 @@ async function activateBranch(branch){
   branchModal.classList.add('hidden');
 
   loadMenuRefills(); // โหลดยอดรีฟิลที่บันทึกไว้
+  applyBranchCarry(branch); // apply carry ที่ถูกต้องตาม branch ก่อน
   setSyncStatus('syncing');
   try {
     await loadCarryForward(branch);

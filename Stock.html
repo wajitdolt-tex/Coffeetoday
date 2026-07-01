@@ -1315,23 +1315,33 @@ function cleanupStaleRecipeIngredients(){
 async function loadCarryForward(branch){
   const today = todayDateStr();
   try {
-    // โหลด received และ pos_sale ด้วย เพื่อ fallback กรณีไม่ได้นับจริง
     const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${today}&select=material_id,actual_big,actual_small,received,pos_sale,note,count_date&order=count_date.desc,id.desc`);
     if (!rows) return;
+
+    // สาขาที่ยังไม่มีประวัติเลย → reset carry ทุกตัวเป็น 0 ก่อน
+    // กันไม่ให้ carry ของสาขาอื่นค้างอยู่ในหน่วยความจำ
+    const hasBranchHistory = rows.length > 0;
+    if (!hasBranchHistory) {
+      MATERIALS.forEach(m => { m.carry = 0; m.carryExpr = null; });
+      return;
+    }
+
     // สำหรับแต่ละ material: หา record ที่นับจริง (actual_big > 0) ก่อน
-    // ถ้าไม่มี ให้ใช้ record ล่าสุดและคำนวณ carry จาก received/pos_sale
+    // วัตถุดิบที่ไม่มีประวัติในสาขานี้เลย → ให้ carry = 0 เช่นกัน
     const byMat = {};
     rows.forEach(r => {
       if (!byMat[r.material_id]) byMat[r.material_id] = [];
       byMat[r.material_id].push(r);
     });
+
+    // reset ทุกตัวก่อน แล้วค่อย apply เฉพาะตัวที่มีประวัติใน branch นี้
+    MATERIALS.forEach(m => { m.carry = 0; m.carryExpr = null; });
+
     Object.entries(byMat).forEach(([matId, matRows]) => {
       const mat = materialById(matId);
       if (!mat) return;
-      // หา record ที่มีการนับจริง (actual_big > 0 หรือ actual_small > 0)
       const counted = matRows.find(r => Number(r.actual_big) > 0 || Number(r.actual_small) > 0);
-      const latest  = matRows[0]; // record ล่าสุดสุด (อาจไม่ได้นับ)
-      // ถ้า record ล่าสุดนับแล้วได้ 0 ทั้งคู่ (ตั้งใจกรอก 0) ให้ใช้ 0 ไม่ใช้ counted เก่า
+      const latest  = matRows[0];
       const latestIsExplicitZero = latest && Number(latest.actual_big) === 0 && Number(latest.actual_small) === 0
         && counted && counted.count_date < latest.count_date;
       const useRow  = latestIsExplicitZero ? latest : (counted || latest);

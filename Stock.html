@@ -3426,21 +3426,27 @@ document.getElementById('addMaterialBtn').addEventListener('click', () => {
   MATERIALS.push(mat);
   upsertMaterial(mat);
 
-  renderCategoryChips();
-  renderFastMoving(materialSearchEl.value);
-  renderSlowMoving(materialSearchEl.value);
-  renderTable();
-  renderEditList(document.getElementById('editSearch').value);
-  populateCategoryFilter();
-  refreshCategoryDatalist();
-  populateNewCategorySelect();
-
   msgEl.textContent = `เพิ่ม "${name}" เข้าระบบเรียบร้อย และซิงค์ขึ้นฐานข้อมูลแล้ว`;
   msgEl.className = 'text-sm font-medium text-green-700';
 
   ['newName','newCategory','newBigUnit','newSmallUnit','newRatio','newCarry'].forEach(id2 => {
     document.getElementById(id2).value = '';
   });
+
+  // defer การ render หนักๆ ออกไป ไม่ block main thread พร้อมกันทันที
+  // กัน Safari iPad crash จาก synchronous render ขนาดใหญ่หลายตัวพร้อมกัน
+  populateNewCategorySelect();
+  populateCategoryFilter();
+  refreshCategoryDatalist();
+  setTimeout(() => {
+    renderCategoryChips();
+    renderFastMoving(materialSearchEl.value);
+    renderSlowMoving(materialSearchEl.value);
+  }, 50);
+  setTimeout(() => {
+    renderTable();
+    renderEditList(document.getElementById('editSearch') ? document.getElementById('editSearch').value : '');
+  }, 200);
 });
 
 /* ===========================================================

@@ -1113,13 +1113,18 @@ function getCurrentBranch(){
 function materialToRow(mat){
   const qf = mat.quickFill || {};
   const branch = getCurrentBranch();
+  // ใช้หน่วยกลาง (base) สำหรับ column big_unit/ratio เสมอ ไม่ใช่หน่วยที่ถูก override ตาม branch
+  // (mat.bigUnit/mat.ratio ตอนนี้อาจเป็นค่าที่ apply ตาม branch แล้วจาก applyBranchCarry)
+  const baseBigUnit = mat._baseBigUnit !== undefined ? mat._baseBigUnit : mat.bigUnit;
+  const baseRatio = mat._baseRatio !== undefined ? mat._baseRatio : mat.ratio;
   const row = {
     id: mat.id, name: mat.name, category: mat.category,
-    big_unit: mat.bigUnit, small_unit: mat.smallUnit,
-    ratio: mat.ratio, carry: mat.carry,
+    big_unit: baseBigUnit, small_unit: mat.smallUnit,
+    ratio: baseRatio, carry: mat.carry,
     sub_unit: mat.subUnit || null, sub_ratio: mat.subRatio || null,
     no_fraction: !!mat.noFraction, fast_moving: !!mat.fastMoving,
     quick_fill_sizes: mat.quickFill === null ? [] : (qf.sizes && qf.sizes.length ? qf.sizes : null),
+    unit_override: mat.unitOverride || null,
     updated_at: new Date().toISOString(),
   };
   // บันทึก carry แยกตาม branch ด้วย
@@ -1154,17 +1159,30 @@ let _materialsDBRows = null; // เก็บ raw rows จาก DB ไว้ app
 
 function applyBranchCarry(branch){
   if (!_materialsDBRows) return;
+  const branchKey = branch.includes('แพชชั่น') || branch.includes('passion') ? 'passion'
+                   : branch.includes('โลตัส') || branch.includes('lotus') ? 'lotus'
+                   : null;
   _materialsDBRows.forEach(r => {
     const mat = materialById(r.id);
     if (!mat) return;
-    if (branch.includes('แพชชั่น') || branch.includes('passion')) {
-      if (r.carry_passion != null) mat.carry = Number(r.carry_passion);
-      else mat.carry = Number(r.carry);
-    } else if (branch.includes('โลตัส') || branch.includes('lotus')) {
-      if (r.carry_lotus != null) mat.carry = Number(r.carry_lotus);
-      else mat.carry = Number(r.carry);
+    if (branchKey === 'passion') {
+      mat.carry = r.carry_passion != null ? Number(r.carry_passion) : Number(r.carry);
+    } else if (branchKey === 'lotus') {
+      mat.carry = r.carry_lotus != null ? Number(r.carry_lotus) : Number(r.carry);
     } else {
       mat.carry = Number(r.carry);
+    }
+
+    // apply หน่วยเฉพาะสาขา (bigUnit + ratio) ถ้ามีตั้งค่าไว้ — smallUnit คงเดิมเสมอ (ค่าที่เก็บ DB เป็นหน่วยเศษเดียวกันทุกสาขา)
+    // เก็บหน่วยกลาง (base) ไว้ครั้งแรกก่อนโดนทับ เผื่อสาขาที่ไม่มี override ต้องใช้กลับ
+    if (mat._baseBigUnit === undefined) { mat._baseBigUnit = mat.bigUnit; mat._baseRatio = mat.ratio; }
+    const override = r.unit_override && branchKey ? r.unit_override[branchKey === 'passion' ? 'สาขาแพชชั่นระยอง' : 'สาขาโลตัสระยอง'] : null;
+    if (override && override.bigUnit && override.ratio) {
+      mat.bigUnit = override.bigUnit;
+      mat.ratio = Number(override.ratio);
+    } else {
+      mat.bigUnit = mat._baseBigUnit;
+      mat.ratio = mat._baseRatio;
     }
   });
 }
@@ -1209,6 +1227,7 @@ async function loadMaterialsFromDB(){
         if (r.carry_lotus != null) mat.carry = Number(r.carry_lotus);
       }
       mat.noFraction = !!r.no_fraction; mat.fastMoving = !!r.fast_moving;
+      mat.unitOverride = r.unit_override || null;
 
       // ถ้า DB มีค่าผิด ให้ backfill unit ที่ถูกต้องกลับขึ้น DB ด้วย
       if (hardcoded && (r.small_unit !== mat.smallUnit || Number(r.ratio) !== mat.ratio)) {
@@ -3561,8 +3580,38 @@ function editRowHTML(mat){
       </div>
     </div>` : ''}
     <p id="edithint_${mat.id}" class="text-[11px] text-slate-400 mt-1.5">${editHintText(mat)}</p>
+    ${isFrac ? branchUnitOverrideHTML(mat) : ''}
     ${quickFillAdminHTML(mat)}
   </div>`;
+}
+
+function branchUnitOverrideHTML(mat){
+  const ov = mat.unitOverride || {};
+  const passion = ov['สาขาแพชชั่นระยอง'] || {};
+  const lotus = ov['สาขาโลตัสระยอง'] || {};
+  const hasOverride = (passion.bigUnit && passion.ratio) || (lotus.bigUnit && lotus.ratio);
+  return `
+    <details class="mt-2 border border-slate-100 rounded-lg overflow-hidden ${hasOverride ? 'border-accent-200 bg-accent-50/30' : ''}">
+      <summary class="px-2.5 py-1.5 cursor-pointer text-[11px] font-medium text-slate-500 hover:bg-slate-50 list-none flex items-center gap-1">
+        <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
+        ⚙️ หน่วยเฉพาะสาขา ${hasOverride ? '(ตั้งค่าแล้ว)' : '(ถ้าสองสาขาใช้แพ็คคนละขนาด)'}
+      </summary>
+      <div class="px-2.5 pb-2.5 pt-1 space-y-2">
+        <p class="text-[10px] text-slate-400">เว้นว่างไว้ = ใช้หน่วยใหญ่/อัตราแปลงเดียวกับด้านบนทั้งสองสาขา (หน่วยเศษ "${mat.smallUnit}" เหมือนกันเสมอ)</p>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="bg-white border border-slate-200 rounded-lg p-2">
+            <p class="text-[10px] font-semibold text-slate-600 mb-1">☕ สาขาแพชชั่นระยอง</p>
+            <input type="text" placeholder="หน่วยใหญ่ (เว้นว่าง=ไม่แยก)" value="${passion.bigUnit || ''}" data-matid="${mat.id}" data-branchunit="สาขาแพชชั่นระยอง" data-branchunitfield="bigUnit" class="input-base input-sm !h-8 !px-1.5 text-[11px] w-full mb-1">
+            <input type="number" min="0.0001" step="any" placeholder="1 ใหญ่ = กี่ ${mat.smallUnit}" value="${passion.ratio || ''}" data-matid="${mat.id}" data-branchunit="สาขาแพชชั่นระยอง" data-branchunitfield="ratio" class="input-base input-sm !h-8 !px-1.5 font-num text-[11px] w-full">
+          </div>
+          <div class="bg-white border border-slate-200 rounded-lg p-2">
+            <p class="text-[10px] font-semibold text-slate-600 mb-1">🏬 สาขาโลตัสระยอง</p>
+            <input type="text" placeholder="หน่วยใหญ่ (เว้นว่าง=ไม่แยก)" value="${lotus.bigUnit || ''}" data-matid="${mat.id}" data-branchunit="สาขาโลตัสระยอง" data-branchunitfield="bigUnit" class="input-base input-sm !h-8 !px-1.5 text-[11px] w-full mb-1">
+            <input type="number" min="0.0001" step="any" placeholder="1 ใหญ่ = กี่ ${mat.smallUnit}" value="${lotus.ratio || ''}" data-matid="${mat.id}" data-branchunit="สาขาโลตัสระยอง" data-branchunitfield="ratio" class="input-base input-sm !h-8 !px-1.5 font-num text-[11px] w-full">
+          </div>
+        </div>
+      </div>
+    </details>`;
 }
 
 function renderEditList(filterText){
@@ -3714,6 +3763,38 @@ editListWrap.addEventListener('change', (e) => {
 });
 
 editListWrap.addEventListener('input', (e) => {
+  // จัดการช่องหน่วยเฉพาะสาขาแยกต่างหาก (data-branchunit / data-branchunitfield)
+  const branchId = e.target.dataset.matid;
+  const branchKey = e.target.dataset.branchunit;
+  const branchField = e.target.dataset.branchunitfield;
+  if (branchId && branchKey && branchField) {
+    const mat = materialById(branchId);
+    if (!mat) return;
+    if (!mat.unitOverride) mat.unitOverride = {};
+    if (!mat.unitOverride[branchKey]) mat.unitOverride[branchKey] = {};
+    if (branchField === 'bigUnit') {
+      mat.unitOverride[branchKey].bigUnit = e.target.value.trim();
+    } else if (branchField === 'ratio') {
+      const v = parseFloat(e.target.value);
+      mat.unitOverride[branchKey].ratio = v > 0 ? v : undefined;
+    }
+    // ลบ key ออกถ้าทั้งคู่ว่างแล้ว เพื่อไม่ให้ unitOverride รกด้วย object เปล่า
+    const ov = mat.unitOverride[branchKey];
+    if (!ov.bigUnit && !ov.ratio) delete mat.unitOverride[branchKey];
+    if (Object.keys(mat.unitOverride).length === 0) mat.unitOverride = null;
+
+    clearTimeout(editSaveTimers[branchId]);
+    editSaveTimers[branchId] = setTimeout(() => {
+      upsertMaterial(mat);
+      // ถ้าแก้หน่วยของ branch ที่กำลังเปิดอยู่ตอนนี้ ให้ apply ทันทีเพื่อเห็นผลจริง
+      applyBranchCarry(branchSelectEl.value);
+      renderFastMoving(materialSearchEl.value);
+      renderSlowMoving(materialSearchEl.value);
+      renderTable();
+    }, 700);
+    return;
+  }
+
   const id = e.target.dataset.matid;
   const field = e.target.dataset.editfield;
   if (!id || !field || field === 'mode') return;

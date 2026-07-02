@@ -3834,6 +3834,7 @@ editListWrap.addEventListener('input', (e) => {
 
   if (field === 'bigUnit') {
     mat.bigUnit = e.target.value;
+    mat._baseBigUnit = e.target.value; // อัปเดต cache กันถูกทับด้วยค่าเก่าตอน applyBranchCarry รอบถัดไป
     if (mat.noFraction) mat.smallUnit = e.target.value;
   } else if (field === 'category') {
     mat.category = e.target.value.trim() || mat.category;
@@ -3849,7 +3850,7 @@ editListWrap.addEventListener('input', (e) => {
     mat.smallUnit = e.target.value;
   } else if (field === 'ratio') {
     const v = parseFloat(e.target.value);
-    if (v > 0) mat.ratio = v;
+    if (v > 0) { mat.ratio = v; mat._baseRatio = v; } // อัปเดต cache เช่นกัน
     // อัตราส่วนเปลี่ยน -> คำนวณยกมาใหม่จากช่อง เต็ม+เศษ ที่กรอกไว้
     const bigEl = document.querySelector(`[data-matid="${id}"][data-editfield="carryBig"]`);
     const smallEl = document.querySelector(`[data-matid="${id}"][data-editfield="carrySmall"]`);
@@ -3883,6 +3884,10 @@ editListWrap.addEventListener('change', (e) => {
   if (!id || !field || field === 'mode' || field === 'qfmode') return;
   const mat = materialById(id);
   if (!mat) return;
+  // ถ้าแก้หน่วยใหญ่/อัตราแปลงกลาง (ไม่ใช่ branch override) ต้องอัปเดต cache _base ด้วย
+  // ป้องกัน applyBranchCarry รอบถัดไปใช้ค่าเก่าที่ cache ไว้ทับค่าที่เพิ่งแก้ (บั๊กที่ทำให้แก้แล้วรีเฟรชกลับเป็นเดิม)
+  if (field === 'bigUnit') mat._baseBigUnit = mat.bigUnit;
+  if (field === 'ratio') mat._baseRatio = mat.ratio;
   clearTimeout(editSaveTimers[id]);
   upsertMaterial(mat);
   if (field === 'category') renderEditList(editSearchEl.value); // จัดกลุ่มใหม่ตามหมวดที่เปลี่ยน

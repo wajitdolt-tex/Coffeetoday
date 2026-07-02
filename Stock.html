@@ -119,6 +119,7 @@
       <!-- แท็บหลังบ้าน -->
       <div class="sticky top-[57px] sm:top-[64px] z-10 bg-white border-b border-slate-200 flex overflow-x-auto">
         <button data-admintab="audit" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">📊 ตาราง Audit</button>
+        <button data-admintab="restock" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">📋 ต้องซื้อ</button>
         <button data-admintab="menu" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">🍵 ยอดขายเมนู</button>
         <button data-admintab="addmenu" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">➕ เพิ่มวัตถุดิบ</button>
         <button data-admintab="edit" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">✏️ แก้ไข/ยกมา</button>
@@ -176,6 +177,21 @@
               <tbody id="auditTableBody"></tbody>
             </table>
           </div>
+        </div>
+
+        <!-- ลิสต์ต้องซื้อ: เรียงยอดคงเหลือน้อย→มาก -->
+        <div id="adminTabRestock" class="admin-tab-panel hidden">
+          <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between gap-2.5 flex-wrap">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">📋</span>
+              <h2 class="font-heading font-semibold text-slate-900">รายการต้องซื้อ</h2>
+            </div>
+            <span class="text-xs text-slate-400">เรียงยอดคงเหลือน้อย → มาก ของสาขาที่เลือกอยู่</span>
+          </div>
+          <div class="px-5 py-2.5 border-b border-slate-100 bg-slate-50/60">
+            <input id="restockSearch" type="text" placeholder="ค้นหาวัตถุดิบ…" class="input-base input-sm">
+          </div>
+          <div id="restockListWrap" class="divide-y divide-slate-100"></div>
         </div>
 
         <!-- ผูกสูตรเมนู: กรอกยอดขายเมนูวันนี้ -->
@@ -1785,7 +1801,7 @@ document.getElementById('closeAdminBtn').addEventListener('click', () => {
   adminModal.classList.add('hidden');
 });
 
-const ADMIN_TABS = ['audit', 'menu', 'addmenu', 'edit', 'recipe', 'borrow', 'past', 'export'];
+const ADMIN_TABS = ['audit', 'restock', 'menu', 'addmenu', 'edit', 'recipe', 'borrow', 'past', 'export'];
 
 function showAdminTab(tab){
   ADMIN_TABS.forEach(t => {
@@ -1803,6 +1819,9 @@ function showAdminTab(tab){
   // Lazy render — render แต่ละแท็บเมื่อเปิดครั้งแรกเท่านั้น
   if (tab === 'audit') {
     setTimeout(() => { try { renderTable(); } catch(_){} }, 30);
+  }
+  if (tab === 'restock') {
+    setTimeout(() => { try { renderRestockList(document.getElementById('restockSearch') ? document.getElementById('restockSearch').value : ''); } catch(_){} }, 30);
   }
   if (tab === 'menu') {
     setTimeout(() => { try { renderMenuList(menuSearchEl ? menuSearchEl.value : ''); } catch(_){} }, 30);
@@ -4024,6 +4043,54 @@ function renderTable(){
 
 catFilterEl.addEventListener('change', renderTable);
 statusFilterEl.addEventListener('change', renderTable);
+
+/* ===========================================================
+   ลิสต์ต้องซื้อ — เรียงยอดคงเหลือน้อย → มาก ของสาขาที่เลือกอยู่
+=========================================================== */
+function getRemainingSmall(mat){
+  // ใช้ logic เดียวกับตาราง Audit: ถ้ามีบันทึกวันนี้ ใช้ยอดคงเหลือที่คำนวณแล้ว
+  // ถ้ายังไม่ได้นับวันนี้ ใช้ยอดยกมา (carry) เป็นค่าประมาณล่าสุดที่มี
+  const rec = records[mat.id];
+  return rec ? rec.remainSmall : mat.carry;
+}
+
+function renderRestockList(filterText){
+  const wrap = document.getElementById('restockListWrap');
+  if (!wrap) return;
+  const ft = (filterText || '').trim().toLowerCase();
+
+  const sorted = MATERIALS
+    .filter(mat => !ft || mat.name.toLowerCase().includes(ft))
+    .map(mat => ({ mat, remain: getRemainingSmall(mat) }))
+    .sort((a, b) => a.remain - b.remain);
+
+  if (!sorted.length) {
+    wrap.innerHTML = `<p class="text-sm text-slate-400 text-center py-10">ไม่พบวัตถุดิบที่ค้นหา</p>`;
+    return;
+  }
+
+  wrap.innerHTML = sorted.map(({ mat, remain }) => {
+    const isNegative = remain < 0;
+    const isLow = !isNegative && remain <= mat.ratio; // เหลือไม่ถึง 1 หน่วยใหญ่ = ใกล้หมด
+    const colorClass = isNegative ? 'text-red-600' : isLow ? 'text-amber-600' : 'text-slate-700';
+    const dotClass = isNegative ? 'bg-red-500' : isLow ? 'bg-amber-500' : 'bg-slate-300';
+    return `
+      <div class="px-5 py-3 flex items-center justify-between gap-3 hover:bg-slate-50 transition-colors">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="w-2 h-2 rounded-full shrink-0 ${dotClass}"></span>
+          <div class="min-w-0">
+            <p class="font-semibold text-slate-900 text-sm truncate">${mat.name}</p>
+            <p class="text-[11px] text-slate-400">${mat.category}</p>
+          </div>
+        </div>
+        <p class="font-num font-semibold text-sm shrink-0 ${colorClass}">${formatAsBigSmall(mat, remain)}</p>
+      </div>`;
+  }).join('');
+}
+
+document.getElementById('restockSearch').addEventListener('input', (e) => {
+  renderRestockList(e.target.value);
+});
 
 /* ===========================================================
    ดูตาราง Audit ย้อนหลัง (อ่านอย่างเดียว ไม่แก้ไขตรงนี้ — ไปแก้ที่แท็บ "ย้อนหลัง" แทน)

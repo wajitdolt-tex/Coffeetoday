@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="EMOTIA">
+<meta name="theme-color" content="#FDF6EC">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23FDF6EC'/%3E%3Ctext x='50' y='68' font-size='55' text-anchor='middle'%3E%F0%9F%90%A5%3C/text%3E%3C/svg%3E">
 <title>EMOTIA</title>
 <style>
 :root {
@@ -929,6 +934,34 @@ body{
 .ps-bar{height:6px;background:var(--soft);border-radius:3px;margin-top:6px;overflow:hidden;}
 .ps-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--coral));}
 
+
+/* ── STREAK BANNER ── */
+.streak-banner{display:flex;align-items:center;gap:10px;background:linear-gradient(90deg,#FFF3E0,#FFE8D6);border-radius:16px;padding:12px 16px;margin:10px 16px;cursor:pointer;border:1.5px solid rgba(232,114,90,0.2);}
+.sb-fire{font-size:22px;}
+.sb-text{flex:1;font-size:13px;font-weight:700;color:var(--ink);}
+.sb-arrow{color:var(--dim);font-size:18px;}
+/* ── QUICK MOOD ── */
+.quick-mood{margin:4px 16px 8px;}
+.qm-label{font-size:10px;color:var(--dim);text-align:center;margin-bottom:8px;}
+.qm-row{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;}
+.qm-btn{width:52px;height:52px;border-radius:50%;border:1.5px solid var(--soft);background:var(--card);font-size:26px;cursor:pointer;transition:transform 0.15s;display:flex;align-items:center;justify-content:center;}
+.qm-btn:active{transform:scale(0.88);}
+.qm-btn.more{font-size:20px;color:var(--dim);}
+/* ── MEMORY (past entries) ── */
+.memory-card{background:linear-gradient(135deg,#FFF8EE,#FDEEE4);border-radius:16px;padding:14px 16px;margin:12px 0;border:1px dashed rgba(200,150,100,0.35);}
+.mem-label{font-size:10px;color:var(--coral);font-weight:700;letter-spacing:0.5px;margin-bottom:6px;}
+.mem-body{font-size:13px;color:var(--ink2);line-height:1.6;}
+.mem-emoji{font-size:20px;margin-right:6px;}
+/* ── PIN LOCK ── */
+.pin-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:500;background:var(--cream,#FDF6EC);display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;}
+.pin-overlay.show{display:flex;}
+.pin-title{font-size:16px;font-weight:700;color:var(--ink);}
+.pin-dots{display:flex;gap:14px;}
+.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--coral);background:transparent;}
+.pin-dot.on{background:var(--coral);}
+.pin-pad{display:grid;grid-template-columns:repeat(3,72px);gap:12px;}
+.pin-key{height:72px;border-radius:50%;border:none;background:var(--card);font-size:24px;font-weight:600;color:var(--ink);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.pin-key:active{background:var(--soft);}
 </style>
 </head>
 <body>
@@ -957,7 +990,7 @@ body{
 <div class="home-wrap">
 
   <div class="home-top">
-    <div class="home-brand">EMOTIA</div>
+    <div class="home-brand" id="home-greet">EMOTIA</div>
     <div class="lv-pill" id="lv-pill">LV. 1</div>
     <span id="sync-status" style="font-size:10px;color:var(--dim,#A08060);opacity:0;transition:opacity 0.5s;margin-left:6px;"></span>
   </div>
@@ -967,13 +1000,16 @@ body{
     <div class="exp-txt" id="exp-txt">0 / 50 EXP</div>
   </div>
 
-  <!-- Daily Quest panel -->
-  <div class="quest-panel">
-    <div class="quest-head">
-      <span class="quest-title">🎯 ภารกิจวันนี้</span>
-      <span class="quest-badge" id="quest-badge">0/3</span>
-    </div>
-    <div class="quest-list" id="quest-list"></div>
+  <!-- Streak banner -->
+  <div class="streak-banner" id="streak-banner" onclick="goTab('cal')">
+    <span class="sb-fire">🔥</span>
+    <span class="sb-text" id="sb-text">เริ่มต้นวันนี้เลย</span>
+    <span class="sb-arrow">›</span>
+  </div>
+  <!-- Quick mood check-in -->
+  <div class="quick-mood" id="quick-mood">
+    <div class="qm-label">แตะเพื่อบันทึกด่วน หรือพิมพ์เล่าด้านล่าง</div>
+    <div class="qm-row" id="qm-row"></div>
   </div>
 
   <div class="alpaca-center">
@@ -1417,32 +1453,6 @@ body{
   </button>
 </div>
 
-<!-- MAGIC LINK OVERLAY -->
-<div class="ql-overlay" id="magiclink-overlay">
-  <div class="ql-backdrop" onclick="closeMagicLink()"></div>
-  <div class="ql-modal" style="padding:28px 24px;">
-    <div class="ql-head">
-      <span class="ql-title">📧 เข้าสู่ระบบ</span>
-      <button class="ql-close" onclick="closeMagicLink()">✕</button>
-    </div>
-    <div id="ml-form">
-      <p style="font-size:13px;color:var(--ink2);margin:0 0 16px;line-height:1.6;">ใส่ email แล้วกด "ส่ง Link" — ระบบจะส่งลิงก์มาให้ทาง email<br>กดลิงก์นั้นเพื่อล็อกอิน ทุกเครื่องใช้ email เดียวกันก็ Sync ได้</p>
-      <input id="ml-email" type="email" placeholder="your@email.com"
-        style="width:100%;box-sizing:border-box;padding:12px 16px;border-radius:14px;border:1.5px solid var(--soft);font-size:15px;margin-bottom:12px;background:var(--cream);"
-        onkeypress="if(event.key==='Enter')sendMagicLink()">
-      <button id="ml-send-btn" onclick="sendMagicLink()"
-        style="width:100%;background:var(--coral);color:white;border:none;border-radius:20px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;">
-        ส่ง Link
-      </button>
-    </div>
-    <div id="ml-sent-msg" style="display:none;text-align:center;padding:16px 0;">
-      <div style="font-size:40px;margin-bottom:12px;">📨</div>
-      <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:8px;">ส่งแล้ว!</div>
-      <div style="font-size:13px;color:var(--ink2);line-height:1.6;">เช็ค email แล้วกดลิงก์ที่ได้รับ<br>แค่เปิดบนเดียวกับที่เห็นหน้านี้ได้เลย</div>
-      <button onclick="closeMagicLink()" style="margin-top:16px;background:var(--soft);border:none;border-radius:16px;padding:10px 24px;cursor:pointer;font-size:13px;">ปิด</button>
-    </div>
-  </div>
-</div>
 
 <script>
 
@@ -1454,7 +1464,7 @@ body{
    ★ ตอนเอาขึ้น GitHub: เปลี่ยน MODE เป็น 'fin' แล้วใส่ FIN_PROXY ให้ถูก ★ */
 var CONFIG = {
   MODE: 'fin',
-  FIN_PROXY: 'https://tedzucgqmitfmddxqvge.supabase.co/functions/v1/chat-proxy',
+  FIN_PROXY: 'https://ummtqzweedmotrffqrhw.supabase.co/functions/v1/chat-proxy',
   MODEL: 'claude-sonnet-4-20250514',
   TIMEOUT_MS: 30000
 };
@@ -1703,63 +1713,65 @@ function buildPrompt(payload){
   return parts.join('\n\n');
 }
 
-/* Central AI call. payload: {system, messages, max_tokens} → cb(textOrNull, errMsg) */
 function aiCall(payload, cb){
   if(!aiEnabled()){ cb(null,'AI ยังไม่ได้ตั้งค่า'); return; }
-  var ctrl = (typeof AbortController!=='undefined') ? new AbortController() : null;
-  var timer = ctrl ? setTimeout(function(){ ctrl.abort(); }, CONFIG.TIMEOUT_MS) : null;
 
   var url, headers, body;
 
   if(CONFIG.MODE==='direct'){
     url='https://api.anthropic.com/v1/messages';
-    headers={'Content-Type':'application/json'};
-    body=JSON.stringify({
-      model:CONFIG.MODEL,
-      max_tokens:payload.max_tokens||1000,
-      system:payload.system||undefined,
-      messages:payload.messages
-    });
-  }else{ /* fin / OpenRouter via chat-proxy */
+    headers={'Content-Type':'application/json','x-api-key':CONFIG.MODEL,'anthropic-version':'2023-06-01'};
+    body=JSON.stringify({model:CONFIG.MODEL,max_tokens:payload.max_tokens||800,messages:payload.messages||[]});
+  }else{
     url=CONFIG.FIN_PROXY;
     headers={'Content-Type':'application/json'};
     body=JSON.stringify({ prompt: buildPrompt(payload) });
   }
 
-  var opts={method:'POST',headers:headers,body:body};
-  if(ctrl) opts.signal=ctrl.signal;
+  /* ไม่ใช้ AbortController เพราะ Safari iOS บางเวอร์ชัน error "object cannot be cloned" */
+  var timer=null;
+  var done=false;
 
-  fetch(url, opts).then(function(r){
+  var fetchPromise=fetch(url,{method:'POST',headers:headers,body:body});
+
+  /* timeout manual */
+  var timeoutPromise=new Promise(function(resolve){
+    timer=setTimeout(function(){ resolve('__timeout__'); }, CONFIG.TIMEOUT_MS||30000);
+  });
+
+  Promise.race([fetchPromise,timeoutPromise]).then(function(result){
     if(timer) clearTimeout(timer);
+    if(done) return; done=true;
+    if(result==='__timeout__'){ cb(null,'หมดเวลา'); return; }
+    var r=result;
     if(!r.ok){
       return r.text().then(function(t){
         console.log('aiCall HTTP error:',r.status,t.slice(0,200));
-        throw new Error('HTTP '+r.status+': '+t.slice(0,80));
+        cb(null,'HTTP '+r.status);
       });
     }
-    return r.json();
-  }).then(function(data){
-    console.log('aiCall response keys:',Object.keys(data||{}).join(','),'status:',data&&data.status);
-    var text='';
-    if(CONFIG.MODE==='direct'){
-      if(data && data.content && data.content[0] && data.content[0].text) text=data.content[0].text;
-      else if(data && data.error) throw new Error(data.error.message||'API error');
-    }else{
-      if(data && typeof data.result==='string') text=data.result;
-      else if(data && typeof data.text==='string') text=data.text;
-      else if(data && typeof data.content==='string') text=data.content;
-      else if(data && data.choices && data.choices[0]) text=data.choices[0].message&&data.choices[0].message.content||data.choices[0].text||'';
-      else if(data && data.content && data.content[0] && data.content[0].text) text=data.content[0].text;
-      else if(data && data.error) throw new Error(String(data.error));
-      else{ console.log('unknown proxy response full:',JSON.stringify(data).slice(0,500)); throw new Error('\u0E23\u0E39\u0E1B\u0E41\u0E1A\u0E1A\u0E15\u0E2D\u0E1A\u0E01\u0E25\u0E31\u0E1A\u0E44\u0E21\u0E48\u0E23\u0E39\u0E49\u0E08\u0E31\u0E01'); }
-    }
-    if(!text){ console.log('empty text, full data:',JSON.stringify(data).slice(0,300)); throw new Error('\u0E44\u0E21\u0E48\u0E21\u0E35\u0E02\u0E49\u0E2D\u0E04\u0E27\u0E32\u0E21\u0E15\u0E2D\u0E1A\u0E01\u0E25\u0E31\u0E1A'); }
-    cb(text,null);
+    return r.json().then(function(data){
+      console.log('aiCall response keys:',Object.keys(data||{}).join(','));
+      var text='';
+      if(CONFIG.MODE==='direct'){
+        if(data&&data.content&&data.content[0]) text=data.content[0].text||'';
+      }else{
+        if(data&&typeof data.result==='string') text=data.result;
+        else if(data&&typeof data.text==='string') text=data.text;
+        else if(data&&typeof data.content==='string') text=data.content;
+        else if(data&&data.choices&&data.choices[0]) text=(data.choices[0].message&&data.choices[0].message.content)||data.choices[0].text||'';
+        else if(data&&data.content&&data.content[0]&&data.content[0].text) text=data.content[0].text;
+        else if(data&&data.error){ cb(null,String(data.error)); return; }
+        else{ console.log('unknown response:',JSON.stringify(data).slice(0,300)); cb(null,'\u0E23\u0E39\u0E1B\u0E41\u0E1A\u0E1A\u0E15\u0E2D\u0E1A\u0E01\u0E25\u0E31\u0E1A\u0E44\u0E21\u0E48\u0E23\u0E39\u0E49\u0E08\u0E31\u0E01'); return; }
+      }
+      if(!text){ cb(null,'\u0E44\u0E21\u0E48\u0E21\u0E35\u0E02\u0E49\u0E2D\u0E04\u0E27\u0E32\u0E21\u0E15\u0E2D\u0E1A\u0E01\u0E25\u0E31\u0E1A'); return; }
+      cb(text,null);
+    });
   }).catch(function(err){
     if(timer) clearTimeout(timer);
-    var msg=(err && err.name==='AbortError') ? '\u0E2B\u0E21\u0E14\u0E40\u0E27\u0E25\u0E32' : (err.message||'\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49');
-    console.log('aiCall catch:',msg);
-    cb(null,msg);
+    if(done) return; done=true;
+    console.log('aiCall catch:',err&&err.message||String(err));
+    cb(null,err&&err.message||'\u0E40\u0E0A\u0E37\u0E48\u0E2D\u0E21\u0E15\u0E48\u0E2D\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49');
   });
 }
 
@@ -2093,6 +2105,7 @@ function hud(){
   document.getElementById('st-str').textContent=streak();
   updateAlpacaEvo();
   updatePlaceholderByLevel();
+  updateStreakBanner();
 }
 
 /* ── ALPACA EVOLUTION ── accessory based on dominant emotion category */
@@ -3053,6 +3066,110 @@ function importDeviceKey(){
   setTimeout(syncDown,300);
 }
 
+
+/* ── GREETING BY TIME ── */
+function updateGreeting(){
+  var el=document.getElementById('home-greet');
+  if(!el) return;
+  var h=new Date().getHours();
+  var g;
+  if(h>=5&&h<11) g='สวัสดีตอนเช้า ☀️';
+  else if(h>=11&&h<16) g='สวัสดีตอนบ่าย 🌤';
+  else if(h>=16&&h<20) g='สวัสดีตอนเย็น 🌆';
+  else g='สวัสดีตอนค่ำ 🌙';
+  el.textContent=g;
+}
+
+/* ── QUICK MOOD CHECK-IN ── */
+var QUICK_MOODS=['joy','calm','tired','sadness','anger'];
+function renderQuickMood(){
+  var row=document.getElementById('qm-row');
+  if(!row) return;
+  var html='';
+  QUICK_MOODS.forEach(function(id){
+    var em=EMOTIONS.filter(function(e){return e.id===id;})[0];
+    if(!em) return;
+    html+='<button class="qm-btn" onclick="quickMood(\''+id+'\')" title="'+em.th+'">'+em.e+'</button>';
+  });
+  html+='<button class="qm-btn more" onclick="openQuickLog()">➕</button>';
+  row.innerHTML=html;
+}
+function quickMood(id){
+  var em=EMOTIONS.filter(function(e){return e.id===id;})[0];
+  if(!em) return;
+  showResult(em, em.d, '', '');
+  toast(em.e+' บันทึกแล้ว ✦');
+}
+
+/* ── STREAK BANNER ── */
+function updateStreakBanner(){
+  var el=document.getElementById('sb-text');
+  if(!el) return;
+  var s=streak();
+  if(s<=0) el.textContent='เริ่มต้นวันนี้เลย — บันทึกครั้งแรกของวัน';
+  else if(s===1) el.textContent='ต่อเนื่อง 1 วัน — พรุ่งนี้กลับมานะ';
+  else el.textContent='ต่อเนื่อง '+s+' วัน — เยี่ยมมาก!';
+}
+
+/* ── MEMORY: ย้อนดูวันนี้ในอดีต ── */
+function renderMemory(){
+  var container=document.getElementById('memory-slot');
+  if(!container) return;
+  var now=new Date();
+  /* ดูย้อน 30, 90, 365 วัน */
+  var offsets=[365,90,30];
+  var found=null,days=0;
+  for(var i=0;i<offsets.length;i++){
+    var target=new Date(now); target.setDate(target.getDate()-offsets[i]);
+    var key=target.toISOString().slice(0,10);
+    var hits=ST.hist.filter(function(h){return h.date.slice(0,10)===key;});
+    if(hits.length){found=hits[0];days=offsets[i];break;}
+  }
+  if(!found){container.innerHTML='';return;}
+  var em=EMOTIONS.filter(function(e){return e.id===found.emotionId;})[0];
+  var label=days===365?'เมื่อปีที่แล้ววันนี้':days+' วันก่อน';
+  container.innerHTML='<div class="memory-card">'
+    +'<div class="mem-label">✦ '+label+'</div>'
+    +'<div class="mem-body"><span class="mem-emoji">'+(em?em.e:'')+'</span>'
+    +(found.note||em&&em.th||'')+'</div></div>';
+}
+
+/* ── PIN LOCK ── */
+function checkPinLock(){
+  var pin=localStorage.getItem('em_pin');
+  if(!pin) return;
+  var ov=document.getElementById('pin-overlay');
+  if(ov){ ov.classList.add('show'); PIN_INPUT=''; renderPinDots(); }
+}
+var PIN_INPUT='';
+function pinKey(d){
+  if(PIN_INPUT.length>=4) return;
+  PIN_INPUT+=d;
+  renderPinDots();
+  if(PIN_INPUT.length===4){
+    var saved=localStorage.getItem('em_pin');
+    if(PIN_INPUT===saved){
+      document.getElementById('pin-overlay').classList.remove('show');
+    }else{
+      setTimeout(function(){PIN_INPUT='';renderPinDots();toast('PIN ไม่ถูกต้อง');},250);
+    }
+  }
+}
+function pinDel(){PIN_INPUT=PIN_INPUT.slice(0,-1);renderPinDots();}
+function renderPinDots(){
+  var dots=document.querySelectorAll('.pin-dot');
+  dots.forEach(function(d,i){d.classList.toggle('on',i<PIN_INPUT.length);});
+}
+function setPin(){
+  var p=prompt('ตั้ง PIN 4 หลัก (เว้นว่าง=ยกเลิก):','');
+  if(p===null) return;
+  p=p.trim();
+  if(p===''){localStorage.removeItem('em_pin');toast('ยกเลิก PIN แล้ว');return;}
+  if(!/^[0-9]{4}$/.test(p)){toast('ต้องเป็นตัวเลข 4 หลัก');return;}
+  localStorage.setItem('em_pin',p);
+  toast('ตั้ง PIN แล้ว ✦');
+}
+
 function init(){
   loadSession();
   parseAuthHash();
@@ -3067,6 +3184,11 @@ function init(){
   }catch(e){}
   checkDailyReminder();
   checkMilestone();
+  updateGreeting();
+  renderQuickMood();
+  updateStreakBanner();
+  renderMemory();
+  checkPinLock();
   var ob=document.getElementById('onboard');
   /* โชว์หน้าเริ่มต้นทุกครั้งที่เปิดแอป */
   ob.style.display='';

@@ -227,7 +227,17 @@
             <h2 class="font-heading font-semibold text-slate-900">แก้ไขอัตราส่วน / ยอดยกมาเริ่มต้น (Unit Master)</h2>
           </div>
           <div class="p-5 pb-3 bg-slate-50/60">
-            <p class="text-xs text-slate-500 mb-3">แก้ "1 หน่วยใหญ่ = กี่หน่วยเศษ", ชื่อหน่วย, และ <strong>ยอดยกมาเริ่มต้น</strong> (แยกกรอกเป็น "เต็ม" + "เศษ" ได้เลย) — แก้แล้วมีผลทันทีกับทุกการคำนวณ และซิงค์ไปทุกเครื่อง</p>
+            <p class="text-xs text-slate-500 mb-2">แก้ "1 หน่วยใหญ่ = กี่หน่วยเศษ" และชื่อหน่วยตรงนี้ได้เลย — มีผลทันทีกับทุกการคำนวณ และซิงค์ไปทุกเครื่อง</p>
+            <div class="bg-amber-50 border border-amber-200 rounded-lg px-3.5 py-2.5 mb-3 flex items-start gap-2">
+              <span class="text-amber-500 shrink-0">⚠️</span>
+              <p class="text-[11px] text-amber-800 leading-relaxed">
+                <strong>"ยอดยกมาเริ่มต้น" ที่นี่ใช้เฉพาะตอนยังไม่เคยมีประวัติการนับสต็อกเลย</strong> —
+                ถ้าเคยนับสต็อกมาก่อนแล้ว ระบบจะคำนวณยอดยกมาจากประวัติวันก่อนหน้าเสมอ (ไม่ใช้ค่าที่แก้ตรงนี้)<br>
+                ถ้ายอดยกมาผิดเพราะยอดนับของ<strong>เมื่อวานผิด</strong> ให้ไปแก้ที่แท็บ
+                <button type="button" data-jumptopast="1" class="underline font-semibold text-amber-900 hover:text-amber-950">📅 ย้อนหลัง</button>
+                แทน — แก้ตรงนั้นจะคำนวณยอดยกมาของวันนี้ให้ถูกต้องอัตโนมัติ
+              </p>
+            </div>
             <input id="editSearch" type="text" placeholder="ค้นหาวัตถุดิบที่ต้องการแก้ไข" class="input-base">
           </div>
           <div id="editListWrap" class="px-5 pb-5 space-y-4 bg-slate-50/60"></div>
@@ -1191,7 +1201,7 @@ function applyBranchCarry(branch){
 
     // apply หน่วยเฉพาะสาขา (bigUnit + ratio) ถ้ามีตั้งค่าไว้ — smallUnit คงเดิมเสมอ (ค่าที่เก็บ DB เป็นหน่วยเศษเดียวกันทุกสาขา)
     // เก็บหน่วยกลาง (base) ไว้ครั้งแรกก่อนโดนทับ เผื่อสาขาที่ไม่มี override ต้องใช้กลับ
-    if (mat._baseBigUnit === undefined) { mat._baseBigUnit = mat.bigUnit; mat._baseRatio = mat.ratio; }
+    if (mat._baseBigUnit === undefined) { mat._baseBigUnit = mat.bigUnit; mat._baseRatio = mat.ratio; mat._baseSetAt = mat._baseSetAt || 0; }
     const override = r.unit_override && branchKey ? r.unit_override[branchKey === 'passion' ? 'สาขาแพชชั่นระยอง' : 'สาขาโลตัสระยอง'] : null;
     if (override && override.bigUnit && override.ratio) {
       mat.bigUnit = override.bigUnit;
@@ -1290,11 +1300,28 @@ async function upsertMaterialSilent(mat){
 async function upsertMaterial(mat){
   setSyncStatus('syncing');
   try {
+    // ดึงค่า big_unit/ratio ล่าสุดจาก DB ก่อนบันทึกทับ กัน cache เก่า (_baseBigUnit/_baseRatio)
+    // จากเครื่อง/แท็บอื่นที่เปิดค้างไว้นานทับค่าที่เพิ่งถูกแก้จากเครื่องอื่นโดยไม่ตั้งใจ
+    // (เกิดขึ้นได้เมื่อมีคนแก้หน่วยจากเครื่องหนึ่ง แล้วอีกเครื่องที่เปิดค้างไปแก้ field อื่นทีหลัง)
+    try {
+      const fresh = await sb(`materials?id=eq.${encodeURIComponent(mat.id)}&select=big_unit,ratio,updated_at`);
+      if (fresh && fresh[0] && fresh[0].updated_at) {
+        const dbUpdatedAt = new Date(fresh[0].updated_at).getTime();
+        const localBaseSetAt = mat._baseSetAt || 0;
+        // ถ้า DB มีการอัปเดตหลังจากที่เรา cache ค่า base ไว้ แปลว่ามีคนอื่นแก้ไปแล้ว ให้ใช้ค่าจาก DB แทน cache เก่า
+        if (dbUpdatedAt > localBaseSetAt) {
+          mat._baseBigUnit = fresh[0].big_unit;
+          mat._baseRatio = Number(fresh[0].ratio);
+        }
+      }
+    } catch(_){ /* ถ้าดึงไม่ได้ก็ใช้ค่าที่มีอยู่ตามปกติ ไม่ block การบันทึก */ }
+
     await sb('materials?on_conflict=id', {
       method: 'POST',
       body: JSON.stringify([materialToRow(mat)]),
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
     });
+    mat._baseSetAt = Date.now();
     setSyncStatus('online');
   } catch (e) { console.error('upsertMaterial failed', e); setSyncStatus('error', 'upsertMaterial: ' + e.message); }
 }
@@ -1848,6 +1875,10 @@ document.querySelectorAll('.admin-tab-btn').forEach(btn => {
   btn.addEventListener('click', () => showAdminTab(btn.dataset.admintab));
 });
 showAdminTab('audit');
+
+document.getElementById('adminTabEdit').addEventListener('click', (e) => {
+  if (e.target.closest('[data-jumptopast]')) showAdminTab('past');
+});
 
 document.getElementById('pinUnlockBtn').addEventListener('click', () => {
   const val = document.getElementById('pinInput').value.trim();
@@ -3835,6 +3866,7 @@ editListWrap.addEventListener('input', (e) => {
   if (field === 'bigUnit') {
     mat.bigUnit = e.target.value;
     mat._baseBigUnit = e.target.value; // อัปเดต cache กันถูกทับด้วยค่าเก่าตอน applyBranchCarry รอบถัดไป
+    mat._baseSetAt = Date.now();
     if (mat.noFraction) mat.smallUnit = e.target.value;
   } else if (field === 'category') {
     mat.category = e.target.value.trim() || mat.category;
@@ -3850,7 +3882,7 @@ editListWrap.addEventListener('input', (e) => {
     mat.smallUnit = e.target.value;
   } else if (field === 'ratio') {
     const v = parseFloat(e.target.value);
-    if (v > 0) { mat.ratio = v; mat._baseRatio = v; } // อัปเดต cache เช่นกัน
+    if (v > 0) { mat.ratio = v; mat._baseRatio = v; mat._baseSetAt = Date.now(); } // อัปเดต cache เช่นกัน
     // อัตราส่วนเปลี่ยน -> คำนวณยกมาใหม่จากช่อง เต็ม+เศษ ที่กรอกไว้
     const bigEl = document.querySelector(`[data-matid="${id}"][data-editfield="carryBig"]`);
     const smallEl = document.querySelector(`[data-matid="${id}"][data-editfield="carrySmall"]`);

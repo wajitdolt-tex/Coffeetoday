@@ -583,19 +583,6 @@ function evalExpr(str) {
 function hasExpr(val) { return String(val||'').includes('+'); }
 function exprHintText(val) { return hasExpr(val) ? '= ' + fmtNum(evalExpr(val)) : ''; }
 
-// สำหรับครีมเทียม/นมจืด: แสดงยอด "ก่อนถูกหักจากการตีครีมน้ำคาปู" ในวงเล็บใต้ยกมาเมื่อวาน
-// เพื่อให้พนักงานเช็คย้อนกลับได้ว่าทำไมยอดยกมาถึงน้อยกว่าที่คาดไว้
-function carryBeforeCreditHint(mat){
-  if (mat.id !== 'creamer' && mat.id !== 'evapmilk') return '';
-  const ri = rawInputs[mat.id] || {};
-  const creditBig = ri.creditBig || 0;
-  const creditSmall = ri.creditSmall || 0;
-  if (!creditBig && !creditSmall) return '';
-  // ยอดก่อนหัก = ยอดยกมาปัจจุบัน (หลังหักแล้ว) + เครดิตที่ถูกหักออกไป
-  const beforeSmall = mat.carry + creditBig * mat.ratio + creditSmall;
-  return ` <span class="text-[10px] text-blue-500 font-num">(ก่อนตีครีมคาปู ${formatAsBigSmall(mat, beforeSmall)})</span>`;
-}
-
 function FR(id, name, category, bigUnit, smallUnit, ratio, carry, subUnit, subRatio) {
   return { id, name, category, bigUnit, smallUnit, ratio, carry, subUnit, subRatio, noFraction:false };
 }
@@ -1655,6 +1642,19 @@ function formatAsBigSmall(mat, totalSmall){
     txt += `<br><span class="text-[11px] text-slate-400">≈ ${fmtNum(subVal)} ${mat.subUnit}</span>`;
   }
   return txt;
+}
+
+// สำหรับครีมเทียม/นมจืด: แสดงยอด "ก่อนถูกหักจากการตีครีมน้ำคาปู" ในวงเล็บใต้ยกมาเมื่อวาน
+// เพื่อให้พนักงานเช็คย้อนกลับได้ว่าทำไมยอดยกมาถึงน้อยกว่าที่คาดไว้
+function carryBeforeCreditHint(mat){
+  if (mat.id !== 'creamer' && mat.id !== 'evapmilk') return '';
+  const ri = rawInputs[mat.id] || {};
+  const creditBig = ri.creditBig || 0;
+  const creditSmall = ri.creditSmall || 0;
+  if (!creditBig && !creditSmall) return '';
+  // ยอดก่อนหัก = ยอดยกมาปัจจุบัน (หลังหักแล้ว) + เครดิตที่ถูกหักออกไป
+  const beforeSmall = mat.carry + creditBig * mat.ratio + creditSmall;
+  return ` <span class="text-[10px] text-blue-500 font-num">(ก่อนตีครีมคาปู ${formatAsBigSmall(mat, beforeSmall)})</span>`;
 }
 
 function computeRecord(mat, { received, actualBig, actualSmall, posSale, note }){

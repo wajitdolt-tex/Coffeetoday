@@ -98,6 +98,23 @@
     <input type="hidden" name="payload" id="gsheetPayloadInput">
   </form>
 
+  <div id="menuSummaryModal" class="fixed inset-0 bg-black/40 z-[70] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
+        <div>
+          <h3 class="font-heading font-semibold text-slate-900">📋 สรุปยอดขายเมนูที่กรอกไว้</h3>
+          <p id="menuSummarySubtitle" class="text-[11px] text-slate-400 mt-0.5"></p>
+        </div>
+        <button id="closeMenuSummaryBtn" class="text-slate-400 hover:text-slate-700 text-2xl leading-none px-1">&times;</button>
+      </div>
+      <div id="menuSummaryBody" class="overflow-y-auto px-5 py-3 flex-1"></div>
+      <div class="px-5 py-3 border-t border-slate-100 bg-slate-50 shrink-0 flex items-center justify-between">
+        <span class="text-xs text-slate-500">รวม <span id="menuSummaryTotalItems" class="font-num font-semibold text-slate-700">0</span> เมนู · <span id="menuSummaryTotalQty" class="font-num font-semibold text-accent-700">0</span> แก้ว</span>
+        <button id="printMenuSummaryBtn" class="text-xs font-semibold text-slate-600 hover:text-slate-900 border border-slate-300 rounded-lg px-3 h-8 transition">🖨️ พิมพ์/บันทึก</button>
+      </div>
+    </div>
+  </div>
+
   <div id="adminModal" class="fixed inset-0 bg-slate-50 z-50 hidden overflow-y-auto">
     <div class="bg-slate-900 px-4 sm:px-6 py-4 flex items-center justify-between sticky top-0 z-20">
       <p class="text-white font-heading font-semibold text-sm sm:text-base">🔒 หลังบ้าน (สูตรเมนู + จัดการวัตถุดิบ)</p>
@@ -201,9 +218,14 @@
               <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">M</span>
               <h2 class="font-heading font-semibold text-slate-900">กรอกยอดขายเมนูวันนี้ (ผูกสูตรอัตโนมัติ)</h2>
             </div>
-            <button id="clearMenuSalesBtn" class="text-xs font-semibold text-slate-500 hover:text-red-600 border border-slate-300 hover:border-red-300 rounded-lg px-3 h-9 transition">
-              ล้างยอดขายเมนู
-            </button>
+            <div class="flex items-center gap-2">
+              <button id="menuSummaryBtn" class="text-xs font-semibold text-accent-700 hover:text-accent-800 border border-accent-300 hover:border-accent-400 bg-accent-50 rounded-lg px-3 h-9 transition">
+                📋 สรุปยอดที่กรอก
+              </button>
+              <button id="clearMenuSalesBtn" class="text-xs font-semibold text-slate-500 hover:text-red-600 border border-slate-300 hover:border-red-300 rounded-lg px-3 h-9 transition">
+                ล้างยอดขายเมนู
+              </button>
+            </div>
           </div>
           <div class="px-5 pt-4 pb-2">
             <p class="text-xs text-slate-500 mb-3">วิธีใช้: เลื่อนหาเมนูที่ขายวันนี้ (หรือพิมพ์ค้นหา) แล้วใส่ "จำนวนแก้ว" ที่ขายได้ในแต่ละเมนู ระบบจะคำนวณปริมาณวัตถุดิบที่ควรใช้ไปตามสูตรให้อัตโนมัติ แล้วนำไปเทียบกับยอดที่นับจริงในการ์ดวัตถุดิบด้านบนและตาราง Audit ทันที — ไม่ต้องกรอกอะไรที่การ์ดวัตถุดิบเองอีก ข้อมูลสูตรเป็นความลับ ไม่แสดงนอกส่วนนี้ กดไอคอนดินสอข้างชื่อเมนูเพื่อแก้ชื่อได้</p>
@@ -481,8 +503,9 @@
             <span class="text-slate-400 text-[11px]">แตะเพื่อเปิด/ปิด</span>
           </summary>
           <div class="border-t border-slate-100">
-            <div class="px-5 pt-3 pb-1 flex items-center justify-between">
+            <div class="px-5 pt-3 pb-1 flex items-center justify-between gap-2">
               <button id="frontMenuSortBtn" class="text-[11px] font-semibold text-slate-400 hover:text-accent-600 transition px-2 py-1 rounded-lg hover:bg-accent-50 border border-slate-200">▲▼ จัดเรียงเมนู</button>
+              <button id="frontMenuSummaryBtn" class="text-[11px] font-semibold text-accent-700 hover:text-accent-800 transition px-2 py-1 rounded-lg bg-accent-50 border border-accent-200">📋 สรุปยอดที่กรอก</button>
             </div>
             <div class="px-5 pt-4 pb-2 flex items-center justify-between gap-2">
               <p class="text-xs text-slate-500">กรอกจำนวนแก้วที่ขายของแต่ละเมนู ระบบจะคำนวณยอดวัตถุดิบที่ควรใช้ไปให้อัตโนมัติ ไม่ต้องคำนวณเอง</p>
@@ -2990,6 +3013,100 @@ document.getElementById('clearMenuSalesBtn').addEventListener('click', () => {
 });
 
 /* ===========================================================
+   สรุปยอดขายเมนูที่กรอกไว้ — เช็คตรงกับเอกสารได้ง่าย ไม่ต้องไล่หาทีละการ์ด
+=========================================================== */
+function renderMenuSummary(){
+  const body = document.getElementById('menuSummaryBody');
+  const subtitle = document.getElementById('menuSummarySubtitle');
+  const totalItemsEl = document.getElementById('menuSummaryTotalItems');
+  const totalQtyEl = document.getElementById('menuSummaryTotalQty');
+  if (!body) return;
+
+  const branch = branchSelectEl.value || '';
+  const dateInput = document.getElementById('adminMenuDateInput');
+  const dateLabel = (dateInput && dateInput.value) ? dateInput.value : todayDateStr();
+  subtitle.textContent = `${branch} · ${dateLabel}`;
+
+  const filled = Object.entries(menuSales)
+    .filter(([id, qty]) => Number(qty) > 0)
+    .map(([id, qty]) => ({ recipe: RECIPES.find(r => r.id === id), qty: Number(qty) }))
+    .filter(x => x.recipe);
+
+  if (!filled.length) {
+    body.innerHTML = `<p class="text-sm text-slate-400 text-center py-10">ยังไม่ได้กรอกยอดขายเมนูเลย</p>`;
+    totalItemsEl.textContent = '0';
+    totalQtyEl.textContent = '0';
+    return;
+  }
+
+  // จัดกลุ่มตามหมวด เรียงตามลำดับหมวดที่ตั้งไว้
+  const cats = recipeCategories();
+  let html = '';
+  let totalQty = 0;
+  cats.forEach(cat => {
+    const items = filled.filter(x => x.recipe.category === cat)
+      .sort((a,b) => (a.recipe.sortOrder||0) - (b.recipe.sortOrder||0));
+    if (!items.length) return;
+    html += `<div class="mb-3">
+      <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">${cat}</p>
+      <div class="space-y-1">
+        ${items.map(x => {
+          totalQty += x.qty;
+          return `<div class="flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-50">
+            <span class="text-sm text-slate-700">${x.recipe.name} <span class="text-slate-400 text-xs">(${x.recipe.size})</span></span>
+            <span class="font-num font-semibold text-accent-700 text-sm">${fmtNum(x.qty)} แก้ว</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+
+  body.innerHTML = html;
+  totalItemsEl.textContent = fmtNum(filled.length);
+  totalQtyEl.textContent = fmtNum(totalQty);
+}
+
+document.getElementById('menuSummaryBtn').addEventListener('click', () => {
+  renderMenuSummary();
+  document.getElementById('menuSummaryModal').classList.remove('hidden');
+});
+document.getElementById('frontMenuSummaryBtn').addEventListener('click', () => {
+  renderMenuSummary();
+  document.getElementById('menuSummaryModal').classList.remove('hidden');
+});
+document.getElementById('closeMenuSummaryBtn').addEventListener('click', () => {
+  document.getElementById('menuSummaryModal').classList.add('hidden');
+});
+document.getElementById('menuSummaryModal').addEventListener('click', (e) => {
+  if (e.target.id === 'menuSummaryModal') document.getElementById('menuSummaryModal').classList.add('hidden');
+});
+document.getElementById('printMenuSummaryBtn').addEventListener('click', () => {
+  const body = document.getElementById('menuSummaryBody');
+  const subtitle = document.getElementById('menuSummarySubtitle').textContent;
+  const totalItems = document.getElementById('menuSummaryTotalItems').textContent;
+  const totalQty = document.getElementById('menuSummaryTotalQty').textContent;
+  const printWin = window.open('', '_blank');
+  printWin.document.write(`
+    <html><head><title>สรุปยอดขายเมนู</title>
+    <style>
+      body{font-family:sans-serif;padding:24px;}
+      h2{margin-bottom:4px;} p.sub{color:#666;margin-top:0;margin-bottom:16px;}
+      .cat{font-weight:bold;font-size:12px;color:#888;text-transform:uppercase;margin-top:16px;margin-bottom:6px;}
+      .row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;font-size:14px;}
+      .total{margin-top:20px;font-weight:bold;border-top:2px solid #333;padding-top:10px;}
+    </style></head>
+    <body>
+      <h2>📋 สรุปยอดขายเมนู</h2>
+      <p class="sub">${subtitle}</p>
+      ${body.innerHTML.replace(/class="mb-3"/g,'').replace(/class="text-\[11px\][^"]*"/g,'class="cat"').replace(/class="flex items-center justify-between[^"]*"/g,'class="row"').replace(/class="[^"]*"/g,'')}
+      <p class="total">รวม ${totalItems} เมนู · ${totalQty} แก้ว</p>
+    </body></html>
+  `);
+  printWin.document.close();
+  printWin.print();
+});
+
+/* ===========================================================
    จำนวนแก้วที่ขายวันนี้ (หน้าหลัก) — เหมือนกับหลังบ้านแต่ไม่โชว์สูตร/วัตถุดิบ ไม่ต้องผ่านรหัส
 =========================================================== */
 const frontMenuSearchEl = document.getElementById('frontMenuSearch');
@@ -3002,7 +3119,7 @@ function frontMenuCardHTML(recipe){
         <svg width="20" height="14" viewBox="0 0 20 14" fill="none"><circle cx="6" cy="3" r="1.5" fill="#94a3b8"/><circle cx="6" cy="7" r="1.5" fill="#94a3b8"/><circle cx="6" cy="11" r="1.5" fill="#94a3b8"/><circle cx="14" cy="3" r="1.5" fill="#94a3b8"/><circle cx="14" cy="7" r="1.5" fill="#94a3b8"/><circle cx="14" cy="11" r="1.5" fill="#94a3b8"/></svg>
        </div>` : '';
   return `
-  <div data-frontcard="${recipe.id}" class="border border-slate-200 rounded-lg p-3 bg-white transition-shadow">
+  <div data-frontcard="${recipe.id}" data-frontcat="${recipe.category}" class="border border-slate-200 rounded-lg p-3 bg-white transition-shadow">
     ${handle}
     <p class="font-semibold text-slate-900 text-sm leading-snug mb-1.5">${recipe.name} <span class="text-slate-400 font-normal">(${recipe.size})</span></p>
     <label class="block text-[10px] text-slate-400 mb-0.5">จำนวนที่ขายวันนี้ (${recipe.size && !recipe.size.includes('oz') ? recipe.size.replace(/^\d+\s*/, '') || 'แก้ว' : 'แก้ว'})</label>
@@ -3079,11 +3196,16 @@ document.addEventListener('touchmove', e => {
   const y = touch.clientY - _drag.offsetY;
   _drag.ghost.style.top = y + 'px';
 
-  // find card under touch point
-  _drag.ghost.style.display = 'none';
-  const el = document.elementFromPoint(touch.clientX, touch.clientY);
-  _drag.ghost.style.display = '';
-  const targetCard = el && el.closest('[data-frontcard]');
+  // หา card เป้าหมายจาก bounding rect โดยตรง แทน elementFromPoint
+  // (elementFromPoint ไม่เสถียรเพราะ ghost display:none/'' อาจไม่ sync ทัน ทำให้บางครั้งจับ target ผิดหรือไม่เจอเลย)
+  const srcCard = _drag.card;
+  const srcCat = srcCard.dataset.frontcat;
+  let targetCard = null;
+  document.querySelectorAll(`[data-frontcard][data-frontcat="${srcCat}"]`).forEach(c => {
+    if (c === srcCard) return;
+    const r = c.getBoundingClientRect();
+    if (touch.clientY >= r.top && touch.clientY <= r.bottom) targetCard = c;
+  });
   const targetId = targetCard ? targetCard.dataset.frontcard : null;
 
   // show drop indicator
@@ -4735,15 +4857,16 @@ function categoryArrayMove(arr, fromIdx, toIdx){
   return arr;
 }
 
+let _catDrag = null; // { cat, li, ghost, offsetY, lastTargetCat }
+
 function renderCatSortList(){
   const ul = document.getElementById('catSortList');
   if (!ul) return;
   const cats = materialCategories();
-  ul.innerHTML = cats.map((cat, i) => `
-    <li class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
-      <div class="flex flex-col gap-0.5 shrink-0">
-        <button type="button" data-catup="${cat}" ${i===0?'disabled':''} class="w-7 h-6 text-slate-400 hover:text-accent-600 disabled:opacity-20 text-xs rounded border border-slate-200 bg-white flex items-center justify-center">▲</button>
-        <button type="button" data-catdown="${cat}" ${i===cats.length-1?'disabled':''} class="w-7 h-6 text-slate-400 hover:text-accent-600 disabled:opacity-20 text-xs rounded border border-slate-200 bg-white flex items-center justify-center">▼</button>
+  ul.innerHTML = cats.map((cat) => `
+    <li data-catitem="${cat}" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+      <div data-cathandle="${cat}" class="shrink-0 w-7 h-9 flex items-center justify-center text-slate-400 cursor-grab active:cursor-grabbing touch-none select-none">
+        <svg width="14" height="18" viewBox="0 0 14 18" fill="none"><circle cx="4" cy="3" r="1.5" fill="currentColor"/><circle cx="4" cy="9" r="1.5" fill="currentColor"/><circle cx="4" cy="15" r="1.5" fill="currentColor"/><circle cx="10" cy="3" r="1.5" fill="currentColor"/><circle cx="10" cy="9" r="1.5" fill="currentColor"/><circle cx="10" cy="15" r="1.5" fill="currentColor"/></svg>
       </div>
       <span class="text-sm font-medium text-slate-700 flex-1">${cat}</span>
       <span class="text-[10px] text-slate-400">${MATERIALS.filter(m=>m.category===cat).length} รายการ</span>
@@ -4751,77 +4874,143 @@ function renderCatSortList(){
     </li>`).join('');
 
   ul.addEventListener('click', async (e) => {
-    const up = e.target.closest('[data-catup]');
-    const down = e.target.closest('[data-catdown]');
     const rename = e.target.closest('[data-renamecat]');
-    if (up || down) {
-      const cat = (up||down).dataset.catup || (up||down).dataset.catdown;
-      const cur = materialCategories();
-      const idx = cur.indexOf(cat);
-      const to = up ? idx-1 : idx+1;
-      if (to < 0 || to >= cur.length) return;
-      categoryArrayMove(cur, idx, to);
-      _categoryOrder = cur; saveCategoryOrder();
-      refreshMatCategoryDatalist(); populateCategoryFilter();
-      renderCatSortList();
-      renderFastMoving(materialSearchEl.value);
-      renderSlowMoving(materialSearchEl.value);
-      showToast('เรียงหมวดวัตถุดิบใหม่แล้ว ✓','success');
-      return;
-    }
-    if (rename) {
-      const oldCat = rename.dataset.renamecat;
-      const newCat = prompt('แก้ชื่อหมวด "'+oldCat+'" เป็น:', oldCat);
-      if (!newCat || !newCat.trim() || newCat.trim()===oldCat) return;
-      const trimmed = newCat.trim();
-      MATERIALS.filter(m=>m.category===oldCat).forEach(m=>{m.category=trimmed;});
-      if (Array.isArray(_categoryOrder)) _categoryOrder=_categoryOrder.map(c=>c===oldCat?trimmed:c);
-      saveCategoryOrder();
-      setSyncStatus('syncing');
-      try {
-        for (const m of MATERIALS.filter(m=>m.category===trimmed)) await upsertMaterialSilent(m);
-        setSyncStatus('online');
-        showToast('เปลี่ยนชื่อหมวดเป็น "'+trimmed+'" แล้ว','success');
-      } catch(err){ setSyncStatus('error'); }
-      renderCatSortList(); refreshMatCategoryDatalist(); populateCategoryFilter();
-      renderFastMoving(materialSearchEl.value); renderSlowMoving(materialSearchEl.value);
-    }
+    if (!rename) return;
+    const oldCat = rename.dataset.renamecat;
+    const newCat = prompt('แก้ชื่อหมวด "'+oldCat+'" เป็น:', oldCat);
+    if (!newCat || !newCat.trim() || newCat.trim()===oldCat) return;
+    const trimmed = newCat.trim();
+    MATERIALS.filter(m=>m.category===oldCat).forEach(m=>{m.category=trimmed;});
+    if (Array.isArray(_categoryOrder)) _categoryOrder=_categoryOrder.map(c=>c===oldCat?trimmed:c);
+    saveCategoryOrder();
+    setSyncStatus('syncing');
+    try {
+      for (const m of MATERIALS.filter(m=>m.category===trimmed)) await upsertMaterialSilent(m);
+      setSyncStatus('online');
+      showToast('เปลี่ยนชื่อหมวดเป็น "'+trimmed+'" แล้ว','success');
+    } catch(err){ setSyncStatus('error'); }
+    renderCatSortList(); refreshMatCategoryDatalist(); populateCategoryFilter();
+    renderFastMoving(materialSearchEl.value); renderSlowMoving(materialSearchEl.value);
   });
+
+  ul.addEventListener('touchstart', (e) => {
+    const handle = e.target.closest('[data-cathandle]');
+    if (!handle) return;
+    e.preventDefault();
+    const cat = handle.dataset.cathandle;
+    const li = handle.closest('[data-catitem]');
+    if (!li) return;
+    const rect = li.getBoundingClientRect();
+    const ghost = li.cloneNode(true);
+    ghost.style.cssText = `position:fixed;top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;opacity:0.85;box-shadow:0 8px 24px rgba(0,0,0,0.18);z-index:9999;pointer-events:none;transition:none;background:white;`;
+    document.body.appendChild(ghost);
+    li.style.opacity = '0.3';
+    _catDrag = { cat, li, ghost, offsetY: e.touches[0].clientY - rect.top, lastTargetCat: null };
+  }, { passive: false });
+
+  ul.addEventListener('touchmove', (e) => {
+    if (!_catDrag) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    _catDrag.ghost.style.top = (touch.clientY - _catDrag.offsetY) + 'px';
+
+    let targetLi = null;
+    ul.querySelectorAll('[data-catitem]').forEach(li => {
+      if (li === _catDrag.li) return;
+      const r = li.getBoundingClientRect();
+      if (touch.clientY >= r.top && touch.clientY <= r.bottom) targetLi = li;
+    });
+    const targetCat = targetLi ? targetLi.dataset.catitem : null;
+
+    ul.querySelectorAll('[data-catitem]').forEach(li => {
+      li.style.borderTopColor = '';
+      li.style.borderTopWidth = '';
+    });
+    if (targetLi && targetCat !== _catDrag.cat) {
+      targetLi.style.borderTopColor = '#7c3aed';
+      targetLi.style.borderTopWidth = '3px';
+      _catDrag.lastTargetCat = targetCat;
+    }
+  }, { passive: false });
+
+  function endCatDrag(){
+    if (!_catDrag) return;
+    try { _catDrag.ghost.remove(); } catch(_){}
+    try { _catDrag.li.style.opacity = ''; } catch(_){}
+    ul.querySelectorAll('[data-catitem]').forEach(li => {
+      li.style.borderTopColor = '';
+      li.style.borderTopWidth = '';
+    });
+    _catDrag = null;
+  }
+
+  ul.addEventListener('touchcancel', endCatDrag, { passive: true });
+
+  ul.addEventListener('touchend', () => {
+    if (!_catDrag) return;
+    const { cat, lastTargetCat } = _catDrag;
+    endCatDrag();
+    if (!lastTargetCat || lastTargetCat === cat) return;
+
+    const cur = materialCategories();
+    const fromIdx = cur.indexOf(cat);
+    const toIdx = cur.indexOf(lastTargetCat);
+    if (fromIdx === -1 || toIdx === -1) return;
+    categoryArrayMove(cur, fromIdx, toIdx);
+    _categoryOrder = cur; saveCategoryOrder();
+    refreshMatCategoryDatalist(); populateCategoryFilter();
+    renderCatSortList();
+    renderFastMoving(materialSearchEl.value);
+    renderSlowMoving(materialSearchEl.value);
+    showToast('เรียงหมวดวัตถุดิบใหม่แล้ว ✓','success');
+  }, { passive: true });
 }
+
+let _menuInCatDrag = null;
+let _rcatDrag = null; // drag สำหรับหมวดเมนู (คนละตัวกับ _catDrag ที่ใช้กับหมวดวัตถุดิบ)
+const _expandedRCats = new Set(); // หมวดเมนูที่ถูกขยายไว้ (คงสถานะไว้ตอน re-render)
 
 function renderRecipeCatList(){
   const ul = document.getElementById('recipeCatList');
   if (!ul) return;
   const cats = recipeCategories();
-  ul.innerHTML = cats.map((cat, i) => `
-    <li class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
-      <div class="flex flex-col gap-0.5 shrink-0">
-        <button type="button" data-rcatup="${cat}" ${i===0?'disabled':''} class="w-7 h-6 text-slate-400 hover:text-accent-600 disabled:opacity-20 text-xs rounded border border-slate-200 bg-white flex items-center justify-center">▲</button>
-        <button type="button" data-rcatdown="${cat}" ${i===cats.length-1?'disabled':''} class="w-7 h-6 text-slate-400 hover:text-accent-600 disabled:opacity-20 text-xs rounded border border-slate-200 bg-white flex items-center justify-center">▼</button>
+  ul.innerHTML = cats.map((cat) => `
+    <li data-rcatitem="${cat}" class="bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
+      <div class="flex items-center gap-2 px-3 py-2">
+        <button type="button" data-expandrcat="${cat}" class="text-slate-400 hover:text-accent-600 shrink-0">
+          <svg class="w-3.5 h-3.5 transition-transform ${_expandedRCats.has(cat) ? 'rotate-90' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <div data-rcathandle="${cat}" class="shrink-0 w-7 h-9 flex items-center justify-center text-slate-400 cursor-grab active:cursor-grabbing touch-none select-none">
+          <svg width="14" height="18" viewBox="0 0 14 18" fill="none"><circle cx="4" cy="3" r="1.5" fill="currentColor"/><circle cx="4" cy="9" r="1.5" fill="currentColor"/><circle cx="4" cy="15" r="1.5" fill="currentColor"/><circle cx="10" cy="3" r="1.5" fill="currentColor"/><circle cx="10" cy="9" r="1.5" fill="currentColor"/><circle cx="10" cy="15" r="1.5" fill="currentColor"/></svg>
+        </div>
+        <span class="text-sm font-medium text-slate-700 flex-1">${cat}</span>
+        <span class="text-[10px] text-slate-400">${RECIPES.filter(r=>r.category===cat).length} เมนู</span>
+        <button type="button" data-renamercat="${cat}" class="text-slate-400 hover:text-accent-600 text-sm px-1.5">✎</button>
       </div>
-      <span class="text-sm font-medium text-slate-700 flex-1">${cat}</span>
-      <span class="text-[10px] text-slate-400">${RECIPES.filter(r=>r.category===cat).length} เมนู</span>
-      <button type="button" data-renamercat="${cat}" class="text-slate-400 hover:text-accent-600 text-sm px-1.5">✎</button>
+      ${_expandedRCats.has(cat) ? `
+      <div class="border-t border-slate-200 bg-white px-3 py-2">
+        <p class="text-[10px] text-slate-400 mb-1.5">แตะ ⠿ เพื่อลากเรียงเมนูภายในหมวดนี้</p>
+        <ul data-menuincat="${cat}" class="space-y-1">
+          ${RECIPES.filter(r=>r.category===cat).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0)).map(r => `
+            <li data-menuitem="${r.id}" class="flex items-center gap-2 bg-slate-50 rounded px-2 py-1.5">
+              <div data-menuhandle="${r.id}" class="shrink-0 w-6 h-6 flex items-center justify-center text-slate-300 cursor-grab active:cursor-grabbing touch-none select-none">
+                <svg width="12" height="16" viewBox="0 0 12 16" fill="none"><circle cx="3" cy="3" r="1.3" fill="currentColor"/><circle cx="3" cy="8" r="1.3" fill="currentColor"/><circle cx="3" cy="13" r="1.3" fill="currentColor"/><circle cx="9" cy="3" r="1.3" fill="currentColor"/><circle cx="9" cy="8" r="1.3" fill="currentColor"/><circle cx="9" cy="13" r="1.3" fill="currentColor"/></svg>
+              </div>
+              <span class="text-xs text-slate-700 flex-1">${r.name} <span class="text-slate-400">(${r.size})</span></span>
+            </li>`).join('')}
+        </ul>
+      </div>` : ''}
     </li>`).join('');
 
   ul.addEventListener('click', async (e) => {
-    const up = e.target.closest('[data-rcatup]');
-    const down = e.target.closest('[data-rcatdown]');
+    const expand = e.target.closest('[data-expandrcat]');
     const rename = e.target.closest('[data-renamercat]');
-    if (up || down) {
-      const cat = (up||down).dataset.rcatup || (up||down).dataset.rcatdown;
-      const cur = recipeCategories();
-      const idx = cur.indexOf(cat);
-      const to = up ? idx-1 : idx+1;
-      if (to < 0 || to >= cur.length) return;
-      categoryArrayMove(cur, idx, to);
-      _recipeCategoryOrder = cur; saveRecipeCategoryOrder();
+
+    if (expand) {
+      const cat = expand.dataset.expandrcat;
+      if (_expandedRCats.has(cat)) _expandedRCats.delete(cat);
+      else _expandedRCats.add(cat);
       renderRecipeCatList();
-      try { renderMenuList(menuSearchEl.value); } catch(_){}
-      try { renderFrontMenuList(document.getElementById('frontMenuSearch')?document.getElementById('frontMenuSearch').value:''); } catch(_){}
-      try { renderFrontMenuChips(); } catch(_){}
-      try { if (window.populateNewRecipeCategory) window.populateNewRecipeCategory(); } catch(_){}
-      showToast('เรียงหมวดเมนูใหม่แล้ว ✓','success');
       return;
     }
     if (rename) {
@@ -4843,6 +5032,158 @@ function renderRecipeCatList(){
       try { if (window.populateNewRecipeCategory) window.populateNewRecipeCategory(); } catch(_){}
     }
   });
+
+  // --- Drag เรียงหมวดเมนู ---
+  ul.addEventListener('touchstart', (e) => {
+    const handle = e.target.closest('[data-rcathandle]');
+    if (!handle) return;
+    e.preventDefault();
+    const cat = handle.dataset.rcathandle;
+    const li = handle.closest('[data-rcatitem]');
+    if (!li) return;
+    const rect = li.getBoundingClientRect();
+    const ghost = li.cloneNode(true);
+    ghost.style.cssText = `position:fixed;top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;opacity:0.85;box-shadow:0 8px 24px rgba(0,0,0,0.18);z-index:9999;pointer-events:none;transition:none;background:white;`;
+    document.body.appendChild(ghost);
+    li.style.opacity = '0.3';
+    _rcatDrag = { cat, li, ghost, offsetY: e.touches[0].clientY - rect.top, lastTargetCat: null };
+  }, { passive: false });
+
+  ul.addEventListener('touchmove', (e) => {
+    if (!_rcatDrag) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    _rcatDrag.ghost.style.top = (touch.clientY - _rcatDrag.offsetY) + 'px';
+
+    let targetLi = null;
+    ul.querySelectorAll('[data-rcatitem]').forEach(li => {
+      if (li === _rcatDrag.li) return;
+      const r = li.getBoundingClientRect();
+      if (touch.clientY >= r.top && touch.clientY <= r.bottom) targetLi = li;
+    });
+    const targetCat = targetLi ? targetLi.dataset.rcatitem : null;
+
+    ul.querySelectorAll('[data-rcatitem]').forEach(li => {
+      li.style.borderTopColor = '';
+      li.style.borderTopWidth = '';
+    });
+    if (targetLi && targetCat !== _rcatDrag.cat) {
+      targetLi.style.borderTopColor = '#7c3aed';
+      targetLi.style.borderTopWidth = '3px';
+      _rcatDrag.lastTargetCat = targetCat;
+    }
+  }, { passive: false });
+
+  function endRcatDrag(){
+    if (!_rcatDrag) return;
+    try { _rcatDrag.ghost.remove(); } catch(_){}
+    try { _rcatDrag.li.style.opacity = ''; } catch(_){}
+    ul.querySelectorAll('[data-rcatitem]').forEach(li => {
+      li.style.borderTopColor = '';
+      li.style.borderTopWidth = '';
+    });
+    _rcatDrag = null;
+  }
+
+  ul.addEventListener('touchcancel', endRcatDrag, { passive: true });
+
+  ul.addEventListener('touchend', () => {
+    if (!_rcatDrag) return;
+    const { cat, lastTargetCat } = _rcatDrag;
+    endRcatDrag();
+    if (!lastTargetCat || lastTargetCat === cat) return;
+
+    const cur = recipeCategories();
+    const fromIdx = cur.indexOf(cat);
+    const toIdx = cur.indexOf(lastTargetCat);
+    if (fromIdx === -1 || toIdx === -1) return;
+    categoryArrayMove(cur, fromIdx, toIdx);
+    _recipeCategoryOrder = cur; saveRecipeCategoryOrder();
+    renderRecipeCatList();
+    try { renderMenuList(menuSearchEl.value); } catch(_){}
+    try { renderFrontMenuList(document.getElementById('frontMenuSearch')?document.getElementById('frontMenuSearch').value:''); } catch(_){}
+    try { renderFrontMenuChips(); } catch(_){}
+    try { if (window.populateNewRecipeCategory) window.populateNewRecipeCategory(); } catch(_){}
+    showToast('เรียงหมวดเมนูใหม่แล้ว ✓','success');
+  }, { passive: true });
+
+  // --- Drag เรียงเมนูภายในหมวด ---
+  ul.addEventListener('touchstart', (e) => {
+    const handle = e.target.closest('[data-menuhandle]');
+    if (!handle) return;
+    e.preventDefault();
+    const recipeId = handle.dataset.menuhandle;
+    const li = handle.closest('[data-menuitem]');
+    const innerUl = handle.closest('[data-menuincat]');
+    if (!li || !innerUl) return;
+    const rect = li.getBoundingClientRect();
+    const ghost = li.cloneNode(true);
+    ghost.style.cssText = `position:fixed;top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;opacity:0.9;box-shadow:0 6px 20px rgba(0,0,0,0.18);z-index:9999;pointer-events:none;transition:none;background:white;border-radius:6px;`;
+    document.body.appendChild(ghost);
+    li.style.opacity = '0.3';
+    _menuInCatDrag = { recipeId, li, ghost, innerUl, cat: innerUl.dataset.menuincat, offsetY: e.touches[0].clientY - rect.top, lastTargetId: null };
+  }, { passive: false });
+
+  ul.addEventListener('touchmove', (e) => {
+    if (!_menuInCatDrag) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    _menuInCatDrag.ghost.style.top = (touch.clientY - _menuInCatDrag.offsetY) + 'px';
+
+    let targetLi = null;
+    _menuInCatDrag.innerUl.querySelectorAll('[data-menuitem]').forEach(li => {
+      if (li === _menuInCatDrag.li) return;
+      const r = li.getBoundingClientRect();
+      if (touch.clientY >= r.top && touch.clientY <= r.bottom) targetLi = li;
+    });
+    const targetId = targetLi ? targetLi.dataset.menuitem : null;
+
+    _menuInCatDrag.innerUl.querySelectorAll('[data-menuitem]').forEach(li => {
+      li.style.borderTopColor = '';
+      li.style.borderTopWidth = '';
+    });
+    if (targetLi && targetId !== _menuInCatDrag.recipeId) {
+      targetLi.style.borderTopColor = '#7c3aed';
+      targetLi.style.borderTopWidth = '2px';
+      _menuInCatDrag.lastTargetId = targetId;
+    }
+  }, { passive: false });
+
+  function endMenuInCatDrag(){
+    if (!_menuInCatDrag) return;
+    try { _menuInCatDrag.ghost.remove(); } catch(_){}
+    try { _menuInCatDrag.li.style.opacity = ''; } catch(_){}
+    try {
+      _menuInCatDrag.innerUl.querySelectorAll('[data-menuitem]').forEach(li => {
+        li.style.borderTopColor = '';
+        li.style.borderTopWidth = '';
+      });
+    } catch(_){}
+    _menuInCatDrag = null;
+  }
+
+  ul.addEventListener('touchcancel', endMenuInCatDrag, { passive: true });
+
+  ul.addEventListener('touchend', () => {
+    if (!_menuInCatDrag) return;
+    const { recipeId, cat, lastTargetId } = _menuInCatDrag;
+    endMenuInCatDrag();
+    if (!lastTargetId || lastTargetId === recipeId) return;
+
+    const items = RECIPES.filter(r => r.category === cat).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
+    const srcIdx = items.findIndex(r => r.id === recipeId);
+    if (srcIdx === -1) return;
+    const [moved] = items.splice(srcIdx, 1);
+    const tgtIdx = items.findIndex(r => r.id === lastTargetId);
+    if (tgtIdx === -1) return;
+    items.splice(tgtIdx, 0, moved);
+    items.forEach((r, i) => { r.sortOrder = i + 1; upsertRecipeSilent(r); });
+
+    renderRecipeCatList();
+    try { renderMenuList(menuSearchEl.value); } catch(_){}
+    try { renderFrontMenuList(document.getElementById('frontMenuSearch')?document.getElementById('frontMenuSearch').value:''); } catch(_){}
+    showToast('เรียงเมนูในหมวด "'+cat+'" ใหม่แล้ว ✓','success');
+  }, { passive: true });
 }
 
 document.getElementById('catOrderDetails').addEventListener('toggle', function(){

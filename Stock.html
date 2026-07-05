@@ -98,7 +98,7 @@
     <input type="hidden" name="payload" id="gsheetPayloadInput">
   </form>
 
-  <div id="menuSummaryModal" class="fixed inset-0 bg-black/40 z-[70] hidden flex items-center justify-center p-4">
+  <div id="menuSummaryModal" class="fixed inset-0 bg-black/40 z-[9999] hidden flex items-center justify-center p-4" style="isolation:isolate;">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
       <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
         <div>
@@ -3290,7 +3290,10 @@ function renderFrontMenuList(filterText){
   const ft = (filterText || '').trim().toLowerCase();
   let html = '';
   recipeCategories().forEach((cat, i) => {
-    const items = RECIPES.filter(r => r.category === cat && !r.hideFromSales && (!ft || r.name.toLowerCase().includes(ft)));
+    const items = RECIPES.filter(r => r.category === cat && !r.hideFromSales && (!ft || r.name.toLowerCase().includes(ft)))
+      .map((r, idx) => ({ r, idx }))
+      .sort((a,b) => (a.r.sortOrder||a.idx) - (b.r.sortOrder||b.idx))
+      .map(x => x.r);
     if (items.length === 0) return;
     html += `
       <details open id="frontcatsec_${i}" class="border border-slate-100 rounded-lg scroll-mt-40 overflow-hidden">

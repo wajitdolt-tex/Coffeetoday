@@ -583,6 +583,19 @@ function evalExpr(str) {
 function hasExpr(val) { return String(val||'').includes('+'); }
 function exprHintText(val) { return hasExpr(val) ? '= ' + fmtNum(evalExpr(val)) : ''; }
 
+// สำหรับครีมเทียม/นมจืด: แสดงยอด "ก่อนถูกหักจากการตีครีมน้ำคาปู" ในวงเล็บใต้ยกมาเมื่อวาน
+// เพื่อให้พนักงานเช็คย้อนกลับได้ว่าทำไมยอดยกมาถึงน้อยกว่าที่คาดไว้
+function carryBeforeCreditHint(mat){
+  if (mat.id !== 'creamer' && mat.id !== 'evapmilk') return '';
+  const ri = rawInputs[mat.id] || {};
+  const creditBig = ri.creditBig || 0;
+  const creditSmall = ri.creditSmall || 0;
+  if (!creditBig && !creditSmall) return '';
+  // ยอดก่อนหัก = ยอดยกมาปัจจุบัน (หลังหักแล้ว) + เครดิตที่ถูกหักออกไป
+  const beforeSmall = mat.carry + creditBig * mat.ratio + creditSmall;
+  return ` <span class="text-[10px] text-blue-500 font-num">(ก่อนตีครีมคาปู ${formatAsBigSmall(mat, beforeSmall)})</span>`;
+}
+
 function FR(id, name, category, bigUnit, smallUnit, ratio, carry, subUnit, subRatio) {
   return { id, name, category, bigUnit, smallUnit, ratio, carry, subUnit, subRatio, noFraction:false };
 }
@@ -2026,7 +2039,7 @@ function materialCardHTML(mat){
       </div>
       <span id="dot_${mat.id}" class="w-2 h-2 rounded-full ${touched ? 'bg-green-500' : 'bg-slate-300'} shrink-0 mt-1.5"></span>
     </div>
-    <p class="text-[11px] text-slate-400 mb-2 -mt-1">ยกมาเมื่อวาน: <span class="font-num font-semibold text-slate-600">${formatAsBigSmall(mat, mat.carry)}</span>${mat.carryExpr && mat.carryExpr.includes('+') ? ` <span class="text-[10px] text-slate-400 font-num">(${mat.carryExpr})</span>` : ''}</p>
+    <p class="text-[11px] text-slate-400 mb-2 -mt-1">ยกมาเมื่อวาน: <span class="font-num font-semibold text-slate-600">${formatAsBigSmall(mat, mat.carry)}</span>${mat.carryExpr && mat.carryExpr.includes('+') ? ` <span class="text-[10px] text-slate-400 font-num">(${mat.carryExpr})</span>` : ''}${carryBeforeCreditHint(mat)}</p>
     <div class="grid ${gridCols} gap-1.5">
       <div>
         <label class="block text-[10px] text-slate-400 mb-0.5">รับเข้า (${mat.bigUnit})</label>
@@ -2212,6 +2225,9 @@ function recomputeMaterialLocal(id){
     records[id].reviewed = !!ri.reviewed;
     records[id].reviewedAt = ri.reviewedAt || '';
     records[id].reviewedNote = ri.reviewedNote || '';
+    // เก็บ expression ดิบไว้แสดงในตาราง Audit (เช่น "500+201") เพื่อให้เช็คย้อนกลับได้ว่ายอดมาจากการบวกอะไร
+    records[id].actualBigExpr = hasExpr(ri.actualBig) ? ri.actualBig : null;
+    records[id].actualSmallExpr = hasExpr(ri.actualSmall) ? ri.actualSmall : null;
   }
 }
 
@@ -4027,7 +4043,7 @@ function renderTable(){
         </td>
         <td class="px-4 py-3 font-num font-semibold text-slate-900">${fmtNum(rec.usedActual)} <span class="text-[11px] font-normal text-slate-400">${mat.smallUnit}</span></td>
         <td class="px-4 py-3">${varianceBadge(rec.variance)}</td>
-        <td class="px-4 py-3 font-num">${formatAsBigSmall(mat, rec.remainSmall)}</td>
+        <td class="px-4 py-3 font-num">${formatAsBigSmall(mat, rec.remainSmall)}${rec.actualBigExpr || rec.actualSmallExpr ? `<br><span class="text-[10px] text-slate-400 font-num">(${[rec.actualBigExpr, rec.actualSmallExpr].filter(Boolean).join(' + ')})</span>` : ''}</td>
         <td class="px-4 py-3 text-xs text-slate-500 max-w-[140px] truncate" title="${rec.note}">${rec.note || '—'}</td>
         <td class="px-4 py-3">${reviewCellHTML(mat, rec)}</td>
       `;

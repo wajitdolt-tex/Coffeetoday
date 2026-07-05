@@ -4261,6 +4261,7 @@ function updateStats(){
 =========================================================== */
 const pastInputs = {};
 const pastCarry = {}; // ยกมาสำหรับวันย้อนหลัง
+const pastCarrySourceDate = {}; // วันที่ของแถวที่ pastCarry ดึงมา ใช้ตอนแก้ไข
 const pastDateInputEl = document.getElementById('pastDateInput');
 const pastSearchEl = document.getElementById('pastSearch');
 const pastListWrap = document.getElementById('pastListWrap');
@@ -4286,7 +4287,32 @@ function pastCardHTML(mat){
   <div class="border border-slate-200 rounded-lg p-3 bg-white">
     <p class="font-semibold text-slate-900 text-sm leading-snug">${mat.name}</p>
     <p class="text-[11px] text-slate-400">${mat.noFraction ? `หน่วยนับ: ${mat.bigUnit}` : `1 ${mat.bigUnit} = ${fmtNum(mat.ratio)} ${mat.smallUnit}`}</p>
-    ${pastCarry[mat.id] !== undefined ? `<p class="text-[11px] text-slate-500 mb-2">ยกมา: <span class="font-semibold">${formatAsBigSmall(mat, pastCarry[mat.id])}</span></p>` : '<div class="mb-2"></div>'}
+    ${pastCarry[mat.id] !== undefined ? `
+    <p class="text-[11px] text-slate-500 mb-2 flex items-center gap-1.5 flex-wrap">
+      ยกมา: <span id="pastcarrydisplay_${mat.id}" class="font-semibold">${formatAsBigSmall(mat, pastCarry[mat.id])}</span>
+      <button type="button" data-editpastcarry="${mat.id}" title="แก้ไขยอดยกมา" class="text-slate-300 hover:text-accent-600 shrink-0">
+        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+      ${pastCarrySourceDate[mat.id] ? `<span class="text-[10px] text-slate-400">(นับล่าสุด ${pastCarrySourceDate[mat.id]})</span>` : ''}
+    </p>
+    <div id="pastcarryedit_${mat.id}" class="hidden grid ${mat.noFraction ? 'grid-cols-2' : 'grid-cols-2'} gap-1.5 mb-2 bg-amber-50 border border-amber-200 rounded-lg p-2">
+      <div>
+        <label class="block text-[10px] text-amber-700 mb-0.5">แก้ยกมา — เต็ม (${mat.bigUnit})</label>
+        <input type="number" min="0" step="1" placeholder="0" value="${Math.floor(Math.abs(pastCarry[mat.id]||0) / mat.ratio)}"
+          data-pasteditcarrybig="${mat.id}" class="input-base input-sm !h-8 font-num !px-1.5 text-center">
+      </div>
+      ${mat.noFraction ? '' : `
+      <div>
+        <label class="block text-[10px] text-amber-700 mb-0.5">แก้ยกมา — เศษ (${mat.smallUnit})</label>
+        <input type="number" min="0" step="any" placeholder="0" value="${fmtNum(Math.abs(pastCarry[mat.id]||0) % mat.ratio)}"
+          data-pasteditcarrysmall="${mat.id}" class="input-base input-sm !h-8 font-num !px-1.5 text-center">
+      </div>`}
+      <div class="col-span-2 flex items-center gap-2">
+        <button type="button" data-savepastcarry="${mat.id}" class="text-[11px] font-semibold text-white bg-amber-600 hover:bg-amber-700 rounded px-2.5 py-1">บันทึกยกมา</button>
+        <button type="button" data-cancelpastcarry="${mat.id}" class="text-[11px] font-semibold text-slate-500 hover:text-slate-700">ยกเลิก</button>
+        <span class="text-[10px] text-amber-700">แก้ยอดนับจริงของวันก่อนหน้า</span>
+      </div>
+    </div>` : '<div class="mb-2"></div>'}
     <div class="grid ${gridCols} gap-1.5">
       <div>
         <label class="block text-[10px] text-slate-400 mb-0.5">รับเข้า (${mat.bigUnit})</label>
@@ -4361,6 +4387,7 @@ async function loadPastDate(){
     });
     // โหลดยอดยกมา (วันก่อนหน้า)
     Object.keys(pastCarry).forEach(k => delete pastCarry[k]);
+    Object.keys(pastCarrySourceDate).forEach(k => delete pastCarrySourceDate[k]);
     const priorRows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${date}&select=material_id,actual_big,actual_small,count_date&order=count_date.desc,id.desc`);
     const seen = new Set();
     (priorRows || []).forEach(r => {
@@ -4369,6 +4396,7 @@ async function loadPastDate(){
       const mat = materialById(r.material_id);
       if (!mat) return;
       pastCarry[r.material_id] = (Number(r.actual_big)||0)*mat.ratio + (mat.noFraction?0:(Number(r.actual_small)||0));
+      pastCarrySourceDate[r.material_id] = r.count_date;
     });
     setSyncStatus('online');
   } catch (e) { console.error('loadPastDate failed', e); setSyncStatus('error'); }
@@ -4467,6 +4495,73 @@ pastListWrap.addEventListener('change', (e) => {
   clearTimeout(pastSaveTimers[id]);
   savePastDailyCount(id);
 });
+
+// --- แก้ยอดยกมาโดยตรงจากหน้าย้อนหลัง (เขียนทับยอดนับจริงของวันที่ยอดยกมาอ้างอิงมา) ---
+pastListWrap.addEventListener('click', (e) => {
+  const editBtn = e.target.closest('[data-editpastcarry]');
+  const cancelBtn = e.target.closest('[data-cancelpastcarry]');
+  const saveBtn = e.target.closest('[data-savepastcarry]');
+
+  if (editBtn) {
+    const matId = editBtn.dataset.editpastcarry;
+    const box = document.getElementById('pastcarryedit_' + matId);
+    if (box) box.classList.remove('hidden');
+    return;
+  }
+  if (cancelBtn) {
+    const matId = cancelBtn.dataset.cancelpastcarry;
+    const box = document.getElementById('pastcarryedit_' + matId);
+    if (box) box.classList.add('hidden');
+    return;
+  }
+  if (saveBtn) {
+    const matId = saveBtn.dataset.savepastcarry;
+    saveEditedPastCarry(matId);
+  }
+});
+
+async function saveEditedPastCarry(matId){
+  const mat = materialById(matId);
+  if (!mat) return;
+  const branch = branchSelectEl.value;
+  const sourceDate = pastCarrySourceDate[matId];
+  if (!branch || !sourceDate) {
+    showToast('ไม่พบวันที่อ้างอิงของยอดยกมานี้ แก้ไขไม่ได้', 'warn');
+    return;
+  }
+  const bigEl = pastListWrap.querySelector(`[data-pasteditcarrybig="${matId}"]`);
+  const smallEl = pastListWrap.querySelector(`[data-pasteditcarrysmall="${matId}"]`);
+  const newBig = bigEl ? (parseFloat(bigEl.value) || 0) : 0;
+  const newSmall = smallEl ? (parseFloat(smallEl.value) || 0) : 0;
+  const newCarrySmallTotal = newBig * mat.ratio + (mat.noFraction ? 0 : newSmall);
+
+  setSyncStatus('syncing');
+  try {
+    // เขียนทับยอดนับจริงของ "วันที่ยอดยกมาอ้างอิงมา" (sourceDate) ตรงๆ
+    // เพราะยอดยกมาของวันที่กำลังดูอยู่ คำนวณมาจากยอดนับจริงของวันนั้นเสมอ
+    await sb('daily_counts?on_conflict=branch,count_date,material_id', {
+      method: 'POST',
+      body: JSON.stringify([{
+        branch, count_date: sourceDate, material_id: matId,
+        actual_big: newBig,
+        actual_small: mat.noFraction ? 0 : newSmall,
+        updated_at: new Date().toISOString(),
+      }]),
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    });
+    setSyncStatus('online');
+    pastCarry[matId] = newCarrySmallTotal;
+    const displayEl = document.getElementById('pastcarrydisplay_' + matId);
+    if (displayEl) displayEl.innerHTML = formatAsBigSmall(mat, newCarrySmallTotal);
+    const box = document.getElementById('pastcarryedit_' + matId);
+    if (box) box.classList.add('hidden');
+    showToast(`แก้ยอดยกมา "${mat.name}" เป็น ${formatAsBigSmall(mat, newCarrySmallTotal).replace(/<[^>]+>/g,'')} แล้ว ✓ (บันทึกลงยอดนับจริงวันที่ ${sourceDate})`, 'success');
+  } catch (e) {
+    console.error('saveEditedPastCarry failed', e);
+    setSyncStatus('error', 'saveEditedPastCarry: ' + e.message);
+    showToast('บันทึกไม่สำเร็จ: ' + (e.message || e), 'warn');
+  }
+}
 
 
 /* ===========================================================

@@ -1671,8 +1671,12 @@ async function syncSalary(showToast, btn) {
 
 async function syncLoan() {
   if (!cfg.gsUrl) return;
-  var branch = cfg.branch || 'passione';
-  await syncToSheets('loan', branch, BRANCH_NAMES[branch], loans);
+  var branches = ['passione', 'lotus'];
+  for (var b = 0; b < branches.length; b++) {
+    var branch = branches[b];
+    var items = loans.filter(function(l) { return l.branch === branch; });
+    await syncToSheets('loan', branch, BRANCH_NAMES[branch], items);
+  }
 }
 
 async function loadSummary() {
@@ -1695,7 +1699,7 @@ async function loadSummary() {
         var partials = [];
         try { partials = JSON.parse(String(r[12]||'[]')); } catch(e) {}
         return {
-          id: r[9] || Date.now(),
+          id: r[9] ? String(r[9]) : (cleanDate(r[0]) + '_' + String(r[2]||'') + '_' + (parseFloat(r[4])||0)),
           date: cleanDate(r[0]),
           branch: branchKey,
           desc: String(r[2]||''),
@@ -1713,10 +1717,10 @@ async function loadSummary() {
       var otherBranchPayables = payables.filter(function(px) { return px.branch !== branchKey; });
       // merge: Sheets อัพเดท status (paid/paidDate) แต่รายการใหม่ที่ยังไม่ sync ขึ้นชีทให้เก็บไว้
       var sheetsIds = {};
-      sheetsPayables.forEach(function(p) { sheetsIds[p.id] = true; });
+      sheetsPayables.forEach(function(p) { sheetsIds[String(p.id)] = true; });
       // รายการที่อยู่ใน local แต่ไม่มีในชีท = รายการใหม่ที่ยังไม่ sync → เก็บไว้
       var localOnlyPayables = payables.filter(function(px) {
-        return px.branch === branchKey && !sheetsIds[px.id];
+        return px.branch === branchKey && !sheetsIds[String(px.id)];
       });
       payables = otherBranchPayables.concat(sheetsPayables).concat(localOnlyPayables);
       localStorage.setItem('ct_payables', JSON.stringify(payables));
@@ -1739,7 +1743,7 @@ async function loadSummary() {
           var partials = [];
           try { partials = JSON.parse(String(r[8]||'[]')); } catch(e) {}
           return {
-            id: r[6] || Date.now(),
+            id: r[6] ? String(r[6]) : (cleanSalDate(r[0]) + '_' + String(r[2]||'') + '_' + cleanSalDate(r[3]).slice(0,7)),
             date: cleanSalDate(r[0]),
             branch: branchKey,
             name: String(r[2]||''),
@@ -1751,11 +1755,20 @@ async function loadSummary() {
           };
         });
         var otherBranchSalaries = salaries.filter(function(s) { return s.branch !== branchKey; });
-        salaries = otherBranchSalaries.concat(sheetsSalaries);
+        // เก็บ local ที่ยังไม่ sync ขึ้นชีท (id ไม่มีในชีท)
+        var salSheetsIds = {};
+        sheetsSalaries.forEach(function(s) { salSheetsIds[String(s.id)] = true; });
+        var localOnlySalaries = salaries.filter(function(s) {
+          return s.branch === branchKey && !salSheetsIds[String(s.id)];
+        });
+        salaries = otherBranchSalaries.concat(sheetsSalaries).concat(localOnlySalaries);
         localStorage.setItem('ct_salaries', JSON.stringify(salaries));
+        // sync local ที่ยังไม่อยู่ในชีทขึ้นไปด้วย
+        if (localOnlySalaries.length && typeof syncSalary === 'function') syncSalary(false, null);
       } else {
-        salaries = salaries.filter(function(s) { return s.branch !== branchKey; });
-        localStorage.setItem('ct_salaries', JSON.stringify(salaries));
+        // ชีทว่าง — ไม่ลบ local เพราะอาจเป็นรายการใหม่ที่ยังไม่ sync
+        var localBranchSalaries = salaries.filter(function(s) { return s.branch === branchKey; });
+        if (localBranchSalaries.length && typeof syncSalary === 'function') syncSalary(false, null);
       }
       renderSalaries();
     }
@@ -1766,7 +1779,7 @@ async function loadSummary() {
           var repayments = [];
           try { repayments = JSON.parse(String(r[5]||'[]')); } catch(e) {}
           return {
-            id: r[0] || Date.now(),
+            id: r[0] ? String(r[0]) : (String(r[6]||'') + '_' + String(r[2]||'') + '_' + (parseFloat(r[3])||0)),
             branch: branchKey,
             from: String(r[2]||''),
             amount: parseFloat(r[3])||0,
@@ -1776,11 +1789,19 @@ async function loadSummary() {
           };
         });
         var otherBranchLoans = loans.filter(function(l) { return l.branch !== branchKey; });
-        loans = otherBranchLoans.concat(sheetsLoans);
+        // เก็บ local ที่ยังไม่ sync
+        var loanSheetsIds = {};
+        sheetsLoans.forEach(function(l) { loanSheetsIds[String(l.id)] = true; });
+        var localOnlyLoans = loans.filter(function(l) {
+          return l.branch === branchKey && !loanSheetsIds[String(l.id)];
+        });
+        loans = otherBranchLoans.concat(sheetsLoans).concat(localOnlyLoans);
         localStorage.setItem('ct_loans', JSON.stringify(loans));
+        if (localOnlyLoans.length && typeof syncLoan === 'function') syncLoan();
       } else {
-        loans = loans.filter(function(l) { return l.branch !== branchKey; });
-        localStorage.setItem('ct_loans', JSON.stringify(loans));
+        // ชีทว่าง — ไม่ลบ local, sync ขึ้นไปแทน
+        var localBranchLoans = loans.filter(function(l) { return l.branch === branchKey; });
+        if (localBranchLoans.length && typeof syncLoan === 'function') syncLoan();
       }
       renderLoans();
     }

@@ -93,14 +93,30 @@
   <!-- ===== Modal: หลังบ้าน (PIN gate + admin tools) ===== -->
   <div id="toastWrap" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-2 pointer-events-none w-full px-4"></div>
 
-  <!-- Debug log panel ชั่วคราว สำหรับ debug บน iPad ที่ไม่มี Mac ต่อ Web Inspector -->
-  <button id="debugLogToggle" type="button" style="position:fixed;bottom:8px;right:8px;z-index:9998;width:36px;height:36px;border-radius:50%;background:#1e293b;color:#fff;font-size:14px;border:none;opacity:0.5;">🐞</button>
-  <pre id="debugLogPanel" style="display:none;position:fixed;top:8px;left:8px;right:8px;bottom:52px;z-index:9998;background:rgba(15,23,42,0.95);color:#86efac;font-size:11px;line-height:1.4;padding:12px;overflow:auto;white-space:pre-wrap;border-radius:8px;font-family:monospace;"></pre>
-
   <iframe name="gsheetTargetFrame" style="display:none;"></iframe>
   <form id="gsheetForm" method="POST" target="gsheetTargetFrame" style="display:none;">
     <input type="hidden" name="payload" id="gsheetPayloadInput">
   </form>
+
+  <div id="menuSummaryModal" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center p-4" style="isolation:isolate; z-index:99999;">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg flex flex-col overflow-hidden" style="max-height:80vh;">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
+        <div>
+          <h3 class="font-heading font-semibold text-slate-900">📋 สรุปยอดขายเมนูที่กรอกไว้</h3>
+          <p id="menuSummarySubtitle" class="text-[11px] text-slate-400 mt-0.5"></p>
+        </div>
+        <button id="closeMenuSummaryBtn" class="text-slate-400 hover:text-slate-700 text-2xl leading-none px-1">&times;</button>
+      </div>
+      <div class="px-5 pt-3 pb-2 border-b border-slate-100 shrink-0">
+        <input id="menuSummarySearch" type="text" placeholder="ค้นหาเมนูในสรุป…" class="input-base input-sm">
+      </div>
+      <div id="menuSummaryBody" class="overflow-y-auto overscroll-contain px-5 pt-3 pb-8" style="min-height:0; flex:1 1 auto;"></div>
+      <div class="px-5 py-3 border-t border-slate-100 bg-slate-50 shrink-0 flex items-center justify-between">
+        <span class="text-xs text-slate-500">รวม <span id="menuSummaryTotalItems" class="font-num font-semibold text-slate-700">0</span> เมนู · <span id="menuSummaryTotalQty" class="font-num font-semibold text-accent-700">0</span> แก้ว</span>
+        <button id="printMenuSummaryBtn" class="text-xs font-semibold text-slate-600 hover:text-slate-900 border border-slate-300 rounded-lg px-3 h-8 transition">🖨️ พิมพ์/บันทึก</button>
+      </div>
+    </div>
+  </div>
 
   <div id="adminModal" class="fixed inset-0 bg-slate-50 z-50 hidden overflow-y-auto">
     <div class="bg-slate-900 px-4 sm:px-6 py-4 flex items-center justify-between sticky top-0 z-20">
@@ -123,8 +139,9 @@
       <!-- แท็บหลังบ้าน -->
       <div class="sticky top-[57px] sm:top-[64px] z-10 bg-white border-b border-slate-200 flex overflow-x-auto">
         <button data-admintab="audit" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">📊 ตาราง Audit</button>
+        <button data-admintab="restock" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">📋 ต้องซื้อ</button>
         <button data-admintab="menu" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">🍵 ยอดขายเมนู</button>
-        <button data-admintab="addmenu" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">➕ เพิ่มเมนู/วัตถุดิบ</button>
+        <button data-admintab="addmenu" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">➕ เพิ่มวัตถุดิบ</button>
         <button data-admintab="edit" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">✏️ แก้ไข/ยกมา</button>
         <button data-admintab="recipe" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">📝 แก้ไขสูตร</button>
         <button data-admintab="borrow" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">🔄 ยืม/คืน</button>
@@ -182,6 +199,21 @@
           </div>
         </div>
 
+        <!-- ลิสต์ต้องซื้อ: เรียงยอดคงเหลือน้อย→มาก -->
+        <div id="adminTabRestock" class="admin-tab-panel hidden">
+          <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between gap-2.5 flex-wrap">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">📋</span>
+              <h2 class="font-heading font-semibold text-slate-900">รายการต้องซื้อ</h2>
+            </div>
+            <span class="text-xs text-slate-400">เรียงยอดคงเหลือน้อย → มาก ของสาขาที่เลือกอยู่</span>
+          </div>
+          <div class="px-5 py-2.5 border-b border-slate-100 bg-slate-50/60">
+            <input id="restockSearch" type="text" placeholder="ค้นหาวัตถุดิบ…" class="input-base input-sm">
+          </div>
+          <div id="restockListWrap" class="divide-y divide-slate-100"></div>
+        </div>
+
         <!-- ผูกสูตรเมนู: กรอกยอดขายเมนูวันนี้ -->
         <div id="adminTabMenu" class="admin-tab-panel">
           <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
@@ -189,9 +221,14 @@
               <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">M</span>
               <h2 class="font-heading font-semibold text-slate-900">กรอกยอดขายเมนูวันนี้ (ผูกสูตรอัตโนมัติ)</h2>
             </div>
-            <button id="clearMenuSalesBtn" class="text-xs font-semibold text-slate-500 hover:text-red-600 border border-slate-300 hover:border-red-300 rounded-lg px-3 h-9 transition">
-              ล้างยอดขายเมนู
-            </button>
+            <div class="flex items-center gap-2">
+              <button id="menuSummaryBtn" class="text-xs font-semibold text-accent-700 hover:text-accent-800 border border-accent-300 hover:border-accent-400 bg-accent-50 rounded-lg px-3 h-9 transition">
+                📋 สรุปยอดที่กรอก
+              </button>
+              <button id="clearMenuSalesBtn" class="text-xs font-semibold text-slate-500 hover:text-red-600 border border-slate-300 hover:border-red-300 rounded-lg px-3 h-9 transition">
+                ล้างยอดขายเมนู
+              </button>
+            </div>
           </div>
           <div class="px-5 pt-4 pb-2">
             <p class="text-xs text-slate-500 mb-3">วิธีใช้: เลื่อนหาเมนูที่ขายวันนี้ (หรือพิมพ์ค้นหา) แล้วใส่ "จำนวนแก้ว" ที่ขายได้ในแต่ละเมนู ระบบจะคำนวณปริมาณวัตถุดิบที่ควรใช้ไปตามสูตรให้อัตโนมัติ แล้วนำไปเทียบกับยอดที่นับจริงในการ์ดวัตถุดิบด้านบนและตาราง Audit ทันที — ไม่ต้องกรอกอะไรที่การ์ดวัตถุดิบเองอีก ข้อมูลสูตรเป็นความลับ ไม่แสดงนอกส่วนนี้ กดไอคอนดินสอข้างชื่อเมนูเพื่อแก้ชื่อได้</p>
@@ -215,75 +252,30 @@
             <h2 class="font-heading font-semibold text-slate-900">แก้ไขอัตราส่วน / ยอดยกมาเริ่มต้น (Unit Master)</h2>
           </div>
           <div class="p-5 pb-3 bg-slate-50/60">
-            <p class="text-xs text-slate-500 mb-3">แก้ "1 หน่วยใหญ่ = กี่หน่วยเศษ", ชื่อหน่วย, และ <strong>ยอดยกมาเริ่มต้น</strong> (แยกกรอกเป็น "เต็ม" + "เศษ" ได้เลย) — แก้แล้วมีผลทันทีกับทุกการคำนวณ และซิงค์ไปทุกเครื่อง</p>
+            <p class="text-xs text-slate-500 mb-2">แก้ "1 หน่วยใหญ่ = กี่หน่วยเศษ" และชื่อหน่วยตรงนี้ได้เลย — มีผลทันทีกับทุกการคำนวณ และซิงค์ไปทุกเครื่อง</p>
+            <div class="bg-amber-50 border border-amber-200 rounded-lg px-3.5 py-2.5 mb-3 flex items-start gap-2">
+              <span class="text-amber-500 shrink-0">⚠️</span>
+              <p class="text-[11px] text-amber-800 leading-relaxed">
+                <strong>"ยอดยกมาเริ่มต้น" ที่นี่ใช้เฉพาะตอนยังไม่เคยมีประวัติการนับสต็อกเลย</strong> —
+                ถ้าเคยนับสต็อกมาก่อนแล้ว ระบบจะคำนวณยอดยกมาจากประวัติวันก่อนหน้าเสมอ (ไม่ใช้ค่าที่แก้ตรงนี้)<br>
+                ถ้ายอดยกมาผิดเพราะยอดนับของ<strong>เมื่อวานผิด</strong> ให้ไปแก้ที่แท็บ
+                <button type="button" data-jumptopast="1" class="underline font-semibold text-amber-900 hover:text-amber-950">📅 ย้อนหลัง</button>
+                แทน — แก้ตรงนั้นจะคำนวณยอดยกมาของวันนี้ให้ถูกต้องอัตโนมัติ
+              </p>
+            </div>
             <input id="editSearch" type="text" placeholder="ค้นหาวัตถุดิบที่ต้องการแก้ไข" class="input-base">
           </div>
           <div id="editListWrap" class="px-5 pb-5 space-y-4 bg-slate-50/60"></div>
         </div>
 
-        <!-- เพิ่มเมนูใหม่ (พร้อมส่วนผสม) -->
+        <!-- เพิ่มวัตถุดิบใหม่ + จัดเรียงหมวดหมู่ -->
         <div id="adminTabAddmenu" class="admin-tab-panel hidden">
           <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2.5">
-            <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">🍵</span>
-            <h2 class="font-heading font-semibold text-slate-900">เพิ่มเมนูใหม่</h2>
+            <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">📦</span>
+            <h2 class="font-heading font-semibold text-slate-900">เพิ่มวัตถุดิบ / จัดการหมวดหมู่</h2>
           </div>
           <div class="p-5 bg-slate-50/60 space-y-4">
-            <p class="text-xs text-slate-500">เพิ่มเมนูพร้อมเลือกวัตถุดิบในสูตรได้เลย — เลือกได้ว่าจะให้แสดงในหน้ากรอกจำนวนขายหรือไม่</p>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อเมนู <span class="text-red-400">*</span></label>
-                <input id="newRecipeName" type="text" placeholder="เช่น น้ำแตงโม" class="input-base input-sm" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">ขนาด/รายละเอียด</label>
-                <input id="newRecipeSize" type="text" placeholder="เช่น 16oz หรือ 1 แก้ว" class="input-base input-sm" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">หมวดหมู่</label>
-                <select id="newRecipeCategory" class="input-base input-sm">
-                  <option value="">เลือกหมวด</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- ส่วนผสม: เลือกวัตถุดิบจาก <select> ปกติ ไม่ใช้ dropdown กำหนดเอง -->
-            <div class="bg-white border border-slate-200 rounded-xl p-4">
-              <label class="block text-xs font-bold text-accent-700 mb-2">ส่วนผสม (วัตถุดิบในสูตร)</label>
-              <div id="newRecipeIngList" class="space-y-2 mb-2"></div>
-              <div class="flex gap-2 items-end flex-wrap">
-                <div class="flex-1 min-w-[150px]">
-                  <label class="block text-[10px] text-slate-400 mb-0.5">เลือกวัตถุดิบ</label>
-                  <select id="newIngSelect" class="input-base input-sm">
-                    <option value="">เลือกวัตถุดิบ…</option>
-                  </select>
-                </div>
-                <div class="w-24">
-                  <label class="block text-[10px] text-slate-400 mb-0.5">ปริมาณ</label>
-                  <input id="newIngQty" type="number" min="0" step="any" placeholder="0" class="input-base input-sm font-num">
-                </div>
-                <div class="w-20">
-                  <label class="block text-[10px] text-slate-400 mb-0.5">หน่วย</label>
-                  <select id="newIngUnit" class="input-base input-sm">
-                    <option value="g">g</option>
-                    <option value="oz">oz</option>
-                  </select>
-                </div>
-                <button id="addNewIngBtn" type="button" class="bg-accent-50 text-accent-700 hover:bg-accent-100 font-semibold text-xs rounded-lg px-3 h-9 transition shrink-0">+ เพิ่ม</button>
-              </div>
-            </div>
-
-            <!-- แสดงในหน้ากรอกจำนวนขายหรือไม่ -->
-            <label class="flex items-center gap-2.5 bg-white border border-slate-200 rounded-xl px-4 py-3 cursor-pointer">
-              <input id="newRecipeShowInSales" type="checkbox" checked class="w-4 h-4 accent-accent-600">
-              <span class="text-sm text-slate-700">แสดงเมนูนี้ในหน้ากรอกจำนวนขาย</span>
-            </label>
-
-            <div class="flex items-center gap-3">
-              <button id="saveNewRecipeBtn" class="bg-accent-600 hover:bg-accent-700 text-white font-semibold text-sm rounded-lg px-5 h-10 transition">
-                + บันทึกเมนู
-              </button>
-              <span class="text-xs text-slate-400">แก้ไขสูตรเพิ่มเติมได้ที่แท็บ "แก้ไขสูตร"</span>
-            </div>
+            <p class="text-xs text-slate-500">เพิ่มเมนูใหม่ทำได้ที่แท็บ "แก้ไขสูตร" — แท็บนี้สำหรับเพิ่มวัตถุดิบเข้าระบบและจัดเรียงหมวดหมู่เท่านั้น</p>
 
             <!-- เพิ่มวัตถุดิบใหม่ (พับได้) -->
             <div class="bg-white border border-slate-200 rounded-xl overflow-hidden mt-2">
@@ -366,9 +358,12 @@
         </div>
 
                 <div id="adminTabRecipe" class="admin-tab-panel">
-          <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2.5">
-            <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">📝</span>
-            <h2 class="font-heading font-semibold text-slate-900">แก้ไขสูตรเมนู</h2>
+          <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between gap-2.5">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold font-num flex items-center justify-center shrink-0">📝</span>
+              <h2 class="font-heading font-semibold text-slate-900">แก้ไขสูตรเมนู</h2>
+            </div>
+            <button id="addRecipeCardBtn" type="button" class="bg-accent-600 hover:bg-accent-700 text-white font-semibold text-xs sm:text-sm rounded-lg px-3.5 h-9 transition shrink-0">+ เพิ่มเมนูใหม่</button>
           </div>
           <div class="p-5 pb-3 bg-slate-50/60 space-y-3">
             <p class="text-xs text-slate-500">แก้ชื่อเมนู ขนาด หรือรายการวัตถุดิบ+ปริมาณในสูตรได้โดยตรง — แก้แล้วบันทึกอัตโนมัติ</p>
@@ -486,7 +481,7 @@
       </section>
 
       <!-- แถบค้นหา + ความคืบหน้า -->
-      <section class="bg-white border border-slate-200 rounded-xl px-4 py-3.5 sticky top-[64px] z-20 space-y-3">
+      <section id="stickySearchSection" class="bg-white border border-slate-200 rounded-xl px-4 py-3.5 sticky top-[64px] z-20 space-y-3">
         <div class="flex items-center gap-2">
           <input id="materialSearch" type="text" placeholder="ค้นหาวัตถุดิบ เช่น ไซรัป, แก้ว, TD" class="input-base">
           <button id="clearAllBtn" class="shrink-0 text-xs font-semibold text-slate-500 hover:text-red-600 border border-slate-300 hover:border-red-300 rounded-lg px-3 h-12 transition">
@@ -511,8 +506,9 @@
             <span class="text-slate-400 text-[11px]">แตะเพื่อเปิด/ปิด</span>
           </summary>
           <div class="border-t border-slate-100">
-            <div class="px-5 pt-3 pb-1 flex items-center justify-between">
+            <div class="px-5 pt-3 pb-1 flex items-center justify-between gap-2">
               <button id="frontMenuSortBtn" class="text-[11px] font-semibold text-slate-400 hover:text-accent-600 transition px-2 py-1 rounded-lg hover:bg-accent-50 border border-slate-200">▲▼ จัดเรียงเมนู</button>
+              <button id="frontMenuSummaryBtn" class="text-[11px] font-semibold text-accent-700 hover:text-accent-800 transition px-2 py-1 rounded-lg bg-accent-50 border border-accent-200">📋 สรุปยอดที่กรอก</button>
             </div>
             <div class="px-5 pt-4 pb-2 flex items-center justify-between gap-2">
               <p class="text-xs text-slate-500">กรอกจำนวนแก้วที่ขายของแต่ละเมนู ระบบจะคำนวณยอดวัตถุดิบที่ควรใช้ไปให้อัตโนมัติ ไม่ต้องคำนวณเอง</p>
@@ -591,41 +587,12 @@
 <script>
 
 // กัน uncaught error / promise rejection ไม่ให้ทำให้ Safari ค้างหรือรีโหลดเอง
-// + log แบบถาวรบนหน้าจอ เพื่อ debug บน iPad ที่ไม่มี Mac ต่อ Web Inspector
-window._debugLogs = [];
-// กู้ log ของรอบก่อนหน้า (ถ้ามี) ก่อนเริ่ม log ใหม่ — ช่วยดู log ก่อนหน้าได้แม้ Safari kill tab แบบฉับพลัน
-try {
-  const saved = sessionStorage.getItem('_debugLogsBeforeReload');
-  if (saved) {
-    const arr = JSON.parse(saved);
-    if (Array.isArray(arr) && arr.length) {
-      window._debugLogs = arr.concat(['--- หน้าเว็บโหลดใหม่ ณ จุดนี้ (' + new Date().toLocaleTimeString() + ') ---']);
-    }
-  }
-} catch(_){}
-function _appendDebugLog(msg){
-  window._debugLogs.push(new Date().toLocaleTimeString() + ' — ' + msg);
-  if (window._debugLogs.length > 80) window._debugLogs.shift();
-  // เซฟลง sessionStorage ทันทีทุกครั้ง กัน Safari kill tab แบบไม่ทัน beforeunload
-  try { sessionStorage.setItem('_debugLogsBeforeReload', JSON.stringify(window._debugLogs)); } catch(_){}
-  try {
-    const panel = document.getElementById('debugLogPanel');
-    if (panel && panel.style.display !== 'none') {
-      panel.textContent = window._debugLogs.join('\n');
-      panel.scrollTop = panel.scrollHeight;
-    }
-  } catch(_){}
-}
 window.addEventListener('error', function(e){
-  const msg = 'ERROR: ' + (e.error ? (e.error.message + ' @ ' + (e.error.stack||'').split('\n')[1]) : e.message);
   console.error('Uncaught error:', e.error || e.message);
-  _appendDebugLog(msg);
   e.preventDefault();
 });
 window.addEventListener('unhandledrejection', function(e){
-  const msg = 'REJECTION: ' + (e.reason && e.reason.message ? e.reason.message : e.reason);
   console.error('Unhandled promise rejection:', e.reason);
-  _appendDebugLog(msg);
   e.preventDefault();
 });
 
@@ -1190,17 +1157,39 @@ function todayDateStr(){
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
+function getCurrentBranch(){
+  // ดึง branch ที่เลือกอยู่ตอนนั้น เพื่อบันทึก carry ลง column ที่ถูก
+  try { return (document.getElementById('branchSelect') || {}).value || ''; } catch(_){ return ''; }
+}
+
 function materialToRow(mat){
   const qf = mat.quickFill || {};
-  return {
+  const branch = getCurrentBranch();
+  // ใช้หน่วยกลาง (base) สำหรับ column big_unit/ratio เสมอ ไม่ใช่หน่วยที่ถูก override ตาม branch
+  // (mat.bigUnit/mat.ratio ตอนนี้อาจเป็นค่าที่ apply ตาม branch แล้วจาก applyBranchCarry)
+  const baseBigUnit = mat._baseBigUnit !== undefined ? mat._baseBigUnit : mat.bigUnit;
+  const baseRatio = mat._baseRatio !== undefined ? mat._baseRatio : mat.ratio;
+  const row = {
     id: mat.id, name: mat.name, category: mat.category,
-    big_unit: mat.bigUnit, small_unit: mat.smallUnit,
-    ratio: mat.ratio, carry: mat.carry,
+    big_unit: baseBigUnit, small_unit: mat.smallUnit,
+    ratio: baseRatio, carry: mat.carry,
     sub_unit: mat.subUnit || null, sub_ratio: mat.subRatio || null,
     no_fraction: !!mat.noFraction, fast_moving: !!mat.fastMoving,
     quick_fill_sizes: mat.quickFill === null ? [] : (qf.sizes && qf.sizes.length ? qf.sizes : null),
+    unit_override: mat.unitOverride || null,
     updated_at: new Date().toISOString(),
   };
+  // บันทึก carry แยกตาม branch ด้วย
+  if (branch.includes('แพชชั่น') || branch.includes('passion')) {
+    row.carry_passion = mat.carry;
+  } else if (branch.includes('โลตัส') || branch.includes('lotus')) {
+    row.carry_lotus = mat.carry;
+  } else {
+    // ถ้าไม่รู้ branch บันทึกทั้งสองเผื่อไว้
+    row.carry_passion = mat.carry;
+    row.carry_lotus = mat.carry;
+  }
+  return row;
 }
 
 async function seedMaterialsIfEmpty(){
@@ -1218,10 +1207,43 @@ async function seedMaterialsIfEmpty(){
   } catch (e) { console.error('seedMaterialsIfEmpty failed', e); }
 }
 
+let _materialsDBRows = null; // เก็บ raw rows จาก DB ไว้ apply ซ้ำตอนเปลี่ยน branch
+
+function applyBranchCarry(branch){
+  if (!_materialsDBRows) return;
+  const branchKey = branch.includes('แพชชั่น') || branch.includes('passion') ? 'passion'
+                   : branch.includes('โลตัส') || branch.includes('lotus') ? 'lotus'
+                   : null;
+  _materialsDBRows.forEach(r => {
+    const mat = materialById(r.id);
+    if (!mat) return;
+    if (branchKey === 'passion') {
+      mat.carry = r.carry_passion != null ? Number(r.carry_passion) : Number(r.carry);
+    } else if (branchKey === 'lotus') {
+      mat.carry = r.carry_lotus != null ? Number(r.carry_lotus) : Number(r.carry);
+    } else {
+      mat.carry = Number(r.carry);
+    }
+
+    // apply หน่วยเฉพาะสาขา (bigUnit + ratio) ถ้ามีตั้งค่าไว้ — smallUnit คงเดิมเสมอ (ค่าที่เก็บ DB เป็นหน่วยเศษเดียวกันทุกสาขา)
+    // เก็บหน่วยกลาง (base) ไว้ครั้งแรกก่อนโดนทับ เผื่อสาขาที่ไม่มี override ต้องใช้กลับ
+    if (mat._baseBigUnit === undefined) { mat._baseBigUnit = mat.bigUnit; mat._baseRatio = mat.ratio; mat._baseSetAt = mat._baseSetAt || 0; }
+    const override = r.unit_override && branchKey ? r.unit_override[branchKey === 'passion' ? 'สาขาแพชชั่นระยอง' : 'สาขาโลตัสระยอง'] : null;
+    if (override && override.bigUnit && override.ratio) {
+      mat.bigUnit = override.bigUnit;
+      mat.ratio = Number(override.ratio);
+    } else {
+      mat.bigUnit = mat._baseBigUnit;
+      mat.ratio = mat._baseRatio;
+    }
+  });
+}
+
 async function loadMaterialsFromDB(){
   try {
     const rows = await sb('materials?select=*');
     if (!rows) return;
+    _materialsDBRows = rows; // เก็บไว้ใช้ซ้ำตอนเปลี่ยน branch
     const toBackfill = [];
     const dbIds = new Set(rows.map(r => r.id));
     rows.forEach(r => {
@@ -1249,7 +1271,15 @@ async function loadMaterialsFromDB(){
       mat.subRatio  = (hardcoded && hardcoded.subRatio)   ? hardcoded.subRatio  : (r.sub_ratio ? Number(r.sub_ratio) : undefined);
 
       mat.carry = Number(r.carry);
+      // โหลด carry ตาม branch ที่เลือกอยู่ (ถ้ามี column แยก branch แล้ว)
+      const curBranch = getCurrentBranch();
+      if (curBranch.includes('แพชชั่น') || curBranch.includes('passion')) {
+        if (r.carry_passion != null) mat.carry = Number(r.carry_passion);
+      } else if (curBranch.includes('โลตัส') || curBranch.includes('lotus')) {
+        if (r.carry_lotus != null) mat.carry = Number(r.carry_lotus);
+      }
       mat.noFraction = !!r.no_fraction; mat.fastMoving = !!r.fast_moving;
+      mat.unitOverride = r.unit_override || null;
 
       // ถ้า DB มีค่าผิด ให้ backfill unit ที่ถูกต้องกลับขึ้น DB ด้วย
       if (hardcoded && (r.small_unit !== mat.smallUnit || Number(r.ratio) !== mat.ratio)) {
@@ -1296,11 +1326,28 @@ async function upsertMaterialSilent(mat){
 async function upsertMaterial(mat){
   setSyncStatus('syncing');
   try {
+    // ดึงค่า big_unit/ratio ล่าสุดจาก DB ก่อนบันทึกทับ กัน cache เก่า (_baseBigUnit/_baseRatio)
+    // จากเครื่อง/แท็บอื่นที่เปิดค้างไว้นานทับค่าที่เพิ่งถูกแก้จากเครื่องอื่นโดยไม่ตั้งใจ
+    // (เกิดขึ้นได้เมื่อมีคนแก้หน่วยจากเครื่องหนึ่ง แล้วอีกเครื่องที่เปิดค้างไปแก้ field อื่นทีหลัง)
+    try {
+      const fresh = await sb(`materials?id=eq.${encodeURIComponent(mat.id)}&select=big_unit,ratio,updated_at`);
+      if (fresh && fresh[0] && fresh[0].updated_at) {
+        const dbUpdatedAt = new Date(fresh[0].updated_at).getTime();
+        const localBaseSetAt = mat._baseSetAt || 0;
+        // ถ้า DB มีการอัปเดตหลังจากที่เรา cache ค่า base ไว้ แปลว่ามีคนอื่นแก้ไปแล้ว ให้ใช้ค่าจาก DB แทน cache เก่า
+        if (dbUpdatedAt > localBaseSetAt) {
+          mat._baseBigUnit = fresh[0].big_unit;
+          mat._baseRatio = Number(fresh[0].ratio);
+        }
+      }
+    } catch(_){ /* ถ้าดึงไม่ได้ก็ใช้ค่าที่มีอยู่ตามปกติ ไม่ block การบันทึก */ }
+
     await sb('materials?on_conflict=id', {
       method: 'POST',
       body: JSON.stringify([materialToRow(mat)]),
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
     });
+    mat._baseSetAt = Date.now();
     setSyncStatus('online');
   } catch (e) { console.error('upsertMaterial failed', e); setSyncStatus('error', 'upsertMaterial: ' + e.message); }
 }
@@ -1356,23 +1403,33 @@ function cleanupStaleRecipeIngredients(){
 async function loadCarryForward(branch){
   const today = todayDateStr();
   try {
-    // โหลด received และ pos_sale ด้วย เพื่อ fallback กรณีไม่ได้นับจริง
     const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${today}&select=material_id,actual_big,actual_small,received,pos_sale,note,count_date&order=count_date.desc,id.desc`);
     if (!rows) return;
+
+    // สาขาที่ยังไม่มีประวัติเลย → reset carry ทุกตัวเป็น 0 ก่อน
+    // กันไม่ให้ carry ของสาขาอื่นค้างอยู่ในหน่วยความจำ
+    const hasBranchHistory = rows.length > 0;
+    if (!hasBranchHistory) {
+      MATERIALS.forEach(m => { m.carry = 0; m.carryExpr = null; });
+      return;
+    }
+
     // สำหรับแต่ละ material: หา record ที่นับจริง (actual_big > 0) ก่อน
-    // ถ้าไม่มี ให้ใช้ record ล่าสุดและคำนวณ carry จาก received/pos_sale
+    // วัตถุดิบที่ไม่มีประวัติในสาขานี้เลย → ให้ carry = 0 เช่นกัน
     const byMat = {};
     rows.forEach(r => {
       if (!byMat[r.material_id]) byMat[r.material_id] = [];
       byMat[r.material_id].push(r);
     });
+
+    // reset ทุกตัวก่อน แล้วค่อย apply เฉพาะตัวที่มีประวัติใน branch นี้
+    MATERIALS.forEach(m => { m.carry = 0; m.carryExpr = null; });
+
     Object.entries(byMat).forEach(([matId, matRows]) => {
       const mat = materialById(matId);
       if (!mat) return;
-      // หา record ที่มีการนับจริง (actual_big > 0 หรือ actual_small > 0)
       const counted = matRows.find(r => Number(r.actual_big) > 0 || Number(r.actual_small) > 0);
-      const latest  = matRows[0]; // record ล่าสุดสุด (อาจไม่ได้นับ)
-      // ถ้า record ล่าสุดนับแล้วได้ 0 ทั้งคู่ (ตั้งใจกรอก 0) ให้ใช้ 0 ไม่ใช้ counted เก่า
+      const latest  = matRows[0];
       const latestIsExplicitZero = latest && Number(latest.actual_big) === 0 && Number(latest.actual_small) === 0
         && counted && counted.count_date < latest.count_date;
       const useRow  = latestIsExplicitZero ? latest : (counted || latest);
@@ -1613,6 +1670,19 @@ function formatAsBigSmall(mat, totalSmall){
   return txt;
 }
 
+// สำหรับครีมเทียม/นมจืด: แสดงยอด "ก่อนถูกหักจากการตีครีมน้ำคาปู" ในวงเล็บใต้ยกมาเมื่อวาน
+// เพื่อให้พนักงานเช็คย้อนกลับได้ว่าทำไมยอดยกมาถึงน้อยกว่าที่คาดไว้
+function carryBeforeCreditHint(mat){
+  if (mat.id !== 'creamer' && mat.id !== 'evapmilk') return '';
+  const ri = rawInputs[mat.id] || {};
+  const creditBig = ri.creditBig || 0;
+  const creditSmall = ri.creditSmall || 0;
+  if (!creditBig && !creditSmall) return '';
+  // ยอดก่อนหัก = ยอดยกมาปัจจุบัน (หลังหักแล้ว) + เครดิตที่ถูกหักออกไป
+  const beforeSmall = mat.carry + creditBig * mat.ratio + creditSmall;
+  return ` <span class="text-[10px] text-blue-500 font-num">(ก่อนตีครีมคาปู ${formatAsBigSmall(mat, beforeSmall)})</span>`;
+}
+
 function computeRecord(mat, { received, actualBig, actualSmall, posSale, note }){
   const carrySmall = mat.carry;
   const receivedSmall = received * mat.ratio;
@@ -1691,6 +1761,7 @@ async function activateBranch(branch){
   branchModal.classList.add('hidden');
 
   loadMenuRefills(); // โหลดยอดรีฟิลที่บันทึกไว้
+  applyBranchCarry(branch); // apply carry ที่ถูกต้องตาม branch ก่อน
   setSyncStatus('syncing');
   try {
     await loadCarryForward(branch);
@@ -1699,13 +1770,12 @@ async function activateBranch(branch){
     setSyncStatus('online');
   } catch (e) { console.error(e); setSyncStatus('error'); }
 
-  applyRecipeUsageToMaterials(); // คำนวณ POS จากยอดขายเมนูที่โหลดมาก่อน render
+  applyRecipeUsageToMaterials();
   renderFastMoving('');
   renderSlowMoving('');
   renderCategoryChips();
   renderFrontMenuChips();
-  renderFrontMenuList(''); // render พร้อมข้อมูล menuSales ที่ครบแล้ว
-  renderTable();
+  renderFrontMenuList('');
   startGoogleSheetsPoll();
 }
 
@@ -1797,7 +1867,7 @@ document.getElementById('closeAdminBtn').addEventListener('click', () => {
   adminModal.classList.add('hidden');
 });
 
-const ADMIN_TABS = ['audit', 'menu', 'addmenu', 'edit', 'recipe', 'borrow', 'past', 'export'];
+const ADMIN_TABS = ['audit', 'restock', 'menu', 'addmenu', 'edit', 'recipe', 'borrow', 'past', 'export'];
 
 function showAdminTab(tab){
   ADMIN_TABS.forEach(t => {
@@ -1812,12 +1882,29 @@ function showAdminTab(tab){
       btn.classList.toggle('text-slate-400', !active);
     }
   });
-  if (tab === 'addmenu') {
-    // defer เล็กน้อยให้ tab transition (display:block) เสร็จก่อน ค่อย populate
+  // Lazy render — render แต่ละแท็บเมื่อเปิดครั้งแรกเท่านั้น
+  if (tab === 'audit') {
+    setTimeout(() => { try { renderTable(); } catch(_){} }, 30);
+  }
+  if (tab === 'restock') {
+    setTimeout(() => { try { renderRestockList(document.getElementById('restockSearch') ? document.getElementById('restockSearch').value : ''); } catch(_){} }, 30);
+  }
+  if (tab === 'menu') {
+    setTimeout(() => { try { renderMenuList(menuSearchEl ? menuSearchEl.value : ''); } catch(_){} }, 30);
+  }
+  if (tab === 'edit') {
     setTimeout(() => {
-      try { if (window.populateNewRecipeCategory) window.populateNewRecipeCategory(); } catch(_){}
-      try { if (window._renderNewRecipeIngList) window._renderNewRecipeIngList(); } catch(_){}
-      try { if (window.populateNewIngSelect) window.populateNewIngSelect(); } catch(_){}
+      try { renderEditList(document.getElementById('editSearch') ? document.getElementById('editSearch').value : ''); } catch(_){}
+    }, 30);
+  }
+  if (tab === 'recipe') {
+    setTimeout(() => {
+      try { renderRecipeEditList(recipeEditSearchEl ? recipeEditSearchEl.value : ''); } catch(_){}
+      try { recipeCategoryOptionsHTML && renderRecipeCatList && renderRecipeCatList(); } catch(_){}
+    }, 30);
+  }
+  if (tab === 'addmenu') {
+    setTimeout(() => {
       try { populateNewCategorySelect(); } catch(_){}
     }, 30);
   }
@@ -1828,6 +1915,10 @@ document.querySelectorAll('.admin-tab-btn').forEach(btn => {
 });
 showAdminTab('audit');
 
+document.getElementById('adminTabEdit').addEventListener('click', (e) => {
+  if (e.target.closest('[data-jumptopast]')) showAdminTab('past');
+});
+
 document.getElementById('pinUnlockBtn').addEventListener('click', () => {
   const val = document.getElementById('pinInput').value.trim();
   const msg = document.getElementById('pinMsg');
@@ -1836,15 +1927,12 @@ document.getElementById('pinUnlockBtn').addEventListener('click', () => {
     document.getElementById('backOfficeWrap').classList.remove('hidden');
     document.getElementById('pinGateWrap').classList.add('hidden');
     msg.textContent = '';
-    // เพิ่งสร้าง DOM ของส่วนลับตอนปลดล็อกเท่านั้น ไม่ใช่ตั้งแต่โหลดหน้า
-    renderMenuList(menuSearchEl.value);
-    renderEditList(editSearchEl.value);
-    renderRecipeEditList(recipeEditSearchEl.value);
+    // ไม่ render ทุกอย่างพร้อมกันตอนปลดล็อก — แต่ละแท็บจะ render เมื่อเปิดเท่านั้น (lazy)
+    showAdminTab('audit'); // เปิด audit tab ซึ่งจะ trigger renderTable() อัตโนมัติ
     if (pendingFlaggedJump) {
       pendingFlaggedJump = false;
       statusFilterEl.value = 'flagged';
       showAdminTab('audit');
-      renderTable();
     }
   } else {
     msg.textContent = 'รหัสไม่ถูกต้อง';
@@ -1977,7 +2065,7 @@ function materialCardHTML(mat){
       </div>
       <span id="dot_${mat.id}" class="w-2 h-2 rounded-full ${touched ? 'bg-green-500' : 'bg-slate-300'} shrink-0 mt-1.5"></span>
     </div>
-    <p class="text-[11px] text-slate-400 mb-2 -mt-1">ยกมาเมื่อวาน: <span class="font-num font-semibold text-slate-600">${formatAsBigSmall(mat, mat.carry)}</span>${mat.carryExpr && mat.carryExpr.includes('+') ? ` <span class="text-[10px] text-slate-400 font-num">(${mat.carryExpr})</span>` : ''}</p>
+    <p class="text-[11px] text-slate-400 mb-2 -mt-1">ยกมาเมื่อวาน: <span class="font-num font-semibold text-slate-600">${formatAsBigSmall(mat, mat.carry)}</span>${mat.carryExpr && mat.carryExpr.includes('+') ? ` <span class="text-[10px] text-slate-400 font-num">(${mat.carryExpr})</span>` : ''}${carryBeforeCreditHint(mat)}</p>
     <div class="grid ${gridCols} gap-1.5">
       <div>
         <label class="block text-[10px] text-slate-400 mb-0.5">รับเข้า (${mat.bigUnit})</label>
@@ -2163,6 +2251,9 @@ function recomputeMaterialLocal(id){
     records[id].reviewed = !!ri.reviewed;
     records[id].reviewedAt = ri.reviewedAt || '';
     records[id].reviewedNote = ri.reviewedNote || '';
+    // เก็บ expression ดิบไว้แสดงในตาราง Audit (เช่น "500+201") เพื่อให้เช็คย้อนกลับได้ว่ายอดมาจากการบวกอะไร
+    records[id].actualBigExpr = hasExpr(ri.actualBig) ? ri.actualBig : null;
+    records[id].actualSmallExpr = hasExpr(ri.actualSmall) ? ri.actualSmall : null;
   }
 }
 
@@ -2459,6 +2550,46 @@ const recipeEditSearchEl = document.getElementById('recipeEditSearch');
 const recipeEditListWrap = document.getElementById('recipeEditListWrap');
 const recipeSaveTimers = {};
 
+/* ===========================================================
+   เพิ่มเมนูใหม่ — สร้างการ์ดเปล่าเข้าหมวด "เมนูอื่นๆ" ทันที แล้วโฟกัสช่องชื่อ
+   ใช้ pattern เดียวกับการแก้ไขสูตรปกติ (debounce save 600ms) ไม่มีฟอร์มแยก
+=========================================================== */
+document.getElementById('addRecipeCardBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('addRecipeCardBtn');
+  btn.disabled = true;
+  const id = 'custom_' + Date.now();
+  const recipe = { id, name: 'เมนูใหม่', size: '', category: 'เมนูอื่นๆ', ingredients: [], hideFromSales: false };
+  RECIPES.push(recipe);
+
+  setSyncStatus('syncing');
+  try {
+    await upsertRecipe(recipe);
+    setSyncStatus('online');
+  } catch (e) {
+    console.error('addRecipeCard failed', e);
+    RECIPES.splice(RECIPES.findIndex(r => r.id === id), 1);
+    setSyncStatus('error', 'addRecipeCard: ' + e.message);
+    btn.disabled = false;
+    showToast('เพิ่มเมนูไม่สำเร็จ: ' + (e.message || e), 'warn');
+    return;
+  }
+  btn.disabled = false;
+
+  // เคลียร์ตัวกรองค้นหา เพื่อให้เห็นการ์ดใหม่แน่นอน (อยู่หมวด "เมนูอื่นๆ")
+  recipeEditSearchEl.value = '';
+  renderRecipeEditList('');
+  populateCategoryFilter();
+  refreshCategoryDatalist();
+
+  // เลื่อนจอไปหาการ์ด แล้วโฟกัส + select ข้อความช่องชื่อให้พิมพ์ทับได้ทันที
+  setTimeout(() => {
+    const card = document.getElementById('recipeedit_' + id);
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const nameInput = recipeEditListWrap.querySelector(`input[data-recipeid="${id}"][data-recipefield="name"]`);
+    if (nameInput) { nameInput.focus(); nameInput.select(); }
+  }, 80);
+});
+
 function materialOptionsHTML(selectedId){
   return categories().map(cat => {
     const items = MATERIALS.filter(m => m.category === cat);
@@ -2485,24 +2616,47 @@ function recipeIngredientRowHTML(recipe, idx){
   </div>`;
 }
 
+function recipeCategoryOptionsHTML(selectedCat){
+  const cats = recipeCategories();
+  const opts = cats.map(c => `<option value="${c}" ${c === selectedCat ? 'selected' : ''}>${c}</option>`).join('');
+  const hasSelected = cats.includes(selectedCat);
+  return opts + (hasSelected ? '' : `<option value="${selectedCat}" selected>${selectedCat}</option>`);
+}
+
 function recipeEditRowHTML(recipe){
   return `
   <div class="border border-slate-200 rounded-lg p-3 bg-white" id="recipeedit_${recipe.id}">
     <div class="grid grid-cols-2 gap-1.5 mb-2">
       <div>
         <label class="block text-[10px] text-slate-400 mb-0.5">ชื่อเมนู</label>
-        <input type="text" value="${recipe.name}" data-recipeid="${recipe.id}" data-recipefield="name" class="input-base input-sm !h-9 !px-2 text-xs">
+        <input type="text" value="${recipe.name}" data-recipeid="${recipe.id}" data-recipefield="name" class="input-base input-sm !h-9 !px-2 text-xs" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
       </div>
       <div>
         <label class="block text-[10px] text-slate-400 mb-0.5">ขนาด</label>
-        <input type="text" value="${recipe.size}" data-recipeid="${recipe.id}" data-recipefield="size" class="input-base input-sm !h-9 !px-2 text-xs">
+        <input type="text" value="${recipe.size}" data-recipeid="${recipe.id}" data-recipefield="size" class="input-base input-sm !h-9 !px-2 text-xs" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      </div>
+    </div>
+    <div class="mb-2">
+      <label class="block text-[10px] text-slate-400 mb-0.5">หมวดหมู่ (เลือกเดิม หรือพิมพ์ใหม่)</label>
+      <div class="flex gap-1.5">
+        <select data-recipeid="${recipe.id}" data-recipefield="categoryselect" class="input-base input-sm !h-9 !px-2 text-xs flex-1 bg-white">
+          ${recipeCategoryOptionsHTML(recipe.category)}
+        </select>
+        <input type="text" placeholder="หรือพิมพ์หมวดใหม่" data-recipeid="${recipe.id}" data-recipefield="category" class="input-base input-sm !h-9 !px-2 text-xs flex-1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
       </div>
     </div>
     <label class="block text-[10px] text-slate-400 mb-1">วัตถุดิบในสูตร</label>
     <div class="space-y-1.5" id="recipeing_${recipe.id}">
       ${recipe.ingredients.map((ing, idx) => recipeIngredientRowHTML(recipe, idx)).join('')}
     </div>
-    <button data-addingredient="${recipe.id}" class="mt-2 text-xs font-semibold text-accent-700 hover:text-accent-800">+ เพิ่มวัตถุดิบในสูตร</button>
+    <div class="flex items-center justify-between mt-2 flex-wrap gap-2">
+      <button data-addingredient="${recipe.id}" class="text-xs font-semibold text-accent-700 hover:text-accent-800">+ เพิ่มวัตถุดิบในสูตร</button>
+      <button data-deleterecipe="${recipe.id}" class="text-xs font-semibold text-red-400 hover:text-red-600">🗑 ลบเมนูนี้</button>
+    </div>
+    <label class="flex items-center gap-2 mt-2 cursor-pointer">
+      <input type="checkbox" ${recipe.hideFromSales ? '' : 'checked'} data-recipeid="${recipe.id}" data-recipefield="showinsales" class="w-3.5 h-3.5 accent-accent-600">
+      <span class="text-[11px] text-slate-500">แสดงในหน้ากรอกจำนวนขาย</span>
+    </label>
     <p id="recipesavemsg_${recipe.id}" class="text-[10px] text-green-600 mt-1"></p>
   </div>`;
 }
@@ -2560,6 +2714,9 @@ recipeEditListWrap.addEventListener('input', (e) => {
   } else if (field === 'size') {
     recipe.size = e.target.value;
     renderMenuList(menuSearchEl.value);
+  } else if (field === 'category') {
+    const trimmed = e.target.value.trim();
+    if (trimmed) recipe.category = trimmed;
   } else if (field === 'ingqty') {
     const idx = parseInt(e.target.dataset.ingidx, 10);
     recipe.ingredients[idx].qty = parseFloat(e.target.value) || 0;
@@ -2574,10 +2731,28 @@ recipeEditListWrap.addEventListener('input', (e) => {
 // บันทึกทันทีตอนออกจากช่อง (blur) ด้วย ไม่รอแค่ debounce เฉยๆ — กันเคสพิมพ์เสร็จแล้วรีบสลับหน้า/ปิดก่อนครบ 600ms ทำให้ข้อมูลไม่ถูกบันทึก
 recipeEditListWrap.addEventListener('change', (e) => {
   const recipeId = e.target.dataset.recipeid;
+  const field = e.target.dataset.recipefield;
   if (!recipeId) return;
   clearTimeout(recipeSaveTimers[recipeId]);
   const recipe = RECIPES.find(r => r.id === recipeId);
-  if (recipe) { upsertRecipe(recipe); flashRecipeSaved(recipeId); }
+  if (!recipe) return;
+
+  if (field === 'categoryselect') {
+    recipe.category = e.target.value;
+    // เคลียร์ช่องพิมพ์หมวดใหม่เพราะเลือกจาก dropdown แล้ว
+    const textInput = recipeEditListWrap.querySelector(`input[data-recipeid="${recipeId}"][data-recipefield="category"]`);
+    if (textInput) textInput.value = '';
+  } else if (field === 'showinsales') {
+    recipe.hideFromSales = !e.target.checked;
+  }
+
+  upsertRecipe(recipe);
+  flashRecipeSaved(recipeId);
+  if (field === 'categoryselect' || field === 'showinsales') {
+    renderMenuList(menuSearchEl.value);
+    try { if (frontMenuSearchEl) renderFrontMenuList(frontMenuSearchEl.value); } catch(_){}
+    if (field === 'categoryselect') renderRecipeEditList(recipeEditSearchEl.value);
+  }
 });
 
 recipeEditListWrap.addEventListener('click', async (e) => {
@@ -2841,6 +3016,129 @@ document.getElementById('clearMenuSalesBtn').addEventListener('click', () => {
 });
 
 /* ===========================================================
+   สรุปยอดขายเมนูที่กรอกไว้ — เช็คตรงกับเอกสารได้ง่าย ไม่ต้องไล่หาทีละการ์ด
+=========================================================== */
+function renderMenuSummary(filterText){
+  const body = document.getElementById('menuSummaryBody');
+  const subtitle = document.getElementById('menuSummarySubtitle');
+  const totalItemsEl = document.getElementById('menuSummaryTotalItems');
+  const totalQtyEl = document.getElementById('menuSummaryTotalQty');
+  if (!body) return;
+  const ft = (filterText || '').trim().toLowerCase();
+
+  const branch = branchSelectEl.value || '';
+  const dateInput = document.getElementById('adminMenuDateInput');
+  const dateLabel = (dateInput && dateInput.value) ? dateInput.value : todayDateStr();
+  subtitle.textContent = `${branch} · ${dateLabel}`;
+
+  const filled = Object.entries(menuSales)
+    .filter(([id, qty]) => Number(qty) > 0)
+    .map(([id, qty]) => ({ recipe: RECIPES.find(r => r.id === id), qty: Number(qty) }))
+    .filter(x => x.recipe && (!ft || x.recipe.name.toLowerCase().includes(ft)));
+
+  if (!filled.length) {
+    body.innerHTML = `<p class="text-sm text-slate-400 text-center py-10">${ft ? 'ไม่พบเมนูที่ค้นหา' : 'ยังไม่ได้กรอกยอดขายเมนูเลย'}</p>`;
+    totalItemsEl.textContent = '0';
+    totalQtyEl.textContent = '0';
+    return;
+  }
+
+  // จัดกลุ่มตามหมวด เรียงตามลำดับหมวดที่ตั้งไว้
+  const cats = recipeCategories();
+  let html = '';
+  let totalQty = 0;
+  cats.forEach(cat => {
+    const items = filled.filter(x => x.recipe.category === cat)
+      .sort((a,b) => (a.recipe.sortOrder||0) - (b.recipe.sortOrder||0));
+    if (!items.length) return;
+    html += `<div class="mb-3">
+      <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">${cat}</p>
+      <div class="space-y-1">
+        ${items.map(x => {
+          totalQty += x.qty;
+          return `<div class="flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-50">
+            <span class="text-sm text-slate-700">${x.recipe.name} <span class="text-slate-400 text-xs">(${x.recipe.size})</span></span>
+            <span class="font-num font-semibold text-accent-700 text-sm">${fmtNum(x.qty)} แก้ว</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+
+  body.innerHTML = html;
+  totalItemsEl.textContent = fmtNum(filled.length);
+  totalQtyEl.textContent = fmtNum(totalQty);
+}
+
+let _scrollYBeforeSummaryModal = 0;
+function openMenuSummaryModal(){
+  // ปิด keyboard ก่อนเปิด modal เพราะ keyboard เปิดค้างจะทำให้ viewport height (vh) บน Safari iPad
+  // คำนวณผิด ทำให้ modal เลื่อนดูไม่สุดรายการ
+  if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  const searchEl = document.getElementById('menuSummarySearch');
+  if (searchEl) searchEl.value = '';
+  renderMenuSummary('');
+  // ล็อกหน้าหลังไม่ให้เลื่อนตาม กัน sticky search bar ทะลุขึ้นมาบัง modal ระหว่างเลื่อนดูสรุป
+  _scrollYBeforeSummaryModal = window.scrollY;
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${_scrollYBeforeSummaryModal}px`;
+  document.body.style.width = '100%';
+  // ซ่อน sticky search section ตรงๆ ด้วย visibility เพราะ position:sticky
+  // สร้าง stacking context ของตัวเองที่บาง browser (โดยเฉพาะ Safari) ทะลุ z-index ของ modal ได้แม้ตั้งสูงแค่ไหนก็ตาม
+  const stickySection = document.getElementById('stickySearchSection');
+  if (stickySection) stickySection.style.visibility = 'hidden';
+  const modal = document.getElementById('menuSummaryModal');
+  // ย้าย modal ไปท้ายสุดของ body ทุกครั้งที่เปิด — กันโดนหลังบ้าน (adminModal ทึบเต็มจอ) บังบน Safari
+  document.body.appendChild(modal);
+  modal.classList.remove('hidden');
+}
+function closeMenuSummaryModal(){
+  document.getElementById('menuSummaryModal').classList.add('hidden');
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.width = '';
+  window.scrollTo(0, _scrollYBeforeSummaryModal);
+  const stickySection = document.getElementById('stickySearchSection');
+  if (stickySection) stickySection.style.visibility = '';
+}
+
+document.getElementById('menuSummarySearch').addEventListener('input', (e) => {
+  renderMenuSummary(e.target.value);
+});
+
+document.getElementById('menuSummaryBtn').addEventListener('click', openMenuSummaryModal);
+document.getElementById('frontMenuSummaryBtn').addEventListener('click', openMenuSummaryModal);
+document.getElementById('closeMenuSummaryBtn').addEventListener('click', closeMenuSummaryModal);
+document.getElementById('menuSummaryModal').addEventListener('click', (e) => {
+  if (e.target.id === 'menuSummaryModal') closeMenuSummaryModal();
+});
+document.getElementById('printMenuSummaryBtn').addEventListener('click', () => {
+  const body = document.getElementById('menuSummaryBody');
+  const subtitle = document.getElementById('menuSummarySubtitle').textContent;
+  const totalItems = document.getElementById('menuSummaryTotalItems').textContent;
+  const totalQty = document.getElementById('menuSummaryTotalQty').textContent;
+  const printWin = window.open('', '_blank');
+  printWin.document.write(`
+    <html><head><title>สรุปยอดขายเมนู</title>
+    <style>
+      body{font-family:sans-serif;padding:24px;}
+      h2{margin-bottom:4px;} p.sub{color:#666;margin-top:0;margin-bottom:16px;}
+      .cat{font-weight:bold;font-size:12px;color:#888;text-transform:uppercase;margin-top:16px;margin-bottom:6px;}
+      .row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;font-size:14px;}
+      .total{margin-top:20px;font-weight:bold;border-top:2px solid #333;padding-top:10px;}
+    </style></head>
+    <body>
+      <h2>📋 สรุปยอดขายเมนู</h2>
+      <p class="sub">${subtitle}</p>
+      ${body.innerHTML.replace(/class="mb-3"/g,'').replace(/class="text-\[11px\][^"]*"/g,'class="cat"').replace(/class="flex items-center justify-between[^"]*"/g,'class="row"').replace(/class="[^"]*"/g,'')}
+      <p class="total">รวม ${totalItems} เมนู · ${totalQty} แก้ว</p>
+    </body></html>
+  `);
+  printWin.document.close();
+  printWin.print();
+});
+
+/* ===========================================================
    จำนวนแก้วที่ขายวันนี้ (หน้าหลัก) — เหมือนกับหลังบ้านแต่ไม่โชว์สูตร/วัตถุดิบ ไม่ต้องผ่านรหัส
 =========================================================== */
 const frontMenuSearchEl = document.getElementById('frontMenuSearch');
@@ -2853,7 +3151,7 @@ function frontMenuCardHTML(recipe){
         <svg width="20" height="14" viewBox="0 0 20 14" fill="none"><circle cx="6" cy="3" r="1.5" fill="#94a3b8"/><circle cx="6" cy="7" r="1.5" fill="#94a3b8"/><circle cx="6" cy="11" r="1.5" fill="#94a3b8"/><circle cx="14" cy="3" r="1.5" fill="#94a3b8"/><circle cx="14" cy="7" r="1.5" fill="#94a3b8"/><circle cx="14" cy="11" r="1.5" fill="#94a3b8"/></svg>
        </div>` : '';
   return `
-  <div data-frontcard="${recipe.id}" class="border border-slate-200 rounded-lg p-3 bg-white transition-shadow">
+  <div data-frontcard="${recipe.id}" data-frontcat="${recipe.category}" class="border border-slate-200 rounded-lg p-3 bg-white transition-shadow">
     ${handle}
     <p class="font-semibold text-slate-900 text-sm leading-snug mb-1.5">${recipe.name} <span class="text-slate-400 font-normal">(${recipe.size})</span></p>
     <label class="block text-[10px] text-slate-400 mb-0.5">จำนวนที่ขายวันนี้ (${recipe.size && !recipe.size.includes('oz') ? recipe.size.replace(/^\d+\s*/, '') || 'แก้ว' : 'แก้ว'})</label>
@@ -2930,11 +3228,16 @@ document.addEventListener('touchmove', e => {
   const y = touch.clientY - _drag.offsetY;
   _drag.ghost.style.top = y + 'px';
 
-  // find card under touch point
-  _drag.ghost.style.display = 'none';
-  const el = document.elementFromPoint(touch.clientX, touch.clientY);
-  _drag.ghost.style.display = '';
-  const targetCard = el && el.closest('[data-frontcard]');
+  // หา card เป้าหมายจาก bounding rect โดยตรง แทน elementFromPoint
+  // (elementFromPoint ไม่เสถียรเพราะ ghost display:none/'' อาจไม่ sync ทัน ทำให้บางครั้งจับ target ผิดหรือไม่เจอเลย)
+  const srcCard = _drag.card;
+  const srcCat = srcCard.dataset.frontcat;
+  let targetCard = null;
+  document.querySelectorAll(`[data-frontcard][data-frontcat="${srcCat}"]`).forEach(c => {
+    if (c === srcCard) return;
+    const r = c.getBoundingClientRect();
+    if (touch.clientY >= r.top && touch.clientY <= r.bottom) targetCard = c;
+  });
   const targetId = targetCard ? targetCard.dataset.frontcard : null;
 
   // show drop indicator
@@ -3019,7 +3322,10 @@ function renderFrontMenuList(filterText){
   const ft = (filterText || '').trim().toLowerCase();
   let html = '';
   recipeCategories().forEach((cat, i) => {
-    const items = RECIPES.filter(r => r.category === cat && !r.hideFromSales && (!ft || r.name.toLowerCase().includes(ft)));
+    const items = RECIPES.filter(r => r.category === cat && !r.hideFromSales && (!ft || r.name.toLowerCase().includes(ft)))
+      .map((r, idx) => ({ r, idx }))
+      .sort((a,b) => (a.r.sortOrder||a.idx) - (b.r.sortOrder||b.idx))
+      .map(x => x.r);
     if (items.length === 0) return;
     html += `
       <details open id="frontcatsec_${i}" class="border border-slate-100 rounded-lg scroll-mt-40 overflow-hidden">
@@ -3376,22 +3682,27 @@ document.getElementById('addMaterialBtn').addEventListener('click', () => {
   MATERIALS.push(mat);
   upsertMaterial(mat);
 
-  renderCategoryChips();
-  renderFastMoving(materialSearchEl.value);
-  renderSlowMoving(materialSearchEl.value);
-  renderTable();
-  renderEditList(document.getElementById('editSearch').value);
-  populateCategoryFilter();
-  refreshCategoryDatalist();
-  populateNewCategorySelect();
-  try { if (window.populateNewIngSelect) window.populateNewIngSelect(); } catch(_){}
-
   msgEl.textContent = `เพิ่ม "${name}" เข้าระบบเรียบร้อย และซิงค์ขึ้นฐานข้อมูลแล้ว`;
   msgEl.className = 'text-sm font-medium text-green-700';
 
   ['newName','newCategory','newBigUnit','newSmallUnit','newRatio','newCarry'].forEach(id2 => {
     document.getElementById(id2).value = '';
   });
+
+  // defer การ render หนักๆ ออกไป ไม่ block main thread พร้อมกันทันที
+  // กัน Safari iPad crash จาก synchronous render ขนาดใหญ่หลายตัวพร้อมกัน
+  populateNewCategorySelect();
+  populateCategoryFilter();
+  refreshCategoryDatalist();
+  setTimeout(() => {
+    renderCategoryChips();
+    renderFastMoving(materialSearchEl.value);
+    renderSlowMoving(materialSearchEl.value);
+  }, 50);
+  setTimeout(() => {
+    renderTable();
+    renderEditList(document.getElementById('editSearch') ? document.getElementById('editSearch').value : '');
+  }, 200);
 });
 
 /* ===========================================================
@@ -3492,8 +3803,38 @@ function editRowHTML(mat){
       </div>
     </div>` : ''}
     <p id="edithint_${mat.id}" class="text-[11px] text-slate-400 mt-1.5">${editHintText(mat)}</p>
+    ${isFrac ? branchUnitOverrideHTML(mat) : ''}
     ${quickFillAdminHTML(mat)}
   </div>`;
+}
+
+function branchUnitOverrideHTML(mat){
+  const ov = mat.unitOverride || {};
+  const passion = ov['สาขาแพชชั่นระยอง'] || {};
+  const lotus = ov['สาขาโลตัสระยอง'] || {};
+  const hasOverride = (passion.bigUnit && passion.ratio) || (lotus.bigUnit && lotus.ratio);
+  return `
+    <details class="mt-2 border border-slate-100 rounded-lg overflow-hidden ${hasOverride ? 'border-accent-200 bg-accent-50/30' : ''}">
+      <summary class="px-2.5 py-1.5 cursor-pointer text-[11px] font-medium text-slate-500 hover:bg-slate-50 list-none flex items-center gap-1">
+        <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
+        ⚙️ หน่วยเฉพาะสาขา ${hasOverride ? '(ตั้งค่าแล้ว)' : '(ถ้าสองสาขาใช้แพ็คคนละขนาด)'}
+      </summary>
+      <div class="px-2.5 pb-2.5 pt-1 space-y-2">
+        <p class="text-[10px] text-slate-400">เว้นว่างไว้ = ใช้หน่วยใหญ่/อัตราแปลงเดียวกับด้านบนทั้งสองสาขา (หน่วยเศษ "${mat.smallUnit}" เหมือนกันเสมอ)</p>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="bg-white border border-slate-200 rounded-lg p-2">
+            <p class="text-[10px] font-semibold text-slate-600 mb-1">☕ สาขาแพชชั่นระยอง</p>
+            <input type="text" placeholder="หน่วยใหญ่ (เว้นว่าง=ไม่แยก)" value="${passion.bigUnit || ''}" data-matid="${mat.id}" data-branchunit="สาขาแพชชั่นระยอง" data-branchunitfield="bigUnit" class="input-base input-sm !h-8 !px-1.5 text-[11px] w-full mb-1">
+            <input type="number" min="0.0001" step="any" placeholder="1 ใหญ่ = กี่ ${mat.smallUnit}" value="${passion.ratio || ''}" data-matid="${mat.id}" data-branchunit="สาขาแพชชั่นระยอง" data-branchunitfield="ratio" class="input-base input-sm !h-8 !px-1.5 font-num text-[11px] w-full">
+          </div>
+          <div class="bg-white border border-slate-200 rounded-lg p-2">
+            <p class="text-[10px] font-semibold text-slate-600 mb-1">🏬 สาขาโลตัสระยอง</p>
+            <input type="text" placeholder="หน่วยใหญ่ (เว้นว่าง=ไม่แยก)" value="${lotus.bigUnit || ''}" data-matid="${mat.id}" data-branchunit="สาขาโลตัสระยอง" data-branchunitfield="bigUnit" class="input-base input-sm !h-8 !px-1.5 text-[11px] w-full mb-1">
+            <input type="number" min="0.0001" step="any" placeholder="1 ใหญ่ = กี่ ${mat.smallUnit}" value="${lotus.ratio || ''}" data-matid="${mat.id}" data-branchunit="สาขาโลตัสระยอง" data-branchunitfield="ratio" class="input-base input-sm !h-8 !px-1.5 font-num text-[11px] w-full">
+          </div>
+        </div>
+      </div>
+    </details>`;
 }
 
 function renderEditList(filterText){
@@ -3645,6 +3986,38 @@ editListWrap.addEventListener('change', (e) => {
 });
 
 editListWrap.addEventListener('input', (e) => {
+  // จัดการช่องหน่วยเฉพาะสาขาแยกต่างหาก (data-branchunit / data-branchunitfield)
+  const branchId = e.target.dataset.matid;
+  const branchKey = e.target.dataset.branchunit;
+  const branchField = e.target.dataset.branchunitfield;
+  if (branchId && branchKey && branchField) {
+    const mat = materialById(branchId);
+    if (!mat) return;
+    if (!mat.unitOverride) mat.unitOverride = {};
+    if (!mat.unitOverride[branchKey]) mat.unitOverride[branchKey] = {};
+    if (branchField === 'bigUnit') {
+      mat.unitOverride[branchKey].bigUnit = e.target.value.trim();
+    } else if (branchField === 'ratio') {
+      const v = parseFloat(e.target.value);
+      mat.unitOverride[branchKey].ratio = v > 0 ? v : undefined;
+    }
+    // ลบ key ออกถ้าทั้งคู่ว่างแล้ว เพื่อไม่ให้ unitOverride รกด้วย object เปล่า
+    const ov = mat.unitOverride[branchKey];
+    if (!ov.bigUnit && !ov.ratio) delete mat.unitOverride[branchKey];
+    if (Object.keys(mat.unitOverride).length === 0) mat.unitOverride = null;
+
+    clearTimeout(editSaveTimers[branchId]);
+    editSaveTimers[branchId] = setTimeout(() => {
+      upsertMaterial(mat);
+      // ถ้าแก้หน่วยของ branch ที่กำลังเปิดอยู่ตอนนี้ ให้ apply ทันทีเพื่อเห็นผลจริง
+      applyBranchCarry(branchSelectEl.value);
+      renderFastMoving(materialSearchEl.value);
+      renderSlowMoving(materialSearchEl.value);
+      renderTable();
+    }, 700);
+    return;
+  }
+
   const id = e.target.dataset.matid;
   const field = e.target.dataset.editfield;
   if (!id || !field || field === 'mode') return;
@@ -3665,6 +4038,8 @@ editListWrap.addEventListener('input', (e) => {
 
   if (field === 'bigUnit') {
     mat.bigUnit = e.target.value;
+    mat._baseBigUnit = e.target.value; // อัปเดต cache กันถูกทับด้วยค่าเก่าตอน applyBranchCarry รอบถัดไป
+    mat._baseSetAt = Date.now();
     if (mat.noFraction) mat.smallUnit = e.target.value;
   } else if (field === 'category') {
     mat.category = e.target.value.trim() || mat.category;
@@ -3680,7 +4055,7 @@ editListWrap.addEventListener('input', (e) => {
     mat.smallUnit = e.target.value;
   } else if (field === 'ratio') {
     const v = parseFloat(e.target.value);
-    if (v > 0) mat.ratio = v;
+    if (v > 0) { mat.ratio = v; mat._baseRatio = v; mat._baseSetAt = Date.now(); } // อัปเดต cache เช่นกัน
     // อัตราส่วนเปลี่ยน -> คำนวณยกมาใหม่จากช่อง เต็ม+เศษ ที่กรอกไว้
     const bigEl = document.querySelector(`[data-matid="${id}"][data-editfield="carryBig"]`);
     const smallEl = document.querySelector(`[data-matid="${id}"][data-editfield="carrySmall"]`);
@@ -3714,6 +4089,10 @@ editListWrap.addEventListener('change', (e) => {
   if (!id || !field || field === 'mode' || field === 'qfmode') return;
   const mat = materialById(id);
   if (!mat) return;
+  // ถ้าแก้หน่วยใหญ่/อัตราแปลงกลาง (ไม่ใช่ branch override) ต้องอัปเดต cache _base ด้วย
+  // ป้องกัน applyBranchCarry รอบถัดไปใช้ค่าเก่าที่ cache ไว้ทับค่าที่เพิ่งแก้ (บั๊กที่ทำให้แก้แล้วรีเฟรชกลับเป็นเดิม)
+  if (field === 'bigUnit') mat._baseBigUnit = mat.bigUnit;
+  if (field === 'ratio') mat._baseRatio = mat.ratio;
   clearTimeout(editSaveTimers[id]);
   upsertMaterial(mat);
   if (field === 'category') renderEditList(editSearchEl.value); // จัดกลุ่มใหม่ตามหมวดที่เปลี่ยน
@@ -3821,7 +4200,7 @@ function renderTable(){
         </td>
         <td class="px-4 py-3 font-num font-semibold text-slate-900">${fmtNum(rec.usedActual)} <span class="text-[11px] font-normal text-slate-400">${mat.smallUnit}</span></td>
         <td class="px-4 py-3">${varianceBadge(rec.variance)}</td>
-        <td class="px-4 py-3 font-num">${formatAsBigSmall(mat, rec.remainSmall)}</td>
+        <td class="px-4 py-3 font-num">${formatAsBigSmall(mat, rec.remainSmall)}${rec.actualBigExpr || rec.actualSmallExpr ? `<br><span class="text-[10px] text-slate-400 font-num">(${[rec.actualBigExpr, rec.actualSmallExpr].filter(Boolean).join(' + ')})</span>` : ''}</td>
         <td class="px-4 py-3 text-xs text-slate-500 max-w-[140px] truncate" title="${rec.note}">${rec.note || '—'}</td>
         <td class="px-4 py-3">${reviewCellHTML(mat, rec)}</td>
       `;
@@ -3874,6 +4253,54 @@ function renderTable(){
 
 catFilterEl.addEventListener('change', renderTable);
 statusFilterEl.addEventListener('change', renderTable);
+
+/* ===========================================================
+   ลิสต์ต้องซื้อ — เรียงยอดคงเหลือน้อย → มาก ของสาขาที่เลือกอยู่
+=========================================================== */
+function getRemainingSmall(mat){
+  // ใช้ logic เดียวกับตาราง Audit: ถ้ามีบันทึกวันนี้ ใช้ยอดคงเหลือที่คำนวณแล้ว
+  // ถ้ายังไม่ได้นับวันนี้ ใช้ยอดยกมา (carry) เป็นค่าประมาณล่าสุดที่มี
+  const rec = records[mat.id];
+  return rec ? rec.remainSmall : mat.carry;
+}
+
+function renderRestockList(filterText){
+  const wrap = document.getElementById('restockListWrap');
+  if (!wrap) return;
+  const ft = (filterText || '').trim().toLowerCase();
+
+  const sorted = MATERIALS
+    .filter(mat => !ft || mat.name.toLowerCase().includes(ft))
+    .map(mat => ({ mat, remain: getRemainingSmall(mat) }))
+    .sort((a, b) => a.remain - b.remain);
+
+  if (!sorted.length) {
+    wrap.innerHTML = `<p class="text-sm text-slate-400 text-center py-10">ไม่พบวัตถุดิบที่ค้นหา</p>`;
+    return;
+  }
+
+  wrap.innerHTML = sorted.map(({ mat, remain }) => {
+    const isNegative = remain < 0;
+    const isLow = !isNegative && remain <= mat.ratio; // เหลือไม่ถึง 1 หน่วยใหญ่ = ใกล้หมด
+    const colorClass = isNegative ? 'text-red-600' : isLow ? 'text-amber-600' : 'text-slate-700';
+    const dotClass = isNegative ? 'bg-red-500' : isLow ? 'bg-amber-500' : 'bg-slate-300';
+    return `
+      <div class="px-5 py-3 flex items-center justify-between gap-3 hover:bg-slate-50 transition-colors">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="w-2 h-2 rounded-full shrink-0 ${dotClass}"></span>
+          <div class="min-w-0">
+            <p class="font-semibold text-slate-900 text-sm truncate">${mat.name}</p>
+            <p class="text-[11px] text-slate-400">${mat.category}</p>
+          </div>
+        </div>
+        <p class="font-num font-semibold text-sm shrink-0 ${colorClass}">${formatAsBigSmall(mat, remain)}</p>
+      </div>`;
+  }).join('');
+}
+
+document.getElementById('restockSearch').addEventListener('input', (e) => {
+  renderRestockList(e.target.value);
+});
 
 /* ===========================================================
    ดูตาราง Audit ย้อนหลัง (อ่านอย่างเดียว ไม่แก้ไขตรงนี้ — ไปแก้ที่แท็บ "ย้อนหลัง" แทน)
@@ -3991,6 +4418,7 @@ function updateStats(){
 =========================================================== */
 const pastInputs = {};
 const pastCarry = {}; // ยกมาสำหรับวันย้อนหลัง
+const pastCarrySourceDate = {}; // วันที่ของแถวที่ pastCarry ดึงมา ใช้ตอนแก้ไข
 const pastDateInputEl = document.getElementById('pastDateInput');
 const pastSearchEl = document.getElementById('pastSearch');
 const pastListWrap = document.getElementById('pastListWrap');
@@ -4016,7 +4444,32 @@ function pastCardHTML(mat){
   <div class="border border-slate-200 rounded-lg p-3 bg-white">
     <p class="font-semibold text-slate-900 text-sm leading-snug">${mat.name}</p>
     <p class="text-[11px] text-slate-400">${mat.noFraction ? `หน่วยนับ: ${mat.bigUnit}` : `1 ${mat.bigUnit} = ${fmtNum(mat.ratio)} ${mat.smallUnit}`}</p>
-    ${pastCarry[mat.id] !== undefined ? `<p class="text-[11px] text-slate-500 mb-2">ยกมา: <span class="font-semibold">${formatAsBigSmall(mat, pastCarry[mat.id])}</span></p>` : '<div class="mb-2"></div>'}
+    ${pastCarry[mat.id] !== undefined ? `
+    <p class="text-[11px] text-slate-500 mb-2 flex items-center gap-1.5 flex-wrap">
+      ยกมา: <span id="pastcarrydisplay_${mat.id}" class="font-semibold">${formatAsBigSmall(mat, pastCarry[mat.id])}</span>
+      <button type="button" data-editpastcarry="${mat.id}" title="แก้ไขยอดยกมา" class="text-slate-300 hover:text-accent-600 shrink-0">
+        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+      ${pastCarrySourceDate[mat.id] ? `<span class="text-[10px] text-slate-400">(นับล่าสุด ${pastCarrySourceDate[mat.id]})</span>` : ''}
+    </p>
+    <div id="pastcarryedit_${mat.id}" class="hidden grid ${mat.noFraction ? 'grid-cols-2' : 'grid-cols-2'} gap-1.5 mb-2 bg-amber-50 border border-amber-200 rounded-lg p-2">
+      <div>
+        <label class="block text-[10px] text-amber-700 mb-0.5">แก้ยกมา — เต็ม (${mat.bigUnit})</label>
+        <input type="number" min="0" step="1" placeholder="0" value="${Math.floor(Math.abs(pastCarry[mat.id]||0) / mat.ratio)}"
+          data-pasteditcarrybig="${mat.id}" class="input-base input-sm !h-8 font-num !px-1.5 text-center">
+      </div>
+      ${mat.noFraction ? '' : `
+      <div>
+        <label class="block text-[10px] text-amber-700 mb-0.5">แก้ยกมา — เศษ (${mat.smallUnit})</label>
+        <input type="number" min="0" step="any" placeholder="0" value="${fmtNum(Math.abs(pastCarry[mat.id]||0) % mat.ratio)}"
+          data-pasteditcarrysmall="${mat.id}" class="input-base input-sm !h-8 font-num !px-1.5 text-center">
+      </div>`}
+      <div class="col-span-2 flex items-center gap-2">
+        <button type="button" data-savepastcarry="${mat.id}" class="text-[11px] font-semibold text-white bg-amber-600 hover:bg-amber-700 rounded px-2.5 py-1">บันทึกยกมา</button>
+        <button type="button" data-cancelpastcarry="${mat.id}" class="text-[11px] font-semibold text-slate-500 hover:text-slate-700">ยกเลิก</button>
+        <span class="text-[10px] text-amber-700">แก้ยอดนับจริงของวันก่อนหน้า</span>
+      </div>
+    </div>` : '<div class="mb-2"></div>'}
     <div class="grid ${gridCols} gap-1.5">
       <div>
         <label class="block text-[10px] text-slate-400 mb-0.5">รับเข้า (${mat.bigUnit})</label>
@@ -4091,6 +4544,7 @@ async function loadPastDate(){
     });
     // โหลดยอดยกมา (วันก่อนหน้า)
     Object.keys(pastCarry).forEach(k => delete pastCarry[k]);
+    Object.keys(pastCarrySourceDate).forEach(k => delete pastCarrySourceDate[k]);
     const priorRows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${date}&select=material_id,actual_big,actual_small,count_date&order=count_date.desc,id.desc`);
     const seen = new Set();
     (priorRows || []).forEach(r => {
@@ -4099,6 +4553,7 @@ async function loadPastDate(){
       const mat = materialById(r.material_id);
       if (!mat) return;
       pastCarry[r.material_id] = (Number(r.actual_big)||0)*mat.ratio + (mat.noFraction?0:(Number(r.actual_small)||0));
+      pastCarrySourceDate[r.material_id] = r.count_date;
     });
     setSyncStatus('online');
   } catch (e) { console.error('loadPastDate failed', e); setSyncStatus('error'); }
@@ -4197,6 +4652,73 @@ pastListWrap.addEventListener('change', (e) => {
   clearTimeout(pastSaveTimers[id]);
   savePastDailyCount(id);
 });
+
+// --- แก้ยอดยกมาโดยตรงจากหน้าย้อนหลัง (เขียนทับยอดนับจริงของวันที่ยอดยกมาอ้างอิงมา) ---
+pastListWrap.addEventListener('click', (e) => {
+  const editBtn = e.target.closest('[data-editpastcarry]');
+  const cancelBtn = e.target.closest('[data-cancelpastcarry]');
+  const saveBtn = e.target.closest('[data-savepastcarry]');
+
+  if (editBtn) {
+    const matId = editBtn.dataset.editpastcarry;
+    const box = document.getElementById('pastcarryedit_' + matId);
+    if (box) box.classList.remove('hidden');
+    return;
+  }
+  if (cancelBtn) {
+    const matId = cancelBtn.dataset.cancelpastcarry;
+    const box = document.getElementById('pastcarryedit_' + matId);
+    if (box) box.classList.add('hidden');
+    return;
+  }
+  if (saveBtn) {
+    const matId = saveBtn.dataset.savepastcarry;
+    saveEditedPastCarry(matId);
+  }
+});
+
+async function saveEditedPastCarry(matId){
+  const mat = materialById(matId);
+  if (!mat) return;
+  const branch = branchSelectEl.value;
+  const sourceDate = pastCarrySourceDate[matId];
+  if (!branch || !sourceDate) {
+    showToast('ไม่พบวันที่อ้างอิงของยอดยกมานี้ แก้ไขไม่ได้', 'warn');
+    return;
+  }
+  const bigEl = pastListWrap.querySelector(`[data-pasteditcarrybig="${matId}"]`);
+  const smallEl = pastListWrap.querySelector(`[data-pasteditcarrysmall="${matId}"]`);
+  const newBig = bigEl ? (parseFloat(bigEl.value) || 0) : 0;
+  const newSmall = smallEl ? (parseFloat(smallEl.value) || 0) : 0;
+  const newCarrySmallTotal = newBig * mat.ratio + (mat.noFraction ? 0 : newSmall);
+
+  setSyncStatus('syncing');
+  try {
+    // เขียนทับยอดนับจริงของ "วันที่ยอดยกมาอ้างอิงมา" (sourceDate) ตรงๆ
+    // เพราะยอดยกมาของวันที่กำลังดูอยู่ คำนวณมาจากยอดนับจริงของวันนั้นเสมอ
+    await sb('daily_counts?on_conflict=branch,count_date,material_id', {
+      method: 'POST',
+      body: JSON.stringify([{
+        branch, count_date: sourceDate, material_id: matId,
+        actual_big: newBig,
+        actual_small: mat.noFraction ? 0 : newSmall,
+        updated_at: new Date().toISOString(),
+      }]),
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    });
+    setSyncStatus('online');
+    pastCarry[matId] = newCarrySmallTotal;
+    const displayEl = document.getElementById('pastcarrydisplay_' + matId);
+    if (displayEl) displayEl.innerHTML = formatAsBigSmall(mat, newCarrySmallTotal);
+    const box = document.getElementById('pastcarryedit_' + matId);
+    if (box) box.classList.add('hidden');
+    showToast(`แก้ยอดยกมา "${mat.name}" เป็น ${formatAsBigSmall(mat, newCarrySmallTotal).replace(/<[^>]+>/g,'')} แล้ว ✓ (บันทึกลงยอดนับจริงวันที่ ${sourceDate})`, 'success');
+  } catch (e) {
+    console.error('saveEditedPastCarry failed', e);
+    setSyncStatus('error', 'saveEditedPastCarry: ' + e.message);
+    showToast('บันทึกไม่สำเร็จ: ' + (e.message || e), 'warn');
+  }
+}
 
 
 /* ===========================================================
@@ -4353,152 +4875,6 @@ document.getElementById('exportBtn').addEventListener('click', async () => {
 });
 
 
-/* ===========================================================
-   เพิ่มเมนูใหม่ (custom recipe)
-=========================================================== */
-(function initAddRecipeForm(){
-  // Populate category dropdown
-  let _recipeCatSig = '';
-  function populateNewRecipeCategory(){
-    const sel = document.getElementById('newRecipeCategory');
-    if (!sel) return;
-    const cats = recipeCategories();
-    if (!cats.length) return; // RECIPES ยังไม่พร้อม ข้ามไปก่อน
-    const sig = cats.join('|');
-    if (sig === _recipeCatSig && sel.options.length > 1) return; // ไม่เปลี่ยน ข้าม
-    _recipeCatSig = sig;
-    // ล้างแล้ว populate ใหม่ทุกครั้ง (ป้องกัน populate ตอน RECIPES ว่าง)
-    const currentVal = sel.value;
-    while (sel.options.length > 1) sel.remove(1); // เก็บ option แรก "เลือกหมวด"
-    cats.forEach(cat => {
-      const opt = document.createElement('option');
-      opt.value = opt.textContent = cat;
-      sel.appendChild(opt);
-    });
-    if (!cats.includes('เมนูอื่นๆ')) {
-      const opt = document.createElement('option');
-      opt.value = opt.textContent = 'เมนูอื่นๆ';
-      sel.appendChild(opt);
-    }
-    // คืนค่าที่เลือกไว้ก่อนหน้า (ถ้ามี)
-    if (currentVal) sel.value = currentVal;
-  }
-
-  // ===== ส่วนผสมของเมนูใหม่ (ingredient picker — ใช้ <select> ธรรมดา ไม่ใช้ custom dropdown) =====
-  let newRecipeIngredients = []; // [{materialId, qty}]
-  let _ingSelectSig = '';
-
-  function populateNewIngSelect(){
-    const sel = document.getElementById('newIngSelect');
-    if (!sel) return;
-    const sorted = MATERIALS.slice().sort((a,b) => a.name.localeCompare(b.name, 'th'));
-    const sig = sorted.map(m => m.id).join('|');
-    if (sig === _ingSelectSig && sel.options.length > 1) return;
-    _ingSelectSig = sig;
-    const currentVal = sel.value;
-    sel.innerHTML = '<option value="">เลือกวัตถุดิบ…</option>' +
-      sorted.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
-    if (currentVal) sel.value = currentVal;
-  }
-  window.populateNewIngSelect = populateNewIngSelect;
-
-  function renderNewRecipeIngList(){
-    const wrap = document.getElementById('newRecipeIngList');
-    if (!wrap) return;
-    if (!newRecipeIngredients.length) {
-      wrap.innerHTML = '<p class="text-xs text-slate-300 italic">ยังไม่มีส่วนผสม (เพิ่มได้ภายหลังที่แท็บแก้ไขสูตร)</p>';
-      return;
-    }
-    wrap.innerHTML = newRecipeIngredients.map((ing, idx) => {
-      const mat = materialById(ing.materialId);
-      const matName = mat ? mat.name : ing.materialId;
-      const unit = (mat && OZ_RECIPE_MATERIALS.has(mat.id)) ? 'oz' : (mat ? mat.smallUnit : 'g');
-      const displayQty = unit === 'oz' ? Math.round((ing.qty/30)*100)/100 : ing.qty;
-      return `<div class="flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2 text-sm">
-        <span class="flex-1 text-slate-700">${matName}</span>
-        <span class="font-num text-slate-500">${displayQty} ${unit}</span>
-        <button type="button" data-delnewing="${idx}" class="text-red-400 hover:text-red-600 text-lg leading-none px-1">×</button>
-      </div>`;
-    }).join('');
-  }
-
-  document.getElementById('addNewIngBtn').addEventListener('click', (e) => {
-    e.preventDefault();
-    const selectEl = document.getElementById('newIngSelect');
-    const qtyEl = document.getElementById('newIngQty');
-    const unitEl = document.getElementById('newIngUnit');
-    const matId = selectEl.value;
-    if (!matId) { alert('กรุณาเลือกวัตถุดิบก่อน'); return; }
-    const mat = materialById(matId);
-    if (!mat) { alert('ไม่พบวัตถุดิบนี้'); return; }
-    const qtyRaw = parseFloat(qtyEl.value) || 0;
-    if (qtyRaw <= 0) { alert('กรุณาระบุปริมาณ'); return; }
-    const unit = unitEl.value;
-    const qty = unit === 'oz' ? Math.round(qtyRaw * 30 * 100) / 100 : qtyRaw;
-    // ถ้ามีวัตถุดิบนี้แล้ว อัปเดตปริมาณ
-    const existing = newRecipeIngredients.find(i => i.materialId === mat.id);
-    if (existing) existing.qty = qty;
-    else newRecipeIngredients.push({ materialId: mat.id, qty });
-    selectEl.value = ''; qtyEl.value = '';
-    renderNewRecipeIngList();
-  });
-
-  document.getElementById('newRecipeIngList').addEventListener('click', (e) => {
-    const delBtn = e.target.closest('[data-delnewing]');
-    if (!delBtn) return;
-    const idx = parseInt(delBtn.dataset.delnewing, 10);
-    newRecipeIngredients.splice(idx, 1);
-    renderNewRecipeIngList();
-  });
-
-  document.getElementById('saveNewRecipeBtn').addEventListener('click', async (ev) => {
-    ev.preventDefault(); ev.stopPropagation();
-    const nameEl = document.getElementById('newRecipeName');
-    const name = nameEl ? nameEl.value.trim() : '';
-    if (!name) { alert('กรุณาระบุชื่อเมนูก่อน'); return; }
-    const sizeEl = document.getElementById('newRecipeSize');
-    const catEl  = document.getElementById('newRecipeCategory');
-    const showEl = document.getElementById('newRecipeShowInSales');
-    const size     = sizeEl ? sizeEl.value.trim() : '';
-    const category = (catEl && catEl.value) ? catEl.value : 'เมนูอื่นๆ';
-    const showInSales = showEl ? showEl.checked : true;
-    const btn = document.getElementById('saveNewRecipeBtn');
-    btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก…';
-    const id = 'custom_' + Date.now();
-    const recipe = { id, name, size, category, ingredients: newRecipeIngredients.slice(), hideFromSales: !showInSales };
-    RECIPES.push(recipe);
-    setSyncStatus('syncing');
-    try {
-      await upsertRecipe(recipe);
-      setSyncStatus('online');
-      showToast('เพิ่มเมนู "' + name + '" แล้ว ✓', 'success');
-      if (nameEl) nameEl.value = '';
-      if (sizeEl) sizeEl.value = '';
-      if (showEl) showEl.checked = true;
-      newRecipeIngredients = [];
-      renderNewRecipeIngList();
-      setTimeout(() => {
-        try { if (recipeEditSearchEl) renderRecipeEditList(recipeEditSearchEl.value || ''); } catch(_){}
-        try { populateCategoryFilter(); } catch(_){}
-        try { refreshCategoryDatalist(); } catch(_){}
-        try { renderMenuList(menuSearchEl ? menuSearchEl.value : ''); } catch(_){}
-        try { if (frontMenuSearchEl) renderFrontMenuList(frontMenuSearchEl.value); } catch(_){}
-      }, 100);
-    } catch(e) {
-      console.error('saveNewRecipe failed', e);
-      RECIPES.splice(RECIPES.findIndex(r => r.id === id), 1);
-      setSyncStatus('error');
-      showToast('บันทึกไม่สำเร็จ: ' + (e.message || e), 'warn');
-    } finally {
-      btn.disabled = false; btn.textContent = '+ บันทึกเมนู';
-    }
-  });
-
-  // expose สำหรับเรียกตอนเปิด tab
-  window._renderNewRecipeIngList = renderNewRecipeIngList;
-  window._populateNewRecipeCategory = populateNewRecipeCategory;
-  window.populateNewRecipeCategory = populateNewRecipeCategory;
-})();
 
 
 /* ===========================================================
@@ -4516,195 +4892,333 @@ function categoryArrayMove(arr, fromIdx, toIdx){
   return arr;
 }
 
-// Touch drag-and-drop ใช้ร่วมกันทั้งหมวดวัตถุดิบและหมวดเมนู
-// preventDefault เฉพาะตอนจับ handle/กำลัง drag จริงๆ เท่านั้น ไม่บล็อก scroll ปกติ
-function bindCategoryDragList(ul, opts){
-  // opts: { itemAttr, handleAttr, getOrder, setOrder, save, rerender }
-  let drag = null;
+let _catDrag = null; // { cat, li, ghost, offsetY, lastTargetCat }
 
-  ul.addEventListener('touchstart', function(e){
-    const handle = e.target.closest('[' + opts.handleAttr + ']');
-    if (!handle) return;
-    e.preventDefault();
-    const li = handle.closest('li[' + opts.itemAttr + ']');
-    if (!li) return;
-    const rect = li.getBoundingClientRect();
-    const ghost = li.cloneNode(true);
-    ghost.style.cssText = 'position:fixed;top:'+rect.top+'px;left:'+rect.left+'px;width:'+rect.width+'px;opacity:0.85;box-shadow:0 6px 20px rgba(0,0,0,0.15);z-index:9999;pointer-events:none;transition:none;border-radius:8px;';
-    document.body.appendChild(ghost);
-    li.style.opacity = '0.3';
-    drag = { cat: li.getAttribute(opts.itemAttr), ghost, li, offsetY: e.touches[0].clientY - rect.top, lastTarget: null };
-  }, { passive: false });
-
-  ul.addEventListener('touchmove', function(e){
-    if (!drag) return;
-    e.preventDefault();
-    const touch = e.touches[0];
-    drag.ghost.style.top = (touch.clientY - drag.offsetY) + 'px';
-    drag.ghost.style.display = 'none';
-    const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    drag.ghost.style.display = '';
-    const targetLi = el && el.closest('li[' + opts.itemAttr + ']');
-    const targetCat = targetLi ? targetLi.getAttribute(opts.itemAttr) : null;
-    ul.querySelectorAll('li[' + opts.itemAttr + ']').forEach(function(l){ l.style.borderTopColor=''; l.style.borderTopWidth=''; });
-    if (targetLi && targetCat !== drag.cat) {
-      targetLi.style.borderTopColor = '#7c3aed';
-      targetLi.style.borderTopWidth = '3px';
-      drag.lastTarget = targetCat;
-    }
-  }, { passive: false });
-
-  function cleanup(){
-    if (!drag) return;
-    try { drag.ghost.remove(); } catch(_){}
-    try { drag.li.style.opacity = ''; } catch(_){}
-    ul.querySelectorAll('li[' + opts.itemAttr + ']').forEach(function(l){ l.style.borderTopColor=''; l.style.borderTopWidth=''; });
-    drag = null;
-  }
-
-  ul.addEventListener('touchcancel', cleanup, { passive: true });
-
-  ul.addEventListener('touchend', function(){
-    if (!drag) return;
-    const lastTarget = drag.lastTarget;
-    const cat = drag.cat;
-    cleanup();
-    if (!lastTarget || lastTarget === cat) return;
-
-    const current = opts.getOrder();
-    const srcIdx = current.indexOf(cat);
-    const tgtIdx = current.indexOf(lastTarget);
-    if (srcIdx === -1 || tgtIdx === -1) return;
-    categoryArrayMove(current, srcIdx, tgtIdx);
-    opts.setOrder(current);
-    opts.save();
-    opts.rerender();
-  }, { passive: true });
-}
-
-/* หมวดหมู่วัตถุดิบ — แตะ ⠿ เพื่อลาก, แตะ ✎ เพื่อแก้ชื่อ */
 function renderCatSortList(){
   const ul = document.getElementById('catSortList');
   if (!ul) return;
   const cats = materialCategories();
-  ul.innerHTML = cats.map(cat => `
-    <li data-cat="${cat}" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 touch-none select-none">
-      <span data-cathandle="${cat}" class="cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 shrink-0 flex items-center px-0.5" title="ลากเพื่อเรียงใหม่">
-        <svg width="12" height="16" viewBox="0 0 12 16" fill="none"><circle cx="3" cy="3" r="1.5" fill="currentColor"/><circle cx="3" cy="8" r="1.5" fill="currentColor"/><circle cx="3" cy="13" r="1.5" fill="currentColor"/><circle cx="9" cy="3" r="1.5" fill="currentColor"/><circle cx="9" cy="8" r="1.5" fill="currentColor"/><circle cx="9" cy="13" r="1.5" fill="currentColor"/></svg>
-      </span>
+  ul.innerHTML = cats.map((cat) => `
+    <li data-catitem="${cat}" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+      <div data-cathandle="${cat}" class="shrink-0 w-7 h-9 flex items-center justify-center text-slate-400 cursor-grab active:cursor-grabbing touch-none select-none">
+        <svg width="14" height="18" viewBox="0 0 14 18" fill="none"><circle cx="4" cy="3" r="1.5" fill="currentColor"/><circle cx="4" cy="9" r="1.5" fill="currentColor"/><circle cx="4" cy="15" r="1.5" fill="currentColor"/><circle cx="10" cy="3" r="1.5" fill="currentColor"/><circle cx="10" cy="9" r="1.5" fill="currentColor"/><circle cx="10" cy="15" r="1.5" fill="currentColor"/></svg>
+      </div>
       <span class="text-sm font-medium text-slate-700 flex-1">${cat}</span>
       <span class="text-[10px] text-slate-400">${MATERIALS.filter(m=>m.category===cat).length} รายการ</span>
-      <button type="button" data-renamecat="${cat}" class="text-slate-400 hover:text-accent-600 text-sm px-1.5" title="แก้ชื่อหมวด">✎</button>
+      <button type="button" data-renamecat="${cat}" class="text-slate-400 hover:text-accent-600 text-sm px-1.5">✎</button>
     </li>`).join('');
 
-  // แทน ul ด้วย node ใหม่เพื่อล้าง event listeners เก่าทั้งหมด ป้องกัน listener สะสมทุกครั้งที่ render
-  const fresh = ul.cloneNode(true);
-  ul.parentNode.replaceChild(fresh, ul);
-
-  bindCategoryDragList(fresh, {
-    itemAttr: 'data-cat',
-    handleAttr: 'data-cathandle',
-    getOrder: materialCategories,
-    setOrder: function(arr){ _categoryOrder = arr; },
-    save: saveCategoryOrder,
-    rerender: function(){
-      refreshMatCategoryDatalist();
-      populateCategoryFilter();
-      renderCatSortList();
-      renderFastMoving(document.getElementById('materialSearch') ? document.getElementById('materialSearch').value : '');
-      renderSlowMoving(document.getElementById('materialSearch') ? document.getElementById('materialSearch').value : '');
-      showToast('เรียงหมวดวัตถุดิบใหม่แล้ว ✓', 'success');
-    },
+  ul.addEventListener('click', async (e) => {
+    const rename = e.target.closest('[data-renamecat]');
+    if (!rename) return;
+    const oldCat = rename.dataset.renamecat;
+    const newCat = prompt('แก้ชื่อหมวด "'+oldCat+'" เป็น:', oldCat);
+    if (!newCat || !newCat.trim() || newCat.trim()===oldCat) return;
+    const trimmed = newCat.trim();
+    MATERIALS.filter(m=>m.category===oldCat).forEach(m=>{m.category=trimmed;});
+    if (Array.isArray(_categoryOrder)) _categoryOrder=_categoryOrder.map(c=>c===oldCat?trimmed:c);
+    saveCategoryOrder();
+    setSyncStatus('syncing');
+    try {
+      for (const m of MATERIALS.filter(m=>m.category===trimmed)) await upsertMaterialSilent(m);
+      setSyncStatus('online');
+      showToast('เปลี่ยนชื่อหมวดเป็น "'+trimmed+'" แล้ว','success');
+    } catch(err){ setSyncStatus('error'); }
+    renderCatSortList(); refreshMatCategoryDatalist(); populateCategoryFilter();
+    renderFastMoving(materialSearchEl.value); renderSlowMoving(materialSearchEl.value);
   });
 
-  fresh.querySelectorAll('[data-renamecat]').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.preventDefault(); e.stopPropagation();
-      const oldCat = btn.dataset.renamecat;
-      const newCat = prompt('แก้ชื่อหมวดหมู่ "' + oldCat + '" เป็น:', oldCat);
-      if (newCat === null) return;
-      const trimmed = newCat.trim();
-      if (!trimmed || trimmed === oldCat) return;
-      const affected = MATERIALS.filter(m => m.category === oldCat);
-      affected.forEach(m => { m.category = trimmed; });
-      if (Array.isArray(_categoryOrder)) {
-        _categoryOrder = _categoryOrder.map(c => c === oldCat ? trimmed : c);
-        saveCategoryOrder();
-      }
-      setSyncStatus('syncing');
-      try {
-        for (const m of affected) { await upsertMaterialSilent(m); }
-        setSyncStatus('online');
-        showToast('เปลี่ยนชื่อหมวดเป็น "' + trimmed + '" แล้ว (' + affected.length + ' รายการ)', 'success');
-      } catch(err) { console.error(err); setSyncStatus('error'); }
-      renderCatSortList();
-      refreshMatCategoryDatalist();
-      populateCategoryFilter();
-      renderFastMoving(document.getElementById('materialSearch') ? document.getElementById('materialSearch').value : '');
-      renderSlowMoving(document.getElementById('materialSearch') ? document.getElementById('materialSearch').value : '');
+  ul.addEventListener('touchstart', (e) => {
+    const handle = e.target.closest('[data-cathandle]');
+    if (!handle) return;
+    e.preventDefault();
+    const cat = handle.dataset.cathandle;
+    const li = handle.closest('[data-catitem]');
+    if (!li) return;
+    const rect = li.getBoundingClientRect();
+    const ghost = li.cloneNode(true);
+    ghost.style.cssText = `position:fixed;top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;opacity:0.85;box-shadow:0 8px 24px rgba(0,0,0,0.18);z-index:9999;pointer-events:none;transition:none;background:white;`;
+    document.body.appendChild(ghost);
+    li.style.opacity = '0.3';
+    _catDrag = { cat, li, ghost, offsetY: e.touches[0].clientY - rect.top, lastTargetCat: null };
+  }, { passive: false });
+
+  ul.addEventListener('touchmove', (e) => {
+    if (!_catDrag) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    _catDrag.ghost.style.top = (touch.clientY - _catDrag.offsetY) + 'px';
+
+    let targetLi = null;
+    ul.querySelectorAll('[data-catitem]').forEach(li => {
+      if (li === _catDrag.li) return;
+      const r = li.getBoundingClientRect();
+      if (touch.clientY >= r.top && touch.clientY <= r.bottom) targetLi = li;
     });
-  });
+    const targetCat = targetLi ? targetLi.dataset.catitem : null;
+
+    ul.querySelectorAll('[data-catitem]').forEach(li => {
+      li.style.borderTopColor = '';
+      li.style.borderTopWidth = '';
+    });
+    if (targetLi && targetCat !== _catDrag.cat) {
+      targetLi.style.borderTopColor = '#7c3aed';
+      targetLi.style.borderTopWidth = '3px';
+      _catDrag.lastTargetCat = targetCat;
+    }
+  }, { passive: false });
+
+  function endCatDrag(){
+    if (!_catDrag) return;
+    try { _catDrag.ghost.remove(); } catch(_){}
+    try { _catDrag.li.style.opacity = ''; } catch(_){}
+    ul.querySelectorAll('[data-catitem]').forEach(li => {
+      li.style.borderTopColor = '';
+      li.style.borderTopWidth = '';
+    });
+    _catDrag = null;
+  }
+
+  ul.addEventListener('touchcancel', endCatDrag, { passive: true });
+
+  ul.addEventListener('touchend', () => {
+    if (!_catDrag) return;
+    const { cat, lastTargetCat } = _catDrag;
+    endCatDrag();
+    if (!lastTargetCat || lastTargetCat === cat) return;
+
+    const cur = materialCategories();
+    const fromIdx = cur.indexOf(cat);
+    const toIdx = cur.indexOf(lastTargetCat);
+    if (fromIdx === -1 || toIdx === -1) return;
+    categoryArrayMove(cur, fromIdx, toIdx);
+    _categoryOrder = cur; saveCategoryOrder();
+    refreshMatCategoryDatalist(); populateCategoryFilter();
+    renderCatSortList();
+    renderFastMoving(materialSearchEl.value);
+    renderSlowMoving(materialSearchEl.value);
+    showToast('เรียงหมวดวัตถุดิบใหม่แล้ว ✓','success');
+  }, { passive: true });
 }
 
-/* หมวดหมู่เมนู — แตะ ⠿ เพื่อลาก, แตะ ✎ เพื่อแก้ชื่อ */
+let _menuInCatDrag = null;
+let _rcatDrag = null; // drag สำหรับหมวดเมนู (คนละตัวกับ _catDrag ที่ใช้กับหมวดวัตถุดิบ)
+const _expandedRCats = new Set(); // หมวดเมนูที่ถูกขยายไว้ (คงสถานะไว้ตอน re-render)
+
 function renderRecipeCatList(){
   const ul = document.getElementById('recipeCatList');
   if (!ul) return;
   const cats = recipeCategories();
-  ul.innerHTML = cats.map(cat => `
-    <li data-rcat="${cat}" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 touch-none select-none">
-      <span data-rcathandle="${cat}" class="cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 shrink-0 flex items-center px-0.5" title="ลากเพื่อเรียงใหม่">
-        <svg width="12" height="16" viewBox="0 0 12 16" fill="none"><circle cx="3" cy="3" r="1.5" fill="currentColor"/><circle cx="3" cy="8" r="1.5" fill="currentColor"/><circle cx="3" cy="13" r="1.5" fill="currentColor"/><circle cx="9" cy="3" r="1.5" fill="currentColor"/><circle cx="9" cy="8" r="1.5" fill="currentColor"/><circle cx="9" cy="13" r="1.5" fill="currentColor"/></svg>
-      </span>
-      <span class="text-sm font-medium text-slate-700 flex-1">${cat}</span>
-      <span class="text-[10px] text-slate-400">${RECIPES.filter(r=>r.category===cat).length} เมนู</span>
-      <button type="button" data-renamercat="${cat}" class="text-slate-400 hover:text-accent-600 text-sm px-1.5" title="แก้ชื่อหมวดเมนู">✎</button>
+  ul.innerHTML = cats.map((cat) => `
+    <li data-rcatitem="${cat}" class="bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
+      <div class="flex items-center gap-2 px-3 py-2">
+        <button type="button" data-expandrcat="${cat}" class="text-slate-400 hover:text-accent-600 shrink-0">
+          <svg class="w-3.5 h-3.5 transition-transform ${_expandedRCats.has(cat) ? 'rotate-90' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <div data-rcathandle="${cat}" class="shrink-0 w-7 h-9 flex items-center justify-center text-slate-400 cursor-grab active:cursor-grabbing touch-none select-none">
+          <svg width="14" height="18" viewBox="0 0 14 18" fill="none"><circle cx="4" cy="3" r="1.5" fill="currentColor"/><circle cx="4" cy="9" r="1.5" fill="currentColor"/><circle cx="4" cy="15" r="1.5" fill="currentColor"/><circle cx="10" cy="3" r="1.5" fill="currentColor"/><circle cx="10" cy="9" r="1.5" fill="currentColor"/><circle cx="10" cy="15" r="1.5" fill="currentColor"/></svg>
+        </div>
+        <span class="text-sm font-medium text-slate-700 flex-1">${cat}</span>
+        <span class="text-[10px] text-slate-400">${RECIPES.filter(r=>r.category===cat).length} เมนู</span>
+        <button type="button" data-renamercat="${cat}" class="text-slate-400 hover:text-accent-600 text-sm px-1.5">✎</button>
+      </div>
+      ${_expandedRCats.has(cat) ? `
+      <div class="border-t border-slate-200 bg-white px-3 py-2">
+        <p class="text-[10px] text-slate-400 mb-1.5">แตะ ⠿ เพื่อลากเรียงเมนูภายในหมวดนี้</p>
+        <ul data-menuincat="${cat}" class="space-y-1">
+          ${RECIPES.filter(r=>r.category===cat).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0)).map(r => `
+            <li data-menuitem="${r.id}" class="flex items-center gap-2 bg-slate-50 rounded px-2 py-1.5">
+              <div data-menuhandle="${r.id}" class="shrink-0 w-6 h-6 flex items-center justify-center text-slate-300 cursor-grab active:cursor-grabbing touch-none select-none">
+                <svg width="12" height="16" viewBox="0 0 12 16" fill="none"><circle cx="3" cy="3" r="1.3" fill="currentColor"/><circle cx="3" cy="8" r="1.3" fill="currentColor"/><circle cx="3" cy="13" r="1.3" fill="currentColor"/><circle cx="9" cy="3" r="1.3" fill="currentColor"/><circle cx="9" cy="8" r="1.3" fill="currentColor"/><circle cx="9" cy="13" r="1.3" fill="currentColor"/></svg>
+              </div>
+              <span class="text-xs text-slate-700 flex-1">${r.name} <span class="text-slate-400">(${r.size})</span></span>
+            </li>`).join('')}
+        </ul>
+      </div>` : ''}
     </li>`).join('');
 
-  const fresh = ul.cloneNode(true);
-  ul.parentNode.replaceChild(fresh, ul);
+  ul.addEventListener('click', async (e) => {
+    const expand = e.target.closest('[data-expandrcat]');
+    const rename = e.target.closest('[data-renamercat]');
 
-  bindCategoryDragList(fresh, {
-    itemAttr: 'data-rcat',
-    handleAttr: 'data-rcathandle',
-    getOrder: recipeCategories,
-    setOrder: function(arr){ _recipeCategoryOrder = arr; },
-    save: saveRecipeCategoryOrder,
-    rerender: function(){
+    if (expand) {
+      const cat = expand.dataset.expandrcat;
+      if (_expandedRCats.has(cat)) _expandedRCats.delete(cat);
+      else _expandedRCats.add(cat);
       renderRecipeCatList();
-      try { renderMenuList(menuSearchEl.value); } catch(_){}
-      try { renderFrontMenuList(document.getElementById('frontMenuSearch') ? document.getElementById('frontMenuSearch').value : ''); } catch(_){}
-      try { renderFrontMenuChips(); } catch(_){}
-      try { if (window.populateNewRecipeCategory) window.populateNewRecipeCategory(); } catch(_){}
-      showToast('เรียงหมวดเมนูใหม่แล้ว ✓', 'success');
-    },
-  });
-
-  fresh.querySelectorAll('[data-renamercat]').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.preventDefault(); e.stopPropagation();
-      const oldCat = btn.dataset.renamercat;
-      const newCat = prompt('แก้ชื่อหมวดเมนู "' + oldCat + '" เป็น:', oldCat);
-      if (newCat === null) return;
+      return;
+    }
+    if (rename) {
+      const oldCat = rename.dataset.renamercat;
+      const newCat = prompt('แก้ชื่อหมวดเมนู "'+oldCat+'" เป็น:', oldCat);
+      if (!newCat || !newCat.trim() || newCat.trim()===oldCat) return;
       const trimmed = newCat.trim();
-      if (!trimmed || trimmed === oldCat) return;
-      const affected = RECIPES.filter(r => r.category === oldCat);
-      affected.forEach(r => { r.category = trimmed; });
-      if (Array.isArray(_recipeCategoryOrder)) {
-        _recipeCategoryOrder = _recipeCategoryOrder.map(c => c === oldCat ? trimmed : c);
-        saveRecipeCategoryOrder();
-      }
+      RECIPES.filter(r=>r.category===oldCat).forEach(r=>{r.category=trimmed;});
+      if (Array.isArray(_recipeCategoryOrder)) _recipeCategoryOrder=_recipeCategoryOrder.map(c=>c===oldCat?trimmed:c);
+      saveRecipeCategoryOrder();
       setSyncStatus('syncing');
       try {
-        for (const r of affected) { await upsertRecipeSilent(r); }
+        for (const r of RECIPES.filter(r=>r.category===trimmed)) await upsertRecipeSilent(r);
         setSyncStatus('online');
-        showToast('เปลี่ยนชื่อหมวดเมนูเป็น "' + trimmed + '" แล้ว (' + affected.length + ' เมนู)', 'success');
-      } catch(err) { console.error(err); setSyncStatus('error'); }
+        showToast('เปลี่ยนชื่อหมวดเมนูเป็น "'+trimmed+'" แล้ว','success');
+      } catch(err){ setSyncStatus('error'); }
       renderRecipeCatList();
       try { populateCategoryFilter(); } catch(_){}
       try { if (window.populateNewRecipeCategory) window.populateNewRecipeCategory(); } catch(_){}
-    });
+    }
   });
+
+  // --- Drag เรียงหมวดเมนู ---
+  ul.addEventListener('touchstart', (e) => {
+    const handle = e.target.closest('[data-rcathandle]');
+    if (!handle) return;
+    e.preventDefault();
+    const cat = handle.dataset.rcathandle;
+    const li = handle.closest('[data-rcatitem]');
+    if (!li) return;
+    const rect = li.getBoundingClientRect();
+    const ghost = li.cloneNode(true);
+    ghost.style.cssText = `position:fixed;top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;opacity:0.85;box-shadow:0 8px 24px rgba(0,0,0,0.18);z-index:9999;pointer-events:none;transition:none;background:white;`;
+    document.body.appendChild(ghost);
+    li.style.opacity = '0.3';
+    _rcatDrag = { cat, li, ghost, offsetY: e.touches[0].clientY - rect.top, lastTargetCat: null };
+  }, { passive: false });
+
+  ul.addEventListener('touchmove', (e) => {
+    if (!_rcatDrag) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    _rcatDrag.ghost.style.top = (touch.clientY - _rcatDrag.offsetY) + 'px';
+
+    let targetLi = null;
+    ul.querySelectorAll('[data-rcatitem]').forEach(li => {
+      if (li === _rcatDrag.li) return;
+      const r = li.getBoundingClientRect();
+      if (touch.clientY >= r.top && touch.clientY <= r.bottom) targetLi = li;
+    });
+    const targetCat = targetLi ? targetLi.dataset.rcatitem : null;
+
+    ul.querySelectorAll('[data-rcatitem]').forEach(li => {
+      li.style.borderTopColor = '';
+      li.style.borderTopWidth = '';
+    });
+    if (targetLi && targetCat !== _rcatDrag.cat) {
+      targetLi.style.borderTopColor = '#7c3aed';
+      targetLi.style.borderTopWidth = '3px';
+      _rcatDrag.lastTargetCat = targetCat;
+    }
+  }, { passive: false });
+
+  function endRcatDrag(){
+    if (!_rcatDrag) return;
+    try { _rcatDrag.ghost.remove(); } catch(_){}
+    try { _rcatDrag.li.style.opacity = ''; } catch(_){}
+    ul.querySelectorAll('[data-rcatitem]').forEach(li => {
+      li.style.borderTopColor = '';
+      li.style.borderTopWidth = '';
+    });
+    _rcatDrag = null;
+  }
+
+  ul.addEventListener('touchcancel', endRcatDrag, { passive: true });
+
+  ul.addEventListener('touchend', () => {
+    if (!_rcatDrag) return;
+    const { cat, lastTargetCat } = _rcatDrag;
+    endRcatDrag();
+    if (!lastTargetCat || lastTargetCat === cat) return;
+
+    const cur = recipeCategories();
+    const fromIdx = cur.indexOf(cat);
+    const toIdx = cur.indexOf(lastTargetCat);
+    if (fromIdx === -1 || toIdx === -1) return;
+    categoryArrayMove(cur, fromIdx, toIdx);
+    _recipeCategoryOrder = cur; saveRecipeCategoryOrder();
+    renderRecipeCatList();
+    try { renderMenuList(menuSearchEl.value); } catch(_){}
+    try { renderFrontMenuList(document.getElementById('frontMenuSearch')?document.getElementById('frontMenuSearch').value:''); } catch(_){}
+    try { renderFrontMenuChips(); } catch(_){}
+    try { if (window.populateNewRecipeCategory) window.populateNewRecipeCategory(); } catch(_){}
+    showToast('เรียงหมวดเมนูใหม่แล้ว ✓','success');
+  }, { passive: true });
+
+  // --- Drag เรียงเมนูภายในหมวด ---
+  ul.addEventListener('touchstart', (e) => {
+    const handle = e.target.closest('[data-menuhandle]');
+    if (!handle) return;
+    e.preventDefault();
+    const recipeId = handle.dataset.menuhandle;
+    const li = handle.closest('[data-menuitem]');
+    const innerUl = handle.closest('[data-menuincat]');
+    if (!li || !innerUl) return;
+    const rect = li.getBoundingClientRect();
+    const ghost = li.cloneNode(true);
+    ghost.style.cssText = `position:fixed;top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;opacity:0.9;box-shadow:0 6px 20px rgba(0,0,0,0.18);z-index:9999;pointer-events:none;transition:none;background:white;border-radius:6px;`;
+    document.body.appendChild(ghost);
+    li.style.opacity = '0.3';
+    _menuInCatDrag = { recipeId, li, ghost, innerUl, cat: innerUl.dataset.menuincat, offsetY: e.touches[0].clientY - rect.top, lastTargetId: null };
+  }, { passive: false });
+
+  ul.addEventListener('touchmove', (e) => {
+    if (!_menuInCatDrag) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    _menuInCatDrag.ghost.style.top = (touch.clientY - _menuInCatDrag.offsetY) + 'px';
+
+    let targetLi = null;
+    _menuInCatDrag.innerUl.querySelectorAll('[data-menuitem]').forEach(li => {
+      if (li === _menuInCatDrag.li) return;
+      const r = li.getBoundingClientRect();
+      if (touch.clientY >= r.top && touch.clientY <= r.bottom) targetLi = li;
+    });
+    const targetId = targetLi ? targetLi.dataset.menuitem : null;
+
+    _menuInCatDrag.innerUl.querySelectorAll('[data-menuitem]').forEach(li => {
+      li.style.borderTopColor = '';
+      li.style.borderTopWidth = '';
+    });
+    if (targetLi && targetId !== _menuInCatDrag.recipeId) {
+      targetLi.style.borderTopColor = '#7c3aed';
+      targetLi.style.borderTopWidth = '2px';
+      _menuInCatDrag.lastTargetId = targetId;
+    }
+  }, { passive: false });
+
+  function endMenuInCatDrag(){
+    if (!_menuInCatDrag) return;
+    try { _menuInCatDrag.ghost.remove(); } catch(_){}
+    try { _menuInCatDrag.li.style.opacity = ''; } catch(_){}
+    try {
+      _menuInCatDrag.innerUl.querySelectorAll('[data-menuitem]').forEach(li => {
+        li.style.borderTopColor = '';
+        li.style.borderTopWidth = '';
+      });
+    } catch(_){}
+    _menuInCatDrag = null;
+  }
+
+  ul.addEventListener('touchcancel', endMenuInCatDrag, { passive: true });
+
+  ul.addEventListener('touchend', () => {
+    if (!_menuInCatDrag) return;
+    const { recipeId, cat, lastTargetId } = _menuInCatDrag;
+    endMenuInCatDrag();
+    if (!lastTargetId || lastTargetId === recipeId) return;
+
+    const items = RECIPES.filter(r => r.category === cat).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
+    const srcIdx = items.findIndex(r => r.id === recipeId);
+    if (srcIdx === -1) return;
+    const [moved] = items.splice(srcIdx, 1);
+    const tgtIdx = items.findIndex(r => r.id === lastTargetId);
+    if (tgtIdx === -1) return;
+    items.splice(tgtIdx, 0, moved);
+    items.forEach((r, i) => { r.sortOrder = i + 1; upsertRecipeSilent(r); });
+
+    renderRecipeCatList();
+    try { renderMenuList(menuSearchEl.value); } catch(_){}
+    try { renderFrontMenuList(document.getElementById('frontMenuSearch')?document.getElementById('frontMenuSearch').value:''); } catch(_){}
+    showToast('เรียงเมนูในหมวด "'+cat+'" ใหม่แล้ว ✓','success');
+  }, { passive: true });
 }
 
 document.getElementById('catOrderDetails').addEventListener('toggle', function(){
@@ -4718,7 +5232,6 @@ document.getElementById('resetCatOrderBtn').addEventListener('click', () => {
   refreshMatCategoryDatalist();
   populateCategoryFilter();
 });
-
 
 // จำสถานะเปิด/ปิดตัวช่วยกรอกเร็ว (รองรับ Safari)
 document.addEventListener('click', (e) => {
@@ -5107,21 +5620,6 @@ async function ensureRefillQtyColumn(){
   renderSlowMoving('');
   renderTable();
 })();
-
-// Debug log panel toggle (ปุ่ม 🐞 มุมขวาล่าง)
-document.getElementById('debugLogToggle').addEventListener('click', function(){
-  const panel = document.getElementById('debugLogPanel');
-  const showing = panel.style.display !== 'none';
-  panel.style.display = showing ? 'none' : 'block';
-  if (!showing) {
-    panel.textContent = (window._debugLogs && window._debugLogs.length)
-      ? window._debugLogs.join('\n')
-      : 'ยังไม่มี error ใดๆ ถูกบันทึกไว้ (ดีแล้ว!)\n\nถ้าหน้าเว็บค้างหรือรีเฟรชเอง ให้กดปุ่มนี้ทันทีหลังเปิดมาใหม่ เพื่อดู log ก่อนหน้า';
-  }
-});
-window.addEventListener('beforeunload', function(){
-  try { sessionStorage.setItem('_debugLogsBeforeReload', JSON.stringify(window._debugLogs || [])); } catch(_){}
-});
 
 </script>
 </body>

@@ -3027,11 +3027,14 @@ function renderMenuSummary(filterText){
   const ft = (filterText || '').trim().toLowerCase();
 
   const branch = branchSelectEl.value || '';
-  const dateInput = document.getElementById('adminMenuDateInput');
-  const dateLabel = (dateInput && dateInput.value) ? dateInput.value : todayDateStr();
-  subtitle.textContent = `${branch} · ${dateLabel}`;
+  // ถ้ากำลังกรอกย้อนหลังอยู่ (adminMenuViewDate ตั้งไว้) ให้อ่านจาก adminMenuSalesCache แทน menuSales
+  // เพราะสองโหมดนี้ใช้ตัวแปรเก็บข้อมูลคนละตัวกัน (ดู input listener ของ menuListWrap)
+  const isPastMode = !!adminMenuViewDate;
+  const salesSource = isPastMode ? adminMenuSalesCache : menuSales;
+  const dateLabel = isPastMode ? adminMenuViewDate : todayDateStr();
+  subtitle.textContent = `${branch} · ${dateLabel}${isPastMode ? ' (ย้อนหลัง)' : ''}`;
 
-  const filled = Object.entries(menuSales)
+  const filled = Object.entries(salesSource)
     .filter(([id, qty]) => Number(qty) > 0)
     .map(([id, qty]) => ({ recipe: RECIPES.find(r => r.id === id), qty: Number(qty) }))
     .filter(x => x.recipe && (!ft || x.recipe.name.toLowerCase().includes(ft)));

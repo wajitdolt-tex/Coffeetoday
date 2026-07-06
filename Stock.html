@@ -98,8 +98,8 @@
     <input type="hidden" name="payload" id="gsheetPayloadInput">
   </form>
 
-  <div id="menuSummaryModal" class="fixed inset-0 bg-black/40 z-[9999] hidden flex items-center justify-center p-4" style="isolation:isolate;">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
+  <div id="menuSummaryModal" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center p-4" style="isolation:isolate; z-index:99999;">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg flex flex-col overflow-hidden" style="max-height:80vh;">
       <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
         <div>
           <h3 class="font-heading font-semibold text-slate-900">📋 สรุปยอดขายเมนูที่กรอกไว้</h3>
@@ -110,7 +110,7 @@
       <div class="px-5 pt-3 pb-2 border-b border-slate-100 shrink-0">
         <input id="menuSummarySearch" type="text" placeholder="ค้นหาเมนูในสรุป…" class="input-base input-sm">
       </div>
-      <div id="menuSummaryBody" class="overflow-y-auto overscroll-contain px-5 py-3 flex-1"></div>
+      <div id="menuSummaryBody" class="overflow-y-auto overscroll-contain px-5 pt-3 pb-8" style="min-height:0; flex:1 1 auto;"></div>
       <div class="px-5 py-3 border-t border-slate-100 bg-slate-50 shrink-0 flex items-center justify-between">
         <span class="text-xs text-slate-500">รวม <span id="menuSummaryTotalItems" class="font-num font-semibold text-slate-700">0</span> เมนู · <span id="menuSummaryTotalQty" class="font-num font-semibold text-accent-700">0</span> แก้ว</span>
         <button id="printMenuSummaryBtn" class="text-xs font-semibold text-slate-600 hover:text-slate-900 border border-slate-300 rounded-lg px-3 h-8 transition">🖨️ พิมพ์/บันทึก</button>
@@ -3072,6 +3072,9 @@ function renderMenuSummary(filterText){
 
 let _scrollYBeforeSummaryModal = 0;
 function openMenuSummaryModal(){
+  // ปิด keyboard ก่อนเปิด modal เพราะ keyboard เปิดค้างจะทำให้ viewport height (vh) บน Safari iPad
+  // คำนวณผิด ทำให้ modal เลื่อนดูไม่สุดรายการ
+  if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
   const searchEl = document.getElementById('menuSummarySearch');
   if (searchEl) searchEl.value = '';
   renderMenuSummary('');
@@ -3084,7 +3087,10 @@ function openMenuSummaryModal(){
   // สร้าง stacking context ของตัวเองที่บาง browser (โดยเฉพาะ Safari) ทะลุ z-index ของ modal ได้แม้ตั้งสูงแค่ไหนก็ตาม
   const stickySection = document.getElementById('stickySearchSection');
   if (stickySection) stickySection.style.visibility = 'hidden';
-  document.getElementById('menuSummaryModal').classList.remove('hidden');
+  const modal = document.getElementById('menuSummaryModal');
+  // ย้าย modal ไปท้ายสุดของ body ทุกครั้งที่เปิด — กันโดนหลังบ้าน (adminModal ทึบเต็มจอ) บังบน Safari
+  document.body.appendChild(modal);
+  modal.classList.remove('hidden');
 }
 function closeMenuSummaryModal(){
   document.getElementById('menuSummaryModal').classList.add('hidden');

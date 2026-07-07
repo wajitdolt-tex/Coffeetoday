@@ -1434,7 +1434,16 @@ async function loadCarryForward(branch){
         && counted && counted.count_date < latest.count_date;
       const useRow  = latestIsExplicitZero ? latest : (counted || latest);
       mat.carry = (Number(useRow.actual_big) || 0) * mat.ratio + (mat.noFraction ? 0 : (Number(useRow.actual_small) || 0));
-      mat.carryExpr = useRow.note && useRow.note.includes('\u200b') ? useRow.note.split('\u200b')[1].split('|')[0] : null;
+      // ดึง expression ดิบของยอดยกมา (เช่น "500+201") จาก note ที่เก็บไว้ตอนบันทึก
+      // รูปแบบ: [note ปกติ]\u200b[actualBig expr]|[actualSmall expr][\u200c borrowNote]
+      if (useRow.note && useRow.note.includes('\u200b')) {
+        const exprPart = useRow.note.split('\u200b')[1].split('\u200c')[0]; // ตัด borrowNote ท้ายออกก่อน
+        const [bigExpr, smallExpr] = exprPart.split('|');
+        // แสดง expression ของช่องที่มีการบวกเลขจริง (มี +) — ปกติคือช่องเศษ แต่เผื่อช่องเต็มก็มีด้วย
+        mat.carryExpr = [bigExpr, smallExpr].filter(e => e && e.includes('+')).join(' + ') || null;
+      } else {
+        mat.carryExpr = null;
+      }
     });
   } catch (e) { console.error('loadCarryForward failed', e); }
 }

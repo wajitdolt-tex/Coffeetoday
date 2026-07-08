@@ -1398,6 +1398,7 @@ async function loadRecipesFromDB(){
 
 // เผื่อมีสูตรไหนยังอ้างถึงวัตถุดิบที่ถูกลบไปแล้วค้างอยู่ (เช่น บันทึกไม่ทันตอนลบ) ตัดทิ้งให้อัตโนมัติแล้วบันทึกกลับ
 function cleanupStaleRecipeIngredients(){
+  if (!MATERIALS.length) return; // ยังไม่มีวัตถุดิบเลย ข้ามไปก่อน กัน crash ตอน init
   RECIPES.forEach(r => {
     const validIngredients = r.ingredients.filter(i => materialById(i.materialId));
     if (validIngredients.length !== r.ingredients.length) {
@@ -5734,10 +5735,12 @@ async function ensureRefillQtyColumn(){
     applyRecipeUsageToMaterials(); // recalculate หลัง fix cup ใน recipe
     cleanupStaleRecipeIngredients();
     // silent
+    setSyncStatus('online');
     if (syncMsg) syncMsg.textContent = 'พร้อมใช้งาน — เชื่อมต่อฐานข้อมูลสำเร็จ';
   } catch (e) {
     console.error('init sync failed', e);
     // silent
+    setSyncStatus('offline');
     if (syncMsg) syncMsg.textContent = 'เชื่อมต่อฐานข้อมูลไม่สำเร็จ (ใช้งานแบบออฟไลน์ในเครื่องนี้ได้ แต่จะไม่ซิงค์ข้ามเครื่อง)';
   }
 

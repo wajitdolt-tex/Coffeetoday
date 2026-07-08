@@ -1686,10 +1686,6 @@ function formatAsBigSmall(mat, totalSmall){
   const rem = abs - big * mat.ratio;
   let txt = `${sign < 0 ? '-' : ''}${fmtNum(big)} ${mat.bigUnit}`;
   if (!mat.noFraction && rem > 0.001) txt += ` + ${fmtNum(rem)} ${mat.smallUnit}`;
-  if (mat.subUnit) {
-    const subVal = (totalSmall / mat.subRatio);
-    txt += `<br><span class="text-[11px] text-slate-400">≈ ${fmtNum(subVal)} ${mat.subUnit}</span>`;
-  }
   return txt;
 }
 

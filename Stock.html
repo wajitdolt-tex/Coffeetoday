@@ -1183,6 +1183,7 @@ function materialToRow(mat){
     no_fraction: !!mat.noFraction, fast_moving: !!mat.fastMoving,
     quick_fill_sizes: mat.quickFill === null ? [] : (qf.sizes && qf.sizes.length ? qf.sizes : null),
     unit_override: mat.unitOverride || null,
+    purchase_source: mat.purchaseSource || 'self',
     updated_at: new Date().toISOString(),
   };
   // บันทึก carry แยกตาม branch ด้วย
@@ -1286,6 +1287,7 @@ async function loadMaterialsFromDB(){
       }
       mat.noFraction = !!r.no_fraction; mat.fastMoving = !!r.fast_moving;
       mat.unitOverride = r.unit_override || null;
+      mat.purchaseSource = r.purchase_source || 'self';
 
       // ถ้า DB มีค่าผิด ให้ backfill unit ที่ถูกต้องกลับขึ้น DB ด้วย
       if (hardcoded && (r.small_unit !== mat.smallUnit || Number(r.ratio) !== mat.ratio)) {
@@ -3853,6 +3855,13 @@ function editRowHTML(mat){
         <input type="number" min="0" step="any" value="${carrySmall}" data-matid="${mat.id}" data-editfield="carrySmall" class="input-base input-sm !h-9 !px-2 font-num text-xs">
       </div>
     </div>` : ''}
+    <div class="mb-2">
+      <label class="block text-[10px] text-slate-400 mb-0.5">แหล่งซื้อ</label>
+      <select data-matid="${mat.id}" data-editfield="purchaseSource" class="input-base input-sm !h-9 !px-2 text-xs w-full">
+        <option value="self" ${(mat.purchaseSource || 'self') === 'self' ? 'selected' : ''}>🛒 ซื้อเอง (แสดงเตือนในลิสต์ต้องซื้อ)</option>
+        <option value="company" ${mat.purchaseSource === 'company' ? 'selected' : ''}>📦 สั่งบริษัท (ไม่ต้องซื้อเอง)</option>
+      </select>
+    </div>
     <p id="edithint_${mat.id}" class="text-[11px] text-slate-400 mt-1.5">${editHintText(mat)}</p>
     ${isFrac ? branchUnitOverrideHTML(mat) : ''}
     ${quickFillAdminHTML(mat)}
@@ -4144,9 +4153,11 @@ editListWrap.addEventListener('change', (e) => {
   // ป้องกัน applyBranchCarry รอบถัดไปใช้ค่าเก่าที่ cache ไว้ทับค่าที่เพิ่งแก้ (บั๊กที่ทำให้แก้แล้วรีเฟรชกลับเป็นเดิม)
   if (field === 'bigUnit') mat._baseBigUnit = mat.bigUnit;
   if (field === 'ratio') mat._baseRatio = mat.ratio;
+  if (field === 'purchaseSource') mat.purchaseSource = e.target.value;
   clearTimeout(editSaveTimers[id]);
   upsertMaterial(mat);
   if (field === 'category') renderEditList(editSearchEl.value); // จัดกลุ่มใหม่ตามหมวดที่เปลี่ยน
+  if (field === 'purchaseSource') showToast(`ตั้ง "${mat.name}" เป็น ${e.target.value === 'company' ? 'สั่งบริษัท' : 'ซื้อเอง'} แล้ว ✓`, 'success');
 });
 
 /* ===========================================================
@@ -4321,33 +4332,61 @@ function renderRestockList(filterText){
   if (!wrap) return;
   const ft = (filterText || '').trim().toLowerCase();
 
-  const sorted = MATERIALS
+  const filtered = MATERIALS
     .filter(mat => !ft || mat.name.toLowerCase().includes(ft))
-    .map(mat => ({ mat, remain: getRemainingSmall(mat) }))
-    .sort((a, b) => a.remain - b.remain);
+    .map(mat => ({ mat, remain: getRemainingSmall(mat) }));
 
-  if (!sorted.length) {
+  const selfBuy = filtered.filter(x => (x.mat.purchaseSource || 'self') === 'self').sort((a, b) => a.remain - b.remain);
+  const company = filtered.filter(x => x.mat.purchaseSource === 'company').sort((a, b) => a.remain - b.remain);
+
+  if (!selfBuy.length && !company.length) {
     wrap.innerHTML = `<p class="text-sm text-slate-400 text-center py-10">ไม่พบวัตถุดิบที่ค้นหา</p>`;
     return;
   }
 
-  wrap.innerHTML = sorted.map(({ mat, remain }) => {
+  function itemRowHTML(mat, remain, muted){
     const isNegative = remain < 0;
     const isLow = !isNegative && remain <= mat.ratio; // เหลือไม่ถึง 1 หน่วยใหญ่ = ใกล้หมด
-    const colorClass = isNegative ? 'text-red-600' : isLow ? 'text-amber-600' : 'text-slate-700';
-    const dotClass = isNegative ? 'bg-red-500' : isLow ? 'bg-amber-500' : 'bg-slate-300';
+    const colorClass = muted ? 'text-slate-400' : (isNegative ? 'text-red-600' : isLow ? 'text-amber-600' : 'text-slate-700');
+    const dotClass = muted ? 'bg-slate-300' : (isNegative ? 'bg-red-500' : isLow ? 'bg-amber-500' : 'bg-slate-300');
     return `
-      <div class="px-5 py-3 flex items-center justify-between gap-3 hover:bg-slate-50 transition-colors">
+      <div class="px-5 py-3 flex items-center justify-between gap-3 hover:bg-slate-50 transition-colors ${muted ? 'opacity-60' : ''}">
         <div class="flex items-center gap-2.5 min-w-0">
           <span class="w-2 h-2 rounded-full shrink-0 ${dotClass}"></span>
           <div class="min-w-0">
-            <p class="font-semibold text-slate-900 text-sm truncate">${mat.name}</p>
+            <p class="font-semibold text-sm truncate ${muted ? 'text-slate-500' : 'text-slate-900'}">${mat.name}</p>
             <p class="text-[11px] text-slate-400">${mat.category}</p>
           </div>
         </div>
         <p class="font-num font-semibold text-sm shrink-0 ${colorClass}">${formatAsBigSmall(mat, remain)}</p>
       </div>`;
-  }).join('');
+  }
+
+  let html = '';
+
+  if (selfBuy.length) {
+    html += `<div class="px-5 py-2.5 bg-accent-50/50 border-b border-accent-100">
+      <p class="text-xs font-bold text-accent-700">🛒 ต้องซื้อเอง (${selfBuy.length})</p>
+    </div>`;
+    html += selfBuy.map(({ mat, remain }) => itemRowHTML(mat, remain, false)).join('');
+  } else {
+    html += `<div class="px-5 py-6 text-center text-sm text-slate-400">ไม่มีวัตถุดิบที่ต้องซื้อเอง 🎉</div>`;
+  }
+
+  if (company.length) {
+    html += `
+    <details class="border-t border-slate-200">
+      <summary class="px-5 py-2.5 bg-slate-50 cursor-pointer list-none flex items-center gap-1.5">
+        <svg class="chevron w-3 h-3 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
+        <p class="text-xs font-bold text-slate-500">📦 สั่งบริษัท (${company.length}) — ไม่ต้องซื้อเอง แสดงไว้เผื่อดูสำรอง</p>
+      </summary>
+      <div class="divide-y divide-slate-100">
+        ${company.map(({ mat, remain }) => itemRowHTML(mat, remain, true)).join('')}
+      </div>
+    </details>`;
+  }
+
+  wrap.innerHTML = html;
 }
 
 document.getElementById('restockSearch').addEventListener('input', (e) => {

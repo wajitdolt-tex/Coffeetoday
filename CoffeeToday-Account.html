@@ -1441,8 +1441,8 @@ function confirmPmModal() {
   if (!dateVal) { toast('กรุณาเลือกวันที่', 'error'); return; }
 
   if (pmContext.kind === 'payable-full') {
-    var item = payables.find(function(p) { return p.id === pmContext.id; });
-    if (!item) { closePmModal(); return; }
+    var item = payables.find(function(p) { return String(p.id) === String(pmContext.id); });
+    if (!item) { closePmModal(); toast('ไม่พบรายการนี้ อาจถูกลบไปแล้ว ลองรีเฟรชหน้า', 'error'); return; }
     item.paid = true;
     item.paidDate = dateVal;
     item.paidAmount = item.amount;
@@ -1453,8 +1453,8 @@ function confirmPmModal() {
   } else if (pmContext.kind === 'payable-partial') {
     var amountVal = parseFloat(document.getElementById('pm-amount').value);
     if (!amountVal || amountVal <= 0) { toast('กรุณากรอกจำนวนเงิน', 'error'); return; }
-    var item = payables.find(function(p) { return p.id === pmContext.id; });
-    if (!item) { closePmModal(); return; }
+    var item = payables.find(function(p) { return String(p.id) === String(pmContext.id); });
+    if (!item) { closePmModal(); toast('ไม่พบรายการนี้ อาจถูกลบไปแล้ว ลองรีเฟรชหน้า', 'error'); return; }
     if (!item.partialPayments) item.partialPayments = [];
     var alreadyPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
     var remaining = item.amount - alreadyPaid;
@@ -1474,8 +1474,8 @@ function confirmPmModal() {
   } else if (pmContext.kind === 'salary-partial') {
     var amountVal = parseFloat(document.getElementById('pm-amount').value);
     if (!amountVal || amountVal <= 0) { toast('กรุณากรอกจำนวนเงิน', 'error'); return; }
-    var item = salaries.find(function(s) { return s.id === pmContext.id; });
-    if (!item) { closePmModal(); return; }
+    var item = salaries.find(function(s) { return String(s.id) === String(pmContext.id); });
+    if (!item) { closePmModal(); toast('ไม่พบรายการเงินเดือนนี้ อาจถูกลบไปแล้ว ลองรีเฟรชหน้า', 'error'); return; }
     if (!item.partialPayments) item.partialPayments = [];
     var alreadyPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
     var remaining = item.amount - alreadyPaid;
@@ -1498,8 +1498,8 @@ function confirmPmModal() {
 }
 
 function togglePaid(id) {
-  var item = payables.find(function(p) { return p.id === id; });
-  if (!item) return;
+  var item = payables.find(function(p) { return String(p.id) === String(id); });
+  if (!item) { toast('ไม่พบรายการนี้ อาจถูกลบหรือ sync ไปแล้ว ลองรีเฟรชหน้า', 'error'); return; }
   if (!item.paid) {
     openPmModal({
       kind: 'payable-full',
@@ -1520,8 +1520,8 @@ function togglePaid(id) {
 }
 
 function partialPay(id) {
-  var item = payables.find(function(p) { return p.id === id; });
-  if (!item) return;
+  var item = payables.find(function(p) { return String(p.id) === String(id); });
+  if (!item) { toast('ไม่พบรายการนี้ อาจถูกลบหรือ sync ไปแล้ว ลองรีเฟรชหน้า', 'error'); return; }
   if (!item.partialPayments) item.partialPayments = [];
   var alreadyPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
   var remaining = item.amount - alreadyPaid;
@@ -1536,16 +1536,18 @@ function partialPay(id) {
 
 function delPayable(id) {
   if (!confirm('ลบรายการนี้?')) return;
-  payables = payables.filter(function(p) { return p.id !== id; });
+  payables = payables.filter(function(p) { return String(p.id) !== String(id); });
   savePay(); renderPayables();
 }
 
 async function savePay() {
   // dedup ก่อน save — เก็บรายการล่าสุดของแต่ละ id
+  // ใช้ prefix แยก type (String) กับ number กัน object-key ชนกัน เช่น id ตัวเลข 1234 กับ id string "1234"
   var seen = {};
   payables = payables.filter(function(p) {
-    if (seen[p.id]) return false;
-    seen[p.id] = true;
+    var key = (typeof p.id) + ':' + String(p.id);
+    if (seen[key]) return false;
+    seen[key] = true;
     return true;
   });
   localStorage.setItem('ct_payables', JSON.stringify(payables));
@@ -2843,8 +2845,8 @@ function addLoan() {
 }
 
 function addRepayment(id) {
-  var loan = loans.find(function(l) { return l.id === id; });
-  if (!loan) return;
+  var loan = loans.find(function(l) { return String(l.id) === String(id); });
+  if (!loan) { toast('ไม่พบรายการยืมนี้ อาจถูกลบหรือ sync ไปแล้ว ลองรีเฟรชหน้า', 'error'); return; }
   var repaid = loan.repayments.reduce(function(s, r) { return s + r.amount; }, 0);
   var remaining = loan.amount - repaid;
   openPmModal({
@@ -2857,8 +2859,8 @@ function addRepayment(id) {
 }
 
 function doLoanRepayment(id, amount, dateStr) {
-  var loan = loans.find(function(l) { return l.id === id; });
-  if (!loan) return;
+  var loan = loans.find(function(l) { return String(l.id) === String(id); });
+  if (!loan) { toast('ไม่พบรายการยืมนี้ อาจถูกลบไปแล้ว ลองรีเฟรชหน้า', 'error'); return; }
 
   loan.repayments.push({ date: dateStr, amount: amount });
   saveLoans();
@@ -2903,20 +2905,15 @@ function delLoan(id) {
 }
 
 function saveLoans() {
-  // dedup by id — ถ้า id ซ้ำเอาอันแรก
+  // dedup by id เท่านั้น — ถ้า id ซ้ำเอาอันแรก
+  // (เดิมมี dedup pass 2 ที่เทียบ branch+from+date+amount ด้วย ซึ่งอันตรายมาก:
+  //  ถ้ายืมเงินคนเดียวกัน วันเดียวกัน จำนวนเท่ากัน 2 ครั้ง จะถูกลบทิ้งไปเหลือ 1 รายการ
+  //  ทั้งที่เป็นรายการยืมคนละครั้งจริงๆ — เอาออกเพื่อไม่ให้ข้อมูลหายแบบเงียบๆ)
   var seen = {};
   loans = loans.filter(function(l) {
-    var key = String(l.id);
+    var key = (typeof l.id) + ':' + String(l.id);
     if (seen[key]) return false;
     seen[key] = true;
-    return true;
-  });
-  // dedup by branch+from+date — กัน duplicate จากชีท
-  var seen2 = {};
-  loans = loans.filter(function(l) {
-    var key2 = (l.branch||'') + '|' + (l.from||'') + '|' + (l.date||'') + '|' + (l.amount||0);
-    if (seen2[key2]) return false;
-    seen2[key2] = true;
     return true;
   });
   localStorage.setItem('ct_loans', JSON.stringify(loans));
@@ -2941,52 +2938,68 @@ function renderLoans() {
     });
   }
 
+  var loanRenderErrors = 0;
   if (!list.length) { empty.style.display = 'block'; }
   else {
     empty.style.display = 'none';
-    list.forEach(function(loan) {
-      var repaid  = loan.repayments.reduce(function(s, r) { return s + r.amount; }, 0);
-      var remain  = loan.amount - repaid;
-      var settled = remain <= 0;
-      tAll  += loan.amount;
-      tPaid += repaid;
-      var branchName = BRANCH_NAMES[loan.branch] || loan.branch || '-';
-      var tr = document.createElement('tr');
-      tr.innerHTML =
-        '<td class="mono">' + loan.date + '</td>'
-        + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
-        + '<td style="font-weight:500;">' + loan.from + '</td>'
-        + '<td class="mono" style="color:var(--yellow);font-weight:500;">' + fmt(loan.amount) + '</td>'
-        + '<td style="font-size:12px;color:var(--text2);">' + (loan.purpose || '-') + '</td>'
-        + '<td class="mono" style="color:' + (settled ? 'var(--green)' : 'var(--red)') + ';font-weight:600;">' + fmt(Math.max(remain, 0)) + '</td>'
-        + '<td><span class="p-tag ' + (settled ? 'paid' : 'unpaid') + '">' + (settled ? '✓ คืนครบแล้ว' : '● ยังค้างอยู่') + '</span></td>'
-        + '<td style="display:flex;gap:4px;">'
-          + (!settled ? '<button class="btn btn-outline btn-sm" data-action="loan-repay" data-id="' + escAttr(loan.id) + '">+ คืนเงิน</button>' : '')
-          + '<button class="btn btn-danger btn-sm" data-action="loan-delete" data-id="' + escAttr(loan.id) + '">ลบ</button>'
-        + '</td>';
-      tbody.appendChild(tr);
+    list.forEach(function(loan, idx) {
+      try {
+        var repaid  = (loan.repayments || []).reduce(function(s, r) { return s + (r.amount || 0); }, 0);
+        var loanAmount = loan.amount || 0;
+        var remain  = loanAmount - repaid;
+        var settled = remain <= 0;
+        tAll  += loanAmount;
+        tPaid += repaid;
+        var branchName = BRANCH_NAMES[loan.branch] || loan.branch || '-';
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td class="mono">' + (loan.date || '-') + '</td>'
+          + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
+          + '<td style="font-weight:500;">' + (loan.from || '') + '</td>'
+          + '<td class="mono" style="color:var(--yellow);font-weight:500;">' + fmt(loanAmount) + '</td>'
+          + '<td style="font-size:12px;color:var(--text2);">' + (loan.purpose || '-') + '</td>'
+          + '<td class="mono" style="color:' + (settled ? 'var(--green)' : 'var(--red)') + ';font-weight:600;">' + fmt(Math.max(remain, 0)) + '</td>'
+          + '<td><span class="p-tag ' + (settled ? 'paid' : 'unpaid') + '">' + (settled ? '✓ คืนครบแล้ว' : '● ยังค้างอยู่') + '</span></td>'
+          + '<td style="display:flex;gap:4px;">'
+            + (!settled ? '<button class="btn btn-outline btn-sm" data-action="loan-repay" data-id="' + escAttr(loan.id) + '">+ คืนเงิน</button>' : '')
+            + '<button class="btn btn-danger btn-sm" data-action="loan-delete" data-id="' + escAttr(loan.id) + '">ลบ</button>'
+          + '</td>';
+        tbody.appendChild(tr);
 
-      if (loan.repayments.length) {
-        loan.repayments.forEach(function(r) {
-          var trSub = document.createElement('tr');
-          trSub.style.cssText = 'background:var(--green-t);';
-          trSub.innerHTML =
-            '<td class="mono" style="font-size:11px;color:var(--text3);padding-left:24px;">↳ คืน ' + r.date + '</td>'
-            + '<td colspan="3" style="font-size:11px;color:var(--green);">คืนเงิน</td>'
-            + '<td class="mono" style="font-size:11px;color:var(--green);">−' + fmt(r.amount) + '</td>'
-            + '<td colspan="2"></td>';
-          tbody.appendChild(trSub);
-        });
+        if (loan.repayments && loan.repayments.length) {
+          loan.repayments.forEach(function(r) {
+            var trSub = document.createElement('tr');
+            trSub.style.cssText = 'background:var(--green-t);';
+            trSub.innerHTML =
+              '<td class="mono" style="font-size:11px;color:var(--text3);padding-left:24px;">↳ คืน ' + r.date + '</td>'
+              + '<td colspan="3" style="font-size:11px;color:var(--green);">คืนเงิน</td>'
+              + '<td class="mono" style="font-size:11px;color:var(--green);">−' + fmt(r.amount) + '</td>'
+              + '<td colspan="2"></td>';
+            tbody.appendChild(trSub);
+          });
+        }
+      } catch(rowErr) {
+        loanRenderErrors++;
+        console.log('renderLoans row error idx=' + idx, loan, rowErr);
+        toast('เงินยืมแถวที่ ' + (idx+1) + ' แสดงผลผิดพลาด: ' + rowErr.message, 'error');
       }
     });
   }
 
-  tbody.querySelectorAll('[data-action="loan-repay"]').forEach(function(el) {
-    el.onclick = function() { addRepayment(matchLoanId(el.getAttribute('data-id'))); };
-  });
-  tbody.querySelectorAll('[data-action="loan-delete"]').forEach(function(el) {
-    el.onclick = function() { delLoan(matchLoanId(el.getAttribute('data-id'))); };
-  });
+  try {
+    tbody.querySelectorAll('[data-action="loan-repay"]').forEach(function(el) {
+      el.onclick = function() { addRepayment(matchLoanId(el.getAttribute('data-id'))); };
+    });
+    tbody.querySelectorAll('[data-action="loan-delete"]').forEach(function(el) {
+      el.onclick = function() { delLoan(matchLoanId(el.getAttribute('data-id'))); };
+    });
+  } catch(bindErr) {
+    console.log('renderLoans bind error', bindErr);
+    toast('ผูกปุ่มเงินยืมไม่สำเร็จ: ' + bindErr.message, 'error');
+  }
+  if (loanRenderErrors > 0) {
+    toast('เงินยืม: พบข้อผิดพลาด ' + loanRenderErrors + ' แถว', 'error');
+  }
 
   var tRemain = tAll - tPaid;
   var totAll    = document.getElementById('loan-tot-all');
@@ -3023,8 +3036,8 @@ function addSalary() {
 }
 
 function partialPaySalary(id) {
-  var item = salaries.find(function(s) { return s.id === id; });
-  if (!item) return;
+  var item = salaries.find(function(s) { return String(s.id) === String(id); });
+  if (!item) { toast('ไม่พบรายการเงินเดือนนี้ อาจถูกลบหรือ sync ไปแล้ว ลองรีเฟรชหน้า', 'error'); return; }
   if (!item.partialPayments) item.partialPayments = [];
   var alreadyPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
   var remaining = item.amount - alreadyPaid;
@@ -3077,40 +3090,56 @@ function renderSalaries() {
 
   if (!list.length) { empty.style.display = 'block'; return; }
   empty.style.display = 'none';
-  list.forEach(function(item) {
-    var branchName = BRANCH_NAMES[item.branch] || item.branch;
-    var partials = item.partialPayments || [];
-    var totalPartial = partials.reduce(function(s, p) { return s + p.amount; }, 0);
-    var remaining = item.amount - totalPartial;
-    var isPartial = totalPartial > 0 && remaining > 0;
-    var isPaid = item.paid || remaining <= 0;
-    var tr = document.createElement('tr');
-    tr.innerHTML =
-      '<td class="mono">' + (item.date || '-') + '</td>'
-      + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
-      + '<td style="font-size:13px;font-weight:500;">' + item.name + '</td>'
-      + '<td class="mono">' + (item.month || '-') + '</td>'
-      + '<td class="mono" style="font-weight:500;">'
-        + '<span style="color:' + (isPaid ? 'var(--green)' : 'var(--blue)') + ';">' + fmt(item.amount) + '</span>'
-        + (isPartial ? '<div style="font-size:10px;color:var(--red);">ค้าง: ' + fmt(remaining) + '</div>' : '')
-        + (isPartial ? '<div style="font-size:10px;color:var(--green);">จ่ายแล้ว: ' + fmt(totalPartial) + '</div>' : '')
-        + '</td>'
-      + '<td>'
-        + '<span class="p-tag ' + (isPaid ? 'paid' : 'unpaid') + '">'
-          + (isPaid ? '✓ จ่ายครบ' : (isPartial ? '◑ จ่ายบางส่วน' : '● ยังไม่จ่าย')) + '</span>'
-        + (!isPaid ? '<div style="margin-top:4px;"><button class="btn btn-outline btn-sm" style="font-size:11px;padding:3px 8px;" data-action="salary-partial" data-id="' + escAttr(item.id) + '">+ ชำระบางส่วน</button></div>' : '')
-        + '</td>'
-      + '<td style="font-size:12px;color:var(--text3);">' + (item.note || '-') + '</td>'
-      + '<td><button class="btn btn-danger btn-sm" data-action="salary-delete" data-id="' + escAttr(item.id) + '">ลบ</button></td>';
-    tbody.appendChild(tr);
+  var salRenderErrors = 0;
+  list.forEach(function(item, idx) {
+    try {
+      var branchName = BRANCH_NAMES[item.branch] || item.branch;
+      var partials = item.partialPayments || [];
+      var totalPartial = partials.reduce(function(s, p) { return s + (p.amount || 0); }, 0);
+      var itemAmount = item.amount || 0;
+      var remaining = itemAmount - totalPartial;
+      var isPartial = totalPartial > 0 && remaining > 0;
+      var isPaid = item.paid || remaining <= 0;
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td class="mono">' + (item.date || '-') + '</td>'
+        + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
+        + '<td style="font-size:13px;font-weight:500;">' + (item.name || '') + '</td>'
+        + '<td class="mono">' + (item.month || '-') + '</td>'
+        + '<td class="mono" style="font-weight:500;">'
+          + '<span style="color:' + (isPaid ? 'var(--green)' : 'var(--blue)') + ';">' + fmt(itemAmount) + '</span>'
+          + (isPartial ? '<div style="font-size:10px;color:var(--red);">ค้าง: ' + fmt(remaining) + '</div>' : '')
+          + (isPartial ? '<div style="font-size:10px;color:var(--green);">จ่ายแล้ว: ' + fmt(totalPartial) + '</div>' : '')
+          + '</td>'
+        + '<td>'
+          + '<span class="p-tag ' + (isPaid ? 'paid' : 'unpaid') + '">'
+            + (isPaid ? '✓ จ่ายครบ' : (isPartial ? '◑ จ่ายบางส่วน' : '● ยังไม่จ่าย')) + '</span>'
+          + (!isPaid ? '<div style="margin-top:4px;"><button class="btn btn-outline btn-sm" style="font-size:11px;padding:3px 8px;" data-action="salary-partial" data-id="' + escAttr(item.id) + '">+ ชำระบางส่วน</button></div>' : '')
+          + '</td>'
+        + '<td style="font-size:12px;color:var(--text3);">' + (item.note || '-') + '</td>'
+        + '<td><button class="btn btn-danger btn-sm" data-action="salary-delete" data-id="' + escAttr(item.id) + '">ลบ</button></td>';
+      tbody.appendChild(tr);
+    } catch(rowErr) {
+      salRenderErrors++;
+      console.log('renderSalaries row error idx=' + idx, item, rowErr);
+      toast('เงินเดือนแถวที่ ' + (idx+1) + ' แสดงผลผิดพลาด: ' + rowErr.message, 'error');
+    }
   });
 
-  tbody.querySelectorAll('[data-action="salary-partial"]').forEach(function(el) {
-    el.onclick = function() { partialPaySalary(matchSalaryId(el.getAttribute('data-id'))); };
-  });
-  tbody.querySelectorAll('[data-action="salary-delete"]').forEach(function(el) {
-    el.onclick = function() { delSalary(matchSalaryId(el.getAttribute('data-id'))); };
-  });
+  try {
+    tbody.querySelectorAll('[data-action="salary-partial"]').forEach(function(el) {
+      el.onclick = function() { partialPaySalary(matchSalaryId(el.getAttribute('data-id'))); };
+    });
+    tbody.querySelectorAll('[data-action="salary-delete"]').forEach(function(el) {
+      el.onclick = function() { delSalary(matchSalaryId(el.getAttribute('data-id'))); };
+    });
+  } catch(bindErr) {
+    console.log('renderSalaries bind error', bindErr);
+    toast('ผูกปุ่มเงินเดือนไม่สำเร็จ: ' + bindErr.message, 'error');
+  }
+  if (salRenderErrors > 0) {
+    toast('เงินเดือน: พบข้อผิดพลาด ' + salRenderErrors + ' แถว', 'error');
+  }
 }
 
 function matchSalaryId(rawId) {

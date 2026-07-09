@@ -102,6 +102,14 @@ tr:hover td{background:var(--bg3);}
 .month-row select,.month-row input[type="month"]{width:auto;min-width:148px;}
 .payable-fixed-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 16px;margin-bottom:10px;}
 .payable-fixed-title{font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.pm-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:99998;display:none;align-items:center;justify-content:center;padding:20px;}
+.pm-overlay.active{display:flex;}
+.pm-box{background:#fff;border-radius:16px;padding:22px 20px;max-width:360px;width:100%;box-shadow:0 12px 48px rgba(0,0,0,.25);}
+.pm-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.pm-sub{font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.7;}
+.pm-sub b{color:var(--text);}
+.pm-actions{display:flex;gap:8px;margin-top:16px;}
+.pm-actions .btn{flex:1;justify-content:center;padding:11px;font-size:14px;}
 </style>
 </head>
 <body>
@@ -1022,6 +1030,26 @@ tr:hover td{background:var(--bg3);}
 </div>
 
 </div>
+<!-- Partial Payment Modal (replaces prompt() which is unreliable on iOS Safari) -->
+<div class="pm-overlay" id="pm-overlay">
+  <div class="pm-box">
+    <div class="pm-title" id="pm-title">ชำระบางส่วน</div>
+    <div class="pm-sub" id="pm-sub"></div>
+    <div class="form-row">
+      <label>จำนวนที่ชำระครั้งนี้ (฿)</label>
+      <input type="number" id="pm-amount" placeholder="0.00" step="0.01" inputmode="decimal">
+    </div>
+    <div class="form-row" style="margin-bottom:0;">
+      <label>วันที่ชำระ</label>
+      <input type="date" id="pm-date">
+    </div>
+    <div class="pm-actions">
+      <button class="btn btn-outline" onclick="closePmModal()">ยกเลิก</button>
+      <button class="btn btn-primary" id="pm-confirm-btn" onclick="confirmPmModal()">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toast-wrap"></div>
 
 <script>
@@ -1381,24 +1409,114 @@ function addPayable() {
   toast('เพิ่มรายการแล้ว ✓', 'success');
 }
 
+// ════ Partial-payment / date-entry Modal (replaces prompt(), unreliable on iOS Safari) ════
+var pmContext = null; // { kind: 'payable-full' | 'payable-partial' | 'salary-partial', id: ... }
+
+function openPmModal(cfg) {
+  pmContext = cfg;
+  document.getElementById('pm-title').textContent = cfg.title;
+  document.getElementById('pm-sub').innerHTML = cfg.sub || '';
+  var amountRow = document.getElementById('pm-amount').closest('.form-row');
+  if (cfg.showAmount === false) {
+    amountRow.style.display = 'none';
+  } else {
+    amountRow.style.display = '';
+    document.getElementById('pm-amount').value = '';
+  }
+  document.getElementById('pm-date').value = cfg.defaultDate || new Date().toISOString().split('T')[0];
+  document.getElementById('pm-overlay').classList.add('active');
+  if (cfg.showAmount !== false) {
+    setTimeout(function() { document.getElementById('pm-amount').focus(); }, 50);
+  }
+}
+
+function closePmModal() {
+  document.getElementById('pm-overlay').classList.remove('active');
+  pmContext = null;
+}
+
+function confirmPmModal() {
+  if (!pmContext) return;
+  var dateVal = document.getElementById('pm-date').value;
+  if (!dateVal) { toast('กรุณาเลือกวันที่', 'error'); return; }
+
+  if (pmContext.kind === 'payable-full') {
+    var item = payables.find(function(p) { return p.id === pmContext.id; });
+    if (!item) { closePmModal(); return; }
+    item.paid = true;
+    item.paidDate = dateVal;
+    item.paidAmount = item.amount;
+    closePmModal();
+    savePay(); renderPayables();
+    toast('บันทึกการชำระแล้ว ✓', 'success');
+
+  } else if (pmContext.kind === 'payable-partial') {
+    var amountVal = parseFloat(document.getElementById('pm-amount').value);
+    if (!amountVal || amountVal <= 0) { toast('กรุณากรอกจำนวนเงิน', 'error'); return; }
+    var item = payables.find(function(p) { return p.id === pmContext.id; });
+    if (!item) { closePmModal(); return; }
+    if (!item.partialPayments) item.partialPayments = [];
+    var alreadyPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
+    var remaining = item.amount - alreadyPaid;
+    if (amountVal > remaining) { toast('จำนวนมากกว่ายอดค้าง', 'error'); return; }
+    item.partialPayments.push({ date: dateVal, amount: amountVal });
+    var totalPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
+    var isFullNow = totalPaid >= item.amount;
+    if (isFullNow) {
+      item.paid = true;
+      item.paidDate = dateVal;
+      item.paidAmount = item.amount;
+    }
+    closePmModal();
+    savePay(); renderPayables();
+    toast(isFullNow ? 'ชำระครบแล้ว ✓' : ('บันทึกการชำระ ฿' + amountVal.toLocaleString('th-TH', {minimumFractionDigits:2}) + ' แล้ว ✓'), 'success');
+
+  } else if (pmContext.kind === 'salary-partial') {
+    var amountVal = parseFloat(document.getElementById('pm-amount').value);
+    if (!amountVal || amountVal <= 0) { toast('กรุณากรอกจำนวนเงิน', 'error'); return; }
+    var item = salaries.find(function(s) { return s.id === pmContext.id; });
+    if (!item) { closePmModal(); return; }
+    if (!item.partialPayments) item.partialPayments = [];
+    var alreadyPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
+    var remaining = item.amount - alreadyPaid;
+    if (amountVal > remaining) { toast('จำนวนมากกว่ายอดค้าง', 'error'); return; }
+    item.partialPayments.push({ date: dateVal, amount: amountVal });
+    var totalPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
+    var isFullNow = totalPaid >= item.amount;
+    if (isFullNow) item.paid = true;
+    closePmModal();
+    saveSalaries(); renderSalaries();
+    toast(isFullNow ? 'จ่ายเงินเดือนครบแล้ว ✓' : ('บันทึกการจ่าย ฿' + amountVal.toLocaleString('th-TH', {minimumFractionDigits:2}) + ' แล้ว ✓'), 'success');
+
+  } else if (pmContext.kind === 'loan-repay') {
+    var amountVal = parseFloat(document.getElementById('pm-amount').value);
+    if (!amountVal || amountVal <= 0) { toast('กรุณากรอกจำนวนเงิน', 'error'); return; }
+    var loanId = pmContext.id;
+    closePmModal();
+    doLoanRepayment(loanId, amountVal, dateVal);
+  }
+}
+
 function togglePaid(id) {
   var item = payables.find(function(p) { return p.id === id; });
   if (!item) return;
   if (!item.paid) {
-    var defaultDate = new Date().toISOString().split('T')[0];
-    var paidDate = prompt('กรอกวันที่ชำระจริง (YYYY-MM-DD):', defaultDate);
-    if (!paidDate) return;
-    item.paid = true;
-    item.paidDate = paidDate;
-    item.paidAmount = item.amount; // ชำระเต็มจำนวน
+    openPmModal({
+      kind: 'payable-full',
+      id: id,
+      title: 'ยืนยันการชำระ',
+      sub: 'รายการ: <b>' + item.desc + '</b><br>จำนวน: <b>฿' + item.amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b>',
+      showAmount: false,
+      defaultDate: new Date().toISOString().split('T')[0]
+    });
   } else {
     if (!confirm('ยกเลิกการชำระรายการนี้?')) return;
     item.paid = false;
     item.paidDate = null;
     item.paidAmount = 0;
     item.partialPayments = [];
+    savePay(); renderPayables();
   }
-  savePay(); renderPayables();
 }
 
 function partialPay(id) {
@@ -1407,24 +1525,13 @@ function partialPay(id) {
   if (!item.partialPayments) item.partialPayments = [];
   var alreadyPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
   var remaining = item.amount - alreadyPaid;
-  var amountStr = prompt('ชำระบางส่วน\nยอดทั้งหมด: ฿' + item.amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + '\nชำระแล้ว: ฿' + alreadyPaid.toLocaleString('th-TH', {minimumFractionDigits:2}) + '\nค้างอยู่: ฿' + remaining.toLocaleString('th-TH', {minimumFractionDigits:2}) + '\n\nกรอกจำนวนที่ชำระครั้งนี้ (฿):');
-  var amount = parseFloat(amountStr);
-  if (!amount || amount <= 0) return;
-  if (amount > remaining) { toast('จำนวนมากกว่ายอดค้าง', 'error'); return; }
-  var defaultDate = new Date().toISOString().split('T')[0];
-  var paidDate = prompt('วันที่ชำระ (YYYY-MM-DD):', defaultDate);
-  if (!paidDate) return;
-  item.partialPayments.push({ date: paidDate, amount: amount });
-  var totalPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
-  if (totalPaid >= item.amount) {
-    item.paid = true;
-    item.paidDate = paidDate;
-    item.paidAmount = item.amount;
-    toast('ชำระครบแล้ว ✓', 'success');
-  } else {
-    toast('บันทึกการชำระ ฿' + amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + ' แล้ว ✓', 'success');
-  }
-  savePay(); renderPayables();
+  openPmModal({
+    kind: 'payable-partial',
+    id: id,
+    title: 'ชำระบางส่วน',
+    sub: 'รายการ: <b>' + item.desc + '</b><br>ยอดทั้งหมด: <b>฿' + item.amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b><br>ชำระแล้ว: <b>฿' + alreadyPaid.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b><br>ค้างอยู่: <b>฿' + remaining.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b>',
+    defaultDate: new Date().toISOString().split('T')[0]
+  });
 }
 
 function delPayable(id) {
@@ -2690,12 +2797,20 @@ function addLoan() {
 }
 
 function addRepayment(id) {
-  var amountStr = prompt('กรอกจำนวนที่คืน (฿):');
-  var amount = parseFloat(amountStr);
-  if (!amount || amount <= 0) return;
-  var dateStr = prompt('วันที่คืน (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
-  if (!dateStr) return;
+  var loan = loans.find(function(l) { return l.id === id; });
+  if (!loan) return;
+  var repaid = loan.repayments.reduce(function(s, r) { return s + r.amount; }, 0);
+  var remaining = loan.amount - repaid;
+  openPmModal({
+    kind: 'loan-repay',
+    id: id,
+    title: 'บันทึกการคืนเงิน',
+    sub: 'ยืมจาก: <b>' + loan.from + '</b><br>ยอดยืม: <b>฿' + loan.amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b><br>คืนแล้ว: <b>฿' + repaid.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b><br>ค้างอยู่: <b>฿' + remaining.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b>',
+    defaultDate: new Date().toISOString().split('T')[0]
+  });
+}
 
+function doLoanRepayment(id, amount, dateStr) {
   var loan = loans.find(function(l) { return l.id === id; });
   if (!loan) return;
 
@@ -2860,23 +2975,13 @@ function partialPaySalary(id) {
   if (!item.partialPayments) item.partialPayments = [];
   var alreadyPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
   var remaining = item.amount - alreadyPaid;
-  var amountStr = prompt('ชำระเงินเดือน: ' + item.name + '\nยอดทั้งหมด: ฿' + item.amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + '\nจ่ายแล้ว: ฿' + alreadyPaid.toLocaleString('th-TH', {minimumFractionDigits:2}) + '\nค้างอยู่: ฿' + remaining.toLocaleString('th-TH', {minimumFractionDigits:2}) + '\n\nกรอกจำนวนที่จ่ายครั้งนี้ (฿):');
-  var amount = parseFloat(amountStr);
-  if (!amount || amount <= 0) return;
-  if (amount > remaining) { toast('จำนวนมากกว่ายอดค้าง', 'error'); return; }
-  var defaultDate = new Date().toISOString().split('T')[0];
-  var paidDate = prompt('วันที่จ่าย (YYYY-MM-DD):', defaultDate);
-  if (!paidDate) return;
-  item.partialPayments.push({ date: paidDate, amount: amount });
-  var totalPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
-  if (totalPaid >= item.amount) {
-    item.paid = true;
-    toast('จ่ายเงินเดือนครบแล้ว ✓', 'success');
-  } else {
-    toast('บันทึกการจ่าย ฿' + amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + ' แล้ว ✓', 'success');
-  }
-  saveSalaries();
-  renderSalaries();
+  openPmModal({
+    kind: 'salary-partial',
+    id: id,
+    title: 'ชำระเงินเดือน',
+    sub: 'พนักงาน: <b>' + item.name + '</b><br>ยอดทั้งหมด: <b>฿' + item.amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b><br>จ่ายแล้ว: <b>฿' + alreadyPaid.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b><br>ค้างอยู่: <b>฿' + remaining.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b>',
+    defaultDate: new Date().toISOString().split('T')[0]
+  });
 }
 
 function delSalary(id) {

@@ -1604,38 +1604,80 @@ function renderPayables() {
   empty.style.display = 'none';
 
   var today = new Date().toISOString().split('T')[0];
-  list.forEach(function(item) {
-    var overdue = !item.paid && item.due && item.due < today;
-    var branchName = BRANCH_NAMES[item.branch] || item.branch;
-    var displayDate = item.indate || item.date || '-';
-    var partials = item.partialPayments || [];
-    var totalPartial = partials.reduce(function(s, p) { return s + p.amount; }, 0);
-    var remaining = item.amount - totalPartial;
-    var isPartial = !item.paid && totalPartial > 0;
-    var tr = document.createElement('tr');
-    tr.innerHTML =
-      '<td class="mono">' + displayDate + '</td>'
-      + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
-      + '<td><div style="font-size:13px;">' + item.desc + '</div>'
-        + (item.note ? '<div style="font-size:11px;color:var(--text3);">' + item.note + '</div>' : '') + '</td>'
-      + '<td class="mono">' + (item.billno || '-') + '</td>'
-      + '<td class="mono">' + (item.indate || '-') + '</td>'
-      + '<td class="mono" style="font-weight:500;">'
-        + fmt(item.amount)
-        + (isPartial ? '<div style="font-size:10px;color:var(--red);">ค้าง: ' + fmt(remaining) + '</div>' : '')
-        + (isPartial ? '<div style="font-size:10px;color:var(--green);">จ่ายแล้ว: ' + fmt(totalPartial) + '</div>' : '')
-        + '</td>'
-      + '<td class="mono" style="' + (overdue ? 'color:var(--red);font-weight:600;' : '') + '">'
-        + (item.due || '-') + (overdue ? ' ⚠' : '') + '</td>'
-      + '<td>'
-        + '<span class="p-tag ' + (item.paid ? 'paid' : (isPartial ? 'unpaid' : 'unpaid')) + '" onclick="togglePaid(' + item.id + ')">'
-          + (item.paid ? '✓ ชำระแล้ว' : (isPartial ? '◑ ชำระบางส่วน' : '● ค้างชำระ')) + '</span>'
-        + (item.paid && item.paidDate ? '<div style="font-size:10px;color:var(--text3);margin-top:2px;">' + item.paidDate + '</div>' : '')
-        + (!item.paid ? '<div style="margin-top:4px;"><button class="btn btn-outline btn-sm" style="font-size:11px;padding:3px 8px;" onclick="partialPay(' + item.id + ')">+ ชำระบางส่วน</button></div>' : '')
-        + '</td>'
-      + '<td><button class="btn btn-danger btn-sm" onclick="delPayable(' + item.id + ')">ลบ</button></td>';
-    tbody.appendChild(tr);
+  var renderErrors = 0;
+  list.forEach(function(item, idx) {
+    try {
+      var overdue = !item.paid && item.due && item.due < today;
+      var branchName = BRANCH_NAMES[item.branch] || item.branch;
+      var displayDate = item.indate || item.date || '-';
+      var partials = item.partialPayments || [];
+      var totalPartial = partials.reduce(function(s, p) { return s + (p.amount || 0); }, 0);
+      var itemAmount = item.amount || 0;
+      var remaining = itemAmount - totalPartial;
+      var isPartial = !item.paid && totalPartial > 0;
+      var tr = document.createElement('tr');
+      // ใช้ data-id แทนการฝัง item.id ตรงๆ ใน onclick string
+      // เพราะ id ที่มาจากชีท (fallback) อาจเป็น string ที่มีช่องว่าง/ภาษาไทย/อักขระพิเศษ
+      // ซึ่งทำให้ onclick="fn(' + id + ')" พัง (ไม่มี quote ครอบ) ปุ่มกดไม่ออกเลย
+      tr.innerHTML =
+        '<td class="mono">' + displayDate + '</td>'
+        + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
+        + '<td><div style="font-size:13px;">' + (item.desc || '') + '</div>'
+          + (item.note ? '<div style="font-size:11px;color:var(--text3);">' + item.note + '</div>' : '') + '</td>'
+        + '<td class="mono">' + (item.billno || '-') + '</td>'
+        + '<td class="mono">' + (item.indate || '-') + '</td>'
+        + '<td class="mono" style="font-weight:500;">'
+          + fmt(itemAmount)
+          + (isPartial ? '<div style="font-size:10px;color:var(--red);">ค้าง: ' + fmt(remaining) + '</div>' : '')
+          + (isPartial ? '<div style="font-size:10px;color:var(--green);">จ่ายแล้ว: ' + fmt(totalPartial) + '</div>' : '')
+          + '</td>'
+        + '<td class="mono" style="' + (overdue ? 'color:var(--red);font-weight:600;' : '') + '">'
+          + (item.due || '-') + (overdue ? ' ⚠' : '') + '</td>'
+        + '<td>'
+          + '<span class="p-tag ' + (item.paid ? 'paid' : (isPartial ? 'unpaid' : 'unpaid')) + '" data-action="toggle" data-id="' + escAttr(item.id) + '">'
+            + (item.paid ? '✓ ชำระแล้ว' : (isPartial ? '◑ ชำระบางส่วน' : '● ค้างชำระ')) + '</span>'
+          + (item.paid && item.paidDate ? '<div style="font-size:10px;color:var(--text3);margin-top:2px;">' + item.paidDate + '</div>' : '')
+          + (!item.paid ? '<div style="margin-top:4px;"><button class="btn btn-outline btn-sm" style="font-size:11px;padding:3px 8px;" data-action="partial" data-id="' + escAttr(item.id) + '">+ ชำระบางส่วน</button></div>' : '')
+          + '</td>'
+        + '<td><button class="btn btn-danger btn-sm" data-action="delete" data-id="' + escAttr(item.id) + '">ลบ</button></td>';
+      tbody.appendChild(tr);
+    } catch(rowErr) {
+      renderErrors++;
+      console.log('renderPayables row error idx=' + idx, item, rowErr);
+      toast('แถวที่ ' + (idx+1) + ' แสดงผลผิดพลาด: ' + rowErr.message, 'error');
+    }
   });
+
+  // ผูก event ทีเดียวหลัง render เสร็จ — ปลอดภัยกับ id ทุกรูปแบบ (ไม่ต้องพึ่ง onclick string)
+  try {
+    tbody.querySelectorAll('[data-action="toggle"]').forEach(function(el) {
+      el.onclick = function() { togglePaid(matchPayableId(el.getAttribute('data-id'))); };
+    });
+    tbody.querySelectorAll('[data-action="partial"]').forEach(function(el) {
+      el.onclick = function() { partialPay(matchPayableId(el.getAttribute('data-id'))); };
+    });
+    tbody.querySelectorAll('[data-action="delete"]').forEach(function(el) {
+      el.onclick = function() { delPayable(matchPayableId(el.getAttribute('data-id'))); };
+    });
+  } catch(bindErr) {
+    console.log('renderPayables bind error', bindErr);
+    toast('ผูกปุ่มไม่สำเร็จ: ' + bindErr.message, 'error');
+  }
+  if (renderErrors > 0) {
+    toast('พบข้อผิดพลาด ' + renderErrors + ' แถว — บางปุ่มอาจใช้งานไม่ได้', 'error');
+  }
+}
+
+// escape ค่าที่จะใส่ใน HTML attribute (กัน id ที่มี " หรือ ' ทำให้ attribute พัง)
+function escAttr(v) {
+  return String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// data-id เก็บเป็น string เสมอ (HTML attribute) แต่ payables[].id อาจเป็น number หรือ string
+// ฟังก์ชันนี้หา id ที่ตรงกันจริงจาก payables array โดยเทียบแบบ loose (String ทั้งคู่)
+function matchPayableId(rawId) {
+  var found = payables.find(function(p) { return String(p.id) === String(rawId); });
+  return found ? found.id : rawId;
 }
 
 async function safePost(url, payload) {
@@ -2675,14 +2717,18 @@ function renderAdminPayables() {
       + '<td><span class="p-tag ' + (item.paid ? 'paid' : 'unpaid') + '">'
         + (item.paid ? '✓ ชำระแล้ว' : '● ค้างชำระ') + '</span></td>'
       + '<td class="mono">' + (item.paidDate || '-') + '</td>'
-      + '<td><button class="btn btn-danger btn-sm" onclick="admDelPayable(' + item.id + ')">ลบ</button></td>';
+      + '<td><button class="btn btn-danger btn-sm" data-action="adm-delete" data-id="' + escAttr(item.id) + '">ลบ</button></td>';
     tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll('[data-action="adm-delete"]').forEach(function(el) {
+    el.onclick = function() { admDelPayable(matchPayableId(el.getAttribute('data-id'))); };
   });
 }
 
 function admDelPayable(id) {
   if (!confirm('ลบรายการนี้?')) return;
-  payables = payables.filter(function(p) { return p.id !== id; });
+  payables = payables.filter(function(p) { return String(p.id) !== String(id); });
   savePay();
   renderAdminPanel();
   renderPayables();
@@ -2851,7 +2897,7 @@ function doLoanRepayment(id, amount, dateStr) {
 
 function delLoan(id) {
   if (!confirm('ลบรายการนี้?')) return;
-  loans = loans.filter(function(l) { return l.id !== id; });
+  loans = loans.filter(function(l) { return String(l.id) !== String(id); });
   saveLoans();
   renderLoans();
 }
@@ -2915,8 +2961,8 @@ function renderLoans() {
         + '<td class="mono" style="color:' + (settled ? 'var(--green)' : 'var(--red)') + ';font-weight:600;">' + fmt(Math.max(remain, 0)) + '</td>'
         + '<td><span class="p-tag ' + (settled ? 'paid' : 'unpaid') + '">' + (settled ? '✓ คืนครบแล้ว' : '● ยังค้างอยู่') + '</span></td>'
         + '<td style="display:flex;gap:4px;">'
-          + (!settled ? '<button class="btn btn-outline btn-sm" onclick="addRepayment(' + loan.id + ')">+ คืนเงิน</button>' : '')
-          + '<button class="btn btn-danger btn-sm" onclick="delLoan(' + loan.id + ')">ลบ</button>'
+          + (!settled ? '<button class="btn btn-outline btn-sm" data-action="loan-repay" data-id="' + escAttr(loan.id) + '">+ คืนเงิน</button>' : '')
+          + '<button class="btn btn-danger btn-sm" data-action="loan-delete" data-id="' + escAttr(loan.id) + '">ลบ</button>'
         + '</td>';
       tbody.appendChild(tr);
 
@@ -2934,6 +2980,13 @@ function renderLoans() {
       }
     });
   }
+
+  tbody.querySelectorAll('[data-action="loan-repay"]').forEach(function(el) {
+    el.onclick = function() { addRepayment(matchLoanId(el.getAttribute('data-id'))); };
+  });
+  tbody.querySelectorAll('[data-action="loan-delete"]').forEach(function(el) {
+    el.onclick = function() { delLoan(matchLoanId(el.getAttribute('data-id'))); };
+  });
 
   var tRemain = tAll - tPaid;
   var totAll    = document.getElementById('loan-tot-all');
@@ -2986,7 +3039,7 @@ function partialPaySalary(id) {
 
 function delSalary(id) {
   if (!confirm('ลบรายการนี้?')) return;
-  salaries = salaries.filter(function(s) { return s.id !== id; });
+  salaries = salaries.filter(function(s) { return String(s.id) !== String(id); });
   saveSalaries();
   renderSalaries();
 }
@@ -3045,12 +3098,29 @@ function renderSalaries() {
       + '<td>'
         + '<span class="p-tag ' + (isPaid ? 'paid' : 'unpaid') + '">'
           + (isPaid ? '✓ จ่ายครบ' : (isPartial ? '◑ จ่ายบางส่วน' : '● ยังไม่จ่าย')) + '</span>'
-        + (!isPaid ? '<div style="margin-top:4px;"><button class="btn btn-outline btn-sm" style="font-size:11px;padding:3px 8px;" onclick="partialPaySalary(' + item.id + ')">+ ชำระบางส่วน</button></div>' : '')
+        + (!isPaid ? '<div style="margin-top:4px;"><button class="btn btn-outline btn-sm" style="font-size:11px;padding:3px 8px;" data-action="salary-partial" data-id="' + escAttr(item.id) + '">+ ชำระบางส่วน</button></div>' : '')
         + '</td>'
       + '<td style="font-size:12px;color:var(--text3);">' + (item.note || '-') + '</td>'
-      + '<td><button class="btn btn-danger btn-sm" onclick="delSalary(' + item.id + ')">ลบ</button></td>';
+      + '<td><button class="btn btn-danger btn-sm" data-action="salary-delete" data-id="' + escAttr(item.id) + '">ลบ</button></td>';
     tbody.appendChild(tr);
   });
+
+  tbody.querySelectorAll('[data-action="salary-partial"]').forEach(function(el) {
+    el.onclick = function() { partialPaySalary(matchSalaryId(el.getAttribute('data-id'))); };
+  });
+  tbody.querySelectorAll('[data-action="salary-delete"]').forEach(function(el) {
+    el.onclick = function() { delSalary(matchSalaryId(el.getAttribute('data-id'))); };
+  });
+}
+
+function matchSalaryId(rawId) {
+  var found = salaries.find(function(s) { return String(s.id) === String(rawId); });
+  return found ? found.id : rawId;
+}
+
+function matchLoanId(rawId) {
+  var found = loans.find(function(l) { return String(l.id) === String(rawId); });
+  return found ? found.id : rawId;
 }
 
 // ════ EDIT MODE ════
@@ -3192,7 +3262,7 @@ function addAcctExp() {
 
 function delAcctExp(id) {
   if (!confirm('ลบรายการนี้?')) return;
-  acctExps = acctExps.filter(function(x) { return x.id !== id; });
+  acctExps = acctExps.filter(function(x) { return String(x.id) !== String(id); });
   saveAcctExp();
   renderAcctExp();
 }
@@ -3245,8 +3315,16 @@ function renderAcctExp() {
       + '<td><span class="badge badge-gray">' + item.cat + '</span></td>'
       + '<td class="mono" style="font-weight:500;">' + fmt(item.amount) + '</td>'
       + '<td style="font-size:12px;color:var(--text3);">' + (item.note || '-') + '</td>'
-      + '<td><button class="btn btn-danger btn-sm" onclick="delAcctExp(' + item.id + ')">ลบ</button></td>';
+      + '<td><button class="btn btn-danger btn-sm" data-action="ae-delete" data-id="' + escAttr(item.id) + '">ลบ</button></td>';
     tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll('[data-action="ae-delete"]').forEach(function(el) {
+    el.onclick = function() {
+      var rawId = el.getAttribute('data-id');
+      var found = acctExps.find(function(x) { return String(x.id) === String(rawId); });
+      delAcctExp(found ? found.id : rawId);
+    };
   });
 }
 
@@ -3681,6 +3759,17 @@ function toast(msg, type) {
   setTimeout(function() { t.remove(); }, 3200);
 }
 
+// ตัวจับ error ทั้งหน้า — โชว์เป็น toast แทนที่จะเงียบแล้วปุ่มค้าง
+// ช่วยให้เห็นว่า error เกิดตรงไหน (ไฟล์/บรรทัด/ข้อความ) โดยไม่ต้องเปิด Web Inspector
+window.onerror = function(message, source, lineno, colno, error) {
+  try {
+    var shortMsg = String(message).slice(0, 120);
+    toast('เกิดข้อผิดพลาด (บรรทัด ' + lineno + '): ' + shortMsg, 'error');
+    console.log('window.onerror', message, source, lineno, colno, error);
+  } catch(e) {}
+  return false; // ให้ error ยัง log ใน console ตามปกติด้วย
+};
+
 
 
 if (localStorage.getItem('ct_cp_unsynced') === '1') {
@@ -3710,6 +3799,3 @@ window.addEventListener('beforeunload', function(e) {
 </div>
 </body>
 </html>
-
-
-

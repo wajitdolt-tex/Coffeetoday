@@ -1412,7 +1412,7 @@ function cleanupStaleRecipeIngredients(){
 async function loadCarryForward(branch){
   const today = todayDateStr();
   try {
-    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${today}&select=material_id,actual_big,actual_small,received,pos_sale,note,count_date&order=count_date.desc,id.desc`);
+    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${today}&select=material_id,actual_big,actual_small,received,pos_sale,note,carry_expr_big,carry_expr_small,count_date&order=count_date.desc,id.desc`);
     if (!rows) return;
 
     // สาขาที่ยังไม่มีประวัติเลย → reset carry ทุกตัวเป็น 0 ก่อน
@@ -1443,19 +1443,11 @@ async function loadCarryForward(branch){
         && counted && counted.count_date < latest.count_date;
       const useRow  = latestIsExplicitZero ? latest : (counted || latest);
       mat.carry = (Number(useRow.actual_big) || 0) * mat.ratio + (mat.noFraction ? 0 : (Number(useRow.actual_small) || 0));
-      // ดึง expression ดิบของยอดยกมา (เช่น "เต็ม:72+3 เศษ:6") จาก note ที่เก็บไว้ตอนบันทึก
-      // รูปแบบ: [note ปกติ]\u200b เต็ม:[actualBig expr] เศษ:[actualSmall expr][\u200c borrowNote]
-      if (useRow.note && useRow.note.includes('\u200b')) {
-        const exprPart = useRow.note.split('\u200b')[1].split('\u200c')[0]; // ตัด borrowNote ท้ายออกก่อน
-        const bigMatch = exprPart.match(/เต็ม:([^\s]+)/);
-        const smallMatch = exprPart.match(/เศษ:([^\s]+)/);
-        const bigExpr = bigMatch ? bigMatch[1] : '';
-        const smallExpr = smallMatch ? smallMatch[1] : '';
-        // แสดง expression ของช่องที่มีการบวกเลขจริง (มี +) — ปกติคือช่องเศษ แต่เผื่อช่องเต็มก็มีด้วย
-        mat.carryExpr = [bigExpr, smallExpr].filter(e => e && e.includes('+')).join(' + ') || null;
-      } else {
-        mat.carryExpr = null;
-      }
+      // อ่าน expression แบบ sticky จาก 2 column อิสระ (carry_expr_big, carry_expr_small)
+      // แต่ละช่องเก็บ + ล่าสุดของตัวเอง ไม่ถูกลบด้วยการแก้ไขช่องอื่นหรือแก้เป็นค่าไม่มี + ทีหลัง
+      const bigExpr = useRow.carry_expr_big || '';
+      const smallExpr = useRow.carry_expr_small || '';
+      mat.carryExpr = [bigExpr, smallExpr].filter(e => e && e.includes('+')).join(' + ') || null;
     });
   } catch (e) { console.error('loadCarryForward failed', e); }
 }
@@ -1472,7 +1464,10 @@ async function loadDailyCounts(branch){
         actualSmall: r.actual_small ? String(r.actual_small) : '',
         posSale: r.pos_sale ? String(r.pos_sale) : '',
         note: r.note ? r.note.split('\u200c')[0] : '',
+        userNote: r.note ? r.note.split('\u200b')[0].split('\u200c')[0] : '',
         borrowNote: r.note && r.note.includes('\u200c') ? r.note.split('\u200c')[1] : null,
+        stickyBigExpr: r.carry_expr_big || null,
+        stickySmallExpr: r.carry_expr_small || null,
         reviewed: !!r.reviewed,
         reviewedAt: r.reviewed_at || '',
         reviewedNote: r.reviewed_note || '',
@@ -1551,6 +1546,11 @@ async function saveDailyCount(matId){
   if (!branch) return;
   const ri = rawInputs[matId] || {};
   const mat = materialById(matId);
+  // sticky expression แยกอิสระต่อช่อง: อัปเดตเฉพาะตอนช่องนั้นๆ มี + ใหม่ ถ้าช่องนั้นไม่มี + ให้คงค่าที่เคย sticky ไว้ (ไม่ลบ)
+  // เพื่อรองรับ workflow ร้าน: เช้ากรอกเต็ม "20+13" (นับของไม่เคลื่อนไหวก่อน) บ่ายแก้เต็มเป็นยอดจริง "33" แต่เศษกลับมี + ใหม่ "3+3"
+  // ทั้งสองช่องต้องเก็บ sticky ของตัวเองแยกกัน ไม่ให้ฝั่งหนึ่งไปลบอีกฝั่งที่ยังไม่ได้แก้
+  if (hasExpr(ri.actualBig)) ri.stickyBigExpr = ri.actualBig;
+  if (hasExpr(ri.actualSmall)) ri.stickySmallExpr = ri.actualSmall;
   setSyncStatus('syncing');
   try {
     await sb('daily_counts?on_conflict=branch,count_date,material_id', {
@@ -1561,7 +1561,9 @@ async function saveDailyCount(matId){
         actual_big: evalExpr(ri.actualBig) + (ri.creditBig || 0),
         actual_small: evalExpr(ri.actualSmall) + (ri.creditSmall || 0),
         pos_sale: parseFloat(ri.posSale) || 0,
-        note: (ri.note || '').split('\u200b')[0].split('\u200c')[0] + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + 'เต็ม:' + (ri.actualBig||'0') + ' เศษ:' + (ri.actualSmall||'0') : '') + (ri.borrowNote ? '\u200c' + ri.borrowNote : ''),
+        note: (ri.userNote || '') + (ri.borrowNote ? '\u200c' + ri.borrowNote : ''),
+        carry_expr_big: ri.stickyBigExpr || null,
+        carry_expr_small: ri.stickySmallExpr || null,
         reviewed: !!ri.reviewed, reviewed_at: ri.reviewedAt || null, reviewed_note: ri.reviewedNote || '',
         waste_qty: parseFloat(ri.wasteQty) || 0,
         waste_note: ri.wasteNote || '',
@@ -1578,7 +1580,7 @@ async function saveDailyCount(matId){
       actual_big: evalExpr(ri.actualBig),
       actual_small: evalExpr(ri.actualSmall),
       pos_sale: parseFloat(ri.posSale) || 0,
-      note: ri.note || '',
+      note: ri.userNote || '',
       waste_qty: parseFloat(ri.wasteQty) || 0,
       waste_note: ri.wasteNote || '',
     });
@@ -1834,10 +1836,11 @@ async function pollForExternalChanges(){
         actualSmall: r.actual_small ? String(r.actual_small) : '',
         posSale: r.pos_sale ? String(r.pos_sale) : '',
         note: r.note ? r.note.split('\u200c')[0] : '',
+        userNote: r.note ? r.note.split('\u200b')[0].split('\u200c')[0] : '',
       };
       const current = rawInputs[matId] || {};
       let changed = false;
-      ['received', 'actualBig', 'actualSmall', 'posSale', 'note'].forEach(field => {
+      ['received', 'actualBig', 'actualSmall', 'posSale', 'userNote'].forEach(field => {
         const active = document.activeElement;
         const isFocused = active && active.dataset && active.dataset.matid === matId && active.dataset.field === field;
         if (isFocused) return; // อย่าทับช่องที่กำลังพิมพ์อยู่
@@ -2126,8 +2129,8 @@ function materialCardHTML(mat){
       </div>
       <div>
         <label class="block text-[10px] text-slate-400 mb-0.5">หมายเหตุ</label>
-        <input type="text" placeholder="ถ้ามี" value="${ri.note ?? ''}"
-          data-matid="${mat.id}" data-field="note" class="input-base input-sm !h-9 text-xs !px-1.5">
+        <input type="text" placeholder="ถ้ามี" value="${ri.userNote ?? ''}"
+          data-matid="${mat.id}" data-field="userNote" class="input-base input-sm !h-9 text-xs !px-1.5">
       </div>
     </div>
     <p id="live_${mat.id}" class="text-[11px] mt-1.5 leading-relaxed">${liveStatusHTML(mat.id)}</p>
@@ -4628,8 +4631,8 @@ function pastCardHTML(mat){
       </div>
       <div>
         <label class="block text-[10px] text-slate-400 mb-0.5">หมายเหตุ</label>
-        <input type="text" placeholder="ถ้ามี" value="${ri.note ?? ''}"
-          data-pastmatid="${mat.id}" data-pastfield="note" class="input-base input-sm !h-9 text-xs !px-1.5">
+        <input type="text" placeholder="ถ้ามี" value="${ri.userNote ?? ''}"
+          data-pastmatid="${mat.id}" data-pastfield="userNote" class="input-base input-sm !h-9 text-xs !px-1.5">
       </div>
     </div>
     <p id="pastsavemsg_${mat.id}" class="text-[10px] text-green-600 mt-1"></p>
@@ -4672,6 +4675,9 @@ async function loadPastDate(){
         actualSmall: r.actual_small ? String(r.actual_small) : '',
         posSale: r.pos_sale ? String(r.pos_sale) : '',
         note: r.note ? r.note.split('\u200c')[0] : '',
+        userNote: r.note ? r.note.split('\u200b')[0].split('\u200c')[0] : '',
+        stickyBigExpr: r.carry_expr_big || null,
+        stickySmallExpr: r.carry_expr_small || null,
       };
     });
     // โหลดยอดยกมา (วันก่อนหน้า)
@@ -4697,6 +4703,8 @@ async function savePastDailyCount(matId){
   const date = pastDateInputEl.value;
   if (!branch || !date) return;
   const ri = pastInputs[matId] || {};
+  if (hasExpr(ri.actualBig)) ri.stickyBigExpr = ri.actualBig;
+  if (hasExpr(ri.actualSmall)) ri.stickySmallExpr = ri.actualSmall;
   setSyncStatus('syncing');
   try {
     await sb('daily_counts?on_conflict=branch,count_date,material_id', {
@@ -4707,7 +4715,9 @@ async function savePastDailyCount(matId){
         actual_big: evalExpr(ri.actualBig) + (ri.creditBig || 0),
         actual_small: evalExpr(ri.actualSmall) + (ri.creditSmall || 0),
         pos_sale: parseFloat(ri.posSale) || 0,
-        note: (ri.note || '').split('\u200b')[0].split('\u200c')[0] + (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall) ? '\u200b' + 'เต็ม:' + (ri.actualBig||'0') + ' เศษ:' + (ri.actualSmall||'0') : '') + (ri.borrowNote ? '\u200c' + ri.borrowNote : ''),
+        note: (ri.userNote || '') + (ri.borrowNote ? '\u200c' + ri.borrowNote : ''),
+        carry_expr_big: ri.stickyBigExpr || null,
+        carry_expr_small: ri.stickySmallExpr || null,
         updated_at: new Date().toISOString(),
       }]),
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
@@ -5758,3 +5768,4 @@ async function ensureRefillQtyColumn(){
 </script>
 </body>
 </html>
+

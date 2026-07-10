@@ -2455,6 +2455,22 @@ function bindMaterialInputDelegation(container){
     }
     // บันทึกทันทีตอนออกจากช่อง (blur) ด้วย ไม่รอแค่ debounce — กันเคสกรอกเสร็จแล้วสลับการ์ดเร็วๆ ทำให้ข้อมูลไม่ถูกบันทึก
     const id = e.target.dataset.matid;
+    const field = e.target.dataset.field;
+    // auto-fill ช่องหมายเหตุด้วยตัวเลขที่กรอกแบบ "+" — ทำตอน blur (พิมพ์เสร็จแล้วแน่นอน) ไม่ใช่ทุก keystroke
+    // กันปัญหาจับค่าที่พิมพ์ยังไม่เสร็จ (เช่น "72+" ก่อนพิมพ์เลขหลังบวกต่อ)
+    if (id && (field === 'actualBig' || field === 'actualSmall')) {
+      const ri = rawInputs[id];
+      if (ri && !ri.userNote) {
+        const bigPart = ri.actualBig && hasExpr(ri.actualBig) ? ri.actualBig : '';
+        const smallPart = ri.actualSmall && hasExpr(ri.actualSmall) ? ri.actualSmall : '';
+        const summary = [bigPart, smallPart].filter(Boolean).join('|');
+        if (summary) {
+          ri.userNote = summary;
+          const noteInput = container.querySelector(`input[data-matid="${id}"][data-field="userNote"]`);
+          if (noteInput) noteInput.value = summary;
+        }
+      }
+    }
     if (id) { clearTimeout(saveTimers['dc_' + id]); saveDailyCount(id); }
   });
 }
@@ -4790,7 +4806,22 @@ pastListWrap.addEventListener('input', (e) => {
 
 pastListWrap.addEventListener('change', (e) => {
   const id = e.target.dataset.pastmatid;
+  const field = e.target.dataset.pastfield;
   if (!id) return;
+  // auto-fill ช่องหมายเหตุตอน blur (พิมพ์เสร็จแล้วแน่นอน)
+  if (field === 'actualBig' || field === 'actualSmall') {
+    const ri = pastInputs[id];
+    if (ri && !ri.userNote) {
+      const bigPart = ri.actualBig && hasExpr(ri.actualBig) ? ri.actualBig : '';
+      const smallPart = ri.actualSmall && hasExpr(ri.actualSmall) ? ri.actualSmall : '';
+      const summary = [bigPart, smallPart].filter(Boolean).join('|');
+      if (summary) {
+        ri.userNote = summary;
+        const noteInput = pastListWrap.querySelector(`input[data-pastmatid="${id}"][data-pastfield="userNote"]`);
+        if (noteInput) noteInput.value = summary;
+      }
+    }
+  }
   clearTimeout(pastSaveTimers[id]);
   savePastDailyCount(id);
 });
@@ -5768,6 +5799,3 @@ async function ensureRefillQtyColumn(){
 </script>
 </body>
 </html>
-
-
-

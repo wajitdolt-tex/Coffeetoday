@@ -1712,8 +1712,11 @@ function computeRecord(mat, { received, actualBig, actualSmall, posSale, note, w
   const carrySmall = mat.carry;
   const receivedSmall = received * mat.ratio;
   const actualTotalSmall = (actualBig * mat.ratio) + (mat.noFraction ? 0 : actualSmall);
-  const usedActual = (carrySmall + receivedSmall) - actualTotalSmall;
   const waste = Number(wasteQty) || 0;
+  // ใช้ไปจริง = ยกมา+รับเข้า-นับจริง (ของที่หายไปจากสต็อกทั้งหมด รวมทั้งขายและของเสีย)
+  // แต่ "นับจริง" (actualTotalSmall) ที่พนักงานกรอกคือยอดหลังตัดของเสียออกไปแล้ว ดังนั้นค่าที่คำนวณได้ตรงนี้
+  // จะรวมของเสียอยู่แล้วโดยอัตโนมัติจากผลต่างของสต็อก ไม่ต้องบวก waste ซ้ำอีกครั้ง
+  const usedActual = (carrySmall + receivedSmall) - actualTotalSmall;
   // ผลต่าง = (ยอดขายตามสูตร + ของเสียที่รู้สาเหตุ) เทียบกับใช้ไปจริง
   // กันไม่ให้ของเสียที่บันทึกไว้แล้วโชว์เป็น "ผลต่างผิดปกติ" ทั้งที่รู้สาเหตุแล้ว
   const variance = (posSale + waste) - usedActual;
@@ -1994,20 +1997,20 @@ function liveStatusHTML(id){
   // ครีมเทียม: ติดลบเพราะ credit น้ำคาปู แสดงเป็น 0 แทน
   const displayUsed = (mat.id === 'creamer' && rec.usedActual < 0) ? 0 : rec.usedActual;
 
+  const wasteLine = rec.wasteQty > 0
+    ? `<span class="block text-red-500 mt-0.5">🗑️ ของเสีย ${fmtNum(rec.wasteQty)} ${mat.smallUnit}${rec.wasteNote ? ' — ' + rec.wasteNote : ''} (นับรวมในการเทียบสูตรแล้ว)</span>`
+    : '';
+
   const posTouched = ri.posSale !== undefined && ri.posSale !== '';
   if (!posTouched) {
     return `ใช้ไปจริง <span class="font-num font-semibold text-slate-900">${fmtNum(displayUsed)}</span> ${mat.smallUnit}
-      <span class="text-slate-300 mx-1">·</span><span class="text-slate-400">ยอดขายตามสูตรยังไม่เข้า</span>`;
+      <span class="text-slate-300 mx-1">·</span><span class="text-slate-400">ยอดขายตามสูตรยังไม่เข้า</span>${wasteLine}`;
   }
 
   let color, dot, label, signedDisplay;
   if (Math.abs(rec.variance) < 0.001) { color = 'text-green-600'; dot = 'bg-green-500'; label = 'ตรงตามสูตร'; signedDisplay = fmtNum(0); }
   else if (rec.variance < 0) { color = 'text-red-600'; dot = 'bg-red-500'; label = 'ใช้เกินสูตร'; signedDisplay = '+' + fmtNum(Math.abs(rec.variance)); }
   else { color = 'text-amber-600'; dot = 'bg-amber-500'; label = 'ใช้ไม่ถึงสูตร'; signedDisplay = '-' + fmtNum(Math.abs(rec.variance)); }
-
-  const wasteLine = rec.wasteQty > 0
-    ? `<span class="block text-red-500 mt-0.5">🗑️ ของเสีย ${fmtNum(rec.wasteQty)} ${mat.smallUnit}${rec.wasteNote ? ' — ' + rec.wasteNote : ''} (นับรวมในการเทียบสูตรแล้ว)</span>`
-    : '';
 
   return `<span class="inline-flex items-center gap-1.5 font-num font-semibold ${color}">
       <span class="w-1.5 h-1.5 rounded-full ${dot}"></span>${signedDisplay} ${mat.smallUnit} · ${label}

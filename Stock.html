@@ -2135,10 +2135,10 @@ function materialCardHTML(mat){
     </div>
     <p id="live_${mat.id}" class="text-[11px] mt-1.5 leading-relaxed">${liveStatusHTML(mat.id)}</p>
     ${ri.borrowNote ? `<p class="mt-1 text-[11px] font-semibold text-blue-600 bg-blue-50 rounded-lg px-2 py-1">🔄 ${ri.borrowNote}</p>` : ''}
-    <details class="mt-1.5 border border-slate-100 rounded-lg overflow-hidden ${Number(ri.wasteQty) > 0 ? 'border-red-200 bg-red-50/30' : ''}">
+    <details id="wastedetails_${mat.id}" class="mt-1.5 border border-slate-100 rounded-lg overflow-hidden ${Number(ri.wasteQty) > 0 ? 'border-red-200 bg-red-50/30' : ''}">
       <summary class="px-2.5 py-1.5 cursor-pointer text-[11px] font-medium text-slate-500 hover:bg-slate-50 list-none flex items-center gap-1">
         <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
-        🗑️ ของเสีย/ตัดทิ้ง ${Number(ri.wasteQty) > 0 ? `(${fmtNum(ri.wasteQty)} ${mat.smallUnit})` : ''}
+        <span id="wastesummary_${mat.id}">🗑️ ของเสีย/ตัดทิ้ง ${Number(ri.wasteQty) > 0 ? `(${fmtNum(ri.wasteQty)} ${mat.smallUnit})` : ''}</span>
       </summary>
       <div class="px-2.5 pb-2.5 pt-1 grid grid-cols-2 gap-1.5">
         <div>
@@ -2263,6 +2263,16 @@ function updateCardLive(id){
   const liveEl = document.getElementById('live_' + id);
   if (dotEl) dotEl.className = `w-2 h-2 rounded-full ${isTouched(id) ? 'bg-green-500' : 'bg-slate-300'} shrink-0 mt-1.5`;
   if (liveEl) liveEl.innerHTML = liveStatusHTML(id);
+  // อัปเดตหัวข้อ "ของเสีย/ตัดทิ้ง" ให้โชว์จำนวนล่าสุดทันที ไม่ต้องรอ re-render การ์ดทั้งใบ
+  const wasteSummaryEl = document.getElementById('wastesummary_' + id);
+  const wasteDetailsEl = document.getElementById('wastedetails_' + id);
+  if (wasteSummaryEl) {
+    const mat = materialById(id);
+    const wasteQty = Number((rawInputs[id] || {}).wasteQty) || 0;
+    wasteSummaryEl.textContent = `🗑️ ของเสีย/ตัดทิ้ง ${wasteQty > 0 && mat ? `(${fmtNum(wasteQty)} ${mat.smallUnit})` : ''}`;
+    if (wasteDetailsEl) wasteDetailsEl.classList.toggle('border-red-200', wasteQty > 0);
+    if (wasteDetailsEl) wasteDetailsEl.classList.toggle('bg-red-50/30', wasteQty > 0);
+  }
   // อัปเดตบรรทัดตีคืนน้ำคาปู
   const creditEl = document.getElementById('credit_' + id);
   if (creditEl) {
@@ -5799,8 +5809,5 @@ async function ensureRefillQtyColumn(){
 </script>
 </body>
 </html>
-
-
-
 
 

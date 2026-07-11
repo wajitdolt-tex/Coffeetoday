@@ -2375,6 +2375,9 @@ function normalizeActualSmall(matId){
   if (!mat || mat.noFraction || !mat.ratio) return;
   const ri = rawInputs[matId];
   if (!ri) return;
+  // ถ้าช่องไหนยังมี "+" ค้างอยู่ (user อาจกำลังพิมพ์ expression ไม่เสร็จ) ให้ข้ามการ normalize ไปก่อน
+  // กันไม่ให้ evalExpr คำนวณค่าออกมาแล้วเขียนทับ expression ดิบทิ้งก่อนที่ auto-fill หมายเหตุจะทันอ่านค่าได้
+  if (hasExpr(ri.actualBig) || hasExpr(ri.actualSmall)) return;
   let small = evalExpr(ri.actualSmall);
   let big = evalExpr(ri.actualBig);
   if (small >= mat.ratio) {
@@ -2475,9 +2478,8 @@ function bindMaterialInputDelegation(container){
     // บันทึกทันทีตอนออกจากช่อง (blur) ด้วย ไม่รอแค่ debounce — กันเคสกรอกเสร็จแล้วสลับการ์ดเร็วๆ ทำให้ข้อมูลไม่ถูกบันทึก
     const id = e.target.dataset.matid;
     const field = e.target.dataset.field;
-    // auto-fill ช่องหมายเหตุด้วยตัวเลขที่กรอกแบบ "+" — ทำตอน blur (พิมพ์เสร็จแล้วแน่นอน) ไม่ใช่ทุก keystroke
-    // กันปัญหาจับค่าที่พิมพ์ยังไม่เสร็จ (เช่น "72+" ก่อนพิมพ์เลขหลังบวกต่อ)
-    // อัปเดตได้เสมอถ้าช่องยังว่างอยู่ หรือเป็นข้อความที่ auto-fill ไว้เอง (ยังไม่เคยถูก user แก้ไขเอง)
+    // auto-fill ช่องหมายเหตุด้วยตัวเลขที่กรอกแบบ "+" — ทำก่อน normalize เสมอ เพราะ normalizeActualSmall จะแปลง
+    // expression เป็นตัวเลขล้วนทิ้ง ถ้าทำก่อนจะทำให้ auto-fill อ่านค่า "+" ไม่ทันและได้ค่าผิด
     if (id && (field === 'actualBig' || field === 'actualSmall')) {
       const ri = rawInputs[id];
       if (ri && (!ri.userNote || ri.noteIsAutoFilled)) {
@@ -2497,6 +2499,8 @@ function bindMaterialInputDelegation(container){
         }
       }
     }
+    // normalize ทีหลัง auto-fill เสมอ (ทดหน่วยถ้าเศษเกิน ratio) — ตอนนี้ปลอดภัยเพราะหมายเหตุอ่านค่า + ไปแล้ว
+    if (field === 'actualSmall') normalizeActualSmall(id);
     if (id) { clearTimeout(saveTimers['dc_' + id]); saveDailyCount(id); }
   });
 }
@@ -5833,5 +5837,4 @@ async function ensureRefillQtyColumn(){
 </script>
 </body>
 </html>
-
 

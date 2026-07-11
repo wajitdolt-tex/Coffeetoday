@@ -1468,6 +1468,7 @@ async function loadDailyCounts(branch){
         borrowNote: r.note && r.note.includes('\u200c') ? r.note.split('\u200c')[1] : null,
         stickyBigExpr: r.carry_expr_big || null,
         stickySmallExpr: r.carry_expr_small || null,
+        noteIsAutoFilled: !!r.note_is_autofilled,
         reviewed: !!r.reviewed,
         reviewedAt: r.reviewed_at || '',
         reviewedNote: r.reviewed_note || '',
@@ -1564,6 +1565,7 @@ async function saveDailyCount(matId){
         note: (ri.userNote || '') + (ri.borrowNote ? '\u200c' + ri.borrowNote : ''),
         carry_expr_big: ri.stickyBigExpr || null,
         carry_expr_small: ri.stickySmallExpr || null,
+        note_is_autofilled: !!ri.noteIsAutoFilled,
         reviewed: !!ri.reviewed, reviewed_at: ri.reviewedAt || null, reviewed_note: ri.reviewedNote || '',
         waste_qty: parseFloat(ri.wasteQty) || 0,
         waste_note: ri.wasteNote || '',
@@ -1840,10 +1842,11 @@ async function pollForExternalChanges(){
         posSale: r.pos_sale ? String(r.pos_sale) : '',
         note: r.note ? r.note.split('\u200c')[0] : '',
         userNote: r.note ? r.note.split('\u200b')[0].split('\u200c')[0] : '',
+        noteIsAutoFilled: !!r.note_is_autofilled,
       };
       const current = rawInputs[matId] || {};
       let changed = false;
-      ['received', 'actualBig', 'actualSmall', 'posSale', 'userNote'].forEach(field => {
+      ['received', 'actualBig', 'actualSmall', 'posSale', 'userNote', 'noteIsAutoFilled'].forEach(field => {
         const active = document.activeElement;
         const isFocused = active && active.dataset && active.dataset.matid === matId && active.dataset.field === field;
         if (isFocused) return; // อย่าทับช่องที่กำลังพิมพ์อยู่
@@ -2449,6 +2452,9 @@ function bindMaterialInputDelegation(container){
     if (!id || !field) return;
     if (!rawInputs[id]) rawInputs[id] = {};
     rawInputs[id][field] = e.target.value;
+    // ถ้า user พิมพ์แก้ไขช่องหมายเหตุเอง (ไม่ว่าจะเริ่มจากว่างหรือจากค่าที่ auto-fill ไว้)
+    // ให้ถือว่าเป็นข้อความของ user แล้ว ห้าม auto-fill ทับอีกต่อไป
+    if (field === 'userNote') rawInputs[id].noteIsAutoFilled = false;
     if (field.startsWith('qfsize_')) applyQuickFill(id);
     if (['received', 'actualBig', 'actualSmall', 'posSale'].includes(field)) clearStaleReview(id);
     if (field === 'actualSmall') normalizeActualSmall(id);
@@ -2471,16 +2477,23 @@ function bindMaterialInputDelegation(container){
     const field = e.target.dataset.field;
     // auto-fill ช่องหมายเหตุด้วยตัวเลขที่กรอกแบบ "+" — ทำตอน blur (พิมพ์เสร็จแล้วแน่นอน) ไม่ใช่ทุก keystroke
     // กันปัญหาจับค่าที่พิมพ์ยังไม่เสร็จ (เช่น "72+" ก่อนพิมพ์เลขหลังบวกต่อ)
+    // อัปเดตได้เสมอถ้าช่องยังว่างอยู่ หรือเป็นข้อความที่ auto-fill ไว้เอง (ยังไม่เคยถูก user แก้ไขเอง)
     if (id && (field === 'actualBig' || field === 'actualSmall')) {
       const ri = rawInputs[id];
-      if (ri && !ri.userNote) {
+      if (ri && (!ri.userNote || ri.noteIsAutoFilled)) {
         const bigPart = ri.actualBig && hasExpr(ri.actualBig) ? ri.actualBig : '';
         const smallPart = ri.actualSmall && hasExpr(ri.actualSmall) ? ri.actualSmall : '';
         const summary = [bigPart, smallPart].filter(Boolean).join('|');
         if (summary) {
           ri.userNote = summary;
+          ri.noteIsAutoFilled = true;
           const noteInput = container.querySelector(`input[data-matid="${id}"][data-field="userNote"]`);
           if (noteInput) noteInput.value = summary;
+        } else if (ri.noteIsAutoFilled) {
+          // ถ้าแก้จนไม่มี + เหลือเลยในทั้งสองช่อง และข้อความเดิมเป็น auto-fill ให้ล้างออก
+          ri.userNote = '';
+          const noteInput = container.querySelector(`input[data-matid="${id}"][data-field="userNote"]`);
+          if (noteInput) noteInput.value = '';
         }
       }
     }
@@ -4707,6 +4720,7 @@ async function loadPastDate(){
         userNote: r.note ? r.note.split('\u200b')[0].split('\u200c')[0] : '',
         stickyBigExpr: r.carry_expr_big || null,
         stickySmallExpr: r.carry_expr_small || null,
+        noteIsAutoFilled: !!r.note_is_autofilled,
       };
     });
     // โหลดยอดยกมา (วันก่อนหน้า)
@@ -4747,6 +4761,7 @@ async function savePastDailyCount(matId){
         note: (ri.userNote || '') + (ri.borrowNote ? '\u200c' + ri.borrowNote : ''),
         carry_expr_big: ri.stickyBigExpr || null,
         carry_expr_small: ri.stickySmallExpr || null,
+        note_is_autofilled: !!ri.noteIsAutoFilled,
         updated_at: new Date().toISOString(),
       }]),
       headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
@@ -4813,6 +4828,7 @@ pastListWrap.addEventListener('input', (e) => {
   if (!id || !field) return;
   if (!pastInputs[id]) pastInputs[id] = {};
   pastInputs[id][field] = e.target.value;
+  if (field === 'userNote') pastInputs[id].noteIsAutoFilled = false;
   scheduleSavePastDailyCount(id);
   if (id === 'napukasauce' && field === 'actualBig') applyNapukaCreditBackPast();
 });
@@ -4824,14 +4840,19 @@ pastListWrap.addEventListener('change', (e) => {
   // auto-fill ช่องหมายเหตุตอน blur (พิมพ์เสร็จแล้วแน่นอน)
   if (field === 'actualBig' || field === 'actualSmall') {
     const ri = pastInputs[id];
-    if (ri && !ri.userNote) {
+    if (ri && (!ri.userNote || ri.noteIsAutoFilled)) {
       const bigPart = ri.actualBig && hasExpr(ri.actualBig) ? ri.actualBig : '';
       const smallPart = ri.actualSmall && hasExpr(ri.actualSmall) ? ri.actualSmall : '';
       const summary = [bigPart, smallPart].filter(Boolean).join('|');
       if (summary) {
         ri.userNote = summary;
+        ri.noteIsAutoFilled = true;
         const noteInput = pastListWrap.querySelector(`input[data-pastmatid="${id}"][data-pastfield="userNote"]`);
         if (noteInput) noteInput.value = summary;
+      } else if (ri.noteIsAutoFilled) {
+        ri.userNote = '';
+        const noteInput = pastListWrap.querySelector(`input[data-pastmatid="${id}"][data-pastfield="userNote"]`);
+        if (noteInput) noteInput.value = '';
       }
     }
   }

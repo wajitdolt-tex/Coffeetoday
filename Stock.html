@@ -1412,7 +1412,7 @@ function cleanupStaleRecipeIngredients(){
 async function loadCarryForward(branch){
   const today = todayDateStr();
   try {
-    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${today}&select=material_id,actual_big,actual_small,received,pos_sale,note,carry_expr_big,carry_expr_small,count_date&order=count_date.desc,id.desc`);
+    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=lt.${today}&select=material_id,actual_big,actual_small,received,pos_sale,note,carry_expr_big,carry_expr_small,napuka_credit_big,napuka_credit_small,count_date&order=count_date.desc,id.desc`);
     if (!rows) return;
 
     // สาขาที่ยังไม่มีประวัติเลย → reset carry ทุกตัวเป็น 0 ก่อน
@@ -1448,6 +1448,15 @@ async function loadCarryForward(branch){
       const bigExpr = useRow.carry_expr_big || '';
       const smallExpr = useRow.carry_expr_small || '';
       mat.carryExpr = [bigExpr, smallExpr].filter(e => e && e.includes('+')).join(' + ') || null;
+      // sticky napuka credit: หาแถวล่าสุด (ไม่จำกัดแค่ useRow) ที่เคยมีการตีน้ำคาปูไว้ ให้คงอยู่ข้ามวันจนกว่าจะตีรอบใหม่
+      if (matId === 'evapmilk' || matId === 'creamer') {
+        const napukaRow = matRows.find(r => r.napuka_credit_big !== null && r.napuka_credit_big !== undefined);
+        if (napukaRow) {
+          if (!rawInputs[matId]) rawInputs[matId] = {};
+          rawInputs[matId].stickyNapukaCreditBig = Number(napukaRow.napuka_credit_big) || 0;
+          rawInputs[matId].stickyNapukaCreditSmall = Number(napukaRow.napuka_credit_small) || 0;
+        }
+      }
     });
   } catch (e) { console.error('loadCarryForward failed', e); }
 }
@@ -1458,6 +1467,9 @@ async function loadDailyCounts(branch){
     const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&count_date=eq.${today}&select=*`);
     if (!rows) return;
     rows.forEach(r => {
+      // เก็บ sticky napuka credit ที่ loadCarryForward เพิ่ง set ไว้ก่อนหน้า ป้องกันไม่ให้หายตอนเขียนทับ object ใหม่
+      const prevStickyBig = (rawInputs[r.material_id] || {}).stickyNapukaCreditBig;
+      const prevStickySmall = (rawInputs[r.material_id] || {}).stickyNapukaCreditSmall;
       rawInputs[r.material_id] = {
         received: r.received ? String(r.received) : '',
         actualBig: (r.actual_big !== null && r.actual_big !== undefined) ? String(r.actual_big) : '',
@@ -1469,6 +1481,8 @@ async function loadDailyCounts(branch){
         stickyBigExpr: r.carry_expr_big || null,
         stickySmallExpr: r.carry_expr_small || null,
         noteIsAutoFilled: !!r.note_is_autofilled,
+        stickyNapukaCreditBig: prevStickyBig,
+        stickyNapukaCreditSmall: prevStickySmall,
         reviewed: !!r.reviewed,
         reviewedAt: r.reviewed_at || '',
         reviewedNote: r.reviewed_note || '',
@@ -1566,6 +1580,8 @@ async function saveDailyCount(matId){
         carry_expr_big: ri.stickyBigExpr || null,
         carry_expr_small: ri.stickySmallExpr || null,
         note_is_autofilled: !!ri.noteIsAutoFilled,
+        napuka_credit_big: (ri.stickyNapukaCreditBig !== undefined) ? ri.stickyNapukaCreditBig : null,
+        napuka_credit_small: (ri.stickyNapukaCreditSmall !== undefined) ? ri.stickyNapukaCreditSmall : null,
         reviewed: !!ri.reviewed, reviewed_at: ri.reviewedAt || null, reviewed_note: ri.reviewedNote || '',
         waste_qty: parseFloat(ri.wasteQty) || 0,
         waste_note: ri.wasteNote || '',
@@ -1699,11 +1715,13 @@ function formatAsBigSmall(mat, totalSmall){
 
 // สำหรับครีมเทียม/นมจืด: แสดงยอด "ก่อนถูกบวกจากการตีครีมน้ำคาปู" ในวงเล็บใต้ยกมาเมื่อวาน
 // ยอดหลักที่แสดง (mat.carry) คือยอดหลังบวกตีคืนแล้ว (ใช้จริงวันนี้) ส่วนวงเล็บคือยอดก่อนตี เพื่อให้เช็คย้อนกลับได้
+// ใช้ sticky credit (คงอยู่ข้ามวัน) แทน credit ของวันนี้เท่านั้น เพราะพอข้ามวันไปแล้ว credit ของเมื่อวาน
+// จะถูกกลืนเข้าไปในยอดยกมาแล้ว (ri.creditBig ของวันนี้จะเป็น 0 ถ้ายังไม่ได้ตีน้ำคาปูวันนี้)
 function carryBeforeCreditHint(mat){
   if (mat.id !== 'creamer' && mat.id !== 'evapmilk') return '';
   const ri = rawInputs[mat.id] || {};
-  const creditBig = ri.creditBig || 0;
-  const creditSmall = ri.creditSmall || 0;
+  const creditBig = ri.stickyNapukaCreditBig || 0;
+  const creditSmall = ri.stickyNapukaCreditSmall || 0;
   if (!creditBig && !creditSmall) return '';
   // ยอดก่อนตี = ยอดยกมาปัจจุบัน (ที่แสดงหลัก, บวกตีคืนแล้ว) ลบเครดิตที่ถูกบวกเข้าไป
   const beforeSmall = mat.carry - creditBig * mat.ratio - creditSmall;
@@ -2431,6 +2449,11 @@ function applyNapukaCreditBack(){
   if (!rawInputs['evapmilk']) rawInputs['evapmilk'] = {};
   rawInputs['evapmilk'].creditBig   = batches;
   rawInputs['evapmilk'].creditSmall = 0;
+  // sticky napuka credit: เก็บไว้แสดงวงเล็บ "ก่อนตีน้ำคาปู" ต่อเนื่องข้ามวัน จนกว่าจะมีการตีรอบใหม่ (batches > 0)
+  if (batches > 0) {
+    rawInputs['evapmilk'].stickyNapukaCreditBig = batches;
+    rawInputs['evapmilk'].stickyNapukaCreditSmall = 0;
+  }
   recomputeMaterial('evapmilk');
 
   // ครีมเทียม: 1 แบท = 150g (เศษถุง)
@@ -2441,6 +2464,10 @@ function applyNapukaCreditBack(){
   const cSmall = Math.round((totalCreamer - cBig * (creamerMat ? creamerMat.ratio : 1)) * 10000) / 10000;
   rawInputs['creamer'].creditBig   = cBig;
   rawInputs['creamer'].creditSmall = cSmall;
+  if (batches > 0) {
+    rawInputs['creamer'].stickyNapukaCreditBig = cBig;
+    rawInputs['creamer'].stickyNapukaCreditSmall = cSmall;
+  }
   recomputeMaterial('creamer');
 
   if (batches > 0) {

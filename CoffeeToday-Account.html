@@ -391,6 +391,7 @@ tr:hover td{background:var(--bg3);}
     <div class="stat-box"><div class="stat-label">ชำระแล้ว</div><div class="stat-value pos" id="p-tot-paid">฿0.00</div></div>
   </div>
   <div style="text-align:right;margin-top:13px;padding-bottom:12px;">
+    <button class="btn btn-outline btn-sm" onclick="dedupLocalPayables()" style="color:var(--red);border-color:var(--red);">🧹 ล้างซ้ำ</button>
     <button class="btn btn-primary btn-sm" onclick="syncPayable(true, this)">☁ บันทึกขึ้น Sheets</button>
   </div>
 </div>
@@ -1552,6 +1553,48 @@ async function savePay() {
   });
   localStorage.setItem('ct_payables', JSON.stringify(payables));
   await syncPayable();
+}
+
+// ล้างรายการวางบิลที่ซ้ำกัน — dedup จากเนื้อหาจริง (สาขา+วันที่+รายการ+จำนวนเงิน+กำหนดจ่าย)
+// ไม่ใช้ id เพราะรายการซ้ำที่สะสมมาจากการ sync/merge หลายรอบ อาจมี id ต่างกันคนละตัว
+// เก็บตัวที่ "สมบูรณ์กว่า" ไว้ — เลือกตัวที่ชำระแล้ว/มีการชำระบางส่วนก่อน ถ้าเท่ากันเอาตัวแรกที่เจอ
+function dedupLocalPayables() {
+  var before = payables.length;
+  var seen = {};
+  var deduped = [];
+  payables.forEach(function(p) {
+    var key = [
+      p.branch || '',
+      p.indate || p.date || '',
+      p.desc || '',
+      p.amount || 0,
+      p.due || ''
+    ].join('|');
+    if (!seen[key]) {
+      seen[key] = p;
+      deduped.push(p);
+    } else {
+      // เจอซ้ำ — เทียบว่าตัวไหนสมบูรณ์กว่า แล้วแทนที่ถ้าตัวใหม่ดีกว่า
+      var existing = seen[key];
+      var existingScore = (existing.paid ? 2 : 0) + ((existing.partialPayments || []).length > 0 ? 1 : 0);
+      var newScore = (p.paid ? 2 : 0) + ((p.partialPayments || []).length > 0 ? 1 : 0);
+      if (newScore > existingScore) {
+        var idx = deduped.indexOf(existing);
+        if (idx >= 0) deduped[idx] = p;
+        seen[key] = p;
+      }
+    }
+  });
+  payables = deduped;
+  var removed = before - payables.length;
+  localStorage.setItem('ct_payables', JSON.stringify(payables));
+  renderPayables();
+  if (removed > 0) {
+    toast('ล้างซ้ำแล้ว ลบ ' + removed + ' รายการ ✓', 'success');
+    syncPayable(); // sync ผลลัพธ์ที่ล้างซ้ำแล้วขึ้น Sheets ด้วย
+  } else {
+    toast('ไม่มีรายการซ้ำ ✓', 'success');
+  }
 }
 
 function filterP(f) {
@@ -3828,3 +3871,4 @@ window.addEventListener('beforeunload', function(e) {
 </div>
 </body>
 </html>
+

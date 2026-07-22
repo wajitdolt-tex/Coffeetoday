@@ -3184,30 +3184,34 @@ function setPin(){
   toast('ตั้ง PIN แล้ว ✦');
 }
 
+function safeCall(fn,name){
+  try{ fn(); }catch(err){ console.log('init step failed ['+name+']:',err&&err.message||err); }
+}
 function init(){
-  loadSession();
-  parseAuthHash();
-  load(); applyTheme(); hud();
-  rollQuests();
-  renderQuests();
-  renderRecap();
-  /* restore cached weekly summary */
-  try{
+  safeCall(loadSession,'loadSession');
+  safeCall(parseAuthHash,'parseAuthHash');
+  safeCall(load,'load');
+  safeCall(applyTheme,'applyTheme');
+  safeCall(hud,'hud');
+  safeCall(rollQuests,'rollQuests');
+  safeCall(renderQuests,'renderQuests');
+  safeCall(renderRecap,'renderRecap');
+  safeCall(function(){
     var ws=JSON.parse(localStorage.getItem('em_week_sum')||'null');
     if(ws&&ws.t){var wb=document.getElementById('ws-body');if(wb){wb.className='ws-body';wb.textContent=ws.t;}}
-  }catch(e){}
-  checkDailyReminder();
-  checkMilestone();
-  updateGreeting();
-  renderQuickMood();
-  updateStreakBanner();
-  renderMemory();
-  checkPinLock();
-  var ob=document.getElementById('onboard');
-  /* โชว์หน้าเริ่มต้นทุกครั้งที่เปิดแอป */
-  ob.style.display='';
-  ob.classList.remove('hidden');
-
+  },'weekSummaryRestore');
+  safeCall(checkDailyReminder,'checkDailyReminder');
+  safeCall(checkMilestone,'checkMilestone');
+  safeCall(updateGreeting,'updateGreeting');
+  safeCall(renderQuickMood,'renderQuickMood');
+  safeCall(updateStreakBanner,'updateStreakBanner');
+  safeCall(renderMemory,'renderMemory');
+  safeCall(checkPinLock,'checkPinLock');
+  safeCall(function(){
+    var ob=document.getElementById('onboard');
+    ob.style.display='';
+    ob.classList.remove('hidden');
+  },'onboardShow');
 }
 if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded',init);
@@ -3390,14 +3394,14 @@ function checkMilestone(){
   var s=streak();
   var rareCount=Object.keys(ST.disc).filter(function(id){var em=EMOTIONS.filter(function(e){return e.id===id;})[0];return em&&em.r==='rare'&&!em.hidden;}).length;
   var legendCount=Object.keys(ST.disc).filter(function(id){var em=EMOTIONS.filter(function(e){return e.id===id;})[0];return em&&em.r==='legendary';}).length;
-  var longCount=ST.hist.filter(function(h){return h.note&&h.note.length>=50;}).length;
+  var longCount=ST.hist.filter(function(h){return h.text&&h.text.length>=50;}).length;
   MILESTONES.forEach(function(ms){
     var hit=false;
     if(ms.type==='streak'&&ms.d===s) hit=true;
     else if(ms.type==='level'&&lv===ms.lv) hit=true;
     else if(ms.type==='rare'&&rareCount>=ms.count) hit=true;
     else if(ms.type==='legendary'&&legendCount>=ms.count) hit=true;
-    else if(ms.type==='long'&&ST.hist.some(function(h){return h.note&&h.note.length>=ms.chars;})) hit=true;
+    else if(ms.type==='long'&&ST.hist.some(function(h){return h.text&&h.text.length>=ms.chars;})) hit=true;
     else if(ms.type==='longcount'&&longCount>=ms.count) hit=true;
     if(hit){var seen=localStorage.getItem('em_ms_'+ms.id);if(!seen){localStorage.setItem('em_ms_'+ms.id,'1');setTimeout(function(){showMilestone(ms);},800);}}
   });

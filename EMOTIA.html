@@ -1464,7 +1464,7 @@ body{
    ★ ตอนเอาขึ้น GitHub: เปลี่ยน MODE เป็น 'fin' แล้วใส่ FIN_PROXY ให้ถูก ★ */
 var CONFIG = {
   MODE: 'fin',
-  FIN_PROXY: 'https://ummtqzweedmotrffqrhw.supabase.co/functions/v1/chat-proxy',
+  FIN_PROXY: 'https://tedzucgqmitfmddxqvge.supabase.co/functions/v1/chat-proxy',
   MODEL: 'claude-sonnet-4-20250514',
   TIMEOUT_MS: 30000
 };
@@ -1713,36 +1713,50 @@ function buildPrompt(payload){
   return parts.join('\n\n');
 }
 
+var PROXY_LIST=[
+  'https://tedzucgqmitfmddxqvge.supabase.co/functions/v1/chat-proxy',
+  'https://ummtqzweedmotrffqrhw.supabase.co/functions/v1/chat-proxy'
+];
+
 function aiCall(payload, cb){
   if(!aiEnabled()){ cb(null,'AI ยังไม่ได้ตั้งค่า'); return; }
 
-  var url, headers, body;
-
   if(CONFIG.MODE==='direct'){
-    url='https://api.anthropic.com/v1/messages';
-    headers={'Content-Type':'application/json','x-api-key':CONFIG.MODEL,'anthropic-version':'2023-06-01'};
-    body=JSON.stringify({model:CONFIG.MODEL,max_tokens:payload.max_tokens||800,messages:payload.messages||[]});
-  }else{
-    url=CONFIG.FIN_PROXY;
-    headers={'Content-Type':'application/json'};
-    body=JSON.stringify({ prompt: buildPrompt(payload) });
+    var url='https://api.anthropic.com/v1/messages';
+    var headers={'Content-Type':'application/json','x-api-key':CONFIG.MODEL,'anthropic-version':'2023-06-01'};
+    var body=JSON.stringify({model:CONFIG.MODEL,max_tokens:payload.max_tokens||800,messages:payload.messages||[]});
+    callProxy(url,headers,body,cb);
+    return;
   }
 
-  /* ไม่ใช้ AbortController เพราะ Safari iOS บางเวอร์ชัน error "object cannot be cloned" */
+  /* ── fallback ── ลอง proxy ตัวแรกก่อน ถ้า fail ลองตัวถัดไป ── */
+  var body2=JSON.stringify({ prompt: buildPrompt(payload) });
+  var headers2={'Content-Type':'application/json'};
+  tryProxyChain(0, headers2, body2, cb);
+}
+
+function tryProxyChain(idx, headers, body, cb){
+  if(idx>=PROXY_LIST.length){ cb(null,'\u0E40\u0E0A\u0E37\u0E48\u0E2D\u0E21\u0E15\u0E48\u0E2D\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E17\u0E38\u0E01 proxy'); return; }
+  var url=PROXY_LIST[idx];
+  console.log('trying proxy['+idx+']:',url);
+  callProxy(url,headers,body,function(text,err){
+    if(text){ cb(text,null); return; }
+    console.log('proxy['+idx+'] failed:',err,'-> trying next');
+    tryProxyChain(idx+1,headers,body,cb);
+  });
+}
+
+function callProxy(url,headers,body,cb){
   var timer=null;
   var done=false;
-
   var fetchPromise=fetch(url,{method:'POST',headers:headers,body:body});
-
-  /* timeout manual */
   var timeoutPromise=new Promise(function(resolve){
     timer=setTimeout(function(){ resolve('__timeout__'); }, CONFIG.TIMEOUT_MS||30000);
   });
-
   Promise.race([fetchPromise,timeoutPromise]).then(function(result){
     if(timer) clearTimeout(timer);
     if(done) return; done=true;
-    if(result==='__timeout__'){ cb(null,'หมดเวลา'); return; }
+    if(result==='__timeout__'){ cb(null,'\u0E2B\u0E21\u0E14\u0E40\u0E27\u0E25\u0E32'); return; }
     var r=result;
     if(!r.ok){
       return r.text().then(function(t){
@@ -3074,9 +3088,9 @@ function updateGreeting(){
   var h=new Date().getHours();
   var g;
   if(h>=5&&h<11) g='สวัสดีตอนเช้า ☀️';
-  else if(h>=11&&h<16) g='สวัสดีตอนบ่าย 🌤';
-  else if(h>=16&&h<20) g='สวัสดีตอนเย็น 🌆';
-  else g='สวัสดีตอนค่ำ 🌙';
+  else if(h>=11&&h<16) g='สวัสดีตอนบ่าย \uD83C\uDF24';
+  else if(h>=16&&h<20) g='สวัสดีตอนเย็น \uD83C\uDF06';
+  else g='สวัสดีตอนค่ำ \uD83C\uDF19';
   el.textContent=g;
 }
 

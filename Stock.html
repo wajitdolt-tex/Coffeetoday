@@ -5706,7 +5706,21 @@ function applyBorrowStockImpact(log, reverse){
   if (!rawInputs[log.materialId]) rawInputs[log.materialId] = {};
   var ri = rawInputs[log.materialId];
   var sign = (log.type === 'borrow_in' ? 1 : -1) * (reverse ? -1 : 1);
-  ri.received = String(Math.max(0, (parseFloat(ri.received) || 0) + sign * log.qtyBig));
+
+  // ยืมเข้ามา/คืนออกไป กระทบ "ของที่มีอยู่จริงหน้าร้านตอนนี้" โดยตรง (นับจริง)
+  // ไม่ใช่ "รับเข้า" เพราะ received รองรับแค่หน่วยเต็ม ไม่มีที่เก็บเศษ (qtySmall) เลย
+  // ทำให้ก่อนหน้านี้ยืมแบบมีเศษ (เช่น 0 แพ็ค + 30 ซอง) ไม่กระทบยอดอะไรเลย มีแค่ badge ข้อความบอกไว้
+  var curBig = evalExpr(ri.actualBig) || 0;
+  var curSmall = evalExpr(ri.actualSmall) || 0;
+  var totalSmall = curBig * mat.ratio + (mat.noFraction ? 0 : curSmall);
+  var deltaSmall = sign * (log.qtyBig * mat.ratio + (mat.noFraction ? 0 : log.qtySmall));
+  totalSmall = Math.max(0, totalSmall + deltaSmall);
+  var newBig = Math.floor(totalSmall / mat.ratio);
+  var newSmall = Math.round((totalSmall - newBig * mat.ratio) * 100) / 100;
+  ri.actualBig = String(newBig);
+  ri.actualSmall = mat.noFraction ? '0' : String(newSmall);
+  syncCardInputDOM(log.materialId, 'actualBig', ri.actualBig);
+  syncCardInputDOM(log.materialId, 'actualSmall', ri.actualSmall);
 
   // สร้าง badge แสดงสาเหตุการปรับสต็อก
   var qtyStr = log.qtyBig + (log.qtySmall ? '+' + log.qtySmall : '');
@@ -5714,7 +5728,7 @@ function applyBorrowStockImpact(log, reverse){
   var actionLabel = reverse
     ? (log.type === 'borrow_in' ? '📤 คืน' + (who ? ' ' + who : '') : '📥 รับคืนจาก' + (who ? ' ' + who : ''))
     : (log.type === 'borrow_in' ? '📥 ยืมจาก' + (who ? ' ' + who : '') : '📤 ให้ยืม' + (who ? ' ' + who : ''));
-  ri.borrowNote = actionLabel + ' ' + qtyStr + ' ' + mat.bigUnit;
+  ri.borrowNote = actionLabel + ' ' + qtyStr + ' ' + mat.bigUnit + (log.qtySmall ? '+' + mat.smallUnit : '');
 
   recomputeMaterial(log.materialId);
   clearTimeout(saveTimers['dc_' + log.materialId]);

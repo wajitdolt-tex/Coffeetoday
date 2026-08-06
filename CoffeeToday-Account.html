@@ -1462,7 +1462,8 @@ function confirmPmModal() {
     if (amountVal > remaining) { toast('จำนวนมากกว่ายอดค้าง', 'error'); return; }
     item.partialPayments.push({ date: dateVal, amount: amountVal });
     var totalPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
-    var isFullNow = totalPaid >= item.amount;
+    // ปัดเศษกันปัญหา floating point (เช่น 4263.999999999999 แทนที่จะเป็น 4264)
+    var isFullNow = Math.round((item.amount - totalPaid) * 100) <= 0;
     if (isFullNow) {
       item.paid = true;
       item.paidDate = dateVal;
@@ -1483,7 +1484,8 @@ function confirmPmModal() {
     if (amountVal > remaining) { toast('จำนวนมากกว่ายอดค้าง', 'error'); return; }
     item.partialPayments.push({ date: dateVal, amount: amountVal });
     var totalPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
-    var isFullNow = totalPaid >= item.amount;
+    // ปัดเศษกันปัญหา floating point (เช่น 4263.999999999999 แทนที่จะเป็น 4264)
+    var isFullNow = Math.round((item.amount - totalPaid) * 100) <= 0;
     if (isFullNow) item.paid = true;
     closePmModal();
     saveSalaries(); renderSalaries();
@@ -2976,8 +2978,10 @@ function renderLoans() {
   // ซ่อนรายการที่คืนครบแล้วถ้า loanShowSettled = false
   if (!loanShowSettled) {
     list = list.filter(function(l) {
-      var repaid = l.repayments.reduce(function(s, r) { return s + r.amount; }, 0);
-      return (l.amount - repaid) > 0;
+      var repaid = (l.repayments || []).reduce(function(s, r) { return s + (r.amount || 0); }, 0);
+      // ปัดเศษกันปัญหา floating point เหมือนจุดคำนวณ settled ด้านล่าง — ต้องใช้เกณฑ์เดียวกัน
+      // ไม่งั้นรายการที่ "คืนครบแล้ว" ตาม settled แต่ filter นี้คิดว่ายังไม่ครบ จะค้างโชว์ในหน้าค้างจ่ายตลอด
+      return Math.round((l.amount - repaid) * 100) > 0;
     });
   }
 
@@ -2990,7 +2994,9 @@ function renderLoans() {
         var repaid  = (loan.repayments || []).reduce(function(s, r) { return s + (r.amount || 0); }, 0);
         var loanAmount = loan.amount || 0;
         var remain  = loanAmount - repaid;
-        var settled = remain <= 0;
+        // ปัดเศษก่อนเทียบ กันปัญหา floating point (เช่น 2263.9999999999995 แทนที่จะเป็น 2264)
+        // ที่ทำให้ remain ไม่ <= 0 ทั้งที่ยอดจริงชำระครบแล้ว
+        var settled = Math.round(remain * 100) <= 0;
         tAll  += loanAmount;
         tPaid += repaid;
         var branchName = BRANCH_NAMES[loan.branch] || loan.branch || '-';
@@ -3141,8 +3147,9 @@ function renderSalaries() {
       var totalPartial = partials.reduce(function(s, p) { return s + (p.amount || 0); }, 0);
       var itemAmount = item.amount || 0;
       var remaining = itemAmount - totalPartial;
-      var isPartial = totalPartial > 0 && remaining > 0;
-      var isPaid = item.paid || remaining <= 0;
+      // ปัดเศษกันปัญหา floating point ตอนเทียบ ไม่ให้ยอดที่จ่ายครบจริงๆ ยังโชว์ว่าค้างอยู่
+      var isPartial = totalPartial > 0 && Math.round(remaining * 100) > 0;
+      var isPaid = item.paid || Math.round(remaining * 100) <= 0;
       var tr = document.createElement('tr');
       tr.innerHTML =
         '<td class="mono">' + (item.date || '-') + '</td>'
@@ -3871,4 +3878,6 @@ window.addEventListener('beforeunload', function(e) {
 </div>
 </body>
 </html>
+
+
 

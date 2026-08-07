@@ -1771,7 +1771,7 @@ function gsPost(url, payload) {
   });
 }
 
-async function appendToSheet(type, branch, branchName, item) {
+async function appendToSheet(type, branch, branchName, item, silent) {
   if (!cfg.gsUrl) {
     if (type === 'coupon_append' || type === 'coupon_delete') markCpUnsynced(true);
     return;
@@ -1781,11 +1781,11 @@ async function appendToSheet(type, branch, branchName, item) {
     var slimItem = item ? { id: item.id, code: item.code, type: item.type, amount: item.amount, date: item.date, branch: item.branch } : item;
     var payload = { type: type, branch: branch, branchName: branchName, item: slimItem, timestamp: new Date().toISOString() };
     await gsPost(cfg.gsUrl, payload);
-    if (type === 'coupon_append') { markCpUnsynced(false); toast('บันทึกคูปองขึ้น Sheets แล้ว ✓', 'success'); }
+    if (type === 'coupon_append') { markCpUnsynced(false); if (!silent) toast('บันทึกคูปองขึ้น Sheets แล้ว ✓', 'success'); }
     else if (type === 'coupon_delete') markCpUnsynced(false);
   } catch(err) {
     console.log('append error', type, err);
-    if (type === 'coupon_append' || type === 'coupon_delete') { markCpUnsynced(true); toast('บันทึกคูปองไม่สำเร็จ กรุณากด ☁ บันทึกขึ้น Sheets', 'error'); }
+    if (type === 'coupon_append' || type === 'coupon_delete') { markCpUnsynced(true); if (!silent) toast('บันทึกคูปองไม่สำเร็จ กรุณากด ☁ บันทึกขึ้น Sheets', 'error'); }
   }
 }
 
@@ -2033,19 +2033,21 @@ async function loadSummary() {
       coupons = otherBranchCoupons.concat(sheetsCoupons).concat(localOnlyCoupons);
       // sync local ที่ยังไม่อยู่ใน Sheets ขึ้นไปด้วย
       if (localOnlyCoupons.length) {
+        // silent=true — เป็นการ sync พื้นหลังตอนดึงข้อมูลสรุปเดือน ไม่ใช่การกดบันทึกคูปองโดยตรง
+        // ไม่ควรเด้ง toast รบกวนผู้ใช้ที่กำลังดูหน้าสรุปเดือนอยู่
         localOnlyCoupons.forEach(function(c) {
-          appendToSheet('coupon_append', c.branch, BRANCH_NAMES[c.branch], c);
+          appendToSheet('coupon_append', c.branch, BRANCH_NAMES[c.branch], c, true);
         });
       }
       localStorage.setItem('ct_coupons', JSON.stringify(coupons));
       renderCoupons();
     } else if (data.couponRows && data.couponRows.length === 0) {
       // ชีทว่าง — ไม่ลบ local เพราะอาจเป็น local ที่ยังไม่ sync
-      // sync local ของ branch นี้ขึ้นไปก่อน
+      // sync local ของ branch นี้ขึ้นไปก่อน (silent — เหตุผลเดียวกับด้านบน)
       var localBranchCoupons = coupons.filter(function(c) { return c.branch === branchKey; });
       if (localBranchCoupons.length) {
         localBranchCoupons.forEach(function(c) {
-          appendToSheet('coupon_append', c.branch, BRANCH_NAMES[c.branch], c);
+          appendToSheet('coupon_append', c.branch, BRANCH_NAMES[c.branch], c, true);
         });
       }
       renderCoupons();
@@ -3878,6 +3880,8 @@ window.addEventListener('beforeunload', function(e) {
 </div>
 </body>
 </html>
+
+
 
 
 

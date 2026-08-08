@@ -2295,7 +2295,8 @@ function renderSummary(rows, acctExpRows, branchKey) {
   var lsKey  = 'ct_lineman_sun_' + branch + '_' + month;
   var lsData = localStorage.getItem(lsKey);
   var tLinemanSun = lsData ? (parseFloat(JSON.parse(lsData).amount)||0) : 0;
-  var tIncome = tQr + tPayIn + tLinemanSun;
+  // รวมไทยช่วยไทยพลัสเข้ารายรับด้วย — เป็นช่องทางการชำระที่ลูกค้าจ่ายจริง เหมือน QR/Cash
+  var tIncome = tQr + tPayIn + tLinemanSun + tThaithai;
 
   // ค่าใช้จ่ายประจำเดือน (ค่าเช่า/ไฟ/ภาษี/แอร์/บริการ) — นับตามวันที่วางบิลเสมอ
   var fixedCats = ['ค่าเช่า','ค่าไฟ/น้ำ','ภาษี','ค่าบริการ'];
@@ -2410,6 +2411,7 @@ function renderSummary(rows, acctExpRows, branchKey) {
   var salesLabel = fmtS(tIncome)
     + ' <span style="font-size:11px;color:var(--text2);font-family:Sarabun,sans-serif;">'
     + '(QR ' + fmtS(tQr) + ' + Pay In ' + fmtS(tPayIn)
+    + (tThaithai > 0 ? ' + ไทยพลัส ' + fmtS(tThaithai) : '')
     + (tLinemanSun > 0 ? ' + LM ' + fmtS(tLinemanSun) : '')
     + ')</span>';
   document.getElementById('ss-sales').innerHTML          = salesLabel;
@@ -3880,6 +3882,7 @@ window.addEventListener('beforeunload', function(e) {
 </div>
 </body>
 </html>
+
 
 
 

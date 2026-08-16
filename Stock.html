@@ -2162,7 +2162,7 @@ function materialCardHTML(mat){
     <details id="wastedetails_${mat.id}" class="mt-1.5 border border-slate-100 rounded-lg overflow-hidden ${Number(ri.wasteQty) > 0 ? 'border-red-200 bg-red-50/30' : ''}">
       <summary class="px-2.5 py-1.5 cursor-pointer text-[11px] font-medium text-slate-500 hover:bg-slate-50 list-none flex items-center gap-1">
         <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
-        <span id="wastesummary_${mat.id}">🗑️ หักยืม/ตัดทิ้ง ${Number(ri.wasteQty) > 0 ? `(${fmtNum(ri.wasteQty)} ${mat.smallUnit})` : ''}</span>
+        <span id="wastesummary_${mat.id}">🗑️ ของเสีย/ตัดทิ้ง ${Number(ri.wasteQty) > 0 ? `(${fmtNum(ri.wasteQty)} ${mat.smallUnit})` : ''}</span>
       </summary>
       <div class="px-2.5 pb-2.5 pt-1 grid grid-cols-2 gap-1.5">
         <div>
@@ -5500,7 +5500,9 @@ function bindQFToggles(wrap){
 function getBorrowKey(){ return 'borrowLogs_' + ((branchSelectEl && branchSelectEl.value) || 'default'); } // legacy
 async function loadBorrowLogs(){
   try {
-    const data = await sb('borrow_logs?order=date.desc,id.desc&limit=200');
+    const branch = (branchSelectEl && branchSelectEl.value) || '';
+    const branchFilter = branch ? `&branch=eq.${encodeURIComponent(branch)}` : '';
+    const data = await sb(`borrow_logs?order=date.desc,id.desc&limit=200${branchFilter}`);
     return Array.isArray(data) ? data.map(function(r){ return {
       id: r.id, date: r.date, type: r.type,
       materialId: r.material_id, materialName: r.material_name,
@@ -5878,6 +5880,9 @@ async function ensureRefillQtyColumn(){
 </script>
 </body>
 </html>
+
+
+
 
 
 

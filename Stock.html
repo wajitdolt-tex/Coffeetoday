@@ -118,7 +118,7 @@
       </div>
       <div id="menuSummaryBody" class="overflow-y-auto overscroll-contain px-5 pt-3 pb-8" style="min-height:0; flex:1 1 auto;"></div>
       <div class="px-5 py-3 border-t border-slate-100 bg-slate-50 shrink-0 flex items-center justify-between">
-        <span class="text-xs text-slate-500">รวม <span id="menuSummaryTotalItems" class="font-num font-semibold text-slate-700">0</span> เมนู · <span id="menuSummaryTotalQty" class="font-num font-semibold text-accent-700">0</span> แก้ว</span>
+        <span class="text-xs text-slate-500">รวม <span id="menuSummaryTotalItems" class="font-num font-semibold text-slate-700">0</span> เมนู · <span id="menuSummaryTotalQty" class="font-num font-semibold text-accent-700">0</span> รายการ</span>
         <button id="printMenuSummaryBtn" class="text-xs font-semibold text-slate-600 hover:text-slate-900 border border-slate-300 rounded-lg px-3 h-8 transition">🖨️ พิมพ์/บันทึก</button>
       </div>
     </div>
@@ -2037,7 +2037,7 @@ function liveStatusHTML(id){
   const displayUsed = (mat.id === 'creamer' && rec.usedActual < 0) ? 0 : rec.usedActual;
 
   const wasteLine = rec.wasteQty > 0
-    ? `<span class="block text-red-500 mt-0.5">🗑️ ของเสีย ${fmtNum(rec.wasteQty)} ${mat.smallUnit}${rec.wasteNote ? ' — ' + rec.wasteNote : ''} (นับรวมในการเทียบสูตรแล้ว)</span>`
+    ? `<span class="block text-red-500 mt-0.5">🗑️ หักลบ ${fmtNum(rec.wasteQty)} ${mat.smallUnit}${rec.wasteNote ? ' — ' + rec.wasteNote : ''} (นับรวมในการเทียบสูตรแล้ว)</span>`
     : '';
 
   const posTouched = ri.posSale !== undefined && ri.posSale !== '';
@@ -2122,13 +2122,17 @@ function quickFillHTML(mat){
     </details>`;
 }
 
-// รายการสาเหตุมาตรฐานของของเสีย/ตัดทิ้ง — "ตัดคืน" ใช้เมื่อคืนของที่เคยยืมมาจากสาขาอื่น
+// รายการสาเหตุมาตรฐานของหักลบ — "ตัดคืน" ใช้เมื่อคืนของที่เคยยืมมาจากสาขาอื่น
 const WASTE_STANDARD_REASONS = ['ตีเสีย', 'หมดอายุ', 'ตัดคืน (คืนของที่ยืมมา)', 'อื่นๆ'];
 function wasteReasonOptionsHTML(currentNote){
   const isStandard = WASTE_STANDARD_REASONS.includes(currentNote);
   const opts = WASTE_STANDARD_REASONS.map(r => `<option value="${r}" ${r === currentNote ? 'selected' : ''}>${r}</option>`).join('');
+  if (!currentNote) {
+    // ยังไม่เคยเลือก/พิมพ์อะไรเลย — โชว์ placeholder ว่างไว้ก่อน กันสับสนว่า "ตีเสีย" ถูกเลือกไว้แล้วทั้งที่ยังไม่มีใครเลือก
+    return `<option value="" selected disabled>-- เลือกสาเหตุ --</option>` + opts;
+  }
   // ถ้าเคยพิมพ์เหตุผลเองที่ไม่ตรงกับรายการมาตรฐาน ให้ default dropdown ไปที่ "อื่นๆ" แทน (ไม่ต้อง fabricate option ใหม่)
-  return currentNote && !isStandard ? opts.replace('value="อื่นๆ"', 'value="อื่นๆ" selected') : opts;
+  return isStandard ? opts : opts.replace('value="อื่นๆ"', 'value="อื่นๆ" selected');
 }
 function wasteSummaryText(mat, ri){
   const big = Number(ri.wasteQtyBig) || 0;
@@ -2198,16 +2202,16 @@ function materialCardHTML(mat){
     <details id="wastedetails_${mat.id}" class="mt-1.5 border border-slate-100 rounded-lg overflow-hidden ${(Number(ri.wasteQtyBig) > 0 || Number(ri.wasteQty) > 0) ? 'border-red-200 bg-red-50/30' : ''}">
       <summary class="px-2.5 py-1.5 cursor-pointer text-[11px] font-medium text-slate-500 hover:bg-slate-50 list-none flex items-center gap-1">
         <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
-        <span id="wastesummary_${mat.id}">🗑️ ของเสีย/ตัดทิ้ง ${wasteSummaryText(mat, ri)}</span>
+        <span id="wastesummary_${mat.id}">🗑️ หักลบ ${wasteSummaryText(mat, ri)}</span>
       </summary>
       <div class="px-2.5 pb-2.5 pt-1 grid grid-cols-2 gap-1.5">
         <div>
-          <label class="block text-[10px] text-slate-400 mb-0.5">จำนวนที่เสีย (${mat.bigUnit})</label>
+          <label class="block text-[10px] text-slate-400 mb-0.5">จำนวนที่หักลบ (${mat.bigUnit})</label>
           <input type="number" min="0" step="any" inputmode="decimal" placeholder="0" value="${ri.wasteQtyBig ?? ''}"
             data-matid="${mat.id}" data-field="wasteQtyBig" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
         </div>
         <div>
-          <label class="block text-[10px] text-slate-400 mb-0.5">จำนวนที่เสีย (${mat.smallUnit})</label>
+          <label class="block text-[10px] text-slate-400 mb-0.5">จำนวนที่หักลบ (${mat.smallUnit})</label>
           <input type="number" min="0" step="any" inputmode="decimal" placeholder="0" value="${ri.wasteQty ?? ''}"
             data-matid="${mat.id}" data-field="wasteQty" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
         </div>
@@ -2356,14 +2360,14 @@ function updateCardLive(id){
   const liveEl = document.getElementById('live_' + id);
   if (dotEl) dotEl.className = `w-2 h-2 rounded-full ${isTouched(id) ? 'bg-green-500' : 'bg-slate-300'} shrink-0 mt-1.5`;
   if (liveEl) liveEl.innerHTML = liveStatusHTML(id);
-  // อัปเดตหัวข้อ "ของเสีย/ตัดทิ้ง" ให้โชว์จำนวนล่าสุดทันที ไม่ต้องรอ re-render การ์ดทั้งใบ
+  // อัปเดตหัวข้อ "หักลบ" ให้โชว์จำนวนล่าสุดทันที ไม่ต้องรอ re-render การ์ดทั้งใบ
   const wasteSummaryEl = document.getElementById('wastesummary_' + id);
   const wasteDetailsEl = document.getElementById('wastedetails_' + id);
   if (wasteSummaryEl) {
     const mat = materialById(id);
     const ri = rawInputs[id] || {};
     const hasWaste = (Number(ri.wasteQty) || 0) > 0 || (Number(ri.wasteQtyBig) || 0) > 0;
-    wasteSummaryEl.textContent = `🗑️ ของเสีย/ตัดทิ้ง ${mat ? wasteSummaryText(mat, ri) : ''}`;
+    wasteSummaryEl.textContent = `🗑️ หักลบ ${mat ? wasteSummaryText(mat, ri) : ''}`;
     if (wasteDetailsEl) wasteDetailsEl.classList.toggle('border-red-200', hasWaste);
     if (wasteDetailsEl) wasteDetailsEl.classList.toggle('bg-red-50/30', hasWaste);
   }
@@ -2859,8 +2863,8 @@ function recipeIngredientRowHTML(recipe, idx){
     <div class="flex items-center gap-1.5">
       <input type="number" min="0" step="any" value="${fmtNum(displayQty)}"
         data-recipeid="${recipe.id}" data-ingidx="${idx}" data-recipefield="ingqty"
-        class="input-base input-sm !h-9 !px-2 font-num text-xs flex-1 text-center bg-white">
-      <select data-recipeid="${recipe.id}" data-ingidx="${idx}" data-recipefield="ingunit" class="input-base input-sm !h-9 !px-1 text-[11px] w-20 shrink-0 bg-white">
+        class="input-base input-sm !h-9 !px-2 font-num text-sm text-center bg-white min-w-0 flex-[2]">
+      <select data-recipeid="${recipe.id}" data-ingidx="${idx}" data-recipefield="ingunit" class="input-base input-sm !h-9 !px-1 text-[11px] bg-white min-w-0 flex-1">
         ${mat ? recipeUnitOptionsHTML(mat, unit) : ''}
       </select>
       <button data-removeing-recipe="${recipe.id}" data-removeing-idx="${idx}" title="ลบวัตถุดิบนี้ออกจากสูตร" class="text-red-400 hover:text-red-600 shrink-0 w-7 h-7 flex items-center justify-center">✕</button>
@@ -3352,7 +3356,7 @@ function renderMenuSummary(filterText){
           totalQty += x.qty;
           return `<div class="flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-slate-50">
             <span class="text-sm text-slate-700">${x.recipe.name} <span class="text-slate-400 text-xs">(${x.recipe.size})</span></span>
-            <span class="font-num font-semibold text-accent-700 text-sm">${fmtNum(x.qty)} แก้ว</span>
+            <span class="font-num font-semibold text-accent-700 text-sm">${fmtNum(x.qty)} ${recipeUnit(x.recipe)}</span>
           </div>`;
         }).join('')}
       </div>
@@ -3425,7 +3429,7 @@ document.getElementById('printMenuSummaryBtn').addEventListener('click', () => {
       <h2>📋 สรุปยอดขายเมนู</h2>
       <p class="sub">${subtitle}</p>
       ${body.innerHTML.replace(/class="mb-3"/g,'').replace(/class="text-\[11px\][^"]*"/g,'class="cat"').replace(/class="flex items-center justify-between[^"]*"/g,'class="row"').replace(/class="[^"]*"/g,'')}
-      <p class="total">รวม ${totalItems} เมนู · ${totalQty} แก้ว</p>
+      <p class="total">รวม ${totalItems} เมนู · ${totalQty} รายการ</p>
     </body></html>
   `);
   printWin.document.close();
@@ -4500,7 +4504,7 @@ function renderTable(){
               class="pos-input w-24 input-base input-sm !h-9 font-num">
             <span class="text-[11px] text-slate-400">${mat.smallUnit}</span>
           </div>
-          ${rec.wasteQty > 0 ? `<p class="text-[10px] text-red-500 mt-1">🗑️ เสีย ${fmtNum(rec.wasteQty)} ${mat.smallUnit}</p>` : ''}
+          ${rec.wasteQty > 0 ? `<p class="text-[10px] text-red-500 mt-1">🗑️ หักลบ ${fmtNum(rec.wasteQty)} ${mat.smallUnit}</p>` : ''}
         </td>
         <td class="px-4 py-3 font-num font-semibold text-slate-900">${fmtNum(rec.usedActual)} <span class="text-[11px] font-normal text-slate-400">${mat.smallUnit}</span></td>
         <td class="px-4 py-3">${varianceBadge(rec.variance)}</td>
@@ -6054,6 +6058,10 @@ async function ensureRefillQtyColumn(){
 </script>
 </body>
 </html>
+
+
+
+
 
 
 

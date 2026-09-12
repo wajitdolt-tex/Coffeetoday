@@ -1489,6 +1489,7 @@ async function loadDailyCounts(branch){
         reviewedAt: r.reviewed_at || '',
         reviewedNote: r.reviewed_note || '',
         wasteQty: r.waste_qty ? String(r.waste_qty) : '',
+        wasteQtyBig: r.waste_qty_big ? String(r.waste_qty_big) : '',
         wasteNote: r.waste_note || '',
       };
       recomputeMaterialLocal(r.material_id);
@@ -1572,7 +1573,7 @@ async function saveDailyCount(matId){
     && (ri.actualSmall === undefined || ri.actualSmall === '')
     && (ri.received === undefined || ri.received === '')
     && (ri.posSale === undefined || ri.posSale === '')
-    && !ri.userNote && !ri.wasteQty;
+    && !ri.userNote && !ri.wasteQty && !ri.wasteQtyBig;
   if (nothingTyped) return;
 
   // sticky expression แยกอิสระต่อช่อง: อัปเดตเฉพาะตอนช่องนั้นๆ มี + ใหม่ ถ้าช่องนั้นไม่มี + ให้คงค่าที่เคย sticky ไว้ (ไม่ลบ)
@@ -1598,6 +1599,7 @@ async function saveDailyCount(matId){
         napuka_credit_small: (ri.stickyNapukaCreditSmall !== undefined) ? ri.stickyNapukaCreditSmall : null,
         reviewed: !!ri.reviewed, reviewed_at: ri.reviewedAt || null, reviewed_note: ri.reviewedNote || '',
         waste_qty: parseFloat(ri.wasteQty) || 0,
+        waste_qty_big: parseFloat(ri.wasteQtyBig) || 0,
         waste_note: ri.wasteNote || '',
         updated_at: new Date().toISOString(),
       }]),
@@ -1614,6 +1616,7 @@ async function saveDailyCount(matId){
       pos_sale: parseFloat(ri.posSale) || 0,
       note: ri.userNote || '',
       waste_qty: parseFloat(ri.wasteQty) || 0,
+      waste_qty_big: parseFloat(ri.wasteQtyBig) || 0,
       waste_note: ri.wasteNote || '',
     });
   } catch (e) { console.error('saveDailyCount failed', e); setSyncStatus('error', 'saveDailyCount: ' + e.message); }
@@ -1742,11 +1745,12 @@ function carryBeforeCreditHint(mat){
   return ` <span class="text-[10px] text-blue-500 font-num">(ก่อนบวกตีคืนน้ำคาปู ${formatAsBigSmall(mat, beforeSmall)})</span>`;
 }
 
-function computeRecord(mat, { received, actualBig, actualSmall, posSale, note, wasteQty }){
+function computeRecord(mat, { received, actualBig, actualSmall, posSale, note, wasteQty, wasteQtyBig }){
   const carrySmall = mat.carry;
   const receivedSmall = received * mat.ratio;
   const actualTotalSmall = (actualBig * mat.ratio) + (mat.noFraction ? 0 : actualSmall);
-  const waste = Number(wasteQty) || 0;
+  // ของเสียรวมทั้งหน่วยเต็ม (แปลงเป็นหน่วยเศษ) และหน่วยเศษ เข้าด้วยกัน
+  const waste = (Number(wasteQtyBig) || 0) * mat.ratio + (Number(wasteQty) || 0);
   // ใช้ไปจริง = ยกมา+รับเข้า-นับจริง (ของที่หายไปจากสต็อกทั้งหมด รวมทั้งขายและของเสีย)
   // แต่ "นับจริง" (actualTotalSmall) ที่พนักงานกรอกคือยอดหลังตัดของเสียออกไปแล้ว ดังนั้นค่าที่คำนวณได้ตรงนี้
   // จะรวมของเสียอยู่แล้วโดยอัตโนมัติจากผลต่างของสต็อก ไม่ต้องบวก waste ซ้ำอีกครั้ง
@@ -2118,6 +2122,24 @@ function quickFillHTML(mat){
     </details>`;
 }
 
+// รายการสาเหตุมาตรฐานของของเสีย/ตัดทิ้ง — "ตัดคืน" ใช้เมื่อคืนของที่เคยยืมมาจากสาขาอื่น
+const WASTE_STANDARD_REASONS = ['ตีเสีย', 'หมดอายุ', 'ตัดคืน (คืนของที่ยืมมา)', 'อื่นๆ'];
+function wasteReasonOptionsHTML(currentNote){
+  const isStandard = WASTE_STANDARD_REASONS.includes(currentNote);
+  const opts = WASTE_STANDARD_REASONS.map(r => `<option value="${r}" ${r === currentNote ? 'selected' : ''}>${r}</option>`).join('');
+  // ถ้าเคยพิมพ์เหตุผลเองที่ไม่ตรงกับรายการมาตรฐาน ให้ default dropdown ไปที่ "อื่นๆ" แทน (ไม่ต้อง fabricate option ใหม่)
+  return currentNote && !isStandard ? opts.replace('value="อื่นๆ"', 'value="อื่นๆ" selected') : opts;
+}
+function wasteSummaryText(mat, ri){
+  const big = Number(ri.wasteQtyBig) || 0;
+  const small = Number(ri.wasteQty) || 0;
+  if (!big && !small) return '';
+  const parts = [];
+  if (big > 0) parts.push(`${fmtNum(big)} ${mat.bigUnit}`);
+  if (small > 0) parts.push(`${fmtNum(small)} ${mat.smallUnit}`);
+  return `(${parts.join(' + ')})`;
+}
+
 function materialCardHTML(mat){
   const ri = rawInputs[mat.id] || {};
   const touched = isTouched(mat.id);
@@ -2173,21 +2195,29 @@ function materialCardHTML(mat){
     </div>
     <p id="live_${mat.id}" class="text-[11px] mt-1.5 leading-relaxed">${liveStatusHTML(mat.id)}</p>
     ${ri.borrowNote ? `<p class="mt-1 text-[11px] font-semibold text-blue-600 bg-blue-50 rounded-lg px-2 py-1">🔄 ${ri.borrowNote}</p>` : ''}
-    <details id="wastedetails_${mat.id}" class="mt-1.5 border border-slate-100 rounded-lg overflow-hidden ${Number(ri.wasteQty) > 0 ? 'border-red-200 bg-red-50/30' : ''}">
+    <details id="wastedetails_${mat.id}" class="mt-1.5 border border-slate-100 rounded-lg overflow-hidden ${(Number(ri.wasteQtyBig) > 0 || Number(ri.wasteQty) > 0) ? 'border-red-200 bg-red-50/30' : ''}">
       <summary class="px-2.5 py-1.5 cursor-pointer text-[11px] font-medium text-slate-500 hover:bg-slate-50 list-none flex items-center gap-1">
         <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
-        <span id="wastesummary_${mat.id}">🗑️ ของเสีย/ตัดทิ้ง ${Number(ri.wasteQty) > 0 ? `(${fmtNum(ri.wasteQty)} ${mat.smallUnit})` : ''}</span>
+        <span id="wastesummary_${mat.id}">🗑️ ของเสีย/ตัดทิ้ง ${wasteSummaryText(mat, ri)}</span>
       </summary>
       <div class="px-2.5 pb-2.5 pt-1 grid grid-cols-2 gap-1.5">
+        <div>
+          <label class="block text-[10px] text-slate-400 mb-0.5">จำนวนที่เสีย (${mat.bigUnit})</label>
+          <input type="number" min="0" step="any" inputmode="decimal" placeholder="0" value="${ri.wasteQtyBig ?? ''}"
+            data-matid="${mat.id}" data-field="wasteQtyBig" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
+        </div>
         <div>
           <label class="block text-[10px] text-slate-400 mb-0.5">จำนวนที่เสีย (${mat.smallUnit})</label>
           <input type="number" min="0" step="any" inputmode="decimal" placeholder="0" value="${ri.wasteQty ?? ''}"
             data-matid="${mat.id}" data-field="wasteQty" class="input-base input-sm !h-9 font-num !px-1.5 text-center">
         </div>
-        <div>
+        <div class="col-span-2">
           <label class="block text-[10px] text-slate-400 mb-0.5">สาเหตุ</label>
-          <input type="text" placeholder="เช่น ตีเสีย, หมดอายุ" value="${ri.wasteNote ?? ''}"
-            data-matid="${mat.id}" data-field="wasteNote" class="input-base input-sm !h-9 text-xs !px-1.5">
+          <select data-matid="${mat.id}" data-field="wasteReasonSelect" class="input-base input-sm !h-9 text-xs !px-1.5 w-full mb-1">
+            ${wasteReasonOptionsHTML(ri.wasteNote)}
+          </select>
+          <input type="text" placeholder="ระบุรายละเอียดเพิ่มเติม (ถ้ามี)" value="${ri.wasteNote ?? ''}"
+            data-matid="${mat.id}" data-field="wasteNote" class="input-base input-sm !h-9 text-xs !px-1.5 w-full">
         </div>
       </div>
     </details>
@@ -2331,10 +2361,11 @@ function updateCardLive(id){
   const wasteDetailsEl = document.getElementById('wastedetails_' + id);
   if (wasteSummaryEl) {
     const mat = materialById(id);
-    const wasteQty = Number((rawInputs[id] || {}).wasteQty) || 0;
-    wasteSummaryEl.textContent = `🗑️ ของเสีย/ตัดทิ้ง ${wasteQty > 0 && mat ? `(${fmtNum(wasteQty)} ${mat.smallUnit})` : ''}`;
-    if (wasteDetailsEl) wasteDetailsEl.classList.toggle('border-red-200', wasteQty > 0);
-    if (wasteDetailsEl) wasteDetailsEl.classList.toggle('bg-red-50/30', wasteQty > 0);
+    const ri = rawInputs[id] || {};
+    const hasWaste = (Number(ri.wasteQty) || 0) > 0 || (Number(ri.wasteQtyBig) || 0) > 0;
+    wasteSummaryEl.textContent = `🗑️ ของเสีย/ตัดทิ้ง ${mat ? wasteSummaryText(mat, ri) : ''}`;
+    if (wasteDetailsEl) wasteDetailsEl.classList.toggle('border-red-200', hasWaste);
+    if (wasteDetailsEl) wasteDetailsEl.classList.toggle('bg-red-50/30', hasWaste);
   }
   // อัปเดตบรรทัดตีคืนน้ำคาปู
   const creditEl = document.getElementById('credit_' + id);
@@ -2372,7 +2403,8 @@ function recomputeMaterialLocal(id){
     const note = ri.note || '';
     const posSale = parseFloat(ri.posSale) || 0;
     const wasteQty = parseFloat(ri.wasteQty) || 0;
-    records[id] = computeRecord(mat, { received, actualBig, actualSmall, posSale, note, wasteQty });
+    const wasteQtyBig = parseFloat(ri.wasteQtyBig) || 0;
+    records[id] = computeRecord(mat, { received, actualBig, actualSmall, posSale, note, wasteQty, wasteQtyBig });
     records[id].reviewed = !!ri.reviewed;
     records[id].reviewedAt = ri.reviewedAt || '';
     records[id].reviewedNote = ri.reviewedNote || '';
@@ -2542,6 +2574,18 @@ function bindMaterialInputDelegation(container){
       // ติ๊กเปิด (มีการเคลื่อนไหว) → ดึงยอดนับจริงล่าสุดจาก DB มา sync ให้ทันสมัยที่สุดก่อนแสดงการ์ด
       // กันกรณี mat.carry ที่ cache ไว้ตอนโหลดหน้าไม่ตรงกับข้อมูลล่าสุด (เช่น อีกเครื่องเพิ่งบันทึกเพิ่ม)
       if (e.target.checked) refreshSingleMaterialCarry(matId, card);
+      return;
+    }
+    // เลือกสาเหตุของเสียจาก dropdown มาตรฐาน — sync ไปช่องพิมพ์อิสระด้วย ยกเว้นเลือก "อื่นๆ" ให้เว้นว่างไว้พิมพ์เอง
+    if (e.target.dataset.field === 'wasteReasonSelect') {
+      const matId = e.target.dataset.matid;
+      const ri = rawInputs[matId];
+      if (!ri) return;
+      const selected = e.target.value;
+      ri.wasteNote = selected === 'อื่นๆ' ? '' : selected;
+      const noteInput = container.querySelector(`input[data-matid="${matId}"][data-field="wasteNote"]`);
+      if (noteInput) { noteInput.value = ri.wasteNote; if (selected === 'อื่นๆ') noteInput.focus(); }
+      scheduleSaveDailyCount(matId);
       return;
     }
     // บันทึกทันทีตอนออกจากช่อง (blur) ด้วย ไม่รอแค่ debounce — กันเคสกรอกเสร็จแล้วสลับการ์ดเร็วๆ ทำให้ข้อมูลไม่ถูกบันทึก
@@ -4690,14 +4734,17 @@ async function viewHistoricalAudit(){
       if (!mat) return;
       if (r.actual_big === null || r.actual_big === undefined) return;
       const carry = carryMap[r.material_id] ?? mat.carry;
-      const waste = Number(r.waste_qty) || 0;
+      const wasteSmall = Number(r.waste_qty) || 0;
+      const wasteBig = Number(r.waste_qty_big) || 0;
+      const waste = wasteBig * mat.ratio + wasteSmall;
       const rec = computeRecord(mat, {
         received: Number(r.received) || 0,
         actualBig: Number(r.actual_big) || 0,
         actualSmall: mat.noFraction ? 0 : (Number(r.actual_small) || 0),
         posSale: Number(r.pos_sale) || 0,
         note: r.note ? r.note.split('\u200c')[0] : '',
-        wasteQty: waste,
+        wasteQty: wasteSmall,
+        wasteQtyBig: wasteBig,
       });
       rec.carrySmall = carry; // ใช้ยอดยกมาของ "วันนั้น" จริงๆ ไม่ใช่ของวันนี้
       rec.usedActual = (carry + rec.receivedSmall) - rec.actualTotalSmall;
@@ -6007,8 +6054,6 @@ async function ensureRefillQtyColumn(){
 </script>
 </body>
 </html>
-
-
 
 
 

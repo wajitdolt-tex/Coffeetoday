@@ -1563,6 +1563,18 @@ async function saveDailyCount(matId){
   if (!branch) return;
   const ri = rawInputs[matId] || {};
   const mat = materialById(matId);
+
+  // ป้องกันการสร้างแถว "นับจริง 0" ที่ไม่ตั้งใจ — ถ้าทุกช่องยังไม่เคยถูกพิมพ์อะไรเลยจริงๆ (undefined/ว่างเปล่าล้วน)
+  // ให้ข้ามการบันทึกไปเลย ไม่สร้างแถวขึ้นมา เพื่อไม่ให้ loadCarryForward เข้าใจผิดว่าวันนี้ "นับแล้วได้ 0" จริง
+  // ทั้งที่จริงๆ ยังไม่มีใครแตะ/กรอกอะไรเลย (เช่น ติ๊กเปิดวัตถุดิบ slow-moving ขึ้นมาดูเฉยๆ)
+  // เคสที่ตั้งใจกรอก 0 จริง (ของหมดสนิท) ยังบันทึกได้ปกติ เพราะ evalExpr('0') !== '' แยกออกจากกันชัดเจน
+  const nothingTyped = (ri.actualBig === undefined || ri.actualBig === '')
+    && (ri.actualSmall === undefined || ri.actualSmall === '')
+    && (ri.received === undefined || ri.received === '')
+    && (ri.posSale === undefined || ri.posSale === '')
+    && !ri.userNote && !ri.wasteQty;
+  if (nothingTyped) return;
+
   // sticky expression แยกอิสระต่อช่อง: อัปเดตเฉพาะตอนช่องนั้นๆ มี + ใหม่ ถ้าช่องนั้นไม่มี + ให้คงค่าที่เคย sticky ไว้ (ไม่ลบ)
   // เพื่อรองรับ workflow ร้าน: เช้ากรอกเต็ม "20+13" (นับของไม่เคลื่อนไหวก่อน) บ่ายแก้เต็มเป็นยอดจริง "33" แต่เศษกลับมี + ใหม่ "3+3"
   // ทั้งสองช่องต้องเก็บ sticky ของตัวเองแยกกัน ไม่ให้ฝั่งหนึ่งไปลบอีกฝั่งที่ยังไม่ได้แก้
@@ -2182,6 +2194,31 @@ function materialCardHTML(mat){
   </div>`;
 }
 
+// ดึงยอดนับจริงล่าสุดของวัตถุดิบตัวเดียว มา sync เป็น "ยกมาเมื่อวาน" ให้ทันสมัยที่สุด
+// ใช้ตอนติ๊กเปิดวัตถุดิบ slow-moving ขึ้นมา เพื่อให้เทียบกับยอดขายตามสูตรได้ถูกต้องทันที
+// ไม่ว่าจะผ่านมากี่วันแล้วก็ตามตั้งแต่ครั้งล่าสุดที่นับจริง
+async function refreshSingleMaterialCarry(matId, cardEl){
+  const mat = materialById(matId);
+  const branch = branchSelectEl.value;
+  if (!mat || !branch) return;
+  try {
+    const today = todayDateStr();
+    const rows = await sb(`daily_counts?branch=eq.${encodeURIComponent(branch)}&material_id=eq.${encodeURIComponent(matId)}&count_date=lt.${today}&select=actual_big,actual_small,carry_expr_big,carry_expr_small,count_date&order=count_date.desc,id.desc&limit=30`);
+    if (!Array.isArray(rows) || !rows.length) return; // ไม่มีประวัติเลย ปล่อยค่าเดิม (0) ไว้
+    const counted = rows.find(r => Number(r.actual_big) > 0 || Number(r.actual_small) > 0);
+    const latest = rows[0];
+    const latestIsExplicitZero = latest && Number(latest.actual_big) === 0 && Number(latest.actual_small) === 0
+      && counted && counted.count_date < latest.count_date;
+    const useRow = latestIsExplicitZero ? latest : (counted || latest);
+    mat.carry = (Number(useRow.actual_big) || 0) * mat.ratio + (mat.noFraction ? 0 : (Number(useRow.actual_small) || 0));
+    const bigExpr = useRow.carry_expr_big || '';
+    const smallExpr = useRow.carry_expr_small || '';
+    mat.carryExpr = [bigExpr, smallExpr].filter(e => e && e.includes('+')).join(' + ') || null;
+    // re-render เฉพาะการ์ดนี้ให้เห็นยอดล่าสุดทันที ไม่ต้อง render ทั้งหน้าใหม่
+    if (cardEl) cardEl.innerHTML = materialCardHTML(mat);
+  } catch (e) { console.error('refreshSingleMaterialCarry failed', e); }
+}
+
 function slowItemHTML(mat){
   const hasData = isTouched(mat.id) || !!(rawInputs[mat.id] && (rawInputs[mat.id].received || rawInputs[mat.id].note));
   return `
@@ -2502,6 +2539,9 @@ function bindMaterialInputDelegation(container){
       const matId = e.target.dataset.toggleMatid;
       const card = container.querySelector(`[data-slowcard="${matId}"]`);
       if (card) card.classList.toggle('hidden', !e.target.checked);
+      // ติ๊กเปิด (มีการเคลื่อนไหว) → ดึงยอดนับจริงล่าสุดจาก DB มา sync ให้ทันสมัยที่สุดก่อนแสดงการ์ด
+      // กันกรณี mat.carry ที่ cache ไว้ตอนโหลดหน้าไม่ตรงกับข้อมูลล่าสุด (เช่น อีกเครื่องเพิ่งบันทึกเพิ่ม)
+      if (e.target.checked) refreshSingleMaterialCarry(matId, card);
       return;
     }
     // บันทึกทันทีตอนออกจากช่อง (blur) ด้วย ไม่รอแค่ debounce — กันเคสกรอกเสร็จแล้วสลับการ์ดเร็วๆ ทำให้ข้อมูลไม่ถูกบันทึก
@@ -4858,6 +4898,12 @@ async function savePastDailyCount(matId){
   const date = pastDateInputEl.value;
   if (!branch || !date) return;
   const ri = pastInputs[matId] || {};
+  const nothingTyped = (ri.actualBig === undefined || ri.actualBig === '')
+    && (ri.actualSmall === undefined || ri.actualSmall === '')
+    && (ri.received === undefined || ri.received === '')
+    && (ri.posSale === undefined || ri.posSale === '')
+    && !ri.userNote;
+  if (nothingTyped) return;
   if (hasExpr(ri.actualBig)) ri.stickyBigExpr = ri.actualBig;
   if (hasExpr(ri.actualSmall)) ri.stickySmallExpr = ri.actualSmall;
   setSyncStatus('syncing');
@@ -5961,6 +6007,8 @@ async function ensureRefillQtyColumn(){
 </script>
 </body>
 </html>
+
+
 
 
 

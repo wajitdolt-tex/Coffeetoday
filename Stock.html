@@ -2863,8 +2863,8 @@ function recipeIngredientRowHTML(recipe, idx){
     <div class="flex items-center gap-1.5">
       <input type="number" min="0" step="any" value="${fmtNum(displayQty)}"
         data-recipeid="${recipe.id}" data-ingidx="${idx}" data-recipefield="ingqty"
-        class="input-base input-sm !h-9 !px-2 font-num text-sm text-center bg-white min-w-0 flex-[2]">
-      <select data-recipeid="${recipe.id}" data-ingidx="${idx}" data-recipefield="ingunit" class="input-base input-sm !h-9 !px-1 text-[11px] bg-white min-w-0 flex-1">
+        class="input-base input-sm !h-9 !px-2 font-num text-sm text-center bg-white min-w-0 flex-1">
+      <select data-recipeid="${recipe.id}" data-ingidx="${idx}" data-recipefield="ingunit" class="input-base input-sm !h-9 !px-1 text-[11px] bg-white shrink-0" style="width:4.5rem;">
         ${mat ? recipeUnitOptionsHTML(mat, unit) : ''}
       </select>
       <button data-removeing-recipe="${recipe.id}" data-removeing-idx="${idx}" title="ลบวัตถุดิบนี้ออกจากสูตร" class="text-red-400 hover:text-red-600 shrink-0 w-7 h-7 flex items-center justify-center">✕</button>
@@ -6058,9 +6058,6 @@ async function ensureRefillQtyColumn(){
 </script>
 </body>
 </html>
-
-
-
 
 
 

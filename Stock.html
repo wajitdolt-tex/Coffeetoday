@@ -1184,6 +1184,7 @@ function materialToRow(mat){
     quick_fill_sizes: mat.quickFill === null ? [] : (qf.sizes && qf.sizes.length ? qf.sizes : null),
     unit_override: mat.unitOverride || null,
     purchase_source: mat.purchaseSource || 'self',
+    unit_conversions: mat.unitConversions || null,
     updated_at: new Date().toISOString(),
   };
   // บันทึก carry แยกตาม branch ด้วย
@@ -1288,6 +1289,7 @@ async function loadMaterialsFromDB(){
       mat.noFraction = !!r.no_fraction; mat.fastMoving = !!r.fast_moving;
       mat.unitOverride = r.unit_override || null;
       mat.purchaseSource = r.purchase_source || 'self';
+      mat.unitConversions = r.unit_conversions || null;
 
       // ถ้า DB มีค่าผิด ให้ backfill unit ที่ถูกต้องกลับขึ้น DB ด้วย
       if (hardcoded && (r.small_unit !== mat.smallUnit || Number(r.ratio) !== mat.ratio)) {
@@ -2572,11 +2574,47 @@ function ozRecipeToStockQty(mat, ozQty){
   return mat.smallUnit === 'ออนซ์' ? ozQty : ozQty * 30;
 }
 
+// ===== ระบบเลือกหน่วยอิสระต่อรายการวัตถุดิบในสูตร =====
+// หน่วยมาตรฐานให้เลือกในหน้ากรอกสูตร (นอกเหนือจากนี้พิมพ์เพิ่มเองได้ผ่าน "อื่นๆ...")
+const RECIPE_STANDARD_UNITS = ['ออนซ์', 'กรัม', 'ถุง', 'ห่อ', 'ใบ', 'มล.', 'กก.'];
+
+// อัตราแปลงมาตรฐานที่ตายตัว (หน่วยน้ำหนัก/ปริมาตร) ไม่ต้องถามผู้ใช้ซ้ำ
+const RECIPE_FIXED_CONVERSIONS = { 'ออนซ์': 30, 'กก.': 1000 }; // 1 ออนซ์ = 30 กรัม/มล., 1 กก. = 1000 กรัม
+
+// หาอัตราแปลง "1 หน่วยนี้ = ? หน่วยหลักของวัตถุดิบ" — เช็คอัตราตายตัวก่อน แล้วค่อยเช็คที่เคยตั้งไว้เอง (unitConversions)
+function getUnitConversionRate(mat, unit){
+  if (!unit || unit === mat.smallUnit) return 1;
+  if (RECIPE_FIXED_CONVERSIONS[unit] !== undefined) return RECIPE_FIXED_CONVERSIONS[unit];
+  if (mat.unitConversions && mat.unitConversions[unit] !== undefined) return Number(mat.unitConversions[unit]);
+  return null; // ยังไม่เคยตั้งไว้ ต้องถามผู้ใช้ก่อน
+}
+
+// แปลงค่าที่เก็บจริง (หน่วยหลักของวัตถุดิบ) ให้เป็นค่าที่ต้องแสดงในหน่วยที่ผู้ใช้เลือกไว้
+function recipeDisplayQty(mat, storedQty, unit){
+  const rate = getUnitConversionRate(mat, unit);
+  if (!rate) return storedQty;
+  return Math.round((storedQty / rate) * 10000) / 10000;
+}
+// แปลงค่าที่ผู้ใช้พิมพ์ (หน่วยที่เลือกไว้) กลับเป็นหน่วยหลักของวัตถุดิบ เพื่อเก็บลง ing.qty จริง
+function recipeStoredQty(mat, displayQty, unit){
+  const rate = getUnitConversionRate(mat, unit);
+  if (!rate) return displayQty;
+  return Math.round((displayQty * rate) * 10000) / 10000;
+}
+function recipeUnitOptionsHTML(mat, selectedUnit){
+  const units = [...new Set([mat.smallUnit, ...RECIPE_STANDARD_UNITS])];
+  const opts = units.map(u => `<option value="${u}" ${u === selectedUnit ? 'selected' : ''}>${u}</option>`).join('');
+  const isCustom = selectedUnit && !units.includes(selectedUnit);
+  return opts + (isCustom ? `<option value="${selectedUnit}" selected>${selectedUnit}</option>` : '') + `<option value="__custom__">อื่นๆ…</option>`;
+}
+
 function ingredientListHTML(recipe){
   return recipe.ingredients.map(i => {
     const mat = materialById(i.materialId);
     if (!mat) return '';
-    return `<li class="flex justify-between gap-2"><span>${mat.name}</span><span class="font-num text-slate-500">${fmtNum(i.qty)} ${recipeUnitLabel(mat)}</span></li>`;
+    const unit = i.unit || recipeUnitLabel(mat);
+    const displayQty = i.unit ? recipeDisplayQty(mat, i.qty, i.unit) : i.qty;
+    return `<li class="flex justify-between gap-2"><span>${mat.name}</span><span class="font-num text-slate-500">${fmtNum(displayQty)} ${unit}</span></li>`;
   }).filter(Boolean).join('');
 }
 
@@ -2727,16 +2765,20 @@ function materialOptionsHTML(selectedId){
 function recipeIngredientRowHTML(recipe, idx){
   const ing = recipe.ingredients[idx];
   const mat = materialById(ing.materialId);
+  const unit = ing.unit || (mat ? recipeUnitLabel(mat) : '');
+  const displayQty = (mat && ing.unit) ? recipeDisplayQty(mat, ing.qty, ing.unit) : ing.qty;
   return `
   <div class="border border-slate-100 rounded-lg p-2 bg-slate-50" data-ingrow="${recipe.id}_${idx}">
     <select data-recipeid="${recipe.id}" data-ingidx="${idx}" data-recipefield="ingmat" class="input-base input-sm !h-9 !px-2 text-xs w-full mb-1.5 bg-white">
       ${materialOptionsHTML(ing.materialId)}
     </select>
     <div class="flex items-center gap-1.5">
-      <input type="number" min="0" step="any" value="${ing.qty}"
+      <input type="number" min="0" step="any" value="${fmtNum(displayQty)}"
         data-recipeid="${recipe.id}" data-ingidx="${idx}" data-recipefield="ingqty"
         class="input-base input-sm !h-9 !px-2 font-num text-xs flex-1 text-center bg-white">
-      <span class="text-[10px] text-slate-400 w-10 shrink-0">${mat ? recipeUnitLabel(mat) : ''}</span>
+      <select data-recipeid="${recipe.id}" data-ingidx="${idx}" data-recipefield="ingunit" class="input-base input-sm !h-9 !px-1 text-[11px] w-20 shrink-0 bg-white">
+        ${mat ? recipeUnitOptionsHTML(mat, unit) : ''}
+      </select>
       <button data-removeing-recipe="${recipe.id}" data-removeing-idx="${idx}" title="ลบวัตถุดิบนี้ออกจากสูตร" class="text-red-400 hover:text-red-600 shrink-0 w-7 h-7 flex items-center justify-center">✕</button>
     </div>
   </div>`;
@@ -2845,12 +2887,51 @@ recipeEditListWrap.addEventListener('input', (e) => {
     if (trimmed) recipe.category = trimmed;
   } else if (field === 'ingqty') {
     const idx = parseInt(e.target.dataset.ingidx, 10);
-    recipe.ingredients[idx].qty = parseFloat(e.target.value) || 0;
+    const ing = recipe.ingredients[idx];
+    const mat = materialById(ing.materialId);
+    const displayVal = parseFloat(e.target.value) || 0;
+    // แปลงจากหน่วยที่กำลังแสดง (ing.unit) กลับเป็นหน่วยหลักของวัตถุดิบก่อนเก็บจริง
+    ing.qty = (mat && ing.unit) ? recipeStoredQty(mat, displayVal, ing.unit) : displayVal;
   } else if (field === 'ingmat') {
     const idx = parseInt(e.target.dataset.ingidx, 10);
     recipe.ingredients[idx].materialId = e.target.value;
+    recipe.ingredients[idx].qty = 0; // เปลี่ยนวัตถุดิบแล้ว เลขเดิมอาจตีความผิดหน่วย บังคับให้กรอกใหม่ปลอดภัยกว่า
+    delete recipe.ingredients[idx].unit; // เปลี่ยนวัตถุดิบแล้ว หน่วยเดิมอาจไม่ตรง กลับไปใช้หน่วยเริ่มต้น
     rerenderRecipeIngredients(recipe);
   }
+  scheduleSaveRecipe(recipeId);
+});
+
+// เลือกหน่วยใหม่สำหรับวัตถุดิบในสูตร — ถ้ายังไม่เคยตั้งอัตราแปลงไว้ ให้ถามก่อนบันทึก
+recipeEditListWrap.addEventListener('change', (e) => {
+  if (e.target.dataset.recipefield !== 'ingunit') return;
+  const recipeId = e.target.dataset.recipeid;
+  const idx = parseInt(e.target.dataset.ingidx, 10);
+  const recipe = RECIPES.find(r => r.id === recipeId);
+  if (!recipe) return;
+  const ing = recipe.ingredients[idx];
+  const mat = materialById(ing.materialId);
+  if (!mat) return;
+
+  let newUnit = e.target.value;
+  if (newUnit === '__custom__') {
+    const typed = prompt('พิมพ์ชื่อหน่วยใหม่ (เช่น "ลูก", "แผ่น"):', '');
+    if (!typed || !typed.trim()) { rerenderRecipeIngredients(recipe); return; }
+    newUnit = typed.trim();
+  }
+
+  // เก็บค่าจริง (หน่วยหลัก) ไว้ก่อนเปลี่ยนหน่วยแสดงผล ค่าที่เก็บจริงไม่เปลี่ยน แค่หน่วยที่ใช้แสดง/กรอกเปลี่ยน
+  const rate = getUnitConversionRate(mat, newUnit);
+  if (rate === null) {
+    const answer = prompt(`ยังไม่เคยตั้งอัตราแปลงของหน่วย "${newUnit}" สำหรับ "${mat.name}"\nกรุณาระบุ: 1 ${newUnit} = กี่ ${mat.smallUnit}?`, '');
+    const rateNum = parseFloat(answer);
+    if (!answer || !(rateNum > 0)) { rerenderRecipeIngredients(recipe); return; }
+    if (!mat.unitConversions) mat.unitConversions = {};
+    mat.unitConversions[newUnit] = rateNum;
+    upsertMaterial(mat);
+  }
+  ing.unit = newUnit;
+  rerenderRecipeIngredients(recipe);
   scheduleSaveRecipe(recipeId);
 });
 
@@ -5880,9 +5961,6 @@ async function ensureRefillQtyColumn(){
 </script>
 </body>
 </html>
-
-
-
 
 
 

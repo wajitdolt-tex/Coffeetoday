@@ -1377,7 +1377,8 @@ function addFixedPayable(type) {
     desc: names[type], cat: 'วัตถุดิบ/สินค้า',
     amount: amount, due: due,
     indate: indate, billno: billno,
-    note: note, paid: false, paidDate: null
+    note: note, paid: false, paidDate: null,
+    updatedAt: Date.now()
   });
   savePay(); renderPayables();
 
@@ -1401,7 +1402,8 @@ function addPayable() {
     amount: amount, due: document.getElementById('p-due').value,
     indate: '', billno: '',
     note: document.getElementById('p-note').value,
-    paid: false, paidDate: null
+    paid: false, paidDate: null,
+    updatedAt: Date.now()
   });
   savePay(); renderPayables();
   document.getElementById('p-desc').value = '';
@@ -1447,6 +1449,7 @@ function confirmPmModal() {
     item.paid = true;
     item.paidDate = dateVal;
     item.paidAmount = item.amount;
+    item.updatedAt = Date.now();
     closePmModal();
     savePay(); renderPayables();
     toast('บันทึกการชำระแล้ว ✓', 'success');
@@ -1469,6 +1472,7 @@ function confirmPmModal() {
       item.paidDate = dateVal;
       item.paidAmount = item.amount;
     }
+    item.updatedAt = Date.now();
     closePmModal();
     savePay(); renderPayables();
     toast(isFullNow ? 'ชำระครบแล้ว ✓' : ('บันทึกการชำระ ฿' + amountVal.toLocaleString('th-TH', {minimumFractionDigits:2}) + ' แล้ว ✓'), 'success');
@@ -1487,6 +1491,7 @@ function confirmPmModal() {
     // ปัดเศษกันปัญหา floating point (เช่น 4263.999999999999 แทนที่จะเป็น 4264)
     var isFullNow = Math.round((item.amount - totalPaid) * 100) <= 0;
     if (isFullNow) item.paid = true;
+    item.updatedAt = Date.now();
     closePmModal();
     saveSalaries(); renderSalaries();
     toast(isFullNow ? 'จ่ายเงินเดือนครบแล้ว ✓' : ('บันทึกการจ่าย ฿' + amountVal.toLocaleString('th-TH', {minimumFractionDigits:2}) + ' แล้ว ✓'), 'success');
@@ -1518,6 +1523,7 @@ function togglePaid(id) {
     item.paidDate = null;
     item.paidAmount = 0;
     item.partialPayments = [];
+    item.updatedAt = Date.now();
     savePay(); renderPayables();
   }
 }
@@ -1540,7 +1546,19 @@ function partialPay(id) {
 function delPayable(id) {
   if (!confirm('ลบรายการนี้?')) return;
   payables = payables.filter(function(p) { return String(p.id) !== String(id); });
+  recordDeletedPayableId(id);
   savePay(); renderPayables();
+}
+
+// จดจำ id ที่ถูกลบไว้ (tombstone) พร้อมเวลาที่ลบ — กันไม่ให้ merge จากชีทเก่า
+// ที่ยังมีรายการนี้อยู่ ทำให้รายการที่ลบไปแล้ว "ฟื้นคืนชีพ" กลับมาอีก
+function recordDeletedPayableId(id) {
+  var tomb = JSON.parse(localStorage.getItem('ct_deleted_payables') || '{}');
+  tomb[String(id)] = Date.now();
+  // เก็บ tombstone แค่ 90 วันล่าสุด กันไฟล์บวมไม่รู้จบ
+  var cutoff = Date.now() - (90 * 24 * 60 * 60 * 1000);
+  Object.keys(tomb).forEach(function(k) { if (tomb[k] < cutoff) delete tomb[k]; });
+  localStorage.setItem('ct_deleted_payables', JSON.stringify(tomb));
 }
 
 async function savePay() {
@@ -1837,7 +1855,7 @@ async function syncPayable(showToast, btn) {
     for (var b = 0; b < branches.length; b++) {
       var branchKey = branches[b];
       var items = itemsMap[branchKey];
-      // sync ทุก branch เสมอ แม้ไม่มี items — Apps Script จะล้างแถวเก่าให้
+      // sync ทุก branch เสมอ แม้ไม่มี items — Apps Script ฝั่ง upsert จะจัดการลบเฉพาะรายการที่หายไปจริง
       await syncToSheets('payable', branchKey, BRANCH_NAMES[branchKey], items);
     }
     if (showToast) toast('ซิงค์วางบิลขึ้น Sheets แล้ว ✓', 'success');
@@ -1891,9 +1909,13 @@ async function loadSummary() {
         if (s.indexOf('T') >= 0) s = s.split('T')[0];
         return s;
       }
+      // tombstone — id ที่เคยถูกลบจากเครื่องนี้ พร้อมเวลาที่ลบ
+      // ป้องกันไม่ให้ merge จากชีท (ที่อาจยังมีรายการนี้ค้างจากเครื่องอื่น) ทำให้รายการที่ลบไปแล้วฟื้นคืนชีพ
+      var deletedTombstones = JSON.parse(localStorage.getItem('ct_deleted_payables') || '{}');
       var sheetsPayables = data.payableRows.map(function(r) {
         var partials = [];
         try { partials = JSON.parse(String(r[12]||'[]')); } catch(e) {}
+        var updatedAtRaw = parseInt(r[13], 10);
         return {
           id: r[9] ? String(r[9]) : (cleanDate(r[0]) + '_' + String(r[2]||'') + '_' + (parseFloat(r[4])||0)),
           date: cleanDate(r[0]),
@@ -1907,21 +1929,50 @@ async function loadSummary() {
           note: String(r[8]||''),
           billno: String(r[10]||''),
           indate: cleanDate(r[11]),
-          partialPayments: partials
+          partialPayments: partials,
+          // ถ้าชีทไม่มี timestamp (แถวเก่าก่อนอัปเดตระบบนี้) ถือว่าเก่าสุด (0)
+          // เพื่อให้ข้อมูล local ที่มี timestamp จริงชนะเสมอในกรณีนี้
+          updatedAt: isNaN(updatedAtRaw) ? 0 : updatedAtRaw
         };
+      }).filter(function(sp) {
+        // ตัดรายการที่ถูกลบไปแล้วจากเครื่องนี้ทิ้ง ไม่ให้กลับมาอีก
+        // (เว้นแต่ชีทมีการแก้ไขใหม่ "หลัง" เวลาที่ลบจริงๆ ซึ่งแปลว่ามีคนตั้งใจเพิ่มใหม่)
+        var tombAt = deletedTombstones[String(sp.id)];
+        return !(tombAt && sp.updatedAt <= tombAt);
       });
+
       var otherBranchPayables = payables.filter(function(px) { return px.branch !== branchKey; });
-      // merge: Sheets อัพเดท status (paid/paidDate) แต่รายการใหม่ที่ยังไม่ sync ขึ้นชีทให้เก็บไว้
+      var branchPayables = payables.filter(function(px) { return px.branch === branchKey; });
+      var localById = {};
+      branchPayables.forEach(function(px) { localById[String(px.id)] = px; });
+
       var sheetsIds = {};
-      sheetsPayables.forEach(function(p) { sheetsIds[String(p.id)] = true; });
-      // รายการที่อยู่ใน local แต่ไม่มีในชีท = รายการใหม่ที่ยังไม่ sync → เก็บไว้
-      var localOnlyPayables = payables.filter(function(px) {
-        return px.branch === branchKey && !sheetsIds[String(px.id)];
+      var mergedBranchPayables = [];
+      sheetsPayables.forEach(function(sp) {
+        sheetsIds[String(sp.id)] = true;
+        var local = localById[String(sp.id)];
+        if (local) {
+          // มีทั้ง 2 ฝั่ง — เทียบ updatedAt เอาอันที่ใหม่กว่าจริง ไม่เชื่อชีทเป็นหลักเสมอไป
+          var localUpdatedAt = local.updatedAt || 0;
+          mergedBranchPayables.push(localUpdatedAt >= sp.updatedAt ? local : sp);
+        } else {
+          mergedBranchPayables.push(sp);
+        }
       });
-      payables = otherBranchPayables.concat(sheetsPayables).concat(localOnlyPayables);
+      // รายการที่อยู่ใน local แต่ไม่มีในชีท = รายการใหม่ที่ยังไม่ sync → เก็บไว้
+      var localOnlyPayables = branchPayables.filter(function(px) {
+        return !sheetsIds[String(px.id)];
+      });
+      payables = otherBranchPayables.concat(mergedBranchPayables).concat(localOnlyPayables);
       localStorage.setItem('ct_payables', JSON.stringify(payables));
-      // sync รายการใหม่ที่ยังไม่มีในชีทขึ้นไปด้วยเลย
-      if (localOnlyPayables.length) syncPayable();
+      // sync รายการที่ local ใหม่กว่าชีท (รวมรายการใหม่ที่ยังไม่เคยขึ้นชีทเลย) กลับขึ้นไปด้วย
+      // กันกรณีชีทมีข้อมูลเก่ากว่าจริงๆ ให้รีบเขียนทับด้วยข้อมูลที่ถูกต้องทันที
+      var needsPushBack = localOnlyPayables.length > 0 ||
+        mergedBranchPayables.some(function(mp) {
+          var orig = sheetsPayables.find(function(sp) { return String(sp.id) === String(mp.id); });
+          return orig && orig !== mp; // ถูกแทนที่ด้วย local เพราะ local ใหม่กว่า
+        });
+      if (needsPushBack) syncPayable();
       renderPayables();
     } else if (data.payableRows && data.payableRows.length === 0) {
       // ชีทว่าง แต่ local อาจมีรายการใหม่ที่ยังไม่ sync → ไม่ลบ local
@@ -1930,6 +1981,7 @@ async function loadSummary() {
 
     if (data.salaryRows) {
       if (data.salaryRows.length) {
+        var deletedSalTombstones = JSON.parse(localStorage.getItem('ct_deleted_salaries') || '{}');
         var sheetsSalaries = data.salaryRows.map(function(r) {
           function cleanSalDate(v) {
             var s = String(v||'');
@@ -1938,6 +1990,7 @@ async function loadSummary() {
           }
           var partials = [];
           try { partials = JSON.parse(String(r[8]||'[]')); } catch(e) {}
+          var updatedAtRaw = parseInt(r[9], 10);
           return {
             id: r[6] ? String(r[6]) : (cleanSalDate(r[0]) + '_' + String(r[2]||'') + '_' + cleanSalDate(r[3]).slice(0,7)),
             date: cleanSalDate(r[0]),
@@ -1947,20 +2000,43 @@ async function loadSummary() {
             amount: parseFloat(r[4])||0,
             note: String(r[5]||''),
             paid: String(r[7]||'') === 'Paid',
-            partialPayments: partials
+            partialPayments: partials,
+            updatedAt: isNaN(updatedAtRaw) ? 0 : updatedAtRaw
           };
+        }).filter(function(ss) {
+          var tombAt = deletedSalTombstones[String(ss.id)];
+          return !(tombAt && ss.updatedAt <= tombAt);
         });
+
         var otherBranchSalaries = salaries.filter(function(s) { return s.branch !== branchKey; });
-        // เก็บ local ที่ยังไม่ sync ขึ้นชีท (id ไม่มีในชีท)
+        var branchSalaries = salaries.filter(function(s) { return s.branch === branchKey; });
+        var localSalById = {};
+        branchSalaries.forEach(function(s) { localSalById[String(s.id)] = s; });
+
         var salSheetsIds = {};
-        sheetsSalaries.forEach(function(s) { salSheetsIds[String(s.id)] = true; });
-        var localOnlySalaries = salaries.filter(function(s) {
-          return s.branch === branchKey && !salSheetsIds[String(s.id)];
+        var mergedBranchSalaries = [];
+        sheetsSalaries.forEach(function(ss) {
+          salSheetsIds[String(ss.id)] = true;
+          var local = localSalById[String(ss.id)];
+          if (local) {
+            var localUpdatedAt = local.updatedAt || 0;
+            mergedBranchSalaries.push(localUpdatedAt >= ss.updatedAt ? local : ss);
+          } else {
+            mergedBranchSalaries.push(ss);
+          }
         });
-        salaries = otherBranchSalaries.concat(sheetsSalaries).concat(localOnlySalaries);
+        // เก็บ local ที่ยังไม่ sync ขึ้นชีท (id ไม่มีในชีท)
+        var localOnlySalaries = branchSalaries.filter(function(s) {
+          return !salSheetsIds[String(s.id)];
+        });
+        salaries = otherBranchSalaries.concat(mergedBranchSalaries).concat(localOnlySalaries);
         localStorage.setItem('ct_salaries', JSON.stringify(salaries));
-        // sync local ที่ยังไม่อยู่ในชีทขึ้นไปด้วย
-        if (localOnlySalaries.length && typeof syncSalary === 'function') syncSalary(false, null);
+        var salNeedsPushBack = localOnlySalaries.length > 0 ||
+          mergedBranchSalaries.some(function(ms) {
+            var orig = sheetsSalaries.find(function(ss) { return String(ss.id) === String(ms.id); });
+            return orig && orig !== ms;
+          });
+        if (salNeedsPushBack && typeof syncSalary === 'function') syncSalary(false, null);
       } else {
         // ชีทว่าง — ไม่ลบ local เพราะอาจเป็นรายการใหม่ที่ยังไม่ sync
         var localBranchSalaries = salaries.filter(function(s) { return s.branch === branchKey; });
@@ -1971,9 +2047,11 @@ async function loadSummary() {
 
     if (data.loanRows) {
       if (data.loanRows.length) {
+        var deletedLoanTombstones = JSON.parse(localStorage.getItem('ct_deleted_loans') || '{}');
         var sheetsLoans = data.loanRows.map(function(r) {
           var repayments = [];
           try { repayments = JSON.parse(String(r[5]||'[]')); } catch(e) {}
+          var updatedAtRaw = parseInt(r[7], 10);
           return {
             id: r[0] ? String(r[0]) : (String(r[6]||'') + '_' + String(r[2]||'') + '_' + (parseFloat(r[3])||0)),
             branch: branchKey,
@@ -1981,19 +2059,43 @@ async function loadSummary() {
             amount: parseFloat(r[3])||0,
             purpose: String(r[4]||''),
             repayments: repayments,
-            date: String(r[6]||'')
+            date: String(r[6]||''),
+            updatedAt: isNaN(updatedAtRaw) ? 0 : updatedAtRaw
           };
+        }).filter(function(sl) {
+          var tombAt = deletedLoanTombstones[String(sl.id)];
+          return !(tombAt && sl.updatedAt <= tombAt);
         });
+
         var otherBranchLoans = loans.filter(function(l) { return l.branch !== branchKey; });
-        // เก็บ local ที่ยังไม่ sync
+        var branchLoans = loans.filter(function(l) { return l.branch === branchKey; });
+        var localLoanById = {};
+        branchLoans.forEach(function(l) { localLoanById[String(l.id)] = l; });
+
         var loanSheetsIds = {};
-        sheetsLoans.forEach(function(l) { loanSheetsIds[String(l.id)] = true; });
-        var localOnlyLoans = loans.filter(function(l) {
-          return l.branch === branchKey && !loanSheetsIds[String(l.id)];
+        var mergedBranchLoans = [];
+        sheetsLoans.forEach(function(sl) {
+          loanSheetsIds[String(sl.id)] = true;
+          var local = localLoanById[String(sl.id)];
+          if (local) {
+            var localUpdatedAt = local.updatedAt || 0;
+            mergedBranchLoans.push(localUpdatedAt >= sl.updatedAt ? local : sl);
+          } else {
+            mergedBranchLoans.push(sl);
+          }
         });
-        loans = otherBranchLoans.concat(sheetsLoans).concat(localOnlyLoans);
+        // เก็บ local ที่ยังไม่ sync
+        var localOnlyLoans = branchLoans.filter(function(l) {
+          return !loanSheetsIds[String(l.id)];
+        });
+        loans = otherBranchLoans.concat(mergedBranchLoans).concat(localOnlyLoans);
         localStorage.setItem('ct_loans', JSON.stringify(loans));
-        if (localOnlyLoans.length && typeof syncLoan === 'function') syncLoan();
+        var loanNeedsPushBack = localOnlyLoans.length > 0 ||
+          mergedBranchLoans.some(function(ml) {
+            var orig = sheetsLoans.find(function(sl) { return String(sl.id) === String(ml.id); });
+            return orig && orig !== ml;
+          });
+        if (loanNeedsPushBack && typeof syncLoan === 'function') syncLoan();
       } else {
         // ชีทว่าง — ไม่ลบ local, sync ขึ้นไปแทน
         var localBranchLoans = loans.filter(function(l) { return l.branch === branchKey; });
@@ -2053,7 +2155,7 @@ async function loadSummary() {
       renderCoupons();
     }
 
-    renderSummary(data.rows || [], data.acctExpRows || [], branchKey);
+    renderSummary(data.rows || [], data.acctExpRows || [], branchKey, data.payableRows || [], data.salaryRows || []);
     // โหลด lineman จาก Sheets ถ้ามี
     if (data.linemanRows && data.linemanRows.length) {
       data.linemanRows.forEach(function(r) {
@@ -2112,7 +2214,8 @@ function addMonthlyExpenses() {
       amount: amount,
       due: due,
       indate: '', billno: '', note: '',
-      paid: false, paidDate: null
+      paid: false, paidDate: null,
+      updatedAt: Date.now()
     });
     added++;
     el.value = '';
@@ -2186,8 +2289,10 @@ function switchSTab(tab) {
   document.getElementById('stab-year').style.color       = tab === 'year'  ? '#fff' : 'var(--text2)';
 }
 
-function renderSummary(rows, acctExpRows, branchKey) {
+function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsRaw) {
   acctExpRows = acctExpRows || [];
+  payableRowsRaw = payableRowsRaw || [];
+  salaryRowsRaw = salaryRowsRaw || [];
   branchKey = branchKey || (document.getElementById('s-branch') ? document.getElementById('s-branch').value : (cfg.branch || 'passione'));
   var empty = document.getElementById('s-empty');
   var stats = document.getElementById('s-stats');
@@ -2300,31 +2405,50 @@ function renderSummary(rows, acctExpRows, branchKey) {
 
   // ค่าใช้จ่ายประจำเดือน (ค่าเช่า/ไฟ/ภาษี/แอร์/บริการ) — นับตามวันที่วางบิลเสมอ
   var fixedCats = ['ค่าเช่า','ค่าไฟ/น้ำ','ภาษี','ค่าบริการ'];
-  var monthPayables = payables.filter(function(px) {
-    var pxBranch = px.branch;
-    // normalize: ถ้าเก็บเป็นชื่อไทย ให้แปลงเป็น key ก่อน
-    if (pxBranch === 'แพชชั่นระยอง') pxBranch = 'passione';
-    if (pxBranch === 'โลตัสระยอง') pxBranch = 'lotus';
-    var matchBranch = pxBranch === branch;
+
+  // ใช้ข้อมูลจากชีทโดยตรง (payableRowsRaw) แทนการอ่านจาก payables ใน localStorage
+  // เพราะ localStorage แต่ละเครื่องอาจไม่ตรงกัน แต่ชีทเป็นจุดกลางที่ sync ล่าสุดเสมอ
+  // แสดงผลอย่างเดียว ไม่เขียนทับ payables ใน localStorage และไม่ sync กลับขึ้นชีท
+  function cleanSummaryDate(val) {
+    var s = String(val||'');
+    if (s.indexOf('T') >= 0) s = s.split('T')[0];
+    return s;
+  }
+  var sheetPayablesForSummary = payableRowsRaw.map(function(r) {
+    var partials = [];
+    try { partials = JSON.parse(String(r[12]||'[]')); } catch(e) {}
+    return {
+      id: r[9] ? String(r[9]) : (cleanSummaryDate(r[0]) + '_' + String(r[2]||'') + '_' + (parseFloat(r[4])||0)),
+      date: cleanSummaryDate(r[0]),
+      branch: branch, // แถวถูกกรองมาจากชีทเฉพาะ branchKey นี้อยู่แล้วจาก doGet
+      desc: String(r[2]||''),
+      cat: String(r[3]||''),
+      amount: parseFloat(r[4])||0,
+      due: cleanSummaryDate(r[5]),
+      paid: String(r[6]||'') === 'Paid',
+      paidDate: cleanSummaryDate(r[7]),
+      note: String(r[8]||''),
+      billno: String(r[10]||''),
+      indate: cleanSummaryDate(r[11]),
+      partialPayments: partials
+    };
+  });
+
+  var monthPayables = sheetPayablesForSummary.filter(function(px) {
     var isFixedCat = fixedCats.indexOf(px.cat) >= 0;
     if (isFixedCat) {
       // ค่าเช่า/ไฟ/ภาษี/แอร์ — แสดงตามวันที่วางบิล
-      return matchBranch && px.date && px.date.startsWith(month);
+      return px.date && px.date.startsWith(month);
     } else {
       // วัตถุดิบ — แสดงตามวันที่วางบิล (date/indate)
       var d = px.indate || px.date || '';
-      return matchBranch && d.startsWith(month);
+      return d.startsWith(month);
     }
   });
 
   // ยอดที่จ่ายจริงในเดือนนี้ — ดูจาก paidDate ไม่ใช่วันที่วางบิล
   var tPayablePaid=0, tPayableUnpaid=0;
-  var branchPayables = payables.filter(function(px) {
-    var pxBranch = px.branch;
-    if (pxBranch === 'แพชชั่นระยอง') pxBranch = 'passione';
-    if (pxBranch === 'โลตัสระยอง') pxBranch = 'lotus';
-    return pxBranch === branch;
-  });
+  var branchPayables = sheetPayablesForSummary;
   branchPayables.forEach(function(px) {
     var isFixedCat = fixedCats.indexOf(px.cat) >= 0;
     if (isFixedCat) {
@@ -2386,7 +2510,20 @@ function renderSummary(rows, acctExpRows, branchKey) {
     }
   });
 
-  var tSalary = getSalaryTotal(branch, month);
+  // คำนวณเงินเดือนจากข้อมูลชีทโดยตรง (salaryRowsRaw) แทนการอ่านจาก salaries ใน localStorage
+  // เหตุผลเดียวกับ payable ด้านบน — ชีทเป็นข้อมูลที่ sync ล่าสุดเสมอ
+  var tSalary = salaryRowsRaw.reduce(function(sum, r) {
+    function cleanSalSumDate(v) {
+      var s = String(v||'');
+      if (s.indexOf('T') >= 0) s = s.split('T')[0];
+      return s;
+    }
+    var rowMonth = cleanSalSumDate(r[3]).slice(0,7);
+    var rowDate = cleanSalSumDate(r[0]);
+    var inMonth = rowMonth === month || (rowDate && rowDate.startsWith(month));
+    if (!inMonth) return sum;
+    return sum + (parseFloat(r[4]) || 0);
+  }, 0);
   var tExpAll  = tPayablePaid + tOtherPayable + tAcctExp + tSalary;
   var profit   = tIncome - tExpAll;
 
@@ -2780,6 +2917,7 @@ function renderAdminPayables() {
 function admDelPayable(id) {
   if (!confirm('ลบรายการนี้?')) return;
   payables = payables.filter(function(p) { return String(p.id) !== String(id); });
+  recordDeletedPayableId(id);
   savePay();
   renderAdminPanel();
   renderPayables();
@@ -2833,6 +2971,8 @@ function exportAdminCSV() {
 
 function adminClearPaid() {
   if (!confirm('ลบรายการที่ชำระแล้วทั้งหมด?')) return;
+  var toDelete = payables.filter(function(p) { return p.paid; });
+  toDelete.forEach(function(p) { recordDeletedPayableId(p.id); });
   payables = payables.filter(function(p) { return !p.paid; });
   savePay(); renderAdminPanel(); renderPayables();
   toast('ลบรายการที่ชำระแล้วแล้ว', 'success');
@@ -2840,6 +2980,7 @@ function adminClearPaid() {
 
 function adminClearAll() {
   if (!confirm('ล้างข้อมูลวางบิลทั้งหมด? ไม่สามารถกู้คืนได้')) return;
+  payables.forEach(function(p) { recordDeletedPayableId(p.id); });
   payables = [];
   savePay(); renderAdminPanel(); renderPayables();
   toast('ล้างข้อมูลทั้งหมดแล้ว', 'success');
@@ -2883,7 +3024,8 @@ function addLoan() {
     from: from,
     amount: amount,
     purpose: purpose,
-    repayments: []
+    repayments: [],
+    updatedAt: Date.now()
   });
   saveLoans();
   renderLoans();
@@ -2912,6 +3054,7 @@ function doLoanRepayment(id, amount, dateStr) {
   if (!loan) { toast('ไม่พบรายการยืมนี้ อาจถูกลบไปแล้ว ลองรีเฟรชหน้า', 'error'); return; }
 
   loan.repayments.push({ date: dateStr, amount: amount });
+  loan.updatedAt = Date.now();
   saveLoans();
   renderLoans();
 
@@ -2949,8 +3092,18 @@ function doLoanRepayment(id, amount, dateStr) {
 function delLoan(id) {
   if (!confirm('ลบรายการนี้?')) return;
   loans = loans.filter(function(l) { return String(l.id) !== String(id); });
+  recordDeletedLoanId(id);
   saveLoans();
   renderLoans();
+}
+
+// tombstone สำหรับเงินยืม — เหตุผลเดียวกับ recordDeletedPayableId
+function recordDeletedLoanId(id) {
+  var tomb = JSON.parse(localStorage.getItem('ct_deleted_loans') || '{}');
+  tomb[String(id)] = Date.now();
+  var cutoff = Date.now() - (90 * 24 * 60 * 60 * 1000);
+  Object.keys(tomb).forEach(function(k) { if (tomb[k] < cutoff) delete tomb[k]; });
+  localStorage.setItem('ct_deleted_loans', JSON.stringify(tomb));
 }
 
 function saveLoans() {
@@ -3078,7 +3231,8 @@ function addSalary() {
     month: document.getElementById('sal-month').value,
     name: name,
     amount: amount,
-    note: document.getElementById('sal-note').value.trim()
+    note: document.getElementById('sal-note').value.trim(),
+    updatedAt: Date.now()
   });
   saveSalaries();
   renderSalaries();
@@ -3106,8 +3260,18 @@ function partialPaySalary(id) {
 function delSalary(id) {
   if (!confirm('ลบรายการนี้?')) return;
   salaries = salaries.filter(function(s) { return String(s.id) !== String(id); });
+  recordDeletedSalaryId(id);
   saveSalaries();
   renderSalaries();
+}
+
+// tombstone สำหรับเงินเดือน — เหตุผลเดียวกับ recordDeletedPayableId
+function recordDeletedSalaryId(id) {
+  var tomb = JSON.parse(localStorage.getItem('ct_deleted_salaries') || '{}');
+  tomb[String(id)] = Date.now();
+  var cutoff = Date.now() - (90 * 24 * 60 * 60 * 1000);
+  Object.keys(tomb).forEach(function(k) { if (tomb[k] < cutoff) delete tomb[k]; });
+  localStorage.setItem('ct_deleted_salaries', JSON.stringify(tomb));
 }
 
 function saveSalaries() {
@@ -3882,6 +4046,8 @@ window.addEventListener('beforeunload', function(e) {
 </div>
 </body>
 </html>
+
+
 
 
 

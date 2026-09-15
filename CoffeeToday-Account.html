@@ -512,7 +512,7 @@ tr:hover td{background:var(--bg3);}
   <div id="stab-month-content">
     <div class="month-row">
       <div><label>สาขา</label><select id="s-branch" onchange="loadSummary()"><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
-      <div><label>เดือน/ปี</label><input type="month" id="s-month" onchange="loadSummary()"></div>
+      <div><label>เดือน/ปี</label><input type="month" id="s-month"></div>
       <div><button class="btn btn-primary" onclick="loadSummary()"><span id="s-txt">ดึงข้อมูล</span></button></div>
     </div>
 
@@ -1184,7 +1184,6 @@ function switchPage(name, btn) {
   document.getElementById('page-' + name).classList.add('active');
   btn.classList.add('active');
   if (name === 'coupon') loadCouponsFromSheets();
-  if (name === 'summary') loadSummary();
 }
 
 var BRANCH_ACCOUNTS = {
@@ -4047,6 +4046,7 @@ window.addEventListener('beforeunload', function(e) {
 </div>
 </body>
 </html>
+
 
 
 

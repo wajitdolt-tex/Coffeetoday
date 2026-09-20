@@ -3065,7 +3065,8 @@ function doLoanRepayment(id, amount, dateStr) {
     desc: 'คืนเงินยืม — ' + loan.from + (loan.purpose ? ' (' + loan.purpose + ')' : ''),
     cat: 'เงินยืม',
     amount: amount,
-    note: 'คืนเงินที่ยืมวันที่ ' + loan.date
+    note: 'คืนเงินที่ยืมวันที่ ' + loan.date,
+    updatedAt: Date.now()
   });
   saveAcctExp();
   renderAcctExp();
@@ -3496,7 +3497,8 @@ function addAcctExp() {
     desc: desc,
     cat: document.getElementById('ae-cat').value,
     amount: amount,
-    note: document.getElementById('ae-note').value.trim()
+    note: document.getElementById('ae-note').value.trim(),
+    updatedAt: Date.now()
   });
   saveAcctExp();
   syncAcctExp();
@@ -3509,9 +3511,26 @@ function addAcctExp() {
 
 function delAcctExp(id) {
   if (!confirm('ลบรายการนี้?')) return;
+  var deleted = acctExps.filter(function(x) { return String(x.id) === String(id); });
   acctExps = acctExps.filter(function(x) { return String(x.id) !== String(id); });
+  recordDeletedAcctExpId(id);
   saveAcctExp();
   renderAcctExp();
+  // ส่งคำสั่งลบรายการนี้ขึ้นชีททันที ไม่ต้องรอ sync รอบใหญ่
+  if (deleted.length && cfg.gsUrl) {
+    var d = deleted[0];
+    var branchName = BRANCH_NAMES[d.branch] || d.branch;
+    appendToSheet('acctexp_delete', d.branch, branchName, { id: d.id }, true);
+  }
+}
+
+// tombstone สำหรับบัญชีร้าน — เหตุผลเดียวกับ recordDeletedPayableId
+function recordDeletedAcctExpId(id) {
+  var tomb = JSON.parse(localStorage.getItem('ct_deleted_acctexps') || '{}');
+  tomb[String(id)] = Date.now();
+  var cutoff = Date.now() - (90 * 24 * 60 * 60 * 1000);
+  Object.keys(tomb).forEach(function(k) { if (tomb[k] < cutoff) delete tomb[k]; });
+  localStorage.setItem('ct_deleted_acctexps', JSON.stringify(tomb));
 }
 
 function saveAcctExp() {
@@ -3585,17 +3604,17 @@ async function syncAcctExp(btn) {
       var branchName = BRANCH_NAMES[branch];
       var itemsToSync = acctExps.filter(function(x) { return x.branch === branch; });
       if (!itemsToSync.length) continue;
+      // upsert จริง — ไม่มี clearFirst แล้ว (เดิมลบทั้ง branch ทิ้งก่อนเขียนใหม่
+      // ทำให้เครื่องอื่นที่มีรายการที่เครื่องนี้ไม่รู้จัก ถูกลบทิ้งไปเงียบๆ)
       // ส่งเป็น chunk ละ 20 รายการ ป้องกัน payload ใหญ่เกิน
       var CHUNK = 20;
       for (var i = 0; i < itemsToSync.length; i += CHUNK) {
         var chunk = itemsToSync.slice(i, i + CHUNK);
-        var isFirst = (i === 0);
         await safePost(cfg.gsUrl, {
           type: 'acctexp_upsert',
           branch: branch,
           branchName: branchName,
           items: chunk,
-          clearFirst: isFirst, // ลบข้อมูลเดิมเฉพาะ chunk แรก
           timestamp: new Date().toISOString()
         });
       }
@@ -4046,8 +4065,6 @@ window.addEventListener('beforeunload', function(e) {
 </div>
 </body>
 </html>
-
-
 
 
 

@@ -1545,9 +1545,16 @@ function partialPay(id) {
 
 function delPayable(id) {
   if (!confirm('ลบรายการนี้?')) return;
+  var deleted = payables.filter(function(p) { return String(p.id) === String(id); });
   payables = payables.filter(function(p) { return String(p.id) !== String(id); });
   recordDeletedPayableId(id);
   savePay(); renderPayables();
+  // ส่งคำสั่งลบรายการนี้ขึ้นชีททันที — ไม่รอ sync รอบใหญ่ และไม่อนุมานจากรายการที่หายไปจาก list
+  if (deleted.length && cfg.gsUrl) {
+    var d = deleted[0];
+    var branchName = BRANCH_NAMES[d.branch] || d.branch;
+    appendToSheet('payable_delete', d.branch, branchName, { id: d.id }, true);
+  }
 }
 
 // จดจำ id ที่ถูกลบไว้ (tombstone) พร้อมเวลาที่ลบ — กันไม่ให้ merge จากชีทเก่า
@@ -1855,7 +1862,7 @@ async function syncPayable(showToast, btn) {
     for (var b = 0; b < branches.length; b++) {
       var branchKey = branches[b];
       var items = itemsMap[branchKey];
-      // sync ทุก branch เสมอ แม้ไม่มี items — Apps Script ฝั่ง upsert จะจัดการลบเฉพาะรายการที่หายไปจริง
+      // sync ทุก branch เสมอ (เพิ่ม/อัปเดตเท่านั้น — การลบทำแยกผ่าน payable_delete ตอนกดลบ)
       await syncToSheets('payable', branchKey, BRANCH_NAMES[branchKey], items);
     }
     if (showToast) toast('ซิงค์วางบิลขึ้น Sheets แล้ว ✓', 'success');
@@ -1900,7 +1907,8 @@ async function loadSummary() {
   try {
     var branchKey = document.getElementById('s-branch').value;
     var month  = document.getElementById('s-month').value;
-    var res  = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branchKey) + '&month=' + month);
+    // เติม _ts กัน browser cache ตอบ response เก่า ต้องได้ข้อมูลสดจากชีทเสมอ
+    var res  = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branchKey) + '&month=' + month + '&_ts=' + Date.now(), { cache: 'no-store' });
     var data = await res.json();
 
     if (data.payableRows && data.payableRows.length) {
@@ -2742,7 +2750,7 @@ async function loadYearly() {
   for (var i = 0; i < months.length; i++) {
     var month = year + '-' + months[i];
     try {
-      var res  = await fetch(cfg.gsUrl+'?branch='+encodeURIComponent(branch)+'&month='+month);
+      var res  = await fetch(cfg.gsUrl+'?branch='+encodeURIComponent(branch)+'&month='+month+'&_ts='+Date.now(), { cache: 'no-store' });
       var data = await res.json();
       results.push({ month: monthNames[i], ym: month, rows: data.rows || [] });
     } catch(e) {
@@ -2916,12 +2924,18 @@ function renderAdminPayables() {
 
 function admDelPayable(id) {
   if (!confirm('ลบรายการนี้?')) return;
+  var deleted = payables.filter(function(p) { return String(p.id) === String(id); });
   payables = payables.filter(function(p) { return String(p.id) !== String(id); });
   recordDeletedPayableId(id);
   savePay();
   renderAdminPanel();
   renderPayables();
   toast('ลบรายการแล้ว ✓', 'success');
+  if (deleted.length && cfg.gsUrl) {
+    var d = deleted[0];
+    var branchName = BRANCH_NAMES[d.branch] || d.branch;
+    appendToSheet('payable_delete', d.branch, branchName, { id: d.id }, true);
+  }
 }
 
 function renderAdminLineman() {
@@ -2976,14 +2990,28 @@ function adminClearPaid() {
   payables = payables.filter(function(p) { return !p.paid; });
   savePay(); renderAdminPanel(); renderPayables();
   toast('ลบรายการที่ชำระแล้วแล้ว', 'success');
+  // ส่งคำสั่งลบทีละรายการขึ้นชีท — ต้องลบแบบเจาะจงเสมอ ไม่อนุมานจาก list ที่เหลือ
+  if (cfg.gsUrl) {
+    toDelete.forEach(function(p) {
+      var branchName = BRANCH_NAMES[p.branch] || p.branch;
+      appendToSheet('payable_delete', p.branch, branchName, { id: p.id }, true);
+    });
+  }
 }
 
 function adminClearAll() {
   if (!confirm('ล้างข้อมูลวางบิลทั้งหมด? ไม่สามารถกู้คืนได้')) return;
+  var toDelete = payables.slice();
   payables.forEach(function(p) { recordDeletedPayableId(p.id); });
   payables = [];
   savePay(); renderAdminPanel(); renderPayables();
   toast('ล้างข้อมูลทั้งหมดแล้ว', 'success');
+  if (cfg.gsUrl) {
+    toDelete.forEach(function(p) {
+      var branchName = BRANCH_NAMES[p.branch] || p.branch;
+      appendToSheet('payable_delete', p.branch, branchName, { id: p.id }, true);
+    });
+  }
 }
 
 // ════ LOAN ════
@@ -3092,10 +3120,16 @@ function doLoanRepayment(id, amount, dateStr) {
 
 function delLoan(id) {
   if (!confirm('ลบรายการนี้?')) return;
+  var deleted = loans.filter(function(l) { return String(l.id) === String(id); });
   loans = loans.filter(function(l) { return String(l.id) !== String(id); });
   recordDeletedLoanId(id);
   saveLoans();
   renderLoans();
+  if (deleted.length && cfg.gsUrl) {
+    var d = deleted[0];
+    var branchName = BRANCH_NAMES[d.branch] || d.branch;
+    appendToSheet('loan_delete', d.branch, branchName, { id: d.id }, true);
+  }
 }
 
 // tombstone สำหรับเงินยืม — เหตุผลเดียวกับ recordDeletedPayableId
@@ -3260,10 +3294,16 @@ function partialPaySalary(id) {
 
 function delSalary(id) {
   if (!confirm('ลบรายการนี้?')) return;
+  var deleted = salaries.filter(function(s) { return String(s.id) === String(id); });
   salaries = salaries.filter(function(s) { return String(s.id) !== String(id); });
   recordDeletedSalaryId(id);
   saveSalaries();
   renderSalaries();
+  if (deleted.length && cfg.gsUrl) {
+    var d = deleted[0];
+    var branchName = BRANCH_NAMES[d.branch] || d.branch;
+    appendToSheet('salary_delete', d.branch, branchName, { id: d.id }, true);
+  }
 }
 
 // tombstone สำหรับเงินเดือน — เหตุผลเดียวกับ recordDeletedPayableId
@@ -3387,7 +3427,7 @@ async function loadDailyData() {
   try {
     var branchName = BRANCH_NAMES[branch];
     var month = date.slice(0, 7);
-    var res  = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branchName) + '&month=' + month);
+    var res  = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branchName) + '&month=' + month + '&_ts=' + Date.now(), { cache: 'no-store' });
     var data = await res.json();
     var rows = data.rows || [];
 
@@ -3759,8 +3799,8 @@ async function loadCouponsFromSheets() {
   for (var b = 0; b < branches.length; b++) {
     var branchKey = branches[b];
     try {
-      var url = cfg.gsUrl + '?branch=' + branchKey + '&month=';
-      var resp = await fetch(url);
+      var url = cfg.gsUrl + '?branch=' + branchKey + '&month=&_ts=' + Date.now();
+      var resp = await fetch(url, { cache: 'no-store' });
       var data = await resp.json();
       if (data.couponRows && data.couponRows.length) {
         var sheetsCoupons = data.couponRows.map(function(r) {
@@ -3802,7 +3842,7 @@ async function syncCoupons(showToast, btn) {
     var branches = ['passione', 'lotus'];
     for (var b = 0; b < branches.length; b++) {
       try {
-        var resp = await fetch(cfg.gsUrl + '?branch=' + branches[b] + '&month=');
+        var resp = await fetch(cfg.gsUrl + '?branch=' + branches[b] + '&month=&_ts=' + Date.now(), { cache: 'no-store' });
         var data = await resp.json();
         if (data.couponRows && data.couponRows.length) {
           data.couponRows.forEach(function(r) {
@@ -4065,6 +4105,7 @@ window.addEventListener('beforeunload', function(e) {
 </div>
 </body>
 </html>
+
 
 
 

@@ -1474,6 +1474,7 @@ async function loadDailyCounts(branch){
       const prevStickySmall = (rawInputs[r.material_id] || {}).stickyNapukaCreditSmall;
       rawInputs[r.material_id] = {
         received: r.received ? String(r.received) : '',
+        receivedSmall: r.received_small ? String(r.received_small) : '',
         actualBig: (r.actual_big !== null && r.actual_big !== undefined) ? String(r.actual_big) : '',
         actualSmall: r.actual_small ? String(r.actual_small) : '',
         posSale: r.pos_sale ? String(r.pos_sale) : '',
@@ -1588,6 +1589,7 @@ async function saveDailyCount(matId){
       body: JSON.stringify([{
         branch, count_date: todayDateStr(), material_id: matId,
         received: parseFloat(ri.received) || 0,
+        received_small: parseFloat(ri.receivedSmall) || 0,
         actual_big: evalExpr(ri.actualBig) + (ri.creditBig || 0),
         actual_small: evalExpr(ri.actualSmall) + (ri.creditSmall || 0),
         pos_sale: parseFloat(ri.posSale) || 0,
@@ -1745,9 +1747,10 @@ function carryBeforeCreditHint(mat){
   return ` <span class="text-[10px] text-blue-500 font-num">(ก่อนบวกตีคืนน้ำคาปู ${formatAsBigSmall(mat, beforeSmall)})</span>`;
 }
 
-function computeRecord(mat, { received, actualBig, actualSmall, posSale, note, wasteQty, wasteQtyBig }){
+function computeRecord(mat, { received, receivedSmallInput, actualBig, actualSmall, posSale, note, wasteQty, wasteQtyBig }){
   const carrySmall = mat.carry;
-  const receivedSmall = received * mat.ratio;
+  // รับเข้ารวมทั้งหน่วยเต็ม (แปลงเป็นหน่วยเศษ) และหน่วยเศษที่กรอกเพิ่ม เข้าด้วยกัน
+  const receivedSmall = received * mat.ratio + (Number(receivedSmallInput) || 0);
   const actualTotalSmall = (actualBig * mat.ratio) + (mat.noFraction ? 0 : actualSmall);
   // ของเสียรวมทั้งหน่วยเต็ม (แปลงเป็นหน่วยเศษ) และหน่วยเศษ เข้าด้วยกัน
   const waste = (Number(wasteQtyBig) || 0) * mat.ratio + (Number(wasteQty) || 0);
@@ -1873,6 +1876,7 @@ async function pollForExternalChanges(){
       const matId = r.material_id;
       const incoming = {
         received: r.received ? String(r.received) : '',
+        receivedSmall: r.received_small ? String(r.received_small) : '',
         actualBig: (r.actual_big !== null && r.actual_big !== undefined) ? String(r.actual_big) : '',
         actualSmall: r.actual_small ? String(r.actual_small) : '',
         posSale: r.pos_sale ? String(r.pos_sale) : '',
@@ -1882,7 +1886,7 @@ async function pollForExternalChanges(){
       };
       const current = rawInputs[matId] || {};
       let changed = false;
-      ['received', 'actualBig', 'actualSmall', 'posSale', 'userNote', 'noteIsAutoFilled'].forEach(field => {
+      ['received', 'receivedSmall', 'actualBig', 'actualSmall', 'posSale', 'userNote', 'noteIsAutoFilled'].forEach(field => {
         const active = document.activeElement;
         const isFocused = active && active.dataset && active.dataset.matid === matId && active.dataset.field === field;
         if (isFocused) return; // อย่าทับช่องที่กำลังพิมพ์อยู่
@@ -2184,6 +2188,18 @@ function materialCardHTML(mat){
       </div>`}
     </div>
     <p id="credit_${mat.id}" class="text-[10px] text-blue-500 mt-1 font-num ${(rawInputs[mat.id]||{}).creditSmall ? '' : 'hidden'}">🔄 ตีคืนน้ำคาปู ${((rawInputs[mat.id]||{}).creditSmall > 0 ? '+' : '') + fmtNum((rawInputs[mat.id]||{}).creditSmall || 0)} ${mat.smallUnit}</p>
+    ${mat.noFraction ? '' : `
+    <details id="receivedsmalldetails_${mat.id}" class="mt-1.5 border border-slate-100 rounded-lg overflow-hidden ${Number(ri.receivedSmall) > 0 ? 'border-accent-200 bg-accent-50/30' : ''}">
+      <summary class="px-2.5 py-1.5 cursor-pointer text-[11px] font-medium text-slate-500 hover:bg-slate-50 list-none flex items-center gap-1">
+        <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
+        <span id="receivedsmallsummary_${mat.id}">📦 รับเข้าเพิ่ม (หน่วยย่อย) ${Number(ri.receivedSmall) > 0 ? `(${fmtNum(ri.receivedSmall)} ${mat.smallUnit})` : ''}</span>
+      </summary>
+      <div class="px-2.5 pb-2.5 pt-1">
+        <label class="block text-[10px] text-slate-400 mb-0.5">รับเข้าเพิ่ม (${mat.smallUnit}) — ใช้เมื่อรับของมาไม่ครบหน่วยใหญ่</label>
+        <input type="number" min="0" step="any" inputmode="decimal" placeholder="0" value="${ri.receivedSmall ?? ''}"
+          data-matid="${mat.id}" data-field="receivedSmall" class="input-base input-sm !h-9 font-num !px-1.5 text-center w-full">
+      </div>
+    </details>`}
     <div class="mt-1.5">${quickFillHTML(mat)}</div>
     <div class="grid grid-cols-2 gap-1.5 mt-1.5">
       <div>
@@ -2371,6 +2387,17 @@ function updateCardLive(id){
     if (wasteDetailsEl) wasteDetailsEl.classList.toggle('border-red-200', hasWaste);
     if (wasteDetailsEl) wasteDetailsEl.classList.toggle('bg-red-50/30', hasWaste);
   }
+  // อัปเดตหัวข้อ "รับเข้าเพิ่ม (หน่วยย่อย)" ให้โชว์จำนวนล่าสุดทันที
+  const receivedSmallSummaryEl = document.getElementById('receivedsmallsummary_' + id);
+  const receivedSmallDetailsEl = document.getElementById('receivedsmalldetails_' + id);
+  if (receivedSmallSummaryEl) {
+    const mat = materialById(id);
+    const ri = rawInputs[id] || {};
+    const receivedSmallVal = Number(ri.receivedSmall) || 0;
+    receivedSmallSummaryEl.textContent = `📦 รับเข้าเพิ่ม (หน่วยย่อย) ${receivedSmallVal > 0 && mat ? `(${fmtNum(receivedSmallVal)} ${mat.smallUnit})` : ''}`;
+    if (receivedSmallDetailsEl) receivedSmallDetailsEl.classList.toggle('border-accent-200', receivedSmallVal > 0);
+    if (receivedSmallDetailsEl) receivedSmallDetailsEl.classList.toggle('bg-accent-50/30', receivedSmallVal > 0);
+  }
   // อัปเดตบรรทัดตีคืนน้ำคาปู
   const creditEl = document.getElementById('credit_' + id);
   if (creditEl) {
@@ -2402,13 +2429,14 @@ function recomputeMaterialLocal(id){
     delete records[id];
   } else {
     const received = parseFloat(ri.received) || 0;
+    const receivedSmallInput = parseFloat(ri.receivedSmall) || 0;
     const actualBig = evalExpr(ri.actualBig) + (ri.creditBig || 0);
     const actualSmall = mat.noFraction ? 0 : (evalExpr(ri.actualSmall) + (ri.creditSmall || 0));
     const note = ri.note || '';
     const posSale = parseFloat(ri.posSale) || 0;
     const wasteQty = parseFloat(ri.wasteQty) || 0;
     const wasteQtyBig = parseFloat(ri.wasteQtyBig) || 0;
-    records[id] = computeRecord(mat, { received, actualBig, actualSmall, posSale, note, wasteQty, wasteQtyBig });
+    records[id] = computeRecord(mat, { received, receivedSmallInput, actualBig, actualSmall, posSale, note, wasteQty, wasteQtyBig });
     records[id].reviewed = !!ri.reviewed;
     records[id].reviewedAt = ri.reviewedAt || '';
     records[id].reviewedNote = ri.reviewedNote || '';
@@ -4743,6 +4771,7 @@ async function viewHistoricalAudit(){
       const waste = wasteBig * mat.ratio + wasteSmall;
       const rec = computeRecord(mat, {
         received: Number(r.received) || 0,
+        receivedSmallInput: Number(r.received_small) || 0,
         actualBig: Number(r.actual_big) || 0,
         actualSmall: mat.noFraction ? 0 : (Number(r.actual_small) || 0),
         posSale: Number(r.pos_sale) || 0,
@@ -4916,6 +4945,7 @@ async function loadPastDate(){
       pastInputs[r.material_id] = {
         _dbId: r.id,
         received: r.received ? String(r.received) : '',
+        receivedSmall: r.received_small ? String(r.received_small) : '',
         actualBig: (r.actual_big !== null && r.actual_big !== undefined) ? String(r.actual_big) : '',
         actualSmall: r.actual_small ? String(r.actual_small) : '',
         posSale: r.pos_sale ? String(r.pos_sale) : '',
@@ -4964,6 +4994,7 @@ async function savePastDailyCount(matId){
       body: JSON.stringify([{
         branch, count_date: date, material_id: matId,
         received: parseFloat(ri.received) || 0,
+        received_small: parseFloat(ri.receivedSmall) || 0,
         actual_big: evalExpr(ri.actualBig) + (ri.creditBig || 0),
         actual_small: evalExpr(ri.actualSmall) + (ri.creditSmall || 0),
         pos_sale: parseFloat(ri.posSale) || 0,
@@ -6058,9 +6089,6 @@ async function ensureRefillQtyColumn(){
 </script>
 </body>
 </html>
-
-
-
 
 
 

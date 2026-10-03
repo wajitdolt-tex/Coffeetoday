@@ -3185,6 +3185,18 @@ function applyRecipeUsageToMaterials(){
     rawInputs[matId].posSale = Math.round(totals[matId] * 100) / 100;
     recomputeMaterial(matId);
   });
+  // ล้าง posSale ของวัตถุดิบใดๆ ที่ตอนนี้มีค่าอยู่ แต่ไม่มีเหตุผลรองรับจาก menuSales ปัจจุบันแล้ว
+  // เช็คจากทุก material ที่มี posSale ไม่ใช่แค่ที่เคย track ไว้ในรอบก่อน เพราะตอนเพิ่งโหลดหน้า/รีเฟรช
+  // ไม่มีประวัติรอบก่อนให้เทียบเลย แต่ posSale ที่โหลดมาจาก Supabase อาจเป็นค่าค้างจากเมนูที่ถูกลบไปแล้ว
+  MATERIALS.forEach(mat => {
+    const ri = rawInputs[mat.id];
+    if (!ri) return;
+    const hasPosSale = ri.posSale !== undefined && ri.posSale !== '' && Number(ri.posSale) !== 0;
+    if (hasPosSale && totals[mat.id] === undefined) {
+      ri.posSale = '';
+      recomputeMaterial(mat.id);
+    }
+  });
   const countEl = document.getElementById('menuAffectedCount');
   if (countEl) countEl.textContent = Object.keys(totals).length;
   renderTable();
@@ -6214,6 +6226,9 @@ async function ensureRefillQtyColumn(){
 </script>
 </body>
 </html>
+
+
+
 
 
 

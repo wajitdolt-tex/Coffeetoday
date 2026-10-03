@@ -2749,7 +2749,11 @@ function hasCupIngredient(recipe){
 
 
 function recipeUnit(recipe){
-  if (!recipe || !recipe.size) return 'แก้ว';
+  if (!recipe) return 'แก้ว';
+  // หมวด "แอดเพิ่ม" ใช้ช่อง "ขนาด" บอกปริมาณวัตถุดิบต่อ 1 รายการ (เช่น "10 กรัม") ไม่ใช่หน่วยขาย
+  // หน่วยขายของหมวดนี้ต้องเป็น "รายการ" เสมอ ไม่ว่า size จะเขียนว่าอะไรก็ตาม
+  if (recipe.category === 'แอดเพิ่ม') return 'รายการ';
+  if (!recipe.size) return 'แก้ว';
   if (recipe.size.includes('oz')) return 'แก้ว';
   var m = recipe.size.match(/^\d+\s*(.+)$/);
   return (m && m[1]) ? m[1].trim() : 'แก้ว';
@@ -2916,8 +2920,8 @@ function recipeEditRowHTML(recipe){
         <input type="text" value="${recipe.name}" data-recipeid="${recipe.id}" data-recipefield="name" class="input-base input-sm !h-9 !px-2 text-xs" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
       </div>
       <div>
-        <label class="block text-[10px] text-slate-400 mb-0.5">ขนาด</label>
-        <input type="text" value="${recipe.size}" data-recipeid="${recipe.id}" data-recipefield="size" class="input-base input-sm !h-9 !px-2 text-xs" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <label class="block text-[10px] text-slate-400 mb-0.5">ขนาด/หน่วยขาย (เช่น "22oz" หรือ "1 แก้ว" — ไม่ใช่ปริมาณวัตถุดิบในสูตร)</label>
+        <input type="text" value="${recipe.size}" placeholder="เช่น 1 แก้ว, 1 ถุง" data-recipeid="${recipe.id}" data-recipefield="size" class="input-base input-sm !h-9 !px-2 text-xs" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
       </div>
     </div>
     <div class="mb-2">
@@ -3480,7 +3484,7 @@ function frontMenuCardHTML(recipe){
   <div data-frontcard="${recipe.id}" data-frontcat="${recipe.category}" class="border border-slate-200 rounded-lg p-3 bg-white transition-shadow">
     ${handle}
     <p class="font-semibold text-slate-900 text-sm leading-snug mb-1.5">${recipe.name} <span class="text-slate-400 font-normal">(${recipe.size})</span></p>
-    <label class="block text-[10px] text-slate-400 mb-0.5">จำนวนที่ขายวันนี้ (${recipe.size && !recipe.size.includes('oz') ? recipe.size.replace(/^\d+\s*/, '') || 'แก้ว' : 'แก้ว'})</label>
+    <label class="block text-[10px] text-slate-400 mb-0.5">จำนวนที่ขายวันนี้ (${recipeUnit(recipe)})</label>
     <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${qty}"
       data-frontrecipeid="${recipe.id}" class="front-menu-qty-input w-full input-base input-sm !h-10 font-num text-center">
     ${(recipe.size && (recipe.size.includes('22') || recipe.size.includes('12') || recipe.size.includes('8'))) ? `
@@ -6007,7 +6011,9 @@ async function completeBorrowLog(id){
   if (!log) return;
   log.status = 'completed'; log.completedDate = todayISO();
   try { await upsertBorrowLog(log); } catch(e){ showToast('บันทึกไม่สำเร็จ', 'warn'); return; }
-  if (log.date === todayISO()) applyBorrowStockImpact(log, true); // ปรับสต็อกเฉพาะรายการวันนี้เท่านั้น
+  // กดคืน = เกิดขึ้นวันนี้เสมอ ต้องปรับสต็อกวันนี้เสมอ ไม่ว่ารายการจะยืมมาวันไหนก็ตาม
+  // (ก่อนหน้านี้เช็ค log.date === วันนี้ ทำให้รายการที่ยืมมาจากวันก่อนหน้ากดคืนแล้วไม่ลดสต็อกเลย)
+  applyBorrowStockImpact(log, true);
   showToast(log.type === 'borrow_in' ? 'คืนของแล้ว ✓' : 'รับคืนแล้ว ✓', 'success');
   await renderBorrowTab(document.getElementById('borrowSearchInput') ? document.getElementById('borrowSearchInput').value : '');
 }
@@ -6019,8 +6025,8 @@ async function uncompleteBorrowLog(id){
   if (!confirm('ยกเลิกสถานะ "เสร็จแล้ว" กลับเป็น "ค้างอยู่"?')) return;
   log.status = 'pending'; log.completedDate = null;
   try { await upsertBorrowLog(log); } catch(e){ showToast('บันทึกไม่สำเร็จ', 'warn'); return; }
-  // ย้อนผลกระทบสต็อกตอนกดคืนกลับไปด้วย (เฉพาะรายการวันนี้ เหมือนตอน complete ที่ปรับสต็อกแค่วันนี้)
-  if (log.date === todayISO()) applyBorrowStockImpact(log, false);
+  // ย้อนผลกระทบสต็อกตอนกดคืนกลับไปด้วย เกิดขึ้นวันนี้เสมอเช่นกัน
+  applyBorrowStockImpact(log, false);
   showToast('ยกเลิกเสร็จแล้ว กลับเป็นค้างอยู่ ✓', 'success');
   await renderBorrowTab(document.getElementById('borrowSearchInput') ? document.getElementById('borrowSearchInput').value : '');
 }
@@ -6208,7 +6214,6 @@ async function ensureRefillQtyColumn(){
 </script>
 </body>
 </html>
-
 
 
 

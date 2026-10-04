@@ -5884,7 +5884,11 @@ async function renderBorrowTab(filterText){
   wrap.querySelectorAll('[data-baction]').forEach(function(btn){
     btn.addEventListener('click', function(){
       var id = this.dataset.bid, action = this.dataset.baction;
-      if (action === 'complete')   completeBorrowLog(id).catch(function(e){ console.error(e); });
+      if (action === 'complete') {
+        var dateInput = this.parentElement ? this.parentElement.querySelector('[data-bcompletedate]') : null;
+        var completedDate = dateInput && dateInput.value ? dateInput.value : todayISO();
+        completeBorrowLog(id, completedDate).catch(function(e){ console.error(e); });
+      }
       if (action === 'uncomplete') uncompleteBorrowLog(id).catch(function(e){ console.error(e); });
       if (action === 'delete')     deleteBorrowLog(id).catch(function(e){ console.error(e); });
       if (action === 'edit')       editBorrowLog(id).catch(function(e){ console.error(e); });
@@ -5915,7 +5919,8 @@ function borrowRowHTML(l){
           '<button data-bid="' + l.id + '" data-baction="uncomplete" class="flex-1 text-xs py-1.5 rounded-lg bg-amber-50 text-amber-700 font-semibold border border-amber-200">↩︎ ยกเลิกเสร็จ</button>' +
           '<button data-bid="' + l.id + '" data-baction="delete" class="px-3 py-1.5 rounded-lg bg-red-50 text-red-500 text-xs border border-red-100">🗑</button>' +
         '</div>'
-      : '<div class="flex gap-2 pt-1">' +
+      : '<div class="flex gap-2 pt-1 items-center">' +
+          '<input type="date" data-bid="' + l.id + '" data-bcompletedate="1" value="' + todayISO() + '" class="input-base input-sm !h-8 !px-1.5 text-[11px] w-[120px] shrink-0">' +
           '<button data-bid="' + l.id + '" data-baction="complete" class="flex-1 text-xs py-1.5 rounded-lg bg-green-50 text-green-700 font-semibold border border-green-200">' +
             (l.type === 'borrow_in' ? '✓ คืนแล้ว' : '✓ รับคืนแล้ว') +
           '</button>' +
@@ -6017,13 +6022,13 @@ async function editBorrowLog(id){
   document.getElementById('borrowFormDetails').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-async function completeBorrowLog(id){
+async function completeBorrowLog(id, completedDate){
   var allLogs = await loadBorrowLogs();
   var log = allLogs.find(function(l){ return l.id === id; });
   if (!log) return;
-  log.status = 'completed'; log.completedDate = todayISO();
+  log.status = 'completed'; log.completedDate = completedDate || todayISO();
   try { await upsertBorrowLog(log); } catch(e){ showToast('บันทึกไม่สำเร็จ', 'warn'); return; }
-  // กดคืน = เกิดขึ้นวันนี้เสมอ ต้องปรับสต็อกวันนี้เสมอ ไม่ว่ารายการจะยืมมาวันไหนก็ตาม
+  // ปรับสต็อกตอนกดคืนเสมอ (กระทบ ณ ปัจจุบัน) ไม่ว่ารายการจะยืมมาวันไหนหรือเลือกวันที่คืนเป็นวันไหนก็ตาม
   // (ก่อนหน้านี้เช็ค log.date === วันนี้ ทำให้รายการที่ยืมมาจากวันก่อนหน้ากดคืนแล้วไม่ลดสต็อกเลย)
   applyBorrowStockImpact(log, true);
   showToast(log.type === 'borrow_in' ? 'คืนของแล้ว ✓' : 'รับคืนแล้ว ✓', 'success');
@@ -6226,8 +6231,6 @@ async function ensureRefillQtyColumn(){
 </script>
 </body>
 </html>
-
-
 
 
 

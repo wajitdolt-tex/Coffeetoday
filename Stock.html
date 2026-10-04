@@ -5885,8 +5885,10 @@ async function renderBorrowTab(filterText){
     btn.addEventListener('click', function(){
       var id = this.dataset.bid, action = this.dataset.baction;
       if (action === 'complete') {
-        var dateInput = this.parentElement ? this.parentElement.querySelector('[data-bcompletedate]') : null;
-        var completedDate = dateInput && dateInput.value ? dateInput.value : todayISO();
+        var defaultDate = todayISO();
+        var answer = prompt('คืนวันที่เท่าไหร่? (ปกติเป็นวันนี้ แก้ได้ถ้าลืมกดคืนมาหลายวันแล้ว)\nรูปแบบ: YYYY-MM-DD', defaultDate);
+        if (answer === null) return; // กดยกเลิก ไม่ทำอะไร
+        var completedDate = /^\d{4}-\d{2}-\d{2}$/.test(answer.trim()) ? answer.trim() : defaultDate;
         completeBorrowLog(id, completedDate).catch(function(e){ console.error(e); });
       }
       if (action === 'uncomplete') uncompleteBorrowLog(id).catch(function(e){ console.error(e); });
@@ -5919,8 +5921,7 @@ function borrowRowHTML(l){
           '<button data-bid="' + l.id + '" data-baction="uncomplete" class="flex-1 text-xs py-1.5 rounded-lg bg-amber-50 text-amber-700 font-semibold border border-amber-200">↩︎ ยกเลิกเสร็จ</button>' +
           '<button data-bid="' + l.id + '" data-baction="delete" class="px-3 py-1.5 rounded-lg bg-red-50 text-red-500 text-xs border border-red-100">🗑</button>' +
         '</div>'
-      : '<div class="flex gap-2 pt-1 items-center">' +
-          '<input type="date" data-bid="' + l.id + '" data-bcompletedate="1" value="' + todayISO() + '" class="input-base input-sm !h-8 !px-1.5 text-[11px] w-[120px] shrink-0">' +
+      : '<div class="flex gap-2 pt-1">' +
           '<button data-bid="' + l.id + '" data-baction="complete" class="flex-1 text-xs py-1.5 rounded-lg bg-green-50 text-green-700 font-semibold border border-green-200">' +
             (l.type === 'borrow_in' ? '✓ คืนแล้ว' : '✓ รับคืนแล้ว') +
           '</button>' +
@@ -6231,7 +6232,6 @@ async function ensureRefillQtyColumn(){
 </script>
 </body>
 </html>
-
 
 
 

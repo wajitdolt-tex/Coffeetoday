@@ -2214,7 +2214,10 @@ function materialCardHTML(mat){
       </div>
     </div>
     <p id="live_${mat.id}" class="text-[11px] mt-1.5 leading-relaxed">${liveStatusHTML(mat.id)}</p>
-    ${ri.borrowNote ? `<p class="mt-1 text-[11px] font-semibold text-blue-600 bg-blue-50 rounded-lg px-2 py-1">🔄 ${ri.borrowNote}</p>` : ''}
+    ${ri.borrowNote ? `<p class="mt-1 text-[11px] font-semibold text-blue-600 bg-blue-50 rounded-lg px-2 py-1 flex items-center justify-between gap-2">
+      <span>🔄 ${ri.borrowNote}</span>
+      <button data-dismissborrownote="${mat.id}" title="ลบข้อความนี้ออก (ถ้าไม่ตรงกับความจริงแล้ว)" class="text-blue-400 hover:text-blue-700 shrink-0">✕</button>
+    </p>` : ''}
     <details id="wastedetails_${mat.id}" class="mt-1.5 border border-slate-100 rounded-lg overflow-hidden ${(Number(ri.wasteQtyBig) > 0 || Number(ri.wasteQty) > 0) ? 'border-red-200 bg-red-50/30' : ''}">
       <summary class="px-2.5 py-1.5 cursor-pointer text-[11px] font-medium text-slate-500 hover:bg-slate-50 list-none flex items-center gap-1">
         <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
@@ -2597,6 +2600,17 @@ function bindMaterialInputDelegation(container){
   container.addEventListener('click', (e) => {
     const editBtn = e.target.closest('[data-editname]');
     if (editBtn) editMaterialName(editBtn.dataset.editname);
+    const dismissBtn = e.target.closest('[data-dismissborrownote]');
+    if (dismissBtn) {
+      const matId = dismissBtn.dataset.dismissborrownote;
+      const ri = rawInputs[matId];
+      if (ri) {
+        ri.borrowNote = null;
+        recomputeMaterial(matId);
+        renderFastMoving(materialSearchEl ? materialSearchEl.value : '');
+        renderSlowMoving(materialSearchEl ? materialSearchEl.value : '');
+      }
+    }
   });
   container.addEventListener('change', (e) => {
     if (e.target.dataset.toggleMatid) {
@@ -6027,12 +6041,19 @@ async function completeBorrowLog(id, completedDate){
   var allLogs = await loadBorrowLogs();
   var log = allLogs.find(function(l){ return l.id === id; });
   if (!log) return;
-  log.status = 'completed'; log.completedDate = completedDate || todayISO();
+  var finalDate = completedDate || todayISO();
+  var isToday = finalDate === todayISO();
+  log.status = 'completed'; log.completedDate = finalDate;
   try { await upsertBorrowLog(log); } catch(e){ showToast('บันทึกไม่สำเร็จ', 'warn'); return; }
-  // ปรับสต็อกตอนกดคืนเสมอ (กระทบ ณ ปัจจุบัน) ไม่ว่ารายการจะยืมมาวันไหนหรือเลือกวันที่คืนเป็นวันไหนก็ตาม
-  // (ก่อนหน้านี้เช็ค log.date === วันนี้ ทำให้รายการที่ยืมมาจากวันก่อนหน้ากดคืนแล้วไม่ลดสต็อกเลย)
-  applyBorrowStockImpact(log, true);
-  showToast(log.type === 'borrow_in' ? 'คืนของแล้ว ✓' : 'รับคืนแล้ว ✓', 'success');
+  if (isToday) {
+    // คืนวันนี้จริง — กระทบสต็อก/badge ของวันนี้ตามปกติ
+    applyBorrowStockImpact(log, true);
+    showToast(log.type === 'borrow_in' ? 'คืนของแล้ว ✓' : 'รับคืนแล้ว ✓', 'success');
+  } else {
+    // เลือกวันที่คืนเป็นวันอื่น (ย้อนหลัง) — ไม่กระทบสต็อก/badge ของวันนี้เลย
+    // เพราะข้อมูลของวันนี้ปิดไปแล้วไม่เกี่ยวกับการคืนที่เกิดขึ้นวันอื่น ต้องไปแก้ที่หน้า "ย้อนหลัง" ของวันนั้นแทน
+    showToast('บันทึกวันที่คืนแล้ว ✓ (ไม่กระทบสต็อกวันนี้ — ถ้าต้องการปรับยอดของวันที่ ' + finalDate + ' ให้ไปแก้ที่แท็บ "ย้อนหลัง")', 'success');
+  }
   await renderBorrowTab(document.getElementById('borrowSearchInput') ? document.getElementById('borrowSearchInput').value : '');
 }
 
@@ -6232,6 +6253,8 @@ async function ensureRefillQtyColumn(){
 </script>
 </body>
 </html>
+
+
 
 
 

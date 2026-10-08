@@ -2757,8 +2757,7 @@ function getAdminMenuQty(recipeId){
 
 
 function hasCupIngredient(recipe){
-  var CUPS = ['cup22oz','cup16oz','cup12oz','cup8oz'];
-  return recipe.ingredients && recipe.ingredients.some(function(i){ return CUPS.indexOf(i.materialId) >= 0; });
+  return recipe.ingredients && recipe.ingredients.some(function(i){ return /^cup(22|16|12|8)/.test(i.materialId); });
 }
 
 
@@ -2791,7 +2790,7 @@ function menuCardHTML(recipe){
       <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${qty}"
         data-recipeid="${recipe.id}" class="menu-qty-input w-full input-base input-sm !h-10 font-num text-center">
     </div>
-    ${(recipe.size && (recipe.size.includes('22') || recipe.size.includes('12') || recipe.size.includes('8'))) ? `
+    ${(recipe.size && (recipe.size.includes('22') || recipe.size.includes('16') || recipe.size.includes('12') || recipe.size.includes('8'))) ? `
     <div class="mt-1.5 flex items-center gap-1.5">
       <label class="text-[10px] text-slate-400 whitespace-nowrap">หักรีฟิล (ใบ)</label>
       <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${getMenuRefill(recipe.id) || ''}"
@@ -3177,7 +3176,7 @@ function setMenuRefill(recipeId, val){
 
 function applyRecipeUsageToMaterials(){
   const totals = {};
-  const CUP_IDS_SET = new Set(['cup22oz','cup16oz','cup12oz','cup8oz']);
+  const CUP_IDS_SET = { has: function(id){ return /^cup(22|16|12|8)/.test(id); } }; // รวม cup16robot / cup16space
   RECIPES.forEach(recipe => {
     const sold = menuSales[recipe.id];
     if (!sold) return;
@@ -3513,7 +3512,7 @@ function frontMenuCardHTML(recipe){
     <label class="block text-[10px] text-slate-400 mb-0.5">จำนวนที่ขายวันนี้ (${recipeUnit(recipe)})</label>
     <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${qty}"
       data-frontrecipeid="${recipe.id}" class="front-menu-qty-input w-full input-base input-sm !h-10 font-num text-center">
-    ${(recipe.size && (recipe.size.includes('22') || recipe.size.includes('12') || recipe.size.includes('8'))) ? `
+    ${(recipe.size && (recipe.size.includes('22') || recipe.size.includes('16') || recipe.size.includes('12') || recipe.size.includes('8'))) ? `
     <div class="mt-1.5 flex items-center gap-1.5">
       <label class="text-[10px] text-slate-400 whitespace-nowrap">หักรีฟิล (ใบ)</label>
       <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${getMenuRefill(recipe.id) || ''}"
@@ -6253,6 +6252,7 @@ async function ensureRefillQtyColumn(){
 </script>
 </body>
 </html>
+
 
 
 

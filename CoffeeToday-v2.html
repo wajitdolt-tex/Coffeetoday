@@ -216,7 +216,7 @@ td{padding:10px 12px;vertical-align:middle}
     <div class="clock-ph" id="phToday"></div>
     <div class="clock-btns">
       <button class="btn-clock-in" onclick="openClockModal('in')">&#10003; เข้างาน</button>
-      <button class="btn-clock-out" onclick="openClockModal('out')">&#128682; ออกงาน</button>
+      <button class="btn-clock-out" onclick="openClockModal('out')">&#128682; เลิกงาน</button>
     </div>
   </div>
   <div class="card">
@@ -887,7 +887,7 @@ function updateEmpDashboard(emp){
   }else if(!todayLog.clockOut||todayLog.clockOut===''||todayLog.clockOut==='00:00'){
     dot.className='dash-status-dot in';statusText.textContent='เข้างานแล้ว '+fmtTime(todayLog.clockIn);statusSub.textContent='สาขา'+brL(todayLog.branch);
   }else{
-    dot.className='dash-status-dot out';statusText.textContent='ออกงานแล้ว '+fmtTime(todayLog.clockOut);statusSub.textContent='รวม '+(todayLog.hours||0)+' ชม.';
+    dot.className='dash-status-dot out';statusText.textContent='เลิกงานแล้ว '+fmtTime(todayLog.clockOut);statusSub.textContent='รวม '+(todayLog.hours||0)+' ชม.';
   }
   var days=new Set(pl.filter(function(l){var ci=toTimeStr(l.clockIn);return ci&&ci!=='00:00';}).map(function(l){return toDateStr(l.date);})).size;
   var ot=pl.reduce(function(s,l){return s+(Number(l.hoursOT)||0);},0).toFixed(1);
@@ -1020,8 +1020,8 @@ function openClockModal(action){
   if(!employees.length){showToast('กำลังโหลดข้อมูล...','error');return;}
   document.querySelectorAll('.modal-overlay').forEach(function(m){m.classList.remove('open');});
   clockAction=action;
-  document.getElementById('clockModalTitle').textContent=action==='in'?'บันทึกเข้างาน':'บันทึกออกงาน';
-  document.getElementById('clockModalBtn').textContent=action==='in'?'บันทึกเข้างาน':'บันทึกออกงาน';
+  document.getElementById('clockModalTitle').textContent=action==='in'?'บันทึกเข้างาน':'บันทึกเลิกงาน';
+  document.getElementById('clockModalBtn').textContent=action==='in'?'บันทึกเข้างาน':'บันทึกเลิกงาน';
   populateEmpSel('modalEmp');
   if(selectedEmpId)document.getElementById('modalEmp').value=selectedEmpId;
   var mb=document.getElementById('modalBranch');mb.value=currentBranch||'';
@@ -1088,13 +1088,13 @@ async function submitClock(){
       else{var r=calcOT(branch2,entry.clockIn,ts);hours2=r.hours;hoursOT2=r.hoursOT;late2=r.lateMinutes;type2=hoursOT2>0?'split':entry.type;if(entry.type==='holiday_work')type2='holiday_work';}
       await apiUpdateLog({id:entry.id,clockOut:ts,hours:hours2,hoursOT:hoursOT2,type:type2,note:note,lateMinutes:late2});
       Object.assign(entry,{clockOut:ts,hours:hours2,hoursOT:hoursOT2,type:type2,note:note,lateMinutes:late2});
-      showToast('ออกงาน'+(late2>0?' สาย '+late2+' นาที':'')+(hoursOT2>0?' OT '+hoursOT2+' ชม.':''),'success');
+      showToast('เลิกงาน'+(late2>0?' สาย '+late2+' นาที':'')+(hoursOT2>0?' OT '+hoursOT2+' ชม.':''),'success');
       autoSyncToSheets();
       closeModal('clockModal');renderMyLog();renderEmpCards();
       if(emp2)updateEmpDashboard(emp2);
     }
   }catch(e){showToast('บันทึกล้มเหลว: '+e.message,'error');}
-  finally{btn.innerHTML=clockAction==='in'?'บันทึกเข้างาน':'บันทึกออกงาน';btn.disabled=false;}
+  finally{btn.innerHTML=clockAction==='in'?'บันทึกเข้างาน':'บันทึกเลิกงาน';btn.disabled=false;}
 }
 
 function onSalesInput(){
@@ -1378,7 +1378,7 @@ function addManRow(){
       '</select></div></div>'+
     '<div class="form-row">'+
       '<div class="form-group"><label>เข้างาน</label><input type="text" id="mrIn_'+n+'" value="00:00" maxlength="5" inputmode="numeric" style="font-family:monospace;font-size:16px;text-align:center" oninput="autoFmtTime(this)" onfocus="if(this.value===\'00:00\')this.value=\'\'" onblur="if(this.value===\'\')this.value=\'00:00\'"></div>'+
-      '<div class="form-group"><label>ออกงาน</label><input type="text" id="mrOut_'+n+'" value="00:00" maxlength="5" inputmode="numeric" style="font-family:monospace;font-size:16px;text-align:center" oninput="autoFmtTime(this)" onfocus="if(this.value===\'00:00\')this.value=\'\'" onblur="if(this.value===\'\')this.value=\'00:00\'"></div></div>'+
+      '<div class="form-group"><label>เลิกงาน</label><input type="text" id="mrOut_'+n+'" value="00:00" maxlength="5" inputmode="numeric" style="font-family:monospace;font-size:16px;text-align:center" oninput="autoFmtTime(this)" onfocus="if(this.value===\'00:00\')this.value=\'\'" onblur="if(this.value===\'\')this.value=\'00:00\'"></div></div>'+
     '<div class="form-row">'+
       '<div class="form-group"><label>ยอดขาย</label><input type="number" id="mrSales_'+n+'" placeholder="0" min="0" oninput="calcManComm('+n+')"></div>'+
       '<div class="form-group"><label>ค่าคอม</label><div id="mrCommDisp_'+n+'" style="padding:10px 0;font-size:14px;color:#057a55;font-weight:600">--</div></div></div>'+
@@ -1772,6 +1772,9 @@ loadAll();
 </script>
 </body>
 </html>
+
+
+
 
 
 

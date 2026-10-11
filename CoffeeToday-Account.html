@@ -335,7 +335,7 @@ tr:hover td{background:var(--bg3);}
       <div class="form-row"><label>ค่าเช่า (฿)</label><input type="number" id="pm-rent" placeholder="0.00" step="0.01"></div>
       <div class="form-row"><label>ค่าน้ำ/ค่าไฟ (฿)</label><input type="number" id="pm-utility" placeholder="0.00" step="0.01"></div>
       <div class="form-row" id="pm-aircond-row" style="display:none;"><label>ค่าแอร์ส่วนกลาง (฿)</label><input type="number" id="pm-aircond" placeholder="0.00" step="0.01"></div>
-      <div class="form-row"><label id="pm-tax-land-label">ภาษีสิ่งปลูกสร้างและที่ดิน (฿)</label><input type="number" id="pm-tax-land" placeholder="0.00" step="0.01"></div>
+      <div class="form-row" id="pm-tax-land-row"><label id="pm-tax-land-label">ภาษีสิ่งปลูกสร้างและที่ดิน (฿)</label><input type="number" id="pm-tax-land" placeholder="0.00" step="0.01"></div>
       <div class="form-row"><label>ภาษีป้าย (฿)</label><input type="number" id="pm-tax-sign" placeholder="0.00" step="0.01"></div>
       <div class="form-row"><label>ค่าใบอนุญาตผู้ประกอบการอาหาร (฿)</label><input type="number" id="pm-license" placeholder="0.00" step="0.01"></div>
     </div>
@@ -977,6 +977,14 @@ tr:hover td{background:var(--bg3);}
         <li><b>🧹 ล้างซ้ำ:</b> ใช้เมื่อเห็นรายการเดียวกันซ้ำในเครื่อง</li>
         <li><b>บันทึกขึ้น Sheets:</b> กดทุกครั้งหลังเพิ่ม/แก้/ชำระ/ลบ เพื่อให้เครื่องอื่นและหน้าสรุปเห็นข้อมูลล่าสุด ระบบเพิ่มหรืออัปเดตเฉพาะรายการนั้น ไม่เขียนทับรายการอื่น</li>
         <li>น้ำแข็งวางบิลมีเฉพาะ <b>โลตัสระยอง</b> (แพชชั่นจ่ายน้ำแข็งหน้าร้าน)</li>
+        <li><b>ค่าใช้จ่ายประจำเดือน:</b> เลือกสาขา เดือน/ปี กรอกยอดแต่ละช่อง แล้วกด "เพิ่มเข้ารายการทั้งหมด" ระบบสร้างรายการค้างชำระให้ทีละช่องที่กรอก (วันที่วางบิล = วันที่ 1 ของเดือนที่เลือก) แล้วไปกด "ชำระ" เมื่อจ่ายจริง
+          <ul>
+            <li>ทั้งสองสาขา: ค่าเช่า, ค่าน้ำ/ค่าไฟ, ภาษีป้าย, ค่าใบอนุญาตผู้ประกอบการอาหาร</li>
+            <li>แพชชั่น: มี ภาษีสิ่งปลูกสร้างและที่ดิน</li>
+            <li>โลตัส: มี ค่าแอร์ส่วนกลาง (รวมค่าส่วนกลาง) แทนภาษีที่ดิน</li>
+            <li>ถ้าลงย้อนหลังและจ่ายไปแล้ว ให้ลงที่บัญชีร้านแทน เพื่อไม่ให้นับซ้ำ</li>
+          </ul>
+        </li>
       </ul>
     </div></details>
 
@@ -1240,6 +1248,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   if (cfg.user) document.getElementById('cfg-user').value = cfg.user;
+  if (typeof onPmBranchChange === 'function') onPmBranchChange();
 
   renderStdExpenses();
   addExpRow();
@@ -1290,6 +1299,7 @@ function selectGlobalBranch(branch) {
   });
   // trigger events
   if (typeof onBranchChange === 'function') onBranchChange();
+  if (typeof onPmBranchChange === 'function') onPmBranchChange();
   if (typeof filterCoupon === 'function') filterCoupon(branch);
   // ปิด overlay
   var overlay = document.getElementById('global-branch-overlay');
@@ -2306,8 +2316,10 @@ function onPmBranchChange() {
   document.getElementById('pm-aircond-row').style.display = branch === 'lotus' ? 'block' : 'none';
   var taxLandLabel = document.getElementById('pm-tax-land-label');
   if (taxLandLabel) {
-    taxLandLabel.textContent = branch === 'lotus' ? 'ค่าแอร์ส่วนกลาง (฿)' : 'ภาษีสิ่งปลูกสร้างและที่ดิน (฿)';
+    taxLandLabel.textContent = 'ภาษีสิ่งปลูกสร้างและที่ดิน (฿)';
   }
+  var taxLandRow = document.getElementById('pm-tax-land-row');
+  if (taxLandRow) taxLandRow.style.display = branch === 'lotus' ? 'none' : 'block';
 }
 
 function addMonthlyExpenses() {
@@ -2320,7 +2332,7 @@ function addMonthlyExpenses() {
     { id:'pm-rent',     label:'ค่าเช่า',                              cat:'ค่าเช่า' },
     { id:'pm-utility',  label:'ค่าน้ำ/ค่าไฟ',                         cat:'ค่าไฟ/น้ำ' },
     { id:'pm-aircond',  label:'ค่าแอร์ส่วนกลาง',                      cat:'ค่าบริการ' },
-    { id:'pm-tax-land', label: branch === 'lotus' ? 'ค่าแอร์ส่วนกลาง' : 'ภาษีสิ่งปลูกสร้างและที่ดิน', cat: branch === 'lotus' ? 'ค่าบริการ' : 'ภาษี' },
+    { id:'pm-tax-land', label:'ภาษีสิ่งปลูกสร้างและที่ดิน',            cat:'ภาษี' },
     { id:'pm-tax-sign', label:'ภาษีป้าย',                              cat:'ภาษี' },
     { id:'pm-license',  label:'ค่าใบอนุญาตผู้ประกอบการอาหาร',         cat:'ค่าบริการ' }
   ];
@@ -2329,6 +2341,7 @@ function addMonthlyExpenses() {
   items.forEach(function(item) {
     var el = document.getElementById(item.id);
     if (!el) return;
+    if (branch === 'lotus' && item.id === 'pm-tax-land') { el.value = ''; return; }
     var amount = parseFloat(el.value);
     if (!amount || amount <= 0) return;
     payables.unshift({
@@ -4223,7 +4236,6 @@ window.addEventListener('beforeunload', function(e) {
 </div>
 </body>
 </html>
-
 
 
 

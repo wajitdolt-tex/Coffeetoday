@@ -5785,6 +5785,29 @@ async function renderBorrowTab(filterText){
   const allPending = logs.filter(l => l.status === 'pending');
   const borrowedInCount = allPending.filter(l => l.type === 'borrow_in').length;
   const lentOutCount = allPending.filter(l => l.type === 'lend_out').length;
+  // รวมยอดค้างคืนต่อวัตถุดิบ (แยก ยืมมา / ให้ยืม) — แปลงเป็นหน่วยเล็กแล้วรวม ค่อยแสดงเป็นหน่วยใหญ่+เศษ
+  function pendingTotalsHTML(type, color){
+    var sums = {};
+    allPending.filter(function(l){ return l.type === type; }).forEach(function(l){
+      var mat = materialById(l.materialId);
+      var key = l.materialId || l.materialName;
+      if (!sums[key]) sums[key] = { mat: mat, name: (mat && mat.name) || l.materialName || key, small: 0, rawBig: 0, rawSmall: 0, n: 0 };
+      var g = sums[key]; g.n++;
+      if (mat) g.small += (l.qtyBig || 0) * mat.ratio + (l.qtySmall || 0);
+      else { g.rawBig += l.qtyBig || 0; g.rawSmall += l.qtySmall || 0; }
+    });
+    var rows = Object.keys(sums).map(function(k){ return sums[k]; }).sort(function(x, y){ return x.name.localeCompare(y.name, 'th'); });
+    if (!rows.length) return '';
+    return rows.map(function(g){
+      var qty = g.mat ? formatAsBigSmall(g.mat, g.small) : (g.rawBig + (g.rawSmall ? ' + ' + g.rawSmall : ''));
+      return '<div class="flex items-center justify-between gap-2 text-xs py-1">' +
+        '<span class="text-slate-700 truncate">' + g.name + (g.n > 1 ? ' <span class="text-slate-400">(' + g.n + ' ครั้ง)</span>' : '') + '</span>' +
+        '<span class="font-semibold font-num whitespace-nowrap ' + color + '">' + qty + '</span></div>';
+    }).join('');
+  }
+  var totalsIn  = pendingTotalsHTML('borrow_in',  'text-green-700');
+  var totalsOut = pendingTotalsHTML('lend_out', 'text-orange-700');
+
   const oldestPending = allPending.length ? allPending.reduce((a, b) => a.date < b.date ? a : b) : null;
   const daysStale = oldestPending ? Math.floor((new Date(todayISO()) - new Date(oldestPending.date)) / 86400000) : 0;
 
@@ -5802,6 +5825,14 @@ async function renderBorrowTab(filterText){
       <p class="text-xl font-bold text-orange-700 font-num">${lentOutCount} <span class="text-xs font-normal">รายการ</span></p>
     </div>
   </div>
+  ${(totalsIn || totalsOut) ? `
+  <details class="bg-white border border-slate-200 rounded-xl overflow-hidden" open>
+    <summary class="px-4 py-2.5 text-sm font-semibold text-slate-700 cursor-pointer list-none">📊 รวมที่ค้างคืน แยกตามรายการ</summary>
+    <div class="px-4 pb-3 space-y-2">
+      ${totalsIn ? `<div><p class="text-[11px] font-semibold text-green-700 mb-0.5">📥 ยืมมา (ต้องคืนเขา)</p><div class="divide-y divide-slate-100">${totalsIn}</div></div>` : ''}
+      ${totalsOut ? `<div><p class="text-[11px] font-semibold text-orange-700 mb-0.5">📤 ให้ยืม (รอเขาคืน)</p><div class="divide-y divide-slate-100">${totalsOut}</div></div>` : ''}
+    </div>
+  </details>` : ''}
   ${oldestPending && daysStale >= 7 ? `<p class="text-[11px] text-red-500 bg-red-50 border border-red-200 rounded-lg px-3 py-2">⚠️ มีรายการค้างมานาน ${daysStale} วันแล้ว (${oldestPending.materialName} · ${oldestPending.counterpart || '-'}) ลองติดตามดูครับ</p>` : ''}
 
   <input type="text" id="borrowSearchInput" value="${filterText || ''}" placeholder="🔍 ค้นหาวัตถุดิบ, สาขา/บุคคล, หมายเหตุ..." class="input-base input-sm w-full">
@@ -6252,10 +6283,6 @@ async function ensureRefillQtyColumn(){
 </script>
 </body>
 </html>
-
-
-
-
 
 
 

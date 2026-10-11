@@ -58,6 +58,10 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(
 .btn-clock-in:hover{background:var(--red2);transform:translateY(-1px)}
 .btn-clock-out{background:rgba(255,255,255,.07);color:#fff;border:1.5px solid rgba(255,255,255,.2);font-family:inherit;font-size:14px;font-weight:600;padding:12px 30px;border-radius:var(--radius);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
 .btn-clock-out:hover{background:rgba(255,255,255,.13)}
+.btn-break{background:rgba(251,191,36,.15);color:#fbbf24;border:1.5px solid rgba(251,191,36,.35);font-family:inherit;font-size:14px;font-weight:600;padding:12px 22px;border-radius:var(--radius);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-break:hover{background:rgba(251,191,36,.25)}
+.btn-break-back{background:rgba(52,211,153,.15);color:#34d399;border:1.5px solid rgba(52,211,153,.35);font-family:inherit;font-size:14px;font-weight:600;padding:12px 22px;border-radius:var(--radius);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-break-back:hover{background:rgba(52,211,153,.25)}
 .card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow)}
 .card-title{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .card-icon{width:28px;height:28px;background:var(--red-light);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
@@ -216,6 +220,8 @@ td{padding:10px 12px;vertical-align:middle}
     <div class="clock-ph" id="phToday"></div>
     <div class="clock-btns">
       <button class="btn-clock-in" onclick="openClockModal('in')">&#10003; เข้างาน</button>
+      <button class="btn-break" id="btnBreakStart" onclick="submitBreak('start')" style="display:none">&#9749; เริ่มพัก</button>
+      <button class="btn-break-back" id="btnBreakEnd" onclick="submitBreak('end')" style="display:none">&#9654; กลับจากพัก</button>
       <button class="btn-clock-out" onclick="openClockModal('out')">&#128682; เลิกงาน</button>
     </div>
   </div>
@@ -735,7 +741,7 @@ function supaFetch(path,method,body){
   return fetch(SUPA_URL+path,opts).then(function(r){return r.json();});
 }
 function mapEmp(r){return{id:r.id,name:r.name,branch:r.branch,role:r.role,salary:r.salary||0,dailyWage:r.daily_wage||0,otRate:r.ot_rate||50,holidayRate:r.holiday_rate||100,active:r.active};}
-function mapLog(r){return{id:r.id,empId:r.emp_id,date:r.date,branch:r.branch,clockIn:r.clock_in,clockOut:r.clock_out,hours:r.hours,hoursOT:r.hours_ot||0,type:r.type,lateMinutes:r.late_minutes||0,sales:r.sales||0,commDiff:r.comm_diff||0,commission:r.commission||0,commRate:r.comm_rate||0,note:r.note||''};}
+function mapLog(r){return{id:r.id,empId:r.emp_id,date:r.date,branch:r.branch,clockIn:r.clock_in,clockOut:r.clock_out,hours:r.hours,hoursOT:r.hours_ot||0,type:r.type,lateMinutes:r.late_minutes||0,sales:r.sales||0,commDiff:r.comm_diff||0,commission:r.commission||0,commRate:r.comm_rate||0,note:r.note||'',breakStart:r.break_start||'',breakOut:r.break_out||''};}
 function mapLeave(r){return{id:r.id,empId:r.emp_id,type:r.type,dateStart:r.date_start,dateEnd:r.date_end,days:r.days||1,reason:r.reason||'',status:r.status||'pending',hrNote:r.hr_note||'',createdAt:r.created_at};}
 
 async function loadAll(){
@@ -767,6 +773,8 @@ async function apiUpdateLog(data){
   if(data.note!==undefined)body.note=data.note;if(data.lateMinutes!==undefined)body.late_minutes=data.lateMinutes;
   if(data.sales!==undefined)body.sales=data.sales;if(data.commission!==undefined)body.commission=data.commission;
   if(data.commRate!==undefined)body.comm_rate=data.commRate;
+  if(data.breakStart!==undefined)body.break_start=data.breakStart;
+  if(data.breakOut!==undefined)body.break_out=data.breakOut;
   await fetch(SUPA_URL+'/rest/v1/logs?id=eq.'+data.id,{method:'PATCH',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY},body:JSON.stringify(body)});
   setSyncStatus('ok','เชื่อมต่อแล้ว');
 }
@@ -885,10 +893,18 @@ function updateEmpDashboard(emp){
   if(!todayLog||(!todayLog.clockIn||todayLog.clockIn==='00:00')){
     dot.className='dash-status-dot out';statusText.textContent='ยังไม่ได้เข้างาน';statusSub.textContent='วันนี้ '+fmtDate(ds);
   }else if(!todayLog.clockOut||todayLog.clockOut===''||todayLog.clockOut==='00:00'){
-    dot.className='dash-status-dot in';statusText.textContent='เข้างานแล้ว '+fmtTime(todayLog.clockIn);statusSub.textContent='สาขา'+brL(todayLog.branch);
+    var onBreak=todayLog.breakStart&&todayLog.breakStart!==''&&(!todayLog.breakOut||todayLog.breakOut==='');
+    if(onBreak){
+      dot.className='dash-status-dot pending';statusText.textContent='กำลังพักเบรค ☕ เริ่ม '+fmtTime(todayLog.breakStart);statusSub.textContent='สาขา'+brL(todayLog.branch);
+    }else{
+      dot.className='dash-status-dot in';statusText.textContent='เข้างานแล้ว '+fmtTime(todayLog.clockIn);
+      var breakInfo=todayLog.breakStart&&todayLog.breakOut?' (พัก '+fmtTime(todayLog.breakStart)+'-'+fmtTime(todayLog.breakOut)+')':'';
+      statusSub.textContent='สาขา'+brL(todayLog.branch)+breakInfo;
+    }
   }else{
     dot.className='dash-status-dot out';statusText.textContent='เลิกงานแล้ว '+fmtTime(todayLog.clockOut);statusSub.textContent='รวม '+(todayLog.hours||0)+' ชม.';
   }
+  updateBreakBtns(todayLog);
   var days=new Set(pl.filter(function(l){var ci=toTimeStr(l.clockIn);return ci&&ci!=='00:00';}).map(function(l){return toDateStr(l.date);})).size;
   var ot=pl.reduce(function(s,l){return s+(Number(l.hoursOT)||0);},0).toFixed(1);
   var commByDate={};pl.forEach(function(l){var d=toDateStr(l.date);if(d&&Number(l.sales||0)>0){if(!commByDate[d]||l.type==='commission')commByDate[d]=l;}});
@@ -1095,6 +1111,42 @@ async function submitClock(){
     }
   }catch(e){showToast('บันทึกล้มเหลว: '+e.message,'error');}
   finally{btn.innerHTML=clockAction==='in'?'บันทึกเข้างาน':'บันทึกเลิกงาน';btn.disabled=false;}
+}
+
+async function submitBreak(action){
+  if(!selectedEmpId){showToast('กรุณาเลือกพนักงานก่อน','error');return;}
+  var ds=todayStr(),ts=timeStr();
+  var entry=logs.find(function(l){return l.empId===selectedEmpId&&toDateStr(l.date)===ds&&l.clockIn&&l.clockIn!=='00:00'&&(!l.clockOut||l.clockOut===''||l.clockOut==='00:00');});
+  if(!entry){showToast('ไม่พบบันทึกเข้างานวันนี้','error');return;}
+  try{
+    if(action==='start'){
+      if(entry.breakStart&&entry.breakStart!==''){showToast('บันทึกเริ่มพักแล้ว','error');return;}
+      await apiUpdateLog({id:entry.id,breakStart:ts});
+      Object.assign(entry,{breakStart:ts});
+      showToast('เริ่มพัก '+ts,'success');
+    }else{
+      if(!entry.breakStart||entry.breakStart===''){showToast('ยังไม่ได้บันทึกเริ่มพัก','error');return;}
+      if(entry.breakOut&&entry.breakOut!==''){showToast('กลับจากพักแล้ว','error');return;}
+      await apiUpdateLog({id:entry.id,breakOut:ts});
+      Object.assign(entry,{breakOut:ts});
+      showToast('กลับจากพัก '+ts,'success');
+    }
+    autoSyncToSheets();
+    var emp=employees.find(function(e){return e.id===selectedEmpId;});
+    if(emp)updateEmpDashboard(emp);
+  }catch(e){showToast('บันทึกล้มเหลว: '+e.message,'error');}
+}
+
+function updateBreakBtns(todayLog){
+  var btnS=document.getElementById('btnBreakStart'),btnE=document.getElementById('btnBreakEnd');
+  if(!btnS||!btnE)return;
+  if(!todayLog||!todayLog.clockIn||todayLog.clockIn==='00:00'||todayLog.clockOut){
+    btnS.style.display='none';btnE.style.display='none';return;
+  }
+  var hasStart=todayLog.breakStart&&todayLog.breakStart!=='';
+  var hasEnd=todayLog.breakOut&&todayLog.breakOut!=='';
+  btnS.style.display=(!hasStart)?'inline-flex':'none';
+  btnE.style.display=(hasStart&&!hasEnd)?'inline-flex':'none';
 }
 
 function onSalesInput(){
@@ -1772,7 +1824,6 @@ loadAll();
 </script>
 </body>
 </html>
-
 
 
 

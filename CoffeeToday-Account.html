@@ -570,8 +570,9 @@ tr:hover td{background:var(--bg3);}
               <div class="stat-value" id="ss-acctexp-total">฿0</div>
             </div>
             <div class="stat-box" style="background:var(--bg2);border-left:3px solid var(--blue);">
-              <div class="stat-label">เงินเดือนพนักงาน <span style="font-weight:400;font-size:10px;">(จ่ายจริงเดือนนี้)</span></div>
+              <div class="stat-label">เงินเดือนพนักงาน <span style="font-weight:400;font-size:10px;">(เงินเดือนของเดือนนี้)</span></div>
               <div class="stat-value" id="ss-salary-total">฿0</div>
+              <div id="ss-salary-unpaid" style="font-size:11px;color:var(--red);margin-top:4px;display:none;"></div>
             </div>
           </div>
           <div style="margin-top:10px;padding:8px 10px;background:rgba(160,120,32,.07);border-radius:var(--r-sm);font-size:11px;color:var(--yellow);">
@@ -1006,8 +1007,9 @@ tr:hover td{background:var(--bg3);}
 
     <details><summary>4) หน้าบัญชีร้าน (เงินเดือน / ค่าใช้จ่าย / เงินยืม)</summary><div class="mn">
       <ul>
-        <li><b>เงินเดือน:</b> ลงชื่อ ยอด และเดือนของเงินเดือน แล้ว<b>ทุกครั้งที่จ่ายจริง</b> ให้กด "+ ชำระบางส่วน" ใส่ยอดและวันที่จ่าย (จ่ายครั้งเดียวครบก็ใส่ยอดเต็ม) — ระบบนับเป็นรายจ่ายในเดือนที่จ่ายจริงเท่านั้น รายการที่ยังไม่กดชำระจะยังไม่นับ</li>
+        <li><b>เงินเดือน:</b> ลงชื่อ ยอด และ<b>เดือนของเงินเดือน</b> (เดือนที่พนักงานทำงาน) — ระบบนับเต็มยอดเป็นรายจ่ายของเดือนนั้นทันที แม้จะแบ่งจ่ายหรือจ่ายข้ามเดือน ทุกครั้งที่จ่าย ให้กด "+ ชำระบางส่วน" เพื่อติดตามยอดค้างจ่าย (ไม่ทำให้รายจ่ายย้ายเดือน)</li>
         <li><b>ห้ามลงเงินเดือนซ้ำ</b>ในบัญชีร้านหรือวางบิลหมวด "ค่าแรง" — จะถูกนับ 2 ครั้ง</li>
+        <li>ถ้าลงเงินเดือนคนเดิม เดือนเดิม สาขาเดิมซ้ำ (เช็คทั้งในเครื่องและในชีท) ระบบจะเตือนก่อน — ถ้าจะบันทึกการจ่าย ให้กด "+ ชำระบางส่วน" ที่รายการเดิม ไม่ต้องเพิ่มรายการใหม่ ค่าใช้จ่ายประจำเดือนก็เตือนแบบเดียวกัน</li>
         <li><b>ค่าใช้จ่ายบัญชีร้าน:</b> ค่าใช้จ่ายอื่นที่จ่ายแล้ว ลงวันที่ที่จ่ายจริง</li>
         <li><b>เงินยืม:</b> บันทึกยอดยืม แล้วกด "ชำระบางส่วน" เมื่อมีการคืน เมื่อคืนครบจะย้ายไป "คืนครบแล้ว" อัตโนมัติ การคืนแต่ละครั้งจะลงในบัญชีร้าน (หมวดเงินยืม ของสาขาที่ยืม) ให้อัตโนมัติ แต่<b>ไม่นับเป็นรายจ่าย</b> เพราะเป็นการคืนหนี้</li>
       </ul>
@@ -1043,12 +1045,12 @@ tr:hover td{background:var(--bg3);}
     </div></details>
 
     <details><summary>3) รายจ่ายคำนวณอย่างไร</summary><div class="mn">
-      <div class="tip">รายจ่ายรวม = วางบิลที่จ่ายแล้ว + ค่าเช่า/ไฟ/ภาษี/ค่าบริการ + บัญชีร้าน (ไม่รวมคืนเงินยืม) + เงินเดือนที่จ่ายจริง<br>กำไร = รายรับ − รายจ่ายรวม<br>เงินคงเหลือหลังคืนหนี้ = กำไร − เงินที่คืนเงินยืมในเดือนนั้น</div>
+      <div class="tip">รายจ่ายรวม = วางบิลที่จ่ายแล้ว + ค่าเช่า/ไฟ/ภาษี/ค่าบริการ + บัญชีร้าน (ไม่รวมคืนเงินยืม) + เงินเดือนของเดือนนั้น<br>กำไร = รายรับ − รายจ่ายรวม<br>เงินคงเหลือหลังคืนหนี้ = กำไร − เงินที่คืนเงินยืมในเดือนนั้น</div>
       <ul>
         <li><b>วางบิลวัตถุดิบ:</b> นับเฉพาะส่วนที่ "จ่ายจริง"</li>
         <li><b>ค่าเช่า / ค่าไฟ-น้ำ / ภาษี / ค่าบริการ:</b> นับเต็มยอดในเดือนของ "วันที่วางบิล"</li>
         <li><b>บัญชีร้าน:</b> นับตามวันที่ลงรายการ ยกเว้นหมวด "เงินยืม" (การคืนเงินยืม) ที่ไม่นับเป็นรายจ่าย</li>
-        <li><b>เงินเดือน:</b> นับเฉพาะงวดที่จ่ายจริง ตามวันที่ของแต่ละงวด</li>
+        <li><b>เงินเดือน:</b> นับเต็มยอดในเดือนของเงินเดือน (หลักคงค้าง) ยอดที่ยังไม่จ่ายแสดงเป็น "ค้างจ่าย" ใต้ช่องเงินเดือน — การจ่ายงวดหลังคือการลดหนี้ ไม่ใช่รายจ่ายของเดือนที่จ่าย</li>
         <li><b>คืนเงินยืม:</b> เป็นการลดหนี้ ไม่ใช่ค่าใช้จ่าย จึงไม่หักจากกำไร แต่แสดงแยกในช่อง "คืนเงินยืมเดือนนี้" และ "เงินคงเหลือหลังคืนหนี้" เพื่อให้เห็นเงินที่เหลือจริง</li>
         <li>ยอด "ค้างชำระ" ของวัตถุดิบ <b>ไม่ถูกนับเป็นรายจ่าย</b> จนกว่าจะจ่าย แต่แสดงแยกให้เห็น</li>
         <li><b>หน้ารายปี</b> ใช้สูตรเดียวกับรายเดือนทุกประการ แล้วรวม 12 เดือน</li>
@@ -1061,7 +1063,7 @@ tr:hover td{background:var(--bg3);}
         <tr><td>วัตถุดิบ (CFTD, นมจินดา, น้ำแข็งโลตัส ฯลฯ)</td><td>เดือนที่ <b>จ่ายเงินจริง</b> (ตามวันที่ชำระ) ถ้าจ่ายหลายงวด แต่ละงวดนับในเดือนที่จ่าย</td></tr>
         <tr><td>ค่าเช่า / ค่าไฟ-น้ำ / ภาษี / ค่าบริการ</td><td>เดือนของ <b>วันที่วางบิล</b> เต็มยอด (แม้ยังไม่จ่าย)</td></tr>
         <tr><td>บัญชีร้าน</td><td>เดือนของวันที่ลงรายการ</td></tr>
-        <tr><td>เงินเดือน</td><td>เดือนที่ <b>จ่ายจริง</b> ของแต่ละงวด (เงินเดือน ก.ย. ที่จ่าย 5 ต.ค. = รายจ่ายเดือน ต.ค.)</td></tr>
+        <tr><td>เงินเดือน</td><td><b>เดือนของเงินเดือน</b> เต็มยอด (เงินเดือน ก.ย. ที่แบ่งจ่ายถึง 5 ต.ค. = รายจ่ายเดือน ก.ย. ทั้งหมด)</td></tr>
         <tr><td>คืนเงินยืม</td><td>ไม่นับเป็นรายจ่าย (แสดงแยกเป็นการคืนหนี้)</td></tr>
       </table>
       <div class="tip"><b>ตัวอย่าง:</b> วางบิลนม 10,000 บาท วันที่ 20 ก.ย. จ่ายจริง 5,000 วันที่ 28 ก.ย. และอีก 5,000 วันที่ 5 ต.ค.<br>
@@ -1079,7 +1081,7 @@ tr:hover td{background:var(--bg3);}
         <li>รายการที่ลบในเครื่องแต่ไม่ได้บันทึกขึ้น Sheets ยังอยู่ในชีท → ลบแล้วกดบันทึกขึ้น Sheets</li>
         <li>ลืมกรอกวันที่จ่ายจริง ยอดจะไปตกเดือนอื่น</li>
         <li>ถ้าขึ้นข้อความสีแดง "ส่ง...ขึ้น Sheets ไม่สำเร็จ" แปลว่าข้อมูลยังอยู่แค่ในเครื่องนั้น ให้กด ☁ บันทึกขึ้น Sheets อีกครั้งเมื่อเน็ตปกติ</li>
-        <li>เงินเดือนที่ลงไว้แต่ยังไม่กด "+ ชำระบางส่วน" จะยังไม่นับเป็นรายจ่าย</li>
+        <li>เงินเดือนนับตาม "เดือน" ที่เลือกตอนลงรายการ ถ้าเลือกเดือนผิด ยอดจะไปตกเดือนอื่น</li>
         <li>ตรวจว่าเลือกสาขาและเดือนถูกต้องก่อนอ่านตัวเลข</li>
       </ul>
     </div></details>
@@ -2469,11 +2471,24 @@ function onPmBranchChange() {
   if (taxLandRow) taxLandRow.style.display = branch === 'lotus' ? 'none' : 'block';
 }
 
-function addMonthlyExpenses() {
+async function addMonthlyExpenses() {
   var branch  = document.getElementById('pm-branch').value;
   var month   = document.getElementById('pm-month').value;
   var due     = document.getElementById('pm-due').value;
   var dateForMonth = month ? month + '-01' : localYmd();
+
+  // ── กันลงค่าใช้จ่ายประจำเดือนซ้ำ: รายการชื่อเดียวกัน + เดือนเดียวกัน + สาขาเดียวกัน ──
+  var existingDesc = {};
+  payables.forEach(function(px) { if (px.branch === branch) existingDesc[String(px.desc || '')] = true; });
+  var btnM = document.querySelector('[onclick="addMonthlyExpenses()"]');
+  if (btnM) btnM.disabled = true;
+  var sheetDataM = await fetchBranchSheetData(branch, month);
+  if (btnM) btnM.disabled = false;
+  if (sheetDataM && sheetDataM.payableRows) {
+    var delPay = {};
+    ((sheetDataM.deletedIds || {}).payable || []).forEach(function(id) { delPay[String(id)] = true; });
+    sheetDataM.payableRows.forEach(function(r) { if (!delPay[String(r[9])]) existingDesc[String(r[2] || '')] = true; });
+  }
 
   var items = [
     { id:'pm-rent',     label:'ค่าเช่า',                              cat:'ค่าเช่า' },
@@ -2484,6 +2499,20 @@ function addMonthlyExpenses() {
     { id:'pm-license',  label:'ค่าใบอนุญาตผู้ประกอบการอาหาร',         cat:'ค่าบริการ' }
   ];
 
+  var dupLabels = [];
+  items.forEach(function(item) {
+    var el = document.getElementById(item.id);
+    if (!el || (branch === 'lotus' && item.id === 'pm-tax-land')) return;
+    var amt = parseFloat(el.value);
+    var d = item.label + (month ? ' (' + month + ')' : '');
+    if (amt > 0 && month && existingDesc[d]) dupLabels.push(d);
+  });
+  var skipDups = false;
+  if (dupLabels.length) {
+    skipDups = !confirm('รายการเหล่านี้ของ ' + (BRANCH_NAMES[branch] || branch) + ' ลงไว้แล้ว:\n- ' + dupLabels.join('\n- ')
+      + '\n\nกด OK = เพิ่มซ้ำ\nกด ยกเลิก = ข้ามรายการที่ซ้ำ (เพิ่มเฉพาะรายการใหม่)');
+  }
+
   var added = 0;
   items.forEach(function(item) {
     var el = document.getElementById(item.id);
@@ -2491,6 +2520,7 @@ function addMonthlyExpenses() {
     if (branch === 'lotus' && item.id === 'pm-tax-land') { el.value = ''; return; }
     var amount = parseFloat(el.value);
     if (!amount || amount <= 0) return;
+    if (skipDups && dupLabels.indexOf(item.label + (month ? ' (' + month + ')' : '')) >= 0) { el.value = ''; return; }
     payables.unshift({
       id: Date.now() + added,
       branch: branch,
@@ -2507,7 +2537,7 @@ function addMonthlyExpenses() {
     el.value = '';
   });
 
-  if (added === 0) { toast('กรุณากรอกยอดอย่างน้อย 1 รายการ', 'error'); return; }
+  if (added === 0) { toast(skipDups ? 'ไม่มีรายการใหม่ — ข้ามรายการที่ซ้ำทั้งหมด' : 'กรุณากรอกยอดอย่างน้อย 1 รายการ', skipDups ? 'info' : 'error'); return; }
   savePay(); renderPayables();
   toast('เพิ่ม ' + added + ' รายการแล้ว ✓', 'success');
 }
@@ -2605,7 +2635,7 @@ function calcMonthTotals(o) {
   var month = o.month;
   var t = { qr: 0, payIn: 0, thaithai: 0, lineman: parseFloat(o.linemanSun) || 0, income: 0,
             payablePaid: 0, fixedTotal: 0, rawUnpaid: 0, fixedUnpaid: 0, unpaidAll: 0,
-            acctExp: 0, loanRepay: 0, salaryPaid: 0, expAll: 0, profit: 0, cashAfterDebt: 0,
+            acctExp: 0, loanRepay: 0, salaryPaid: 0, salaryUnpaid: 0, expAll: 0, profit: 0, cashAfterDebt: 0,
             days: (o.rows || []).length };
   // รายรับ = QR + Pay In + ไทยช่วยไทยพลัส + ยอด Line Man ที่เข้าบัญชีคุณซัน
   (o.rows || []).forEach(function(r) {
@@ -2637,17 +2667,17 @@ function calcMonthTotals(o) {
     }
   });
 
-  // เงินเดือน — นับเฉพาะที่จ่ายจริงในเดือนนี้ (ตามวันที่ของแต่ละงวดที่จ่าย)
+  // เงินเดือน — หลักคงค้าง: นับเต็มยอดในเดือนของเงินเดือน (เดือนที่พนักงานทำงาน) เดือนเดียว
+  // แม้จะแบ่งจ่ายหรือจ่ายข้ามเดือน — ยอดที่ยังไม่จ่ายแสดงเป็น "เงินเดือนค้างจ่าย" (หนี้) แยกไว้
+  // ใช้ช่อง "เดือน" เป็นหลัก ใช้วันที่ลงรายการเฉพาะเมื่อไม่ได้ระบุเดือน (กันนับซ้ำ 2 เดือน)
   (o.salaryRows || []).forEach(function(r) {
+    var m = String(r[3] || '').slice(0, 7) || ymdOf(r[0]).slice(0, 7);
+    if (m !== month) return;
     var amount = parseFloat(r[4]) || 0;
     var paid = String(r[7] || '') === 'Paid';
-    var partials = parseJsonArr(r[8]);
-    if (partials.length) {
-      t.salaryPaid += sumPaymentsIn(partials, month);
-    } else if (paid) {
-      var m = String(r[3] || '').slice(0, 7) || ymdOf(r[0]).slice(0, 7);
-      if (m === month) t.salaryPaid += amount;
-    }
+    var paidSum = parseJsonArr(r[8]).reduce(function(s, p) { return s + (parseFloat(p.amount) || 0); }, 0);
+    t.salaryPaid += amount;
+    if (!paid) t.salaryUnpaid += Math.max(amount - paidSum, 0);
   });
 
   // บัญชีร้าน — การคืนเงินยืมไม่ใช่ค่าใช้จ่าย (เป็นการลดหนี้) แยกออกมา
@@ -2866,7 +2896,7 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
 
   // คำนวณเงินเดือนจากข้อมูลชีทโดยตรง (salaryRowsRaw) แทนการอ่านจาก salaries ใน localStorage
   // เหตุผลเดียวกับ payable ด้านบน — ชีทเป็นข้อมูลที่ sync ล่าสุดเสมอ
-  // เงินเดือน — นับเฉพาะยอดที่จ่ายจริงในเดือนนี้ (ตามวันที่แต่ละงวด) จากสูตรกลาง
+  // เงินเดือน — เต็มยอดของเงินเดือนเดือนนี้ (หลักคงค้าง) จากสูตรกลาง
   var tSalary = mt.salaryPaid;
   tOtherPayable = mt.fixedTotal;
   var tExpAll  = mt.expAll;
@@ -2916,7 +2946,12 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
       + '− ' + fmtS(tPayablePaid) + ' (วางบิลชำระแล้ว)<br>'
       + '− ' + fmtS(tOtherPayable) + ' (ค่าเช่า/ไฟ/ภาษี)<br>'
       + '− ' + fmtS(tAcctExp) + ' (บัญชีร้าน)<br>'
-      + '− ' + fmtS(tSalary) + ' (เงินเดือนที่จ่ายจริง)';
+      + '− ' + fmtS(tSalary) + ' (เงินเดือน)';
+  }
+  var salUnpaidEl = document.getElementById('ss-salary-unpaid');
+  if (salUnpaidEl) {
+    salUnpaidEl.style.display = mt.salaryUnpaid > 0 ? 'block' : 'none';
+    salUnpaidEl.textContent = 'ค้างจ่าย ' + fmtS(mt.salaryUnpaid) + ' (นับเป็นรายจ่ายแล้ว)';
   }
   var loanTopEl = document.getElementById('ss-loan-repay-top');
   if (loanTopEl) loanTopEl.textContent = fmtS(mt.loanRepay);
@@ -3637,16 +3672,66 @@ function renderLoans() {
 // ════ SALARY ════
 var salaries = JSON.parse(localStorage.getItem('ct_salaries') || '[]');
 
-function addSalary() {
+// ดึงข้อมูลสาขาจากชีท (ใช้ตรวจรายการซ้ำก่อนเพิ่ม) — ไม่สำเร็จคืน null (ไม่บล็อกการเพิ่ม)
+async function fetchBranchSheetData(branch, month) {
+  if (!cfg.gsUrl) return null;
+  try {
+    var res = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branch) + '&month=' + encodeURIComponent(month || '') + '&_ts=' + Date.now(), { cache: 'no-store' });
+    var data = await res.json();
+    if (!data || data.status === 'error') return null;
+    return data;
+  } catch (e) { return null; }
+}
+
+// ชื่อแรกแบบตัดช่องว่าง/ตัวพิมพ์ — "ณพัชชนันท์" กับ "ณพัชชนันท์ ประเสริฐศิริ" ถือเป็นคนเดียวกัน
+function firstNameKey(name) {
+  return String(name || '').trim().split(/\s+/)[0].toLowerCase();
+}
+
+async function addSalary() {
   var name   = document.getElementById('sal-name').value.trim();
   var amount = parseFloat(document.getElementById('sal-amount').value);
   if (!name)              { toast('กรุณาระบุชื่อพนักงาน', 'error'); return; }
   if (!amount || amount <= 0) { toast('กรุณาระบุจำนวนเงิน', 'error'); return; }
+  var branch = document.getElementById('sal-branch').value;
+  var dateVal = document.getElementById('sal-date').value;
+  var monthVal = document.getElementById('sal-month').value || String(dateVal || '').slice(0, 7);
+  if (!monthVal) { toast('กรุณาระบุเดือนของเงินเดือน', 'error'); return; }
+
+  // ── กันลงเงินเดือนซ้ำ: คนเดียวกัน (ชื่อแรก) + สาขาเดียวกัน + เดือนเดียวกัน ──
+  // เช็คทั้งในเครื่องนี้และในชีท (อีกเครื่องอาจลงไว้แล้ว แต่เครื่องนี้ยังไม่ได้ดึงข้อมูล)
+  var key = firstNameKey(name);
+  var dups = salaries.filter(function(s) {
+    return s.branch === branch && salaryMonthOf(s) === monthVal && firstNameKey(s.name) === key;
+  }).map(function(s) { return s.name + ' ฿' + (s.amount || 0).toLocaleString('th-TH', {minimumFractionDigits:2}); });
+  if (!dups.length) {
+    var btnS = document.querySelector('[onclick="addSalary()"]');
+    if (btnS) btnS.disabled = true;
+    var sheetData = await fetchBranchSheetData(branch, monthVal);
+    if (btnS) btnS.disabled = false;
+    if (sheetData && sheetData.salaryRows) {
+      var delSal = {};
+      ((sheetData.deletedIds || {}).salary || []).forEach(function(id) { delSal[String(id)] = true; });
+      sheetData.salaryRows.forEach(function(r) {
+        if (delSal[String(r[6])]) return;
+        var rMonth = String(r[3] || '').slice(0, 7) || String(r[0] || '').slice(0, 7);
+        if (rMonth === monthVal && firstNameKey(r[2]) === key) {
+          dups.push(String(r[2] || '') + ' ฿' + (parseFloat(r[4]) || 0).toLocaleString('th-TH', {minimumFractionDigits:2}) + ' (ในชีท)');
+        }
+      });
+    }
+  }
+  if (dups.length) {
+    var ok = confirm('มีเงินเดือนของ "' + name + '" เดือน ' + monthVal + ' (' + (BRANCH_NAMES[branch] || branch) + ') อยู่แล้ว:\n- '
+      + dups.join('\n- ') + '\n\nถ้าจะบันทึกการจ่าย ให้กด "+ ชำระบางส่วน" ที่รายการเดิมแทน\nยืนยันเพิ่มรายการใหม่ซ้ำหรือไม่?');
+    if (!ok) { toast('ยกเลิกการเพิ่ม — ไม่ได้ลงซ้ำ', 'info'); return; }
+  }
+
   salaries.unshift({
     id: Date.now(),
-    branch: document.getElementById('sal-branch').value,
-    date: document.getElementById('sal-date').value,
-    month: document.getElementById('sal-month').value,
+    branch: branch,
+    date: dateVal,
+    month: monthVal,
     name: name,
     amount: amount,
     note: document.getElementById('sal-note').value.trim(),
@@ -4520,7 +4605,6 @@ window.addEventListener('beforeunload', function(e) {
 </div>
 </body>
 </html>
-
 
 
 

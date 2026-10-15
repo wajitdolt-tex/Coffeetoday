@@ -2499,7 +2499,7 @@ async function addMonthlyExpenses() {
   payables.forEach(function(px) { if (px.branch === branch) existingDesc[String(px.desc || '')] = true; });
   var btnM = document.querySelector('[onclick="addMonthlyExpenses()"]');
   if (btnM) btnM.disabled = true;
-  var sheetDataM = await fetchBranchSheetData(branch, month);
+  var sheetDataM = await fetchBranchSheetData(branch, month, 'payable');
   if (btnM) btnM.disabled = false;
   if (sheetDataM && sheetDataM.payableRows) {
     var delPay = {};
@@ -4039,10 +4039,10 @@ function renderLoans() {
 var salaries = JSON.parse(localStorage.getItem('ct_salaries') || '[]');
 
 // ดึงข้อมูลสาขาจากชีท (ใช้ตรวจรายการซ้ำก่อนเพิ่ม) — ไม่สำเร็จคืน null (ไม่บล็อกการเพิ่ม)
-async function fetchBranchSheetData(branch, month) {
+async function fetchBranchSheetData(branch, month, scope) {
   if (!cfg.gsUrl) return null;
   try {
-    var res = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branch) + '&month=' + encodeURIComponent(month || '') + '&_ts=' + Date.now(), { cache: 'no-store' });
+    var res = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branch) + '&month=' + encodeURIComponent(month || '') + (scope ? '&scope=' + scope : '') + '&_ts=' + Date.now(), { cache: 'no-store' });
     var data = await res.json();
     if (!data || data.status === 'error') return null;
     return data;
@@ -4073,7 +4073,7 @@ async function addSalary() {
   if (!dups.length) {
     var btnS = document.querySelector('[onclick="addSalary()"]');
     if (btnS) btnS.disabled = true;
-    var sheetData = await fetchBranchSheetData(branch, monthVal);
+    var sheetData = await fetchBranchSheetData(branch, monthVal, 'salary');
     if (btnS) btnS.disabled = false;
     if (sheetData && sheetData.salaryRows) {
       var delSal = {};
@@ -4261,8 +4261,11 @@ async function loadDailyData() {
   try {
     var branchName = BRANCH_NAMES[branch];
     var month = date.slice(0, 7);
-    var res  = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branch) + '&month=' + month + '&_ts=' + Date.now(), { cache: 'no-store' });
+    // scope=daily&date= — ให้ชีทอ่านเฉพาะแท็บรายวันของวันนั้น (เร็วกว่าดึงข้อมูลทั้งเดือนทุกชีท)
+    // ถ้า Code.gs ยังเป็นเวอร์ชันเก่า จะได้ข้อมูลทั้งเดือนกลับมา ซึ่งยังใช้ได้เหมือนเดิม
+    var res  = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branch) + '&month=' + month + '&scope=daily&date=' + encodeURIComponent(date) + '&_ts=' + Date.now(), { cache: 'no-store' });
     var data = await res.json();
+    if (data && data.status === 'error') throw new Error(data.message || 'ชีทตอบกลับผิดพลาด');
     var rows = data.rows || [];
 
     var row = null;

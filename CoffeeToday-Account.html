@@ -194,7 +194,7 @@ tr:hover td{background:var(--bg3);}
   <div class="card">
     <div class="card-title">การส่งเงิน</div>
     <div class="grid-3">
-      <div class="form-row"><label>หักค่าใช้จ่ายหน้าร้าน (฿)</label><input type="number" id="d-shop-exp" placeholder="0.00" step="0.01" oninput="calcSales()"></div>
+      <div class="form-row"><label>หักค่าใช้จ่ายหน้าร้าน (฿)</label><input type="number" id="d-shop-exp" placeholder="0.00" step="0.01" oninput="calcSales()"><div id="d-shopexp-warn" style="display:none;font-size:11px;color:var(--yellow);margin-top:4px;"></div></div>
       <div class="form-row"><label>เงินขาด (−) / เงินเกิน (+) (฿) <span class="info-pill">คำนวณอัตโนมัติ</span></label><input type="number" id="d-diff" readonly placeholder="คำนวณอัตโนมัติ"></div>
       <div class="form-row"><label>Pay In — คงเหลือส่งจริง (฿)</label><input type="number" id="d-payin" readonly placeholder="คำนวณอัตโนมัติ"></div>
     </div>
@@ -534,6 +534,16 @@ tr:hover td{background:var(--bg3);}
             <div id="ss-profit-note" style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.6;"></div>
           </div>
         </div>
+        <div class="grid-2" style="margin-bottom:10px;">
+          <div class="stat-box" style="border-left:3px solid var(--yellow);">
+            <div class="stat-label">คืนเงินยืมเดือนนี้ <span style="font-weight:400;font-size:10px;">(ลดหนี้ ไม่นับเป็นรายจ่าย)</span></div>
+            <div class="stat-value" id="ss-loan-repay-top">฿0</div>
+          </div>
+          <div class="stat-box" style="border-left:3px solid var(--blue);">
+            <div class="stat-label">เงินคงเหลือหลังคืนหนี้ <span style="font-weight:400;font-size:10px;">(กำไร − คืนเงินยืม)</span></div>
+            <div class="stat-value" id="ss-cash-after-debt">฿0</div>
+          </div>
+        </div>
         <div style="background:var(--bg3);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:10px;">
           <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">รายละเอียดรายจ่าย</div>
           <div class="grid-3">
@@ -555,16 +565,16 @@ tr:hover td{background:var(--bg3);}
               <div class="stat-value" id="ss-payable-other">฿0</div>
             </div>
             <div class="stat-box" style="background:var(--bg2);">
-              <div class="stat-label">บัญชีร้าน</div>
+              <div class="stat-label">บัญชีร้าน <span style="font-weight:400;font-size:10px;">(ไม่รวมคืนเงินยืม)</span></div>
               <div class="stat-value" id="ss-acctexp-total">฿0</div>
             </div>
             <div class="stat-box" style="background:var(--bg2);border-left:3px solid var(--blue);">
-              <div class="stat-label">เงินเดือนพนักงาน</div>
+              <div class="stat-label">เงินเดือนพนักงาน <span style="font-weight:400;font-size:10px;">(จ่ายจริงเดือนนี้)</span></div>
               <div class="stat-value" id="ss-salary-total">฿0</div>
             </div>
           </div>
           <div style="margin-top:10px;padding:8px 10px;background:rgba(160,120,32,.07);border-radius:var(--r-sm);font-size:11px;color:var(--yellow);">
-            ⚠ วางบิลที่ยังค้างชำระ <span style="font-family:'DM Mono',monospace;font-weight:600;" id="ss-note-unpaid">฿0</span> — ไม่นับรวมในรายจ่ายเดือนนี้ เพราะยังไม่ได้จ่ายจริง
+            ⚠ วางบิลวัตถุดิบที่ยังค้างชำระ <span style="font-family:'DM Mono',monospace;font-weight:600;" id="ss-note-unpaid">฿0</span> — ยังไม่นับเป็นรายจ่าย จะนับในเดือนที่จ่ายจริง (ค่าเช่า/ไฟ/ภาษี/ค่าบริการ นับเต็มยอดในเดือนที่วางบิลแล้ว แม้ยังไม่จ่าย)
           </div>
         </div>
         <div class="grid-3">
@@ -731,6 +741,7 @@ tr:hover td{background:var(--bg3);}
     </div>
 
     <div id="sy-stats" style="display:none;">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">คำนวณด้วยสูตรเดียวกับหน้ารายเดือน แต่ละเดือนในตารางจึงตรงกับหน้ารายเดือน</div>
       <div class="grid-3" style="margin-bottom:13px;">
         <div class="stat-box" style="border-left:3px solid var(--green);">
           <div class="stat-label">รายรับรวมทั้งปี</div>
@@ -748,7 +759,7 @@ tr:hover td{background:var(--bg3);}
       <div class="card" style="padding:0;overflow:hidden;">
         <div class="tbl-wrap">
           <table>
-            <thead><tr><th>เดือน</th><th>รายรับ</th><th>ค่าใช้จ่าย</th><th>กำไร/ขาดทุน</th><th>Pay In</th><th>วันที่บันทึก</th></tr></thead>
+            <thead><tr><th>เดือน</th><th>รายรับ</th><th>รายจ่าย</th><th>กำไร/ขาดทุน</th><th>คืนเงินยืม</th><th>คงเหลือหลังคืนหนี้</th><th>วันที่บันทึก</th></tr></thead>
             <tbody id="sy-tbody"></tbody>
             <tfoot id="sy-tfoot"></tfoot>
           </table>
@@ -994,9 +1005,10 @@ tr:hover td{background:var(--bg3);}
 
     <details><summary>4) หน้าบัญชีร้าน (เงินเดือน / ค่าใช้จ่าย / เงินยืม)</summary><div class="mn">
       <ul>
-        <li><b>เงินเดือน:</b> บันทึกยอดและเดือนที่จ่าย ชำระบางส่วนได้เหมือนวางบิล</li>
+        <li><b>เงินเดือน:</b> ลงชื่อ ยอด และเดือนของเงินเดือน แล้ว<b>ทุกครั้งที่จ่ายจริง</b> ให้กด "+ ชำระบางส่วน" ใส่ยอดและวันที่จ่าย (จ่ายครั้งเดียวครบก็ใส่ยอดเต็ม) — ระบบนับเป็นรายจ่ายในเดือนที่จ่ายจริงเท่านั้น รายการที่ยังไม่กดชำระจะยังไม่นับ</li>
+        <li><b>ห้ามลงเงินเดือนซ้ำ</b>ในบัญชีร้านหรือวางบิลหมวด "ค่าแรง" — จะถูกนับ 2 ครั้ง</li>
         <li><b>ค่าใช้จ่ายบัญชีร้าน:</b> ค่าใช้จ่ายอื่นที่จ่ายแล้ว ลงวันที่ที่จ่ายจริง</li>
-        <li><b>เงินยืม:</b> บันทึกยอดยืม แล้วกด "ชำระบางส่วน" เมื่อมีการคืน เมื่อคืนครบจะย้ายไป "คืนครบแล้ว" อัตโนมัติ</li>
+        <li><b>เงินยืม:</b> บันทึกยอดยืม แล้วกด "ชำระบางส่วน" เมื่อมีการคืน เมื่อคืนครบจะย้ายไป "คืนครบแล้ว" อัตโนมัติ การคืนแต่ละครั้งจะลงในบัญชีร้าน (หมวดเงินยืม ของสาขาที่ยืม) ให้อัตโนมัติ แต่<b>ไม่นับเป็นรายจ่าย</b> เพราะเป็นการคืนหนี้</li>
       </ul>
     </div></details>
 
@@ -1030,13 +1042,15 @@ tr:hover td{background:var(--bg3);}
     </div></details>
 
     <details><summary>3) รายจ่ายคำนวณอย่างไร</summary><div class="mn">
-      <div class="tip">รายจ่ายรวม = วางบิลที่จ่ายแล้ว + ค่าเช่า/ไฟ/ภาษี/ค่าบริการ + บัญชีร้าน + เงินเดือน<br>กำไร = รายรับ − รายจ่ายรวม</div>
+      <div class="tip">รายจ่ายรวม = วางบิลที่จ่ายแล้ว + ค่าเช่า/ไฟ/ภาษี/ค่าบริการ + บัญชีร้าน (ไม่รวมคืนเงินยืม) + เงินเดือนที่จ่ายจริง<br>กำไร = รายรับ − รายจ่ายรวม<br>เงินคงเหลือหลังคืนหนี้ = กำไร − เงินที่คืนเงินยืมในเดือนนั้น</div>
       <ul>
         <li><b>วางบิลวัตถุดิบ:</b> นับเฉพาะส่วนที่ "จ่ายจริง"</li>
         <li><b>ค่าเช่า / ค่าไฟ-น้ำ / ภาษี / ค่าบริการ:</b> นับเต็มยอดในเดือนของ "วันที่วางบิล"</li>
-        <li><b>บัญชีร้าน (รวมการคืนเงินยืม):</b> นับตามวันที่ลงรายการ</li>
-        <li><b>เงินเดือน:</b> นับตามเดือนที่ระบุไว้ในรายการเงินเดือน</li>
+        <li><b>บัญชีร้าน:</b> นับตามวันที่ลงรายการ ยกเว้นหมวด "เงินยืม" (การคืนเงินยืม) ที่ไม่นับเป็นรายจ่าย</li>
+        <li><b>เงินเดือน:</b> นับเฉพาะงวดที่จ่ายจริง ตามวันที่ของแต่ละงวด</li>
+        <li><b>คืนเงินยืม:</b> เป็นการลดหนี้ ไม่ใช่ค่าใช้จ่าย จึงไม่หักจากกำไร แต่แสดงแยกในช่อง "คืนเงินยืมเดือนนี้" และ "เงินคงเหลือหลังคืนหนี้" เพื่อให้เห็นเงินที่เหลือจริง</li>
         <li>ยอด "ค้างชำระ" ของวัตถุดิบ <b>ไม่ถูกนับเป็นรายจ่าย</b> จนกว่าจะจ่าย แต่แสดงแยกให้เห็น</li>
+        <li><b>หน้ารายปี</b> ใช้สูตรเดียวกับรายเดือนทุกประการ แล้วรวม 12 เดือน</li>
       </ul>
     </div></details>
 
@@ -1045,8 +1059,9 @@ tr:hover td{background:var(--bg3);}
         <tr><th>ประเภท</th><th>นับเป็นรายจ่ายของเดือน</th></tr>
         <tr><td>วัตถุดิบ (CFTD, นมจินดา, น้ำแข็งโลตัส ฯลฯ)</td><td>เดือนที่ <b>จ่ายเงินจริง</b> (ตามวันที่ชำระ) ถ้าจ่ายหลายงวด แต่ละงวดนับในเดือนที่จ่าย</td></tr>
         <tr><td>ค่าเช่า / ค่าไฟ-น้ำ / ภาษี / ค่าบริการ</td><td>เดือนของ <b>วันที่วางบิล</b> เต็มยอด (แม้ยังไม่จ่าย)</td></tr>
-        <tr><td>บัญชีร้าน / เงินยืมที่คืน</td><td>เดือนของวันที่ลงรายการ</td></tr>
-        <tr><td>เงินเดือน</td><td>เดือนที่ระบุในรายการ</td></tr>
+        <tr><td>บัญชีร้าน</td><td>เดือนของวันที่ลงรายการ</td></tr>
+        <tr><td>เงินเดือน</td><td>เดือนที่ <b>จ่ายจริง</b> ของแต่ละงวด (เงินเดือน ก.ย. ที่จ่าย 5 ต.ค. = รายจ่ายเดือน ต.ค.)</td></tr>
+        <tr><td>คืนเงินยืม</td><td>ไม่นับเป็นรายจ่าย (แสดงแยกเป็นการคืนหนี้)</td></tr>
       </table>
       <div class="tip"><b>ตัวอย่าง:</b> วางบิลนม 10,000 บาท วันที่ 20 ก.ย. จ่ายจริง 5,000 วันที่ 28 ก.ย. และอีก 5,000 วันที่ 5 ต.ค.<br>
       → ก.ย. นับรายจ่าย 5,000 (และโชว์ค้างชำระ 5,000) | ต.ค. นับรายจ่าย 5,000<br>
@@ -1062,6 +1077,8 @@ tr:hover td{background:var(--bg3);}
         <li>บิลที่จ่ายแล้วแต่ไม่ได้บันทึกขึ้น Sheets จะยังโชว์ค้างชำระ → กดชำระและบันทึกขึ้น Sheets อีกครั้ง</li>
         <li>รายการที่ลบในเครื่องแต่ไม่ได้บันทึกขึ้น Sheets ยังอยู่ในชีท → ลบแล้วกดบันทึกขึ้น Sheets</li>
         <li>ลืมกรอกวันที่จ่ายจริง ยอดจะไปตกเดือนอื่น</li>
+        <li>ถ้าขึ้นข้อความสีแดง "ส่ง...ขึ้น Sheets ไม่สำเร็จ" แปลว่าข้อมูลยังอยู่แค่ในเครื่องนั้น ให้กด ☁ บันทึกขึ้น Sheets อีกครั้งเมื่อเน็ตปกติ</li>
+        <li>เงินเดือนที่ลงไว้แต่ยังไม่กด "+ ชำระบางส่วน" จะยังไม่นับเป็นรายจ่าย</li>
         <li>ตรวจว่าเลือกสาขาและเดือนถูกต้องก่อนอ่านตัวเลข</li>
       </ul>
     </div></details>
@@ -1211,7 +1228,7 @@ var STD_LABELS = {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
-  var today = new Date().toISOString().split('T')[0];
+  var today = localYmd();
   // แสดง overlay บังคับเลือกสาขาทุกครั้งที่เปิดเว็บ
   setTimeout(function() { showGlobalBranchOverlay(); }, 200);
   document.getElementById('d-date').value = today;
@@ -1267,9 +1284,9 @@ document.addEventListener('DOMContentLoaded', function() {
     filterCoupon(cfg.branch);
   }
   var cpDateEl = document.getElementById('cp-date');
-  if (cpDateEl) cpDateEl.value = new Date().toISOString().split('T')[0];
+  if (cpDateEl) cpDateEl.value = localYmd();
   var cpMonthEl = document.getElementById('cp-filter-month');
-  if (cpMonthEl) cpMonthEl.value = new Date().toISOString().slice(0,7);
+  if (cpMonthEl) cpMonthEl.value = localYmd().slice(0,7);
   renderAcctExp();
   renderSalaries();
   renderLoans();
@@ -1337,7 +1354,7 @@ function renderStdExpenses() {
   ids.forEach(function(id) {
     var div = document.createElement('div');
     div.className = 'form-row';
-    div.innerHTML = '<label>' + STD_LABELS[id] + ' (฿)</label><input type="number" id="' + id + '" placeholder="0.00" step="0.01">';
+    div.innerHTML = '<label>' + STD_LABELS[id] + ' (฿)</label><input type="number" id="' + id + '" placeholder="0.00" step="0.01" oninput="calcSales()">';
     grid.appendChild(div);
   });
 }
@@ -1361,6 +1378,23 @@ function calcSales() {
     extraTotal += parseFloat(ins[1] ? ins[1].value : 0) || 0;
   });
 
+  // เตือนเมื่อยอดรายการย่อย (วัตถุดิบหน้าร้าน + รายการเพิ่มเติม) ไม่ตรงกับช่องหักค่าใช้จ่ายหน้าร้าน
+  // ไม่บังคับ แค่เตือน เพราะ Pay In คำนวณจากช่องหักค่าใช้จ่ายหน้าร้านช่องเดียว
+  var warnEl = document.getElementById('d-shopexp-warn');
+  if (warnEl) {
+    var brNow = document.getElementById('d-branch').value;
+    var stdIds = brNow === 'lotus' ? STD_EXP_LOTUS : STD_EXP_PASSIONE;
+    var stdSum = stdIds.reduce(function(sum, id) { return sum + n(id); }, 0);
+    var detailSum = stdSum + extraTotal;
+    if ((detailSum > 0 || shopExp > 0) && Math.round(detailSum * 100) !== Math.round(shopExp * 100)) {
+      warnEl.textContent = '⚠ รายการย่อยรวม ฿' + detailSum.toLocaleString('th-TH', {minimumFractionDigits:2})
+        + ' ไม่ตรงกับยอดหักค่าใช้จ่ายหน้าร้าน ฿' + shopExp.toLocaleString('th-TH', {minimumFractionDigits:2}) + ' — ตรวจอีกครั้ง';
+      warnEl.style.display = 'block';
+    } else {
+      warnEl.style.display = 'none';
+    }
+  }
+
   // Pay In คำนวณจาก shopExp เท่านั้น (extra คือรายละเอียดของ shopExp ไม่นับซ้ำ)
   var pi = n('d-cash') - shopExp;
   document.getElementById('d-diff').value = '0.00';
@@ -1380,13 +1414,15 @@ function calcDrinks() {
   if (el) el.value = drinks > 0 ? drinks.toFixed(2) : '0.00';
 }
 
+var _expRowSeq = 0;
 function addExpRow(name, amount) {
-  var id = Date.now();
+  // id ไม่ซ้ำแม้เรียกหลายครั้งในมิลลิวินาทีเดียว (ตอนโหลดข้อมูลย้อนหลัง) — ปุ่ม × จะลบถูกแถว
+  var id = Date.now() + '_' + (++_expRowSeq);
   var c  = document.getElementById('extra-expenses');
   var d  = document.createElement('div');
   d.className = 'expense-row';
   d.id = 'er-' + id;
-  d.innerHTML = '<div><label>รายการ</label><input type="text" placeholder="ระบุรายการ..." value="'+(name||'')+'"></div>'
+  d.innerHTML = '<div><label>รายการ</label><input type="text" placeholder="ระบุรายการ..." value="'+escAttr(name||'')+'"></div>'
     + '<div><label>จำนวน (฿)</label><input type="number" placeholder="0.00" step="0.01" value="'+(amount||'')+'" oninput="calcSales()"></div>'
     + '<button class="rm-btn" onclick="document.getElementById(\'er-' + id + '\').remove();calcSales()">×</button>';
   c.appendChild(d);
@@ -1480,7 +1516,7 @@ function clearDaily() {
   document.getElementById('extra-expenses').innerHTML = '';
   addExpRow();
   calcSales();
-  document.getElementById('d-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('d-date').value = localYmd();
   var br = document.getElementById('d-branch').value;
   document.getElementById('d-account').value = BRANCH_ACCOUNTS[br] || '';
   var lotusIceCard = document.getElementById('lotus-ice-card');
@@ -1495,13 +1531,14 @@ function addFixedPayable(type) {
   var due     = document.getElementById('pf-' + type + '-due').value;
   var note    = document.getElementById('pf-' + type + '-note') ? document.getElementById('pf-' + type + '-note').value : '';
   var branchEl = document.getElementById('pf-' + type + '-branch');
-  var branch  = branchEl ? branchEl.value : 'passione';
+  // น้ำแข็งวางบิลมีเฉพาะโลตัส (การ์ดน้ำแข็งไม่มีช่องเลือกสาขา เดิมจึงตกไปเป็นแพชชั่น)
+  var branch  = type === 'ice' ? 'lotus' : (branchEl ? branchEl.value : 'passione');
 
   if (!amount || amount <= 0) { toast('กรุณาระบุจำนวนเงิน', 'error'); return; }
 
   payables.unshift({
     id: Date.now(), branch: branch,
-    date: new Date().toISOString().split('T')[0],
+    date: localYmd(),
     desc: names[type], cat: 'วัตถุดิบ/สินค้า',
     amount: amount, due: due,
     indate: indate, billno: billno,
@@ -1554,7 +1591,7 @@ function openPmModal(cfg) {
     amountRow.style.display = '';
     document.getElementById('pm-amount').value = '';
   }
-  document.getElementById('pm-date').value = cfg.defaultDate || new Date().toISOString().split('T')[0];
+  document.getElementById('pm-date').value = cfg.defaultDate || localYmd();
   document.getElementById('pm-overlay').classList.add('active');
   if (cfg.showAmount !== false) {
     setTimeout(function() { document.getElementById('pm-amount').focus(); }, 50);
@@ -1590,7 +1627,7 @@ function confirmPmModal() {
     if (!item.partialPayments) item.partialPayments = [];
     var alreadyPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
     var remaining = item.amount - alreadyPaid;
-    if (amountVal > remaining) { toast('จำนวนมากกว่ายอดค้าง', 'error'); return; }
+    if (Math.round(amountVal * 100) > Math.round(remaining * 100)) { toast('จำนวนมากกว่ายอดค้าง', 'error'); return; }
     item.partialPayments.push({ date: dateVal, amount: amountVal });
     var totalPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
     // ปัดเศษกันปัญหา floating point (เช่น 4263.999999999999 แทนที่จะเป็น 4264)
@@ -1613,7 +1650,7 @@ function confirmPmModal() {
     if (!item.partialPayments) item.partialPayments = [];
     var alreadyPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
     var remaining = item.amount - alreadyPaid;
-    if (amountVal > remaining) { toast('จำนวนมากกว่ายอดค้าง', 'error'); return; }
+    if (Math.round(amountVal * 100) > Math.round(remaining * 100)) { toast('จำนวนมากกว่ายอดค้าง', 'error'); return; }
     item.partialPayments.push({ date: dateVal, amount: amountVal });
     var totalPaid = item.partialPayments.reduce(function(s, p) { return s + p.amount; }, 0);
     // ปัดเศษกันปัญหา floating point (เช่น 4263.999999999999 แทนที่จะเป็น 4264)
@@ -1641,9 +1678,9 @@ function togglePaid(id) {
       kind: 'payable-full',
       id: id,
       title: 'ยืนยันการชำระ',
-      sub: 'รายการ: <b>' + item.desc + '</b><br>จำนวน: <b>฿' + item.amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b>',
+      sub: 'รายการ: <b>' + escHtml(item.desc) + '</b><br>จำนวน: <b>฿' + item.amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b>',
       showAmount: false,
-      defaultDate: new Date().toISOString().split('T')[0]
+      defaultDate: localYmd()
     });
   } else {
     if (!confirm('ยกเลิกการชำระรายการนี้?')) return;
@@ -1666,8 +1703,8 @@ function partialPay(id) {
     kind: 'payable-partial',
     id: id,
     title: 'ชำระบางส่วน',
-    sub: 'รายการ: <b>' + item.desc + '</b><br>ยอดทั้งหมด: <b>฿' + item.amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b><br>ชำระแล้ว: <b>฿' + alreadyPaid.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b><br>ค้างอยู่: <b>฿' + remaining.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b>',
-    defaultDate: new Date().toISOString().split('T')[0]
+    sub: 'รายการ: <b>' + escHtml(item.desc) + '</b><br>ยอดทั้งหมด: <b>฿' + item.amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b><br>ชำระแล้ว: <b>฿' + alreadyPaid.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b><br>ค้างอยู่: <b>฿' + remaining.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b>',
+    defaultDate: localYmd()
   });
 }
 
@@ -1718,12 +1755,14 @@ function dedupLocalPayables() {
   var seen = {};
   var deduped = [];
   payables.forEach(function(p) {
+    // รวมเลขบิลใน key ด้วย — บิลจริงคนละใบที่ยอด/วันเดียวกันจะไม่ถูกลบทิ้ง
     var key = [
       p.branch || '',
       p.indate || p.date || '',
       p.desc || '',
       p.amount || 0,
-      p.due || ''
+      p.due || '',
+      p.billno || ''
     ].join('|');
     if (!seen[key]) {
       seen[key] = p;
@@ -1740,10 +1779,20 @@ function dedupLocalPayables() {
       }
     }
   });
+  var keptIds = {};
+  deduped.forEach(function(p) { keptIds[String(p.id)] = true; });
+  var removedItems = payables.filter(function(p) { return !keptIds[String(p.id)]; });
   payables = deduped;
   var removed = before - payables.length;
   localStorage.setItem('ct_payables', JSON.stringify(payables));
   renderPayables();
+  // ลบรายการซ้ำในชีทด้วย (เดิมลบแค่ในเครื่อง รายการซ้ำจึงกลับมาอีกตอนดึงข้อมูล)
+  // ข้ามรายการที่ id ซ้ำกับที่เก็บไว้ (id เดียวกันในชีทมีแถวเดียว ห้ามลบ)
+  removedItems.forEach(function(d) {
+    if (keptIds[String(d.id)]) return;
+    recordDeletedPayableId(d.id);
+    appendToSheet('payable_delete', d.branch, BRANCH_NAMES[d.branch], { id: d.id }, true);
+  });
   if (removed > 0) {
     toast('ล้างซ้ำแล้ว ลบ ' + removed + ' รายการ ✓', 'success');
     syncPayable(); // sync ผลลัพธ์ที่ล้างซ้ำแล้วขึ้น Sheets ด้วย
@@ -1803,7 +1852,7 @@ function renderPayables() {
   if (!list.length) { empty.style.display = 'block'; return; }
   empty.style.display = 'none';
 
-  var today = new Date().toISOString().split('T')[0];
+  var today = localYmd();
   var renderErrors = 0;
   list.forEach(function(item, idx) {
     try {
@@ -1822,8 +1871,8 @@ function renderPayables() {
       tr.innerHTML =
         '<td class="mono">' + displayDate + '</td>'
         + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
-        + '<td><div style="font-size:13px;">' + (item.desc || '') + '</div>'
-          + (item.note ? '<div style="font-size:11px;color:var(--text3);">' + item.note + '</div>' : '') + '</td>'
+        + '<td><div style="font-size:13px;">' + escHtml(item.desc || '') + '</div>'
+          + (item.note ? '<div style="font-size:11px;color:var(--text3);">' + escHtml(item.note) + '</div>' : '') + '</td>'
         + '<td class="mono">' + (item.billno || '-') + '</td>'
         + '<td class="mono">' + (item.indate || '-') + '</td>'
         + '<td class="mono" style="font-weight:500;">'
@@ -1873,6 +1922,61 @@ function escAttr(v) {
   return String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
+// escape ข้อความก่อนใส่ใน innerHTML (กันชื่อรายการที่มี < > & ทำให้หน้าเพี้ยน)
+function escHtml(v) {
+  return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// วันที่ปัจจุบันตามเวลาเครื่อง (เวลาไทย) รูปแบบ yyyy-mm-dd
+// ใช้แทน new Date().toISOString() ซึ่งเป็นเวลา UTC — ช่วงตี 0-7 โมงเช้าจะได้วันที่ของเมื่อวาน
+function localYmd(d) {
+  d = d || new Date();
+  var m = d.getMonth() + 1, dd = d.getDate();
+  return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (dd < 10 ? '0' : '') + dd;
+}
+
+// เงินเดือนอยู่เดือนไหน — ใช้ "เดือนที่ระบุ" เป็นหลัก ใช้วันที่ลงรายการเฉพาะเมื่อไม่ได้ระบุเดือน
+// (เดิมใช้ month || date ทำให้เงินเดือน ก.ย. ที่ลงวันที่ ต.ค. ถูกนับทั้ง 2 เดือน)
+function salaryMonthOf(s) {
+  var m = String(s.month || '').slice(0, 7);
+  if (m) return m;
+  return String(s.date || '').slice(0, 7);
+}
+
+// ลบรายการที่ชีทแจ้งว่าถูกลบไปแล้ว (จากเครื่องไหนก็ได้) ออกจากเครื่องนี้
+// กันไม่ให้เครื่องที่ยังมีรายการค้างอยู่ ส่งรายการนั้นกลับขึ้นชีทอีก
+function applyServerDeletes(deletedIds) {
+  if (!deletedIds) return;
+  var now = Date.now();
+  function idSet(arr) { var o = {}; (arr || []).forEach(function(id) { o[String(id)] = true; }); return o; }
+  function addTomb(key, set) {
+    var tomb = {};
+    try { tomb = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) {}
+    Object.keys(set).forEach(function(id) { if (!tomb[id]) tomb[id] = now; });
+    localStorage.setItem(key, JSON.stringify(tomb));
+  }
+  var pSet = idSet(deletedIds.payable), sSet = idSet(deletedIds.salary), lSet = idSet(deletedIds.loan);
+  var aSet = idSet(deletedIds.acctexp), cSet = idSet(deletedIds.coupon);
+  var before = payables.length + salaries.length + loans.length + acctExps.length + coupons.length;
+  payables = payables.filter(function(x) { return !pSet[String(x.id)]; });
+  salaries = salaries.filter(function(x) { return !sSet[String(x.id)]; });
+  loans    = loans.filter(function(x) { return !lSet[String(x.id)]; });
+  acctExps = acctExps.filter(function(x) { return !aSet[String(x.id)]; });
+  coupons  = coupons.filter(function(x) { return !cSet[String(x.id)]; });
+  addTomb('ct_deleted_payables', pSet);
+  addTomb('ct_deleted_salaries', sSet);
+  addTomb('ct_deleted_loans', lSet);
+  addTomb('ct_deleted_acctexps', aSet);
+  var after = payables.length + salaries.length + loans.length + acctExps.length + coupons.length;
+  if (after !== before) {
+    localStorage.setItem('ct_payables', JSON.stringify(payables));
+    localStorage.setItem('ct_salaries', JSON.stringify(salaries));
+    localStorage.setItem('ct_loans', JSON.stringify(loans));
+    localStorage.setItem('ct_acctexps', JSON.stringify(acctExps));
+    localStorage.setItem('ct_coupons', JSON.stringify(coupons));
+  }
+}
+
 // data-id เก็บเป็น string เสมอ (HTML attribute) แต่ payables[].id อาจเป็น number หรือ string
 // ฟังก์ชันนี้หา id ที่ตรงกันจริงจาก payables array โดยเทียบแบบ loose (String ทั้งคู่)
 function matchPayableId(rawId) {
@@ -1893,7 +1997,11 @@ async function syncToSheets(type, branch, branchName, items) {
   if (!cfg.gsUrl) return;
   try {
     await safePost(cfg.gsUrl, { type: type, branch: branch, branchName: branchName, items: items, timestamp: new Date().toISOString() });
-  } catch(err) { console.log('sync error', type, err); }
+  } catch(err) {
+    console.log('sync error', type, err);
+    // ส่งต่อ error ให้ผู้เรียกแจ้งผู้ใช้ (เดิมกลืน error ไว้ ทำให้ขึ้น "ซิงค์แล้ว ✓" ทั้งที่ล้มเหลว)
+    throw err;
+  }
 }
 
 // ใช้ JSONP (GET+payload) แทน POST no-cors เพื่อให้รู้ว่าสำเร็จจริง
@@ -1939,6 +2047,7 @@ async function appendToSheet(type, branch, branchName, item, silent) {
   } catch(err) {
     console.log('append error', type, err);
     if (type === 'coupon_append' || type === 'coupon_delete') { markCpUnsynced(true); if (!silent) toast('บันทึกคูปองไม่สำเร็จ กรุณากด ☁ บันทึกขึ้น Sheets', 'error'); }
+    else if (/_delete$/.test(type)) toast('ลบในชีทไม่สำเร็จ (เน็ตขัดข้อง) — รายการถูกลบในเครื่องนี้แล้ว แต่ยังอยู่ในชีท กรุณาลองลบซ้ำจากอีกเครื่องหรือแจ้งผู้ดูแล', 'error');
   }
 }
 
@@ -1995,7 +2104,8 @@ async function syncPayable(showToast, btn) {
     }
     if (showToast) toast('ซิงค์วางบิลขึ้น Sheets แล้ว ✓', 'success');
   } catch(err) {
-    if (showToast) toast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+    // แจ้งเสมอ แม้เป็นการซิงค์เบื้องหลัง — ผู้ใช้ต้องรู้ว่าข้อมูลยังไม่ขึ้นชีท
+    toast('ส่งวางบิลขึ้น Sheets ไม่สำเร็จ: ' + err.message + ' — กด ☁ บันทึกขึ้น Sheets อีกครั้ง', 'error');
   } finally {
     setBtnLoading(btn, false);
   }
@@ -2013,6 +2123,8 @@ async function syncSalary(showToast, btn) {
       await syncToSheets('salary', branch, BRANCH_NAMES[branch], items);
     }
     if (showToast) toast('ซิงค์เงินเดือนขึ้น Sheets แล้ว ✓', 'success');
+  } catch(err) {
+    toast('ส่งเงินเดือนขึ้น Sheets ไม่สำเร็จ — ข้อมูลยังอยู่ในเครื่อง กด ☁ บันทึกขึ้น Sheets อีกครั้ง', 'error');
   } finally {
     setBtnLoading(btn, false);
   }
@@ -2021,10 +2133,14 @@ async function syncSalary(showToast, btn) {
 async function syncLoan() {
   if (!cfg.gsUrl) return;
   var branches = ['passione', 'lotus'];
-  for (var b = 0; b < branches.length; b++) {
-    var branch = branches[b];
-    var items = loans.filter(function(l) { return l.branch === branch; });
-    await syncToSheets('loan', branch, BRANCH_NAMES[branch], items);
+  try {
+    for (var b = 0; b < branches.length; b++) {
+      var branch = branches[b];
+      var items = loans.filter(function(l) { return l.branch === branch; });
+      await syncToSheets('loan', branch, BRANCH_NAMES[branch], items);
+    }
+  } catch(err) {
+    toast('ส่งรายการเงินยืมขึ้น Sheets ไม่สำเร็จ — ข้อมูลยังอยู่ในเครื่อง จะส่งใหม่เมื่อแก้ไขครั้งถัดไป', 'error');
   }
 }
 
@@ -2038,6 +2154,8 @@ async function loadSummary() {
     // เติม _ts กัน browser cache ตอบ response เก่า ต้องได้ข้อมูลสดจากชีทเสมอ
     var res  = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branchKey) + '&month=' + month + '&_ts=' + Date.now(), { cache: 'no-store' });
     var data = await res.json();
+    if (data && data.status === 'error') throw new Error(data.message || 'ชีทตอบกลับผิดพลาด');
+    applyServerDeletes(data.deletedIds);
 
     if (data.payableRows && data.payableRows.length) {
       function cleanDate(val) {
@@ -2090,7 +2208,7 @@ async function loadSummary() {
         if (local) {
           // มีทั้ง 2 ฝั่ง — เทียบ updatedAt เอาอันที่ใหม่กว่าจริง ไม่เชื่อชีทเป็นหลักเสมอไป
           var localUpdatedAt = local.updatedAt || 0;
-          mergedBranchPayables.push(localUpdatedAt >= sp.updatedAt ? local : sp);
+          mergedBranchPayables.push(localUpdatedAt > sp.updatedAt ? local : sp);
         } else {
           mergedBranchPayables.push(sp);
         }
@@ -2156,7 +2274,7 @@ async function loadSummary() {
           var local = localSalById[String(ss.id)];
           if (local) {
             var localUpdatedAt = local.updatedAt || 0;
-            mergedBranchSalaries.push(localUpdatedAt >= ss.updatedAt ? local : ss);
+            mergedBranchSalaries.push(localUpdatedAt > ss.updatedAt ? local : ss);
           } else {
             mergedBranchSalaries.push(ss);
           }
@@ -2215,7 +2333,7 @@ async function loadSummary() {
           var local = localLoanById[String(sl.id)];
           if (local) {
             var localUpdatedAt = local.updatedAt || 0;
-            mergedBranchLoans.push(localUpdatedAt >= sl.updatedAt ? local : sl);
+            mergedBranchLoans.push(localUpdatedAt > sl.updatedAt ? local : sl);
           } else {
             mergedBranchLoans.push(sl);
           }
@@ -2238,6 +2356,32 @@ async function loadSummary() {
         if (localBranchLoans.length && typeof syncLoan === 'function') syncLoan();
       }
       renderLoans();
+    }
+
+    // บัญชีร้าน: รวมรายการจากชีท (เฉพาะเดือนที่ดึง) เข้าเครื่องนี้ — เห็นรายการที่ลงจากเครื่องอื่นด้วย
+    // ไม่ลบรายการในเครื่องที่ไม่มีในชีท (อาจเป็นรายการใหม่ที่ยังไม่ซิงค์)
+    if (data.acctExpRows && data.acctExpRows.length) {
+      var aeTomb = {};
+      try { aeTomb = JSON.parse(localStorage.getItem('ct_deleted_acctexps') || '{}'); } catch(e) {}
+      var aeById = {};
+      acctExps.forEach(function(x) { aeById[String(x.id)] = x; });
+      var aeChanged = false;
+      data.acctExpRows.forEach(function(r) {
+        var rid = r[6];
+        if (rid === '' || rid === null || rid === undefined) return;
+        var idStr = String(rid);
+        var upd = parseInt(r[7], 10) || 0;
+        if (aeTomb[idStr] && upd <= aeTomb[idStr]) return;
+        var item = { id: rid, branch: branchKey, date: ymdOf(r[0]), desc: String(r[2]||''), cat: String(r[3]||''),
+                     amount: parseFloat(r[4])||0, note: String(r[5]||''), updatedAt: upd };
+        var local = aeById[idStr];
+        if (!local) { acctExps.push(item); aeChanged = true; }
+        else if (upd > (local.updatedAt || 0)) { acctExps[acctExps.indexOf(local)] = item; aeChanged = true; }
+      });
+      if (aeChanged) {
+        saveAcctExp();
+        if (typeof renderAcctExp === 'function') renderAcctExp();
+      }
     }
 
     // โหลดคูปองจาก Sheets
@@ -2295,7 +2439,7 @@ async function loadSummary() {
     if (data.linemanRows && data.linemanRows.length) {
       data.linemanRows.forEach(function(r) {
         var rowBranch = String(r[0]||'');
-        var rowMonth  = String(r[1]||'');
+        var rowMonth  = String(r[1]||'').slice(0, 7);
         var rowAmount = String(r[2]||'');
         var rowNote   = String(r[3]||'');
         // normalize branch
@@ -2326,7 +2470,7 @@ function addMonthlyExpenses() {
   var branch  = document.getElementById('pm-branch').value;
   var month   = document.getElementById('pm-month').value;
   var due     = document.getElementById('pm-due').value;
-  var dateForMonth = month ? month + '-01' : new Date().toISOString().split('T')[0];
+  var dateForMonth = month ? month + '-01' : localYmd();
 
   var items = [
     { id:'pm-rent',     label:'ค่าเช่า',                              cat:'ค่าเช่า' },
@@ -2390,12 +2534,22 @@ async function saveLinemanSun() {
         timestamp: new Date().toISOString()
       });
       await safePost(cfg.gsUrl, JSON.parse(lmPayload));
-    } catch(e) { console.log('lineman sync error', e); }
+    } catch(e) {
+      console.log('lineman sync error', e);
+      saved.textContent = 'บันทึกในเครื่องแล้ว แต่ส่งขึ้นชีทไม่สำเร็จ — กดบันทึกอีกครั้ง';
+      saved.style.color = 'var(--red)';
+      toast('ส่งยอด Line Man ขึ้นชีทไม่สำเร็จ', 'error');
+      return;
+    }
+  } else {
+    saved.textContent = 'บันทึกในเครื่องแล้ว (ยังไม่ได้ตั้งค่า URL ชีท)';
+    saved.style.color = 'var(--yellow)';
+    return;
   }
 
-  saved.textContent = 'บันทึกแล้ว ✓  ' + (note ? '(' + note + ')' : '');
+  saved.textContent = 'บันทึกขึ้นชีทแล้ว ✓  ' + (note ? '(' + note + ')' : '');
   saved.style.color = 'var(--green)';
-  toast('บันทึกยอด Line Man แล้ว ✓', 'success');
+  toast('บันทึกยอด Line Man ขึ้นชีทแล้ว ✓', 'success');
 }
 
 function loadLinemanSun() {
@@ -2428,6 +2582,85 @@ function switchSTab(tab) {
   document.getElementById('stab-year').style.color       = tab === 'year'  ? '#fff' : 'var(--text2)';
 }
 
+// ════ สูตรคำนวณรายเดือน (ใช้ร่วมกันทั้งหน้ารายเดือนและรายปี) ════
+var FIXED_PAYABLE_CATS = ['ค่าเช่า','ค่าไฟ/น้ำ','ภาษี','ค่าบริการ'];
+function ymdOf(v) {
+  var s = String(v || '');
+  if (s.indexOf('T') >= 0) s = s.split('T')[0];
+  return s;
+}
+function parseJsonArr(v) {
+  try { var a = JSON.parse(String(v || '[]')); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+}
+function sumPaymentsIn(list, month) {
+  return (list || []).reduce(function(sum, p) {
+    return (p && String(p.date || '').indexOf(month) === 0) ? sum + (parseFloat(p.amount) || 0) : sum;
+  }, 0);
+}
+// o = { rows, acctExpRows, payableRows, salaryRows (แถวดิบจากชีท), month: 'yyyy-mm', linemanSun }
+function calcMonthTotals(o) {
+  var month = o.month;
+  var t = { qr: 0, payIn: 0, thaithai: 0, lineman: parseFloat(o.linemanSun) || 0, income: 0,
+            payablePaid: 0, fixedTotal: 0, rawUnpaid: 0, fixedUnpaid: 0, unpaidAll: 0,
+            acctExp: 0, loanRepay: 0, salaryPaid: 0, expAll: 0, profit: 0, cashAfterDebt: 0,
+            days: (o.rows || []).length };
+  // รายรับ = QR + Pay In + ไทยช่วยไทยพลัส + ยอด Line Man ที่เข้าบัญชีคุณซัน
+  (o.rows || []).forEach(function(r) {
+    t.qr += parseFloat(r[7]) || 0;
+    t.payIn += parseFloat(r[16]) || 0;
+    t.thaithai += parseFloat(r[37]) || 0;
+  });
+  t.income = t.qr + t.payIn + t.thaithai + t.lineman;
+
+  (o.payableRows || []).forEach(function(r) {
+    var cat = String(r[3] || ''), amount = parseFloat(r[4]) || 0;
+    var date = ymdOf(r[0]), paid = String(r[6] || '') === 'Paid';
+    var paidDate = ymdOf(r[7]), indate = ymdOf(r[11]);
+    var partials = parseJsonArr(r[12]);
+    var totalPaid = partials.reduce(function(s, p) { return s + (parseFloat(p.amount) || 0); }, 0);
+    var remaining = paid ? 0 : Math.max(amount - totalPaid, 0);
+    if (FIXED_PAYABLE_CATS.indexOf(cat) >= 0) {
+      // ค่าเช่า/ไฟ/ภาษี/ค่าบริการ — นับเต็มยอดในเดือนของวันที่วางบิล
+      if (date.indexOf(month) === 0) { t.fixedTotal += amount; t.fixedUnpaid += remaining; }
+    } else {
+      // วัตถุดิบ/อื่นๆ — นับเฉพาะที่จ่ายจริงในเดือนนี้
+      if (paid && paidDate.indexOf(month) === 0 && partials.length === 0) {
+        t.payablePaid += amount;
+      } else {
+        t.payablePaid += sumPaymentsIn(partials, month);
+        if (paid && paidDate.indexOf(month) === 0 && partials.length > 0) t.payablePaid += Math.max(amount - totalPaid, 0);
+      }
+      if (!paid && date && (indate || date).indexOf(month) === 0) t.rawUnpaid += remaining;
+    }
+  });
+
+  // เงินเดือน — นับเฉพาะที่จ่ายจริงในเดือนนี้ (ตามวันที่ของแต่ละงวดที่จ่าย)
+  (o.salaryRows || []).forEach(function(r) {
+    var amount = parseFloat(r[4]) || 0;
+    var paid = String(r[7] || '') === 'Paid';
+    var partials = parseJsonArr(r[8]);
+    if (partials.length) {
+      t.salaryPaid += sumPaymentsIn(partials, month);
+    } else if (paid) {
+      var m = String(r[3] || '').slice(0, 7) || ymdOf(r[0]).slice(0, 7);
+      if (m === month) t.salaryPaid += amount;
+    }
+  });
+
+  // บัญชีร้าน — การคืนเงินยืมไม่ใช่ค่าใช้จ่าย (เป็นการลดหนี้) แยกออกมา
+  (o.acctExpRows || []).forEach(function(r) {
+    if (ymdOf(r[0]).indexOf(month) !== 0) return;
+    var a = parseFloat(r[4]) || 0;
+    if (String(r[3] || '') === 'เงินยืม') t.loanRepay += a; else t.acctExp += a;
+  });
+
+  t.unpaidAll = t.rawUnpaid + t.fixedUnpaid;
+  t.expAll = t.payablePaid + t.fixedTotal + t.acctExp + t.salaryPaid;
+  t.profit = t.income - t.expAll;
+  t.cashAfterDebt = t.profit - t.loanRepay;
+  return t;
+}
+
 function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsRaw) {
   acctExpRows = acctExpRows || [];
   payableRowsRaw = payableRowsRaw || [];
@@ -2437,7 +2670,10 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
   var stats = document.getElementById('s-stats');
   var tbody = document.getElementById('s-tbody');
   tbody.innerHTML = '';
-  if (!rows.length) {
+  // เดือนที่ยังไม่มียอดขายรายวัน ยังต้องเห็นค่าใช้จ่ายของเดือนนั้น — return เฉพาะเมื่อไม่มีข้อมูลอะไรเลย
+  var hasAnyData = rows.length || acctExpRows.length || payableRowsRaw.length || salaryRowsRaw.length;
+  if (rows.length === 0 && hasAnyData) toast('เดือนนี้ยังไม่มียอดขายรายวัน — แสดงเฉพาะค่าใช้จ่าย', 'info');
+  if (!hasAnyData) {
     empty.style.display='block';
     stats.style.display='none';
     toast('ไม่พบข้อมูล','error');
@@ -2491,6 +2727,7 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
       });
     }
     if (sales>maxSale) { maxSale=sales; maxSaleDate=toCleanDate(r[0]); }
+    if (qr>maxQr) { maxQr=qr; maxQrDate=toCleanDate(r[0]); }
     var tr=document.createElement('tr');
     var rowDate = String(r[0]||'');
     if (rowDate.indexOf('T') >= 0) rowDate = rowDate.split('T')[0];
@@ -2527,8 +2764,9 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
     var amount = parseFloat(r[4]) || 0;
     var cat    = String(r[3] || 'อื่นๆ');
     var desc   = String(r[2] || '');
+    // คืนเงินยืม = ลดหนี้ ไม่ใช่ค่าใช้จ่าย — แยกไว้ ไม่รวมในบัญชีร้าน
+    if (cat === 'เงินยืม') { tLoanRepay += amount; return; }
     tAcctExp += amount;
-    if (cat === 'เงินยืม') tLoanRepay += amount;
     var key = desc || cat;
     if (!acctExpMap[key]) acctExpMap[key] = 0;
     acctExpMap[key] += amount;
@@ -2540,7 +2778,11 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
   var lsData = localStorage.getItem(lsKey);
   var tLinemanSun = lsData ? (parseFloat(JSON.parse(lsData).amount)||0) : 0;
   // รวมไทยช่วยไทยพลัสเข้ารายรับด้วย — เป็นช่องทางการชำระที่ลูกค้าจ่ายจริง เหมือน QR/Cash
-  var tIncome = tQr + tPayIn + tLinemanSun + tThaithai;
+  var mt = calcMonthTotals({
+    rows: rows, acctExpRows: acctExpRows, payableRows: payableRowsRaw, salaryRows: salaryRowsRaw,
+    month: month, linemanSun: tLinemanSun
+  });
+  var tIncome = mt.income;
 
   // ค่าใช้จ่ายประจำเดือน (ค่าเช่า/ไฟ/ภาษี/แอร์/บริการ) — นับตามวันที่วางบิลเสมอ
   var fixedCats = ['ค่าเช่า','ค่าไฟ/น้ำ','ภาษี','ค่าบริการ'];
@@ -2585,39 +2827,9 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
     }
   });
 
-  // ยอดที่จ่ายจริงในเดือนนี้ — ดูจาก paidDate ไม่ใช่วันที่วางบิล
-  var tPayablePaid=0, tPayableUnpaid=0;
-  var branchPayables = sheetPayablesForSummary;
-  branchPayables.forEach(function(px) {
-    var isFixedCat = fixedCats.indexOf(px.cat) >= 0;
-    if (isFixedCat) {
-      // fixedCat: ค้างชำระจากเดือนที่วางบิล
-      if (!px.paid && px.date && px.date.startsWith(month)) {
-        tPayableUnpaid += px.amount;
-      }
-    } else {
-      // วัตถุดิบ: นับยอดที่จ่ายจริงในเดือนนี้
-      var partials = px.partialPayments || [];
-      var paidThisMonth = partials.filter(function(p) {
-        return p.date && p.date.startsWith(month);
-      }).reduce(function(s, p) { return s + p.amount; }, 0);
-      var totalPaid = partials.reduce(function(s, p) { return s + p.amount; }, 0);
-      // จ่ายครบผ่าน togglePaid
-      if (px.paid && px.paidDate && px.paidDate.startsWith(month) && partials.length === 0) {
-        tPayablePaid += px.amount;
-      } else {
-        tPayablePaid += paidThisMonth;
-        // จ่ายครบในเดือนนี้ (มี partial ก่อนหน้า)
-        if (px.paid && px.paidDate && px.paidDate.startsWith(month) && partials.length > 0) {
-          tPayablePaid += (px.amount - totalPaid);
-        }
-      }
-      // ยอดค้างของวัตถุดิบที่วางบิลในเดือนนี้แต่ยังไม่จ่าย
-      if (!px.paid && px.date && (px.indate || px.date || '').startsWith(month)) {
-        tPayableUnpaid += (px.amount - totalPaid);
-      }
-    }
-  });
+  // ยอดที่จ่ายจริง/ค้างชำระ — มาจากสูตรกลาง calcMonthTotals (ใช้สูตรเดียวกับหน้ารายปี)
+  var tPayablePaid = mt.payablePaid;
+  var tPayableUnpaid = mt.unpaidAll;
   var tPayableAll = tPayablePaid + tPayableUnpaid;
 
   var tCftdPayable=0, tJindaPayable=0, tIcePayable=0;
@@ -2651,31 +2863,26 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
 
   // คำนวณเงินเดือนจากข้อมูลชีทโดยตรง (salaryRowsRaw) แทนการอ่านจาก salaries ใน localStorage
   // เหตุผลเดียวกับ payable ด้านบน — ชีทเป็นข้อมูลที่ sync ล่าสุดเสมอ
-  var tSalary = salaryRowsRaw.reduce(function(sum, r) {
-    function cleanSalSumDate(v) {
-      var s = String(v||'');
-      if (s.indexOf('T') >= 0) s = s.split('T')[0];
-      return s;
-    }
-    var rowMonth = cleanSalSumDate(r[3]).slice(0,7);
-    var rowDate = cleanSalSumDate(r[0]);
-    var inMonth = rowMonth === month || (rowDate && rowDate.startsWith(month));
-    if (!inMonth) return sum;
-    return sum + (parseFloat(r[4]) || 0);
-  }, 0);
-  var tExpAll  = tPayablePaid + tOtherPayable + tAcctExp + tSalary;
-  var profit   = tIncome - tExpAll;
+  // เงินเดือน — นับเฉพาะยอดที่จ่ายจริงในเดือนนี้ (ตามวันที่แต่ละงวด) จากสูตรกลาง
+  var tSalary = mt.salaryPaid;
+  tOtherPayable = mt.fixedTotal;
+  var tExpAll  = mt.expAll;
+  var profit   = mt.profit;
 
   var unpaidItems = monthPayables.filter(function(px) { return !px.paid; });
   var listEl = document.getElementById('ss-unpaid-list');
   if (unpaidItems.length) {
     var html = '<div style="display:flex;flex-direction:column;gap:6px;">';
     unpaidItems.forEach(function(px) {
-      var overdue = px.due && px.due < new Date().toISOString().split('T')[0];
+      var overdue = px.due && px.due < localYmd();
+      // แสดงยอดคงค้างจริง (หักงวดที่จ่ายบางส่วนแล้ว) ให้ตรงกับยอดรวมค้างชำระ
+      var paidPart = (px.partialPayments || []).reduce(function(s, pp) { return s + (parseFloat(pp.amount) || 0); }, 0);
+      var remainAmt = Math.max(px.amount - paidPart, 0);
       html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--red-t);border-radius:6px;border:1px solid rgba(184,64,64,.15);">'
-        +'<div><div style="font-size:13px;font-weight:500;">'+px.desc+'</div>'
-        +'<div style="font-size:11px;color:var(--text3);">'+(BRANCH_NAMES[px.branch]||px.branch)+' · กำหนด '+(px.due||'-')+(overdue?' ⚠':'')+'</div></div>'
-        +'<div style="font-family:\'DM Mono\',monospace;font-weight:600;color:var(--red);">฿'+px.amount.toLocaleString('th-TH',{minimumFractionDigits:2})+'</div>'
+        +'<div><div style="font-size:13px;font-weight:500;">'+escHtml(px.desc)+'</div>'
+        +'<div style="font-size:11px;color:var(--text3);">'+(BRANCH_NAMES[px.branch]||px.branch)+' · กำหนด '+(px.due||'-')+(overdue?' ⚠':'')
+        +(paidPart > 0 ? ' · จ่ายแล้ว ฿'+paidPart.toLocaleString('th-TH',{minimumFractionDigits:2})+' จาก ฿'+px.amount.toLocaleString('th-TH',{minimumFractionDigits:2}) : '')+'</div></div>'
+        +'<div style="font-family:\'DM Mono\',monospace;font-weight:600;color:var(--red);">฿'+remainAmt.toLocaleString('th-TH',{minimumFractionDigits:2})+'</div>'
         +'</div>';
     });
     listEl.innerHTML = html + '</div>';
@@ -2706,7 +2913,14 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
       + '− ' + fmtS(tPayablePaid) + ' (วางบิลชำระแล้ว)<br>'
       + '− ' + fmtS(tOtherPayable) + ' (ค่าเช่า/ไฟ/ภาษี)<br>'
       + '− ' + fmtS(tAcctExp) + ' (บัญชีร้าน)<br>'
-      + '− ' + fmtS(tSalary) + ' (เงินเดือน)';
+      + '− ' + fmtS(tSalary) + ' (เงินเดือนที่จ่ายจริง)';
+  }
+  var loanTopEl = document.getElementById('ss-loan-repay-top');
+  if (loanTopEl) loanTopEl.textContent = fmtS(mt.loanRepay);
+  var cashDebtEl = document.getElementById('ss-cash-after-debt');
+  if (cashDebtEl) {
+    cashDebtEl.textContent = fmtS(mt.cashAfterDebt);
+    cashDebtEl.className = 'stat-value ' + (mt.cashAfterDebt >= 0 ? 'pos' : 'neg');
   }
   document.getElementById('ss-payin').textContent        = fmtS(tPayIn);
   document.getElementById('ss-qr-total').textContent     = fmtS(tQr);
@@ -2714,7 +2928,7 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
   document.getElementById('ss-cash-total').textContent   = fmtS(tCash);
   document.getElementById('ss-thaithai-total').textContent = fmtS(tThaithai);
   var noteUnpaid = document.getElementById('ss-note-unpaid');
-  if (noteUnpaid) noteUnpaid.textContent = fmtS(tPayableUnpaid);
+  if (noteUnpaid) noteUnpaid.textContent = fmtS(mt.rawUnpaid);
 
   var otherCats = ['ค่าเช่า','ค่าไฟ/น้ำ','ค่าบริการ','ภาษี','อุปกรณ์/ซ่อมบำรุง','ค่าแรง','อื่นๆ'];
   var otherMap = {};
@@ -2735,7 +2949,7 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
       var statusIcon = isPaid ? '✓ ชำระแล้ว' : '● ค้างชำระ';
       var statusColor = isPaid ? 'var(--green)' : 'var(--red)';
       return '<div class="stat-box" style="border-left:3px solid '+borderColor+';">'
-        +'<div class="stat-label">'+k+'</div>'
+        +'<div class="stat-label">'+escHtml(k)+'</div>'
         +'<div class="stat-value">'+fmtS(otherMap[k])+'</div>'
         +'<div style="font-size:11px;color:'+statusColor+';margin-top:4px;">'+statusIcon+'</div>'
         +'</div>';
@@ -2749,7 +2963,7 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
     var acctKeys = Object.keys(acctExpMap);
     if (acctKeys.length) {
       acctEl.innerHTML = acctKeys.map(function(k) {
-        return '<div class="stat-box"><div class="stat-label">'+k+'</div>'
+        return '<div class="stat-box"><div class="stat-label">'+escHtml(k)+'</div>'
           +'<div class="stat-value">'+fmtS(acctExpMap[k])+'</div></div>';
       }).join('');
     } else {
@@ -2778,15 +2992,15 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
         var tr = document.createElement('tr');
         tr.innerHTML =
           '<td class="mono">' + date + '</td>'
-          + '<td style="font-size:13px;">' + desc + '</td>'
-          + '<td><span class="badge badge-gray">' + cat + '</span></td>'
+          + '<td style="font-size:13px;">' + escHtml(desc) + '</td>'
+          + '<td><span class="badge badge-gray">' + escHtml(cat) + (cat === 'เงินยืม' ? ' (ไม่นับเป็นรายจ่าย)' : '') + '</span></td>'
           + '<td class="mono" style="font-weight:500;">' + fmtS(amount) + '</td>';
         acctTbody.appendChild(tr);
       });
     } else {
       if (acctListEmpty) acctListEmpty.style.display = 'block';
     }
-    if (acctListTotal) acctListTotal.textContent = fmtS(tAcctExp);
+    if (acctListTotal) acctListTotal.textContent = fmtS(tAcctExp + tLoanRepay);
   }
 
   // ── ค่าใช้จ่ายหน้าร้าน: ซ่อนน้ำแข็งเมื่อเป็นโลตัส (น้ำแข็งโลตัสเป็นวางบิล ไม่ใช่หน้าร้าน)
@@ -2868,7 +3082,8 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
 
 async function loadYearly() {
   if (!cfg.gsUrl) { toast('กรุณาตั้งค่า URL ก่อน','error'); return; }
-  var branch = BRANCH_NAMES[document.getElementById('sy-branch').value];
+  // ส่ง key สาขา (passione/lotus) ให้ชีทหาแท็บ Daily ได้ถูกต้อง
+  var branchKey = document.getElementById('sy-branch').value;
   var year   = document.getElementById('sy-year').value;
   if (!year) { toast('กรุณาระบุปี','error'); return; }
   var txt = document.getElementById('sy-txt');
@@ -2878,18 +3093,39 @@ async function loadYearly() {
   var monthNames = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 
   var results = [];
+  var failed = 0;
   for (var i = 0; i < months.length; i++) {
     var month = year + '-' + months[i];
+    txt.innerHTML = '<span class="loader"></span> ' + monthNames[i];
     try {
-      var res  = await fetch(cfg.gsUrl+'?branch='+encodeURIComponent(branch)+'&month='+month+'&_ts='+Date.now(), { cache: 'no-store' });
+      var res  = await fetch(cfg.gsUrl+'?branch='+encodeURIComponent(branchKey)+'&month='+month+'&_ts='+Date.now(), { cache: 'no-store' });
       var data = await res.json();
-      results.push({ month: monthNames[i], ym: month, rows: data.rows || [] });
+      if (data && data.status === 'error') throw new Error(data.message);
+      // ยอด Line Man ที่เข้าบัญชีคุณซัน: ใช้ค่าในชีทก่อน ถ้าไม่มีใช้ค่าที่บันทึกในเครื่อง (เหมือนหน้ารายเดือน)
+      var lm = null;
+      (data.linemanRows || []).forEach(function(r) {
+        if (String(r[1] || '').slice(0, 7) === month) lm = parseFloat(r[2]) || 0;
+      });
+      if (lm === null) {
+        try {
+          var ls = localStorage.getItem('ct_lineman_sun_' + branchKey + '_' + month);
+          lm = ls ? (parseFloat(JSON.parse(ls).amount) || 0) : 0;
+        } catch (e) { lm = 0; }
+      }
+      var mt = calcMonthTotals({
+        rows: data.rows || [], acctExpRows: data.acctExpRows || [],
+        payableRows: data.payableRows || [], salaryRows: data.salaryRows || [],
+        month: month, linemanSun: lm
+      });
+      results.push({ month: monthNames[i], ym: month, t: mt });
     } catch(e) {
-      results.push({ month: monthNames[i], ym: month, rows: [] });
+      failed++;
+      results.push({ month: monthNames[i], ym: month, t: null });
     }
   }
   renderYearly(results, year);
   txt.textContent = 'ดึงข้อมูล';
+  if (failed) toast('ดึงข้อมูลไม่สำเร็จ ' + failed + ' เดือน — ตัวเลขรวมอาจไม่ครบ ลองกดดึงข้อมูลอีกครั้ง', 'error');
 }
 
 function renderYearly(results, year) {
@@ -2899,45 +3135,53 @@ function renderYearly(results, year) {
   var tfoot = document.getElementById('sy-tfoot');
   tbody.innerHTML = ''; tfoot.innerHTML = '';
 
-  var hasData = results.some(function(r){return r.rows.length > 0;});
+  var hasData = results.some(function(m) {
+    return m.t && (m.t.days > 0 || m.t.expAll > 0 || m.t.income > 0 || m.t.loanRepay > 0);
+  });
   if (!hasData) { empty.style.display='block'; stats.style.display='none'; toast('ไม่พบข้อมูลในปีนี้','error'); return; }
   empty.style.display='none'; stats.style.display='block';
 
-  var p    = function(r,i){ return parseFloat(r[i])||0; };
   var fmtS = function(v){ return '฿'+(parseFloat(v)||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); };
-  var ytSales=0, ytExp=0, ytPayIn=0;
+  var col = function(v){ return v >= 0 ? 'var(--green)' : 'var(--red)'; };
+  var Y = { income: 0, expAll: 0, profit: 0, loanRepay: 0, cashAfterDebt: 0 };
 
   results.forEach(function(m) {
-    if (!m.rows.length) return;
-    var mSales=0, mExp=0, mPayIn=0;
-    m.rows.forEach(function(r){ mSales+=p(r,3); mExp+=p(r,14); mPayIn+=p(r,16); });
-    ytSales+=mSales; ytExp+=mExp; ytPayIn+=mPayIn;
-    var profit = mSales - mExp;
+    var t = m.t;
+    if (!t) {
+      var trE = document.createElement('tr');
+      trE.innerHTML = '<td style="font-weight:500;">'+m.month+'</td><td colspan="6" style="color:var(--red);font-size:12px;">ดึงข้อมูลไม่สำเร็จ</td>';
+      tbody.appendChild(trE);
+      return;
+    }
+    if (!(t.days > 0 || t.expAll > 0 || t.income > 0 || t.loanRepay > 0)) return;
+    Y.income += t.income; Y.expAll += t.expAll; Y.profit += t.profit;
+    Y.loanRepay += t.loanRepay; Y.cashAfterDebt += t.cashAfterDebt;
     var tr = document.createElement('tr');
     tr.innerHTML = '<td style="font-weight:500;">'+m.month+'</td>'
-      +'<td class="mono" style="color:var(--green);">'+fmtS(mSales)+'</td>'
-      +'<td class="mono" style="color:var(--red);">'+fmtS(mExp)+'</td>'
-      +'<td class="mono" style="color:'+(profit>=0?'var(--green)':'var(--red)')+';">'+fmtS(profit)+'</td>'
-      +'<td class="mono">'+fmtS(mPayIn)+'</td>'
-      +'<td class="mono" style="color:var(--text3);">'+m.rows.length+' วัน</td>';
+      +'<td class="mono" style="color:var(--green);">'+fmtS(t.income)+'</td>'
+      +'<td class="mono" style="color:var(--red);">'+fmtS(t.expAll)+'</td>'
+      +'<td class="mono" style="color:'+col(t.profit)+';">'+fmtS(t.profit)+'</td>'
+      +'<td class="mono">'+fmtS(t.loanRepay)+'</td>'
+      +'<td class="mono" style="color:'+col(t.cashAfterDebt)+';">'+fmtS(t.cashAfterDebt)+'</td>'
+      +'<td class="mono" style="color:var(--text3);">'+t.days+' วัน</td>';
     tbody.appendChild(tr);
   });
 
-  var ytProfit = ytSales - ytExp;
   var tfr = document.createElement('tr');
   tfr.style.cssText = 'background:var(--bg3);font-weight:700;border-top:2px solid var(--border2);';
   tfr.innerHTML = '<td>รวมทั้งปี '+year+'</td>'
-    +'<td class="mono" style="color:var(--green);">'+fmtS(ytSales)+'</td>'
-    +'<td class="mono" style="color:var(--red);">'+fmtS(ytExp)+'</td>'
-    +'<td class="mono" style="color:'+(ytProfit>=0?'var(--green)':'var(--red)')+';">'+fmtS(ytProfit)+'</td>'
-    +'<td class="mono">'+fmtS(ytPayIn)+'</td>'
+    +'<td class="mono" style="color:var(--green);">'+fmtS(Y.income)+'</td>'
+    +'<td class="mono" style="color:var(--red);">'+fmtS(Y.expAll)+'</td>'
+    +'<td class="mono" style="color:'+col(Y.profit)+';">'+fmtS(Y.profit)+'</td>'
+    +'<td class="mono">'+fmtS(Y.loanRepay)+'</td>'
+    +'<td class="mono" style="color:'+col(Y.cashAfterDebt)+';">'+fmtS(Y.cashAfterDebt)+'</td>'
     +'<td></td>';
   tfoot.appendChild(tfr);
 
-  document.getElementById('sy-sales').textContent  = fmtS(ytSales);
-  document.getElementById('sy-exp').textContent    = fmtS(ytExp);
-  document.getElementById('sy-profit').textContent = fmtS(ytProfit);
-  document.getElementById('sy-profit').className   = 'stat-value '+(ytProfit>=0?'pos':'neg');
+  document.getElementById('sy-sales').textContent  = fmtS(Y.income);
+  document.getElementById('sy-exp').textContent    = fmtS(Y.expAll);
+  document.getElementById('sy-profit').textContent = fmtS(Y.profit);
+  document.getElementById('sy-profit').className   = 'stat-value '+(Y.profit>=0?'pos':'neg');
 }
 
 function saveGsUrl() {
@@ -3024,7 +3268,7 @@ function renderAdminPayables() {
 
   if (!list.length) { empty.style.display='block'; return; }
   empty.style.display = 'none';
-  var today = new Date().toISOString().split('T')[0];
+  var today = localYmd();
   var fmt   = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
 
   list.forEach(function(item) {
@@ -3034,8 +3278,8 @@ function renderAdminPayables() {
     tr.innerHTML =
       '<td class="mono">' + item.date + '</td>'
       + '<td style="font-size:12px;">' + branchName + '</td>'
-      + '<td><div style="font-size:13px;">' + item.desc + '</div>'
-        + (item.note ? '<div style="font-size:11px;color:var(--text3);">' + item.note + '</div>' : '') + '</td>'
+      + '<td><div style="font-size:13px;">' + escHtml(item.desc) + '</div>'
+        + (item.note ? '<div style="font-size:11px;color:var(--text3);">' + escHtml(item.note) + '</div>' : '') + '</td>'
       + '<td><span class="badge badge-gray">' + item.cat + '</span></td>'
       + '<td class="mono">' + (item.billno || '-') + '</td>'
       + '<td class="mono" style="font-weight:500;">' + fmt(item.amount) + '</td>'
@@ -3100,12 +3344,13 @@ function renderAdminLineman() {
 function exportAdminCSV() {
   var headers = ['วันที่','สาขา','รายการ','หมวด','เลขบิล','จำนวน','กำหนดจ่าย','สถานะ','วันที่ชำระ','หมายเหตุ'];
   var rows = [headers.join(',')];
+  var csvCell = function(v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; };
   payables.forEach(function(p) {
     rows.push([
-      p.date, BRANCH_NAMES[p.branch]||p.branch, '"'+p.desc+'"', p.cat,
+      p.date, BRANCH_NAMES[p.branch]||p.branch, p.desc, p.cat,
       p.billno||'', p.amount, p.due||'',
-      p.paid?'ชำระแล้ว':'ค้างชำระ', p.paidDate||'', '"'+(p.note||'')+'"'
-    ].join(','));
+      p.paid?'ชำระแล้ว':'ค้างชำระ', p.paidDate||'', p.note||''
+    ].map(csvCell).join(','));
   });
   var blob = new Blob(['\uFEFF'+rows.join('\n')], {type:'text/csv;charset=utf-8;'});
   var url  = URL.createObjectURL(blob);
@@ -3204,7 +3449,7 @@ function addRepayment(id) {
     id: id,
     title: 'บันทึกการคืนเงิน',
     sub: 'ยืมจาก: <b>' + loan.from + '</b><br>ยอดยืม: <b>฿' + loan.amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b><br>คืนแล้ว: <b>฿' + repaid.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b><br>ค้างอยู่: <b>฿' + remaining.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b>',
-    defaultDate: new Date().toISOString().split('T')[0]
+    defaultDate: localYmd()
   });
 }
 
@@ -3217,28 +3462,32 @@ function doLoanRepayment(id, amount, dateStr) {
   saveLoans();
   renderLoans();
 
-  acctExps.unshift({
+  // ใช้สาขาของรายการยืมจริง (เดิมใช้สาขาหลักของเครื่อง ทำให้ลงผิดสาขาได้)
+  var branch = loan.branch || cfg.branch || 'passione';
+  var branchName = BRANCH_NAMES[branch];
+  var repayItem = {
     id: Date.now(),
-    branch: cfg.branch || 'passione',
+    branch: branch,
     date: dateStr,
     desc: 'คืนเงินยืม — ' + loan.from + (loan.purpose ? ' (' + loan.purpose + ')' : ''),
     cat: 'เงินยืม',
     amount: amount,
     note: 'คืนเงินที่ยืมวันที่ ' + loan.date,
     updatedAt: Date.now()
-  });
+  };
+  acctExps.unshift(repayItem);
   saveAcctExp();
   renderAcctExp();
 
-  var branch = cfg.branch || 'passione';
-  var branchName = BRANCH_NAMES[branch];
-  var itemsToSync = acctExps.filter(function(x) { return x.branch === branch; });
-  if (cfg.gsUrl && itemsToSync.length) {
+  // ส่งเฉพาะรายการคืนเงินนี้แบบ upsert
+  // (เดิมส่ง type 'acctexp' ที่ลบรายการบัญชีร้านทั้งสาขาในชีทแล้วเขียนใหม่จากเครื่องนี้
+  //  รายการที่เครื่องอื่นลงไว้แต่เครื่องนี้ไม่มีจะหายไปจากชีท)
+  if (cfg.gsUrl) {
     var payload = JSON.stringify({
-      type: 'acctexp',
+      type: 'acctexp_upsert',
       branch: branch,
       branchName: branchName,
-      items: itemsToSync,
+      items: [repayItem],
       timestamp: new Date().toISOString()
     });
     safePost(cfg.gsUrl, JSON.parse(payload))
@@ -3419,7 +3668,7 @@ function partialPaySalary(id) {
     id: id,
     title: 'ชำระเงินเดือน',
     sub: 'พนักงาน: <b>' + item.name + '</b><br>ยอดทั้งหมด: <b>฿' + item.amount.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b><br>จ่ายแล้ว: <b>฿' + alreadyPaid.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b><br>ค้างอยู่: <b>฿' + remaining.toLocaleString('th-TH', {minimumFractionDigits:2}) + '</b>',
-    defaultDate: new Date().toISOString().split('T')[0]
+    defaultDate: localYmd()
   });
 }
 
@@ -3453,7 +3702,7 @@ function saveSalaries() {
 function getSalaryTotal(branch, month) {
   return salaries.filter(function(s) {
     var matchBranch = !branch || s.branch === branch;
-    var inMonth = s.month === month || (s.date && s.date.startsWith(month));
+    var inMonth = salaryMonthOf(s) === month;
     return matchBranch && inMonth;
   }).reduce(function(sum, s) { return sum + s.amount; }, 0);
 }
@@ -3469,7 +3718,7 @@ function renderSalaries() {
   tbody.innerHTML = '';
 
   var list = filterMonth
-    ? salaries.filter(function(s) { return s.month === filterMonth || (s.date && s.date.startsWith(filterMonth)); })
+    ? salaries.filter(function(s) { return salaryMonthOf(s) === filterMonth; })
     : salaries;
 
   var fmt = function(v) { return '฿' + v.toLocaleString('th-TH', {minimumFractionDigits:2}); };
@@ -3494,7 +3743,7 @@ function renderSalaries() {
       tr.innerHTML =
         '<td class="mono">' + (item.date || '-') + '</td>'
         + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
-        + '<td style="font-size:13px;font-weight:500;">' + (item.name || '') + '</td>'
+        + '<td style="font-size:13px;font-weight:500;">' + escHtml(item.name || '') + '</td>'
         + '<td class="mono">' + (item.month || '-') + '</td>'
         + '<td class="mono" style="font-weight:500;">'
           + '<span style="color:' + (isPaid ? 'var(--green)' : 'var(--blue)') + ';">' + fmt(itemAmount) + '</span>'
@@ -3506,7 +3755,7 @@ function renderSalaries() {
             + (isPaid ? '✓ จ่ายครบ' : (isPartial ? '◑ จ่ายบางส่วน' : '● ยังไม่จ่าย')) + '</span>'
           + (!isPaid ? '<div style="margin-top:4px;"><button class="btn btn-outline btn-sm" style="font-size:11px;padding:3px 8px;" data-action="salary-partial" data-id="' + escAttr(item.id) + '">+ ชำระบางส่วน</button></div>' : '')
           + '</td>'
-        + '<td style="font-size:12px;color:var(--text3);">' + (item.note || '-') + '</td>'
+        + '<td style="font-size:12px;color:var(--text3);">' + escHtml(item.note || '-') + '</td>'
         + '<td><button class="btn btn-danger btn-sm" data-action="salary-delete" data-id="' + escAttr(item.id) + '">ลบ</button></td>';
       tbody.appendChild(tr);
     } catch(rowErr) {
@@ -3558,7 +3807,7 @@ async function loadDailyData() {
   try {
     var branchName = BRANCH_NAMES[branch];
     var month = date.slice(0, 7);
-    var res  = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branchName) + '&month=' + month + '&_ts=' + Date.now(), { cache: 'no-store' });
+    var res  = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(branch) + '&month=' + month + '&_ts=' + Date.now(), { cache: 'no-store' });
     var data = await res.json();
     var rows = data.rows || [];
 
@@ -3600,7 +3849,9 @@ function fillDailyForm(row) {
   document.getElementById('d-subtotal').value  = p(3) || '';
   document.getElementById('d-discount').value  = p(4) || '';
   document.getElementById('d-rounding').value  = p(5) || '';
-  document.getElementById('d-total-sales').value = p(6) || '';
+  // Total Sales: คอลัมน์ใหม่ (index 38) — แถวเก่าที่ยังไม่มี ใช้ เครื่องดื่ม+ขนม+ส่งเสริม แทน
+  // (เดิมเติมด้วย Sales before TAX ซึ่งคนละค่า ทำให้ยอดเครื่องดื่มผิดตอนบันทึกซ้ำ)
+  document.getElementById('d-total-sales').value = p(38) || (p(11) + p(12) + p(13)) || p(6) || '';
   document.getElementById('d-qr').value        = p(7) || '';
   document.getElementById('d-lineman').value   = p(9) || '';
   document.getElementById('d-cash').value      = p(10) || '';
@@ -3748,10 +3999,10 @@ function renderAcctExp() {
     tr.innerHTML =
       '<td class="mono">' + item.date + '</td>'
       + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
-      + '<td style="font-size:13px;">' + item.desc + '</td>'
+      + '<td style="font-size:13px;">' + escHtml(item.desc) + '</td>'
       + '<td><span class="badge badge-gray">' + item.cat + '</span></td>'
       + '<td class="mono" style="font-weight:500;">' + fmt(item.amount) + '</td>'
-      + '<td style="font-size:12px;color:var(--text3);">' + (item.note || '-') + '</td>'
+      + '<td style="font-size:12px;color:var(--text3);">' + escHtml(item.note || '-') + '</td>'
       + '<td><button class="btn btn-danger btn-sm" data-action="ae-delete" data-id="' + escAttr(item.id) + '">ลบ</button></td>';
     tbody.appendChild(tr);
   });
@@ -3791,6 +4042,8 @@ async function syncAcctExp(btn) {
       }
     }
     toast('ซิงค์บัญชีร้านขึ้น Sheets แล้ว ✓', 'success');
+  } catch(err) {
+    toast('ส่งบัญชีร้านขึ้น Sheets ไม่สำเร็จ — ข้อมูลยังอยู่ในเครื่อง กด ☁ บันทึกขึ้น Sheets อีกครั้ง', 'error');
   } finally {
     setBtnLoading(btn, false);
   }
@@ -3853,6 +4106,7 @@ function clearCpUnsaved() {
   if (badge) badge.parentNode.removeChild(badge);
 }
 
+var editingCouponId = null;
 function addCoupon() {
   var code   = document.getElementById('cp-code').value.trim().toUpperCase();
   var type   = document.getElementById('cp-type').value;
@@ -3863,18 +4117,30 @@ function addCoupon() {
   var cpType = CP_TYPES[type];
   var amount = cpType.fixed ? cpType.amount : (parseFloat(document.getElementById('cp-amount').value) || 0);
   if (!cpType.fixed && !amount) { toast('กรุณากรอกมูลค่าส่วนลด', 'error'); return; }
-  // เช็คซ้ำ
-  if (coupons.find(function(c) { return c.code === code && c.branch === branch; })) {
+  var editingOld = null;
+  if (editingCouponId !== null) {
+    editingOld = coupons.find(function(c) { return String(c.id) === String(editingCouponId); }) || null;
+  }
+  // เช็คซ้ำ (ไม่นับคูปองที่กำลังแก้ไข)
+  if (coupons.find(function(c) { return c.code === code && c.branch === branch && c !== editingOld; })) {
     toast('รหัสคูปองนี้บันทึกแล้ว', 'error'); return;
   }
   var newCoupon = { id: Date.now(), branch: branch, date: date, code: code, type: type, amount: amount };
+  if (editingOld) coupons = coupons.filter(function(c) { return c !== editingOld; });
+  editingCouponId = null;
   coupons.unshift(newCoupon);
   localStorage.setItem('ct_coupons', JSON.stringify(coupons));
   renderCoupons();
   document.getElementById('cp-code').value = '';
   document.getElementById('cp-amount').value = '';
   clearCpUnsaved();
-  appendToSheet('coupon_append', branch, BRANCH_NAMES[branch], newCoupon);
+  if (editingOld && cfg.gsUrl) {
+    // ลบของเดิมให้เสร็จก่อน แล้วค่อยเพิ่มของใหม่ (ถ้ารหัสเดิม ชีทจะได้ไม่มองว่าซ้ำ)
+    appendToSheet('coupon_delete', editingOld.branch, BRANCH_NAMES[editingOld.branch], { id: editingOld.id, code: editingOld.code }, true)
+      .then(function() { appendToSheet('coupon_append', branch, BRANCH_NAMES[branch], newCoupon); });
+  } else {
+    appendToSheet('coupon_append', branch, BRANCH_NAMES[branch], newCoupon);
+  }
   toast('บันทึกคูปอง ' + code + ' แล้ว ✓', 'success');
 }
 
@@ -3893,12 +4159,9 @@ function editCoupon(id) {
     document.getElementById('cp-amount').value = c.amount || '';
   }
   onCpCodeInput();
-  // ลบรายการเดิมออก — จะ save ใหม่เมื่อกดบันทึก
-  coupons = coupons.filter(function(x) { return String(x.id) !== String(id); });
-  localStorage.setItem('ct_coupons', JSON.stringify(coupons));
-  if (cfg.gsUrl) {
-    appendToSheet('coupon_delete', c.branch, BRANCH_NAMES[c.branch], { id: c.id, code: c.code });
-  }
+  // ยังไม่ลบรายการเดิม — จะลบตอนกดบันทึกการแก้ไขเท่านั้น
+  // (เดิมลบจากชีททันที ถ้ากดแก้แล้วไม่บันทึกต่อ คูปองจะหายไปเลย)
+  editingCouponId = c.id;
   renderCoupons();
   var inp = document.getElementById('cp-code');
   if (inp) { inp.focus(); inp.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
@@ -4134,6 +4397,7 @@ function exportCouponPDF() {
       + '<td>' + (c.type === 'free_greenmilk' ? '1' : '') + '</td>'
       + '<td>' + (c.type === 'discount50' ? '1' : '') + '</td>'
       + '<td>' + (c.type === 'buy1get1' || c.type === 'drink1free1' ? '1' : '') + '</td>'
+      + '<td>' + (c.type === 'free_monday' ? '1' : '') + '</td>'
       + '</tr>';
   }).join('');
 
@@ -4153,7 +4417,7 @@ function exportCouponPDF() {
     + '</div>'
     + '<div class="print-title">สรุปการใช้คูปอง เดือน' + monthName + ' สาขา' + branchName + '</div>'
     + '<table>'
-    + '<thead><tr><th>วันที่</th><th>รหัสคูปอง</th><th>ส่วนลด 10 บาท</th><th>ฟรีชาไทย</th><th>ฟรีชาเขียวนม</th><th>ส่วนลด 50%</th><th>1ฟรี1 / ส่วนลดเครื่องดื่ม 1ฟรี1</th></tr></thead>'
+    + '<thead><tr><th>วันที่</th><th>รหัสคูปอง</th><th>ส่วนลด 10 บาท</th><th>ฟรีชาไทย</th><th>ฟรีชาเขียวนม</th><th>ส่วนลด 50%</th><th>1ฟรี1 / ส่วนลดเครื่องดื่ม 1ฟรี1</th><th>ฟรีกาแฟ MondayBeans</th></tr></thead>'
     + '<tbody>' + rows + '</tbody>'
     + '<tfoot>'
     + '<tr style="font-weight:bold;background:#f0f0f0;">'
@@ -4163,6 +4427,7 @@ function exportCouponPDF() {
       + '<td>' + typeCounts['free_greenmilk'] + '</td>'
       + '<td>' + typeCounts['discount50'] + '</td>'
       + '<td>' + (typeCounts['buy1get1'] + (typeCounts['drink1free1']||0)) + '</td>'
+      + '<td>' + (typeCounts['free_monday']||0) + '</td>'
     + '</tr>'
     + '<tr style="font-weight:bold;background:#f0f0f0;">'
       + '<td colspan="2" style="text-align:center;">รวมส่วนลด</td>'
@@ -4171,6 +4436,7 @@ function exportCouponPDF() {
       + '<td>' + (typeAmounts['free_greenmilk'] || '') + '</td>'
       + '<td>' + (typeAmounts['discount50'] || '') + '</td>'
       + '<td>' + ((typeAmounts['buy1get1']||0) + (typeAmounts['drink1free1']||0) || '') + '</td>'
+      + '<td>' + (typeAmounts['free_monday'] || '') + '</td>'
     + '</tr>'
     + '</tfoot>'
     + '</table>'
@@ -4236,6 +4502,8 @@ window.addEventListener('beforeunload', function(e) {
 </div>
 </body>
 </html>
+
+
 
 
 

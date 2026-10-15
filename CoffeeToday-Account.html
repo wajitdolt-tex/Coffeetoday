@@ -437,6 +437,7 @@ tr:hover td{background:var(--bg3);}
       </div>
     </div>
     <button class="btn btn-primary" id="cp-save-btn" onclick="addCoupon()">+ บันทึกคูปอง</button>
+    <span id="cp-edit-banner" style="display:none;margin-left:8px;font-size:12px;color:var(--yellow);">✏️ กำลังแก้ไข <b id="cp-edit-code"></b> — กดบันทึกเพื่อแทนที่ของเดิม · <a href="#" onclick="cancelCouponEdit();return false;" style="color:var(--red);">ยกเลิกการแก้ไข</a></span>
   </div>
 
   <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
@@ -1328,6 +1329,8 @@ function switchPage(name, btn) {
   document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
   document.getElementById('page-' + name).classList.add('active');
   btn.classList.add('active');
+  // ออกจากหน้าคูปองระหว่างแก้ไข = ยกเลิกการแก้ไข (กันไม่ให้คูปองใหม่ที่เพิ่มทีหลังไปแทนที่ของเดิมโดยไม่ตั้งใจ)
+  if (name !== 'coupon' && typeof editingCouponId !== 'undefined' && editingCouponId !== null) cancelCouponEdit();
   if (name === 'coupon') loadCouponsFromSheets();
 }
 
@@ -3576,9 +3579,9 @@ function renderLoans() {
         tr.innerHTML =
           '<td class="mono">' + (loan.date || '-') + '</td>'
           + '<td style="font-size:12px;color:var(--text2);">' + branchName + '</td>'
-          + '<td style="font-weight:500;">' + (loan.from || '') + '</td>'
+          + '<td style="font-weight:500;">' + escHtml(loan.from || '') + '</td>'
           + '<td class="mono" style="color:var(--yellow);font-weight:500;">' + fmt(loanAmount) + '</td>'
-          + '<td style="font-size:12px;color:var(--text2);">' + (loan.purpose || '-') + '</td>'
+          + '<td style="font-size:12px;color:var(--text2);">' + escHtml(loan.purpose || '-') + '</td>'
           + '<td class="mono" style="color:' + (settled ? 'var(--green)' : 'var(--red)') + ';font-weight:600;">' + fmt(Math.max(remain, 0)) + '</td>'
           + '<td><span class="p-tag ' + (settled ? 'paid' : 'unpaid') + '">' + (settled ? '✓ คืนครบแล้ว' : '● ยังค้างอยู่') + '</span></td>'
           + '<td style="display:flex;gap:4px;">'
@@ -4107,6 +4110,19 @@ function clearCpUnsaved() {
 }
 
 var editingCouponId = null;
+function showCouponEditBanner(code) {
+  var b = document.getElementById('cp-edit-banner');
+  var c = document.getElementById('cp-edit-code');
+  if (c) c.textContent = code || '';
+  if (b) b.style.display = code ? 'inline' : 'none';
+}
+// ยกเลิกโหมดแก้ไข — คูปองเดิมยังอยู่ครบ ไม่ถูกลบ
+function cancelCouponEdit() {
+  editingCouponId = null;
+  showCouponEditBanner('');
+  var codeEl = document.getElementById('cp-code'); if (codeEl) codeEl.value = '';
+  var amtEl = document.getElementById('cp-amount'); if (amtEl) amtEl.value = '';
+}
 function addCoupon() {
   var code   = document.getElementById('cp-code').value.trim().toUpperCase();
   var type   = document.getElementById('cp-type').value;
@@ -4128,6 +4144,7 @@ function addCoupon() {
   var newCoupon = { id: Date.now(), branch: branch, date: date, code: code, type: type, amount: amount };
   if (editingOld) coupons = coupons.filter(function(c) { return c !== editingOld; });
   editingCouponId = null;
+  showCouponEditBanner('');
   coupons.unshift(newCoupon);
   localStorage.setItem('ct_coupons', JSON.stringify(coupons));
   renderCoupons();
@@ -4162,6 +4179,7 @@ function editCoupon(id) {
   // ยังไม่ลบรายการเดิม — จะลบตอนกดบันทึกการแก้ไขเท่านั้น
   // (เดิมลบจากชีททันที ถ้ากดแก้แล้วไม่บันทึกต่อ คูปองจะหายไปเลย)
   editingCouponId = c.id;
+  showCouponEditBanner(c.code);
   renderCoupons();
   var inp = document.getElementById('cp-code');
   if (inp) { inp.focus(); inp.scrollIntoView({ behavior: 'smooth', block: 'center' }); }

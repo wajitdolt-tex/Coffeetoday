@@ -508,6 +508,7 @@ tr:hover td{background:var(--bg3);}
   <div style="display:flex;gap:4px;margin-bottom:20px;">
     <button class="btn btn-sm" id="stab-month" onclick="switchSTab('month')" style="background:var(--accent);color:#fff;">รายเดือน</button>
     <button class="btn btn-sm btn-outline" id="stab-year" onclick="switchSTab('year')">รายปี</button>
+    <button class="btn btn-sm btn-outline" id="stab-pl" onclick="switchSTab('pl')">งบกำไรขาดทุน</button>
   </div>
 
   <div id="stab-month-content">
@@ -535,15 +536,13 @@ tr:hover td{background:var(--bg3);}
             <div id="ss-profit-note" style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.6;"></div>
           </div>
         </div>
-        <div class="grid-2" style="margin-bottom:10px;">
-          <div class="stat-box" style="border-left:3px solid var(--yellow);">
-            <div class="stat-label">คืนเงินยืมเดือนนี้ <span style="font-weight:400;font-size:10px;">(ลดหนี้ ไม่นับเป็นรายจ่าย)</span></div>
-            <div class="stat-value" id="ss-loan-repay-top">฿0</div>
-          </div>
-          <div class="stat-box" style="border-left:3px solid var(--blue);">
-            <div class="stat-label">เงินคงเหลือหลังคืนหนี้ <span style="font-weight:400;font-size:10px;">(กำไร − คืนเงินยืม)</span></div>
-            <div class="stat-value" id="ss-cash-after-debt">฿0</div>
-          </div>
+        <!-- กระแสเงินสด: แยกจากกำไรชัดเจน ตัวเลขเล็กกว่า เพื่อไม่ให้สับสนว่าเป็นกำไร -->
+        <div style="background:var(--blue-t);border:1px solid rgba(37,99,168,.18);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:10px;font-size:12px;color:var(--text2);line-height:1.7;">
+          <div style="font-weight:700;color:var(--blue);margin-bottom:2px;">💵 กระแสเงินสด <span style="font-weight:400;">(ไม่ใช่กำไร)</span></div>
+          <div>กำไร/ขาดทุน <span class="mono" id="ss-cf-profit">฿0</span>
+            − คืนเงินยืม <span class="mono" id="ss-loan-repay-top">฿0</span>
+            = <b>เงินสดเหลือจริง <span class="mono" id="ss-cash-after-debt">฿0</span></b></div>
+          <div style="font-size:11px;color:var(--text3);">คืนเงินยืมคือการใช้หนี้ ไม่ใช่ค่าใช้จ่าย จึงไม่หักจากกำไร แต่ทำให้เงินในบัญชีลดลง — ผลประกอบการของเดือนดูที่ช่อง "กำไร / ขาดทุน" ด้านบน</div>
         </div>
         <div style="background:var(--bg3);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:10px;">
           <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">รายละเอียดรายจ่าย</div>
@@ -761,7 +760,7 @@ tr:hover td{background:var(--bg3);}
       <div class="card" style="padding:0;overflow:hidden;">
         <div class="tbl-wrap">
           <table>
-            <thead><tr><th>เดือน</th><th>รายรับ</th><th>รายจ่าย</th><th>กำไร/ขาดทุน</th><th>คืนเงินยืม</th><th>คงเหลือหลังคืนหนี้</th><th>วันที่บันทึก</th></tr></thead>
+            <thead><tr><th>เดือน</th><th>รายรับ</th><th>รายจ่าย</th><th>กำไร/ขาดทุน</th><th>คืนเงินยืม<br><span style="font-weight:400;font-size:10px;">(ไม่ใช่รายจ่าย)</span></th><th>เงินสดเหลือจริง<br><span style="font-weight:400;font-size:10px;">(ไม่ใช่กำไร)</span></th><th>วันที่บันทึก</th></tr></thead>
             <tbody id="sy-tbody"></tbody>
             <tfoot id="sy-tfoot"></tfoot>
           </table>
@@ -769,6 +768,23 @@ tr:hover td{background:var(--bg3);}
       </div>
     </div>
     <div id="sy-empty" class="empty-state"><div class="icon">📅</div><p>เลือกสาขาและปี แล้วกดดึงข้อมูล</p></div>
+  </div>
+
+  <!-- ════ งบกำไรขาดทุน (สำหรับผู้ถือหุ้น) ════ -->
+  <div id="stab-pl-content" style="display:none;">
+    <div class="month-row">
+      <div><label>สาขา</label><select id="pl-branch"><option value="all">รวม 2 สาขา</option><option value="passione">แพชชั่นระยอง</option><option value="lotus">โลตัสระยอง</option></select></div>
+      <div><label>ช่วงเวลา</label><select id="pl-period" onchange="updatePLHint()"><option value="month">รายเดือน</option><option value="quarter">รายไตรมาส</option><option value="year">ทั้งปี</option></select></div>
+      <div><label>เดือน/ปี</label><input type="month" id="pl-month" onchange="updatePLHint()"></div>
+      <div><button class="btn btn-primary" onclick="loadPL()"><span id="pl-txt">ดึงข้อมูล</span></button></div>
+    </div>
+    <div id="pl-hint" style="font-size:12px;color:var(--text3);margin:-6px 0 12px;"></div>
+    <div id="pl-actions" style="display:none;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <button class="btn btn-outline btn-sm" onclick="printPL()">🖨 พิมพ์ / บันทึก PDF</button>
+      <button class="btn btn-outline btn-sm" onclick="sharePL()">📤 แชร์สรุป (ข้อความ)</button>
+    </div>
+    <div id="pl-body"></div>
+    <div id="pl-empty" class="empty-state"><div class="icon">📊</div><p>เลือกสาขา (หรือรวม 2 สาขา) และเดือน แล้วกดดึงข้อมูล</p></div>
   </div>
 </div>
 
@@ -1054,6 +1070,7 @@ tr:hover td{background:var(--bg3);}
         <li><b>คืนเงินยืม:</b> เป็นการลดหนี้ ไม่ใช่ค่าใช้จ่าย จึงไม่หักจากกำไร แต่แสดงแยกในช่อง "คืนเงินยืมเดือนนี้" และ "เงินคงเหลือหลังคืนหนี้" เพื่อให้เห็นเงินที่เหลือจริง</li>
         <li>ยอด "ค้างชำระ" ของวัตถุดิบ <b>ไม่ถูกนับเป็นรายจ่าย</b> จนกว่าจะจ่าย แต่แสดงแยกให้เห็น</li>
         <li><b>หน้ารายปี</b> ใช้สูตรเดียวกับรายเดือนทุกประการ แล้วรวม 12 เดือน</li>
+        <li><b>แท็บงบกำไรขาดทุน</b> (สำหรับผู้ถือหุ้น) — จัดกลุ่มแบบงบการเงิน: รายได้ → ต้นทุนวัตถุดิบ → กำไรขั้นต้น → ค่าใช้จ่ายดำเนินงาน → กำไรสุทธิ ดูได้ทีละสาขาหรือรวม 2 สาขา เลือกช่วงเวลาได้ทั้งรายเดือน รายไตรมาส และทั้งปี (ไตรมาส/ปี มีตารางแยกรายเดือน) พิมพ์/บันทึก PDF หรือแชร์เป็นข้อความได้ กำไรสุทธิตรงกับช่อง "กำไร / ขาดทุน" ของหน้ารายเดือน</li>
       </ul>
     </div></details>
 
@@ -2607,12 +2624,18 @@ function loadLinemanSun() {
 }
 
 function switchSTab(tab) {
-  document.getElementById('stab-month-content').style.display = tab === 'month' ? 'block' : 'none';
-  document.getElementById('stab-year-content').style.display  = tab === 'year'  ? 'block' : 'none';
-  document.getElementById('stab-month').style.background = tab === 'month' ? 'var(--accent)' : 'transparent';
-  document.getElementById('stab-month').style.color      = tab === 'month' ? '#fff' : 'var(--text2)';
-  document.getElementById('stab-year').style.background  = tab === 'year'  ? 'var(--accent)' : 'transparent';
-  document.getElementById('stab-year').style.color       = tab === 'year'  ? '#fff' : 'var(--text2)';
+  ['month', 'year', 'pl'].forEach(function(k) {
+    var content = document.getElementById('stab-' + k + '-content');
+    var btn = document.getElementById('stab-' + k);
+    if (content) content.style.display = tab === k ? 'block' : 'none';
+    if (btn) { btn.style.background = tab === k ? 'var(--accent)' : 'transparent'; btn.style.color = tab === k ? '#fff' : 'var(--text2)'; }
+  });
+  if (tab === 'pl') {
+    var plm = document.getElementById('pl-month');
+    var sm = document.getElementById('s-month');
+    if (plm && !plm.value && sm) plm.value = sm.value;
+    updatePLHint();
+  }
 }
 
 // ════ สูตรคำนวณรายเดือน (ใช้ร่วมกันทั้งหน้ารายเดือนและรายปี) ════
@@ -2955,10 +2978,12 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
   }
   var loanTopEl = document.getElementById('ss-loan-repay-top');
   if (loanTopEl) loanTopEl.textContent = fmtS(mt.loanRepay);
+  var cfProfitEl = document.getElementById('ss-cf-profit');
+  if (cfProfitEl) cfProfitEl.textContent = fmtS(mt.profit);
   var cashDebtEl = document.getElementById('ss-cash-after-debt');
   if (cashDebtEl) {
     cashDebtEl.textContent = fmtS(mt.cashAfterDebt);
-    cashDebtEl.className = 'stat-value ' + (mt.cashAfterDebt >= 0 ? 'pos' : 'neg');
+    cashDebtEl.style.color = mt.cashAfterDebt >= 0 ? 'var(--green)' : 'var(--red)';
   }
   document.getElementById('ss-payin').textContent        = fmtS(tPayIn);
   document.getElementById('ss-qr-total').textContent     = fmtS(tQr);
@@ -3117,6 +3142,347 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
   // ss-shopexp-box แสดงเสมอทุกสาขา (ซ่อนแค่น้ำแข็งผ่าน ss-ice-shopexp-box)
 }
 
+
+// ════ งบกำไรขาดทุน ════
+// จัดกลุ่มแบบงบการเงิน: รายได้ → ต้นทุนขาย → กำไรขั้นต้น → ค่าใช้จ่ายดำเนินงาน → กำไรสุทธิ
+// กำไรสุทธิเท่ากับช่อง "กำไร / ขาดทุน" ในหน้ารายเดือนเสมอ (ใช้หลักการนับเดียวกับ calcMonthTotals)
+var TH_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+function thMonthLabel(ym) {
+  var p = String(ym || '').split('-');
+  var m = parseInt(p[1], 10), y = parseInt(p[0], 10);
+  if (!m || !y) return ym;
+  return TH_MONTHS[m - 1] + ' ' + (y + 543);
+}
+// ยอดวางบิล (ที่ไม่ใช่ค่าเช่า/ไฟ/ภาษี/ค่าบริการ) ที่จ่ายจริงในเดือนนี้ — หลักเดียวกับ calcMonthTotals
+function payablePaidInMonth(r, month) {
+  var amount = parseFloat(r[4]) || 0;
+  var paid = String(r[6] || '') === 'Paid';
+  var paidDate = ymdOf(r[7]);
+  var partials = parseJsonArr(r[12]);
+  var totalPaid = partials.reduce(function(s, p) { return s + (parseFloat(p.amount) || 0); }, 0);
+  if (paid && paidDate.indexOf(month) === 0 && partials.length === 0) return amount;
+  var v = sumPaymentsIn(partials, month);
+  if (paid && paidDate.indexOf(month) === 0 && partials.length > 0) v += Math.max(amount - totalPaid, 0);
+  return v;
+}
+var PL_CAT_LABEL = { 'ค่าเช่า': 'ค่าเช่า', 'ค่าไฟ/น้ำ': 'ค่าน้ำ/ค่าไฟ', 'ค่าบริการ': 'ค่าบริการ/ส่วนกลาง', 'ภาษี': 'ภาษี/ค่าธรรมเนียม' };
+function plAdd(map, label, amt) {
+  if (!amt) return;
+  if (!map.hasOwnProperty(label)) map[label] = 0;
+  map[label] += amt;
+}
+function calcPL(o, branchKey) {
+  var month = o.month, isLotus = branchKey === 'lotus';
+  var pl = {
+    revenue: {}, cogs: {}, opex: {}, cashDiff: 0,
+    notes: { rawUnpaid: 0, fixedUnpaid: 0, salaryUnpaid: 0, loanRepay: 0, days: (o.rows || []).length }
+  };
+  // ลำดับบรรทัดคงที่ ให้ทุกเดือน/ทุกสาขาเรียงเหมือนกัน
+  ['QR Payment', 'เงินสด (ยอดปิดกะ)', 'ไทยช่วยไทยพลัส', 'Line Man (เข้าบัญชีคุณซัน)'].forEach(function(k) { pl.revenue[k] = 0; });
+  var rawIdx = [21, 23, 24, 25, 26, 27, 28];  // นมเมจิ น้ำตาล โซดา โยเกิร์ต Bakery มะนาว มะพร้าว
+  (o.rows || []).forEach(function(r) {
+    var n = function(i) { return parseFloat(r[i]) || 0; };
+    pl.revenue['QR Payment'] += n(7);
+    pl.revenue['เงินสด (ยอดปิดกะ)'] += n(10);
+    pl.revenue['ไทยช่วยไทยพลัส'] += n(37);
+    // วัตถุดิบหน้าร้าน (จ่ายสดจากเงินสด) — น้ำแข็งของโลตัสเป็นวางบิล ไม่ได้จ่ายจากเงินสด จึงไม่นับตรงนี้
+    var raw = rawIdx.reduce(function(s, i) { return s + n(i); }, 0) + (isLotus ? 0 : n(20));
+    plAdd(pl.cogs, 'วัตถุดิบหน้าร้าน (จ่ายสด)', raw);
+    // ส่วนที่เหลือของค่าใช้จ่ายหน้าร้าน (รายการเพิ่มเติม/ที่ไม่ได้แยกรายการ)
+    plAdd(pl.opex, 'ค่าใช้จ่ายหน้าร้านอื่น ๆ', n(14) - raw);
+    // เงินสดขาด/เกิน: ยอดปิดกะ − ค่าใช้จ่ายหน้าร้าน − Pay In ที่ส่งจริง (ปกติ = 0)
+    pl.cashDiff += n(10) - n(14) - n(16);
+  });
+  pl.revenue['Line Man (เข้าบัญชีคุณซัน)'] += parseFloat(o.linemanSun) || 0;
+
+  (o.payableRows || []).forEach(function(r) {
+    var cat = String(r[3] || ''), desc = String(r[2] || ''), amount = parseFloat(r[4]) || 0;
+    var date = ymdOf(r[0]), paid = String(r[6] || '') === 'Paid', indate = ymdOf(r[11]);
+    var totalPaid = parseJsonArr(r[12]).reduce(function(s, p) { return s + (parseFloat(p.amount) || 0); }, 0);
+    var remaining = paid ? 0 : Math.max(amount - totalPaid, 0);
+    if (FIXED_PAYABLE_CATS.indexOf(cat) >= 0) {
+      if (date.indexOf(month) !== 0) return;
+      plAdd(pl.opex, PL_CAT_LABEL[cat] || cat, amount);
+      pl.notes.fixedUnpaid += remaining;
+      return;
+    }
+    var paidNow = payablePaidInMonth(r, month);
+    if (cat === 'วัตถุดิบ/สินค้า') {
+      var label = desc.indexOf('CFTD') >= 0 ? 'วัตถุดิบ CFTD (วางบิล)'
+        : desc.indexOf('นมจินดา') >= 0 ? 'นมจินดา (วางบิล)'
+        : desc.indexOf('น้ำแข็ง') >= 0 ? 'น้ำแข็ง (วางบิล)' : 'วัตถุดิบอื่น (วางบิล)';
+      plAdd(pl.cogs, label, paidNow);
+    } else {
+      plAdd(pl.opex, PL_CAT_LABEL[cat] || cat || 'อื่นๆ', paidNow);
+    }
+    if (!paid && date && (indate || date).indexOf(month) === 0) pl.notes.rawUnpaid += remaining;
+  });
+
+  (o.acctExpRows || []).forEach(function(r) {
+    if (ymdOf(r[0]).indexOf(month) !== 0) return;
+    var cat = String(r[3] || 'อื่นๆ'), a = parseFloat(r[4]) || 0;
+    if (cat === 'เงินยืม') { pl.notes.loanRepay += a; return; }
+    if (cat === 'วัตถุดิบ/สินค้า') plAdd(pl.cogs, 'วัตถุดิบ (บัญชีร้าน)', a);
+    else plAdd(pl.opex, PL_CAT_LABEL[cat] || cat, a);
+  });
+
+  (o.salaryRows || []).forEach(function(r) {
+    var m = String(r[3] || '').slice(0, 7) || ymdOf(r[0]).slice(0, 7);
+    if (m !== month) return;
+    var amount = parseFloat(r[4]) || 0;
+    var paidSum = parseJsonArr(r[8]).reduce(function(s, p) { return s + (parseFloat(p.amount) || 0); }, 0);
+    plAdd(pl.opex, 'เงินเดือนพนักงาน', amount);
+    if (String(r[7] || '') !== 'Paid') pl.notes.salaryUnpaid += Math.max(amount - paidSum, 0);
+  });
+  return plTotals(pl);
+}
+function plSum(map) { return Object.keys(map).reduce(function(s, k) { return s + map[k]; }, 0); }
+function plTotals(pl) {
+  pl.revTotal = plSum(pl.revenue);
+  pl.cogsTotal = plSum(pl.cogs);
+  pl.gross = pl.revTotal - pl.cogsTotal;
+  pl.opexTotal = plSum(pl.opex);
+  pl.net = pl.gross - pl.opexTotal - pl.cashDiff;
+  pl.cashAfterDebt = pl.net - pl.notes.loanRepay;
+  return pl;
+}
+function mergePL(a, b) { return mergePLList([a, b]); }
+// รวมงบหลายชุด (หลายสาขา และ/หรือ หลายเดือน) — บวกทีละบรรทัด
+function mergePLList(list) {
+  var out = { revenue: {}, cogs: {}, opex: {}, cashDiff: 0, notes: {} };
+  list.forEach(function(x) {
+    out.cashDiff += x.cashDiff;
+    ['revenue', 'cogs', 'opex'].forEach(function(sec) {
+      Object.keys(x[sec]).forEach(function(k) { plAdd(out[sec], k, x[sec][k]); if (!out[sec].hasOwnProperty(k)) out[sec][k] = 0; });
+    });
+    Object.keys(x.notes).forEach(function(k) { out.notes[k] = (out.notes[k] || 0) + (x.notes[k] || 0); });
+  });
+  return plTotals(out);
+}
+
+// เดือนที่อยู่ในช่วงเวลาที่เลือก — ไตรมาส/ปี ใช้ไตรมาส/ปีของเดือนที่เลือก
+function plMonths(period, ym) {
+  var p = String(ym || '').split('-'), y = parseInt(p[0], 10), m = parseInt(p[1], 10);
+  if (!y || !m) return [];
+  var pad = function(x) { return y + '-' + (x < 10 ? '0' : '') + x; };
+  if (period === 'year') { var a = []; for (var i = 1; i <= 12; i++) a.push(pad(i)); return a; }
+  if (period === 'quarter') { var q0 = Math.floor((m - 1) / 3) * 3 + 1; return [pad(q0), pad(q0 + 1), pad(q0 + 2)]; }
+  return [ym];
+}
+function plPeriodLabel(period, ym) {
+  var p = String(ym || '').split('-'), y = parseInt(p[0], 10), m = parseInt(p[1], 10);
+  if (!y || !m) return '';
+  var be = y + 543;
+  if (period === 'year') return 'ปี ' + be + ' (ม.ค.–ธ.ค.)';
+  if (period === 'quarter') {
+    var q = Math.floor((m - 1) / 3) + 1;
+    var ranges = ['ม.ค.–มี.ค.', 'เม.ย.–มิ.ย.', 'ก.ค.–ก.ย.', 'ต.ค.–ธ.ค.'];
+    return 'ไตรมาสที่ ' + q + '/' + be + ' (' + ranges[q - 1] + ')';
+  }
+  return 'เดือน' + thMonthLabel(ym);
+}
+function updatePLHint() {
+  var el = document.getElementById('pl-hint');
+  if (!el) return;
+  var period = document.getElementById('pl-period').value, ym = document.getElementById('pl-month').value;
+  if (!ym) { el.textContent = ''; return; }
+  el.textContent = 'จะแสดงงบ' + plPeriodLabel(period, ym) + (period === 'month' ? '' : ' — ดึงข้อมูลทีละเดือน อาจใช้เวลาสักครู่');
+}
+
+var lastPL = null;
+async function loadPL() {
+  if (!cfg.gsUrl) { toast('กรุณาตั้งค่า URL ก่อน', 'error'); return; }
+  var sel = document.getElementById('pl-branch').value;
+  var period = document.getElementById('pl-period').value;
+  var month = document.getElementById('pl-month').value;
+  if (!month) { toast('กรุณาเลือกเดือน', 'error'); return; }
+  updatePLHint();
+  var txt = document.getElementById('pl-txt');
+  var branches = sel === 'all' ? ['passione', 'lotus'] : [sel];
+  var months = plMonths(period, month);
+  var thisMonth = localYmd().slice(0, 7);
+  // ไม่ดึงเดือนในอนาคต (ยังไม่มีข้อมูล ช่วยให้ดึงเร็วขึ้น)
+  months = months.filter(function(m) { return m <= thisMonth; });
+  if (!months.length) { toast('ช่วงเวลาที่เลือกยังมาไม่ถึง', 'error'); return; }
+  var total = months.length * branches.length, done = 0, failed = [];
+  try {
+    var grid = {};   // grid[branch][month] = pl
+    for (var i = 0; i < branches.length; i++) {
+      var bk = branches[i];
+      grid[bk] = {};
+      for (var j = 0; j < months.length; j++) {
+        var m = months[j];
+        txt.innerHTML = '<span class="loader"></span> ' + (++done) + '/' + total;
+        try {
+          var res = await fetch(cfg.gsUrl + '?branch=' + encodeURIComponent(bk) + '&month=' + m + '&_ts=' + Date.now(), { cache: 'no-store' });
+          var data = await res.json();
+          if (data && data.status === 'error') throw new Error(data.message || 'ชีทตอบกลับผิดพลาด');
+          var lm = null;
+          (data.linemanRows || []).forEach(function(r) { if (String(r[1] || '').slice(0, 7) === m) lm = parseFloat(r[2]) || 0; });
+          if (lm === null) {
+            try { var ls = localStorage.getItem('ct_lineman_sun_' + bk + '_' + m); lm = ls ? (parseFloat(JSON.parse(ls).amount) || 0) : 0; } catch (e) { lm = 0; }
+          }
+          grid[bk][m] = calcPL({ rows: data.rows || [], acctExpRows: data.acctExpRows || [], payableRows: data.payableRows || [], salaryRows: data.salaryRows || [], month: m, linemanSun: lm }, bk);
+        } catch (e1) {
+          failed.push((BRANCH_NAMES[bk] || bk) + ' ' + thMonthLabel(m));
+        }
+      }
+    }
+    if (failed.length === total) throw new Error('ดึงข้อมูลไม่ได้เลย');
+    var per = {};
+    branches.forEach(function(bk) { per[bk] = mergePLList(months.filter(function(m) { return grid[bk][m]; }).map(function(m) { return grid[bk][m]; })); });
+    var byMonth = {};
+    months.forEach(function(m) {
+      var list = branches.filter(function(bk) { return grid[bk][m]; }).map(function(bk) { return grid[bk][m]; });
+      if (list.length) byMonth[m] = mergePLList(list);
+    });
+    var pl = mergePLList(branches.map(function(bk) { return per[bk]; }));
+    lastPL = { pl: pl, per: per, sel: sel, month: month, period: period, months: months, byMonth: byMonth, failed: failed };
+    document.getElementById('pl-body').innerHTML = plHtml(lastPL, false);
+    document.getElementById('pl-empty').style.display = 'none';
+    document.getElementById('pl-actions').style.display = 'flex';
+    if (failed.length) toast('ดึงไม่สำเร็จ ' + failed.length + ' รายการ — ตัวเลขอาจไม่ครบ ลองกดดึงข้อมูลอีกครั้ง', 'error');
+  } catch (err) {
+    toast('ดึงข้อมูลไม่สำเร็จ: ' + err.message, 'error');
+  } finally {
+    txt.textContent = 'ดึงข้อมูล';
+  }
+}
+
+function plFmt(v) {
+  var neg = v < -0.004;
+  var s = Math.abs(v).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return neg ? '(' + s + ')' : s;
+}
+function plPct(v, base) { return base > 0 ? (v / base * 100).toFixed(1) + '%' : '-'; }
+
+function plHtml(L, forPrint) {
+  var pl = L.pl, rev = pl.revTotal;
+  var branchLabel = L.sel === 'all' ? 'รวม 2 สาขา (แพชชั่นระยอง + โลตัสระยอง)' : (BRANCH_NAMES[L.sel] || L.sel);
+  var green = forPrint ? '#1f7a4d' : 'var(--green)', red = forPrint ? '#b84040' : 'var(--red)', muted = forPrint ? '#777' : 'var(--text3)';
+  var line = function(label, v, opts) {
+    opts = opts || {};
+    var style = opts.bold ? 'font-weight:700;' : '';
+    var top = opts.top ? 'border-top:1px solid #999;' : '';
+    var dbl = opts.dbl ? 'border-top:1px solid #333;border-bottom:3px double #333;' : '';
+    var color = opts.color ? 'color:' + opts.color + ';' : '';
+    return '<tr style="' + style + '"><td style="padding:5px 8px;' + (opts.indent ? 'padding-left:22px;' : '') + '">' + escHtml(label) + '</td>'
+      + '<td style="padding:5px 8px;text-align:right;font-family:\'DM Mono\',monospace;' + top + dbl + color + '">' + plFmt(v) + '</td>'
+      + '<td style="padding:5px 8px;text-align:right;color:' + muted + ';font-size:11px;' + top + dbl + '">' + (opts.pct === false ? '' : plPct(v, rev)) + '</td></tr>';
+  };
+  var head = function(t) { return '<tr><td colspan="3" style="padding:12px 8px 4px;font-weight:700;">' + t + '</td></tr>'; };
+  var items = function(map) {
+    return Object.keys(map).filter(function(k) { return Math.abs(map[k]) > 0.004; })
+      .map(function(k) { return line(k, map[k], { indent: true }); }).join('')
+      || '<tr><td colspan="3" style="padding:4px 22px;color:' + muted + ';font-size:12px;">— ไม่มีรายการ —</td></tr>';
+  };
+  var netColor = pl.net >= 0 ? green : red;
+  var gm = rev > 0 ? (pl.gross / rev * 100).toFixed(1) + '%' : '-';
+  var nm = rev > 0 ? (pl.net / rev * 100).toFixed(1) + '%' : '-';
+
+  var kpi = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">'
+    + '<div style="border:1px solid #ddd;border-radius:8px;padding:10px 12px;"><div style="font-size:11px;color:' + muted + ';">รายได้รวม</div><div style="font-size:18px;font-weight:700;font-family:\'DM Mono\',monospace;">฿' + plFmt(rev) + '</div></div>'
+    + '<div style="border:1px solid #ddd;border-radius:8px;padding:10px 12px;"><div style="font-size:11px;color:' + muted + ';">อัตรากำไรขั้นต้น</div><div style="font-size:18px;font-weight:700;font-family:\'DM Mono\',monospace;">' + gm + '</div></div>'
+    + '<div style="border:1px solid #ddd;border-radius:8px;padding:10px 12px;border-left:4px solid ' + netColor + ';"><div style="font-size:11px;color:' + muted + ';">' + (pl.net >= 0 ? 'กำไรสุทธิ' : 'ขาดทุนสุทธิ') + ' (' + nm + ')</div><div style="font-size:18px;font-weight:700;font-family:\'DM Mono\',monospace;color:' + netColor + ';">฿' + plFmt(pl.net) + '</div></div>'
+    + '</div>';
+
+  var table = '<table style="width:100%;border-collapse:collapse;font-size:13px;">'
+    + '<thead><tr><th style="text-align:left;padding:6px 8px;border-bottom:2px solid #333;">รายการ</th><th style="text-align:right;padding:6px 8px;border-bottom:2px solid #333;">บาท</th><th style="text-align:right;padding:6px 8px;border-bottom:2px solid #333;font-size:11px;">% ของรายได้</th></tr></thead><tbody>'
+    + head('รายได้จากการขาย') + items(pl.revenue) + line('รวมรายได้', rev, { bold: true, top: true })
+    + head('หัก ต้นทุนขาย (วัตถุดิบ)') + items(pl.cogs) + line('รวมต้นทุนขาย', pl.cogsTotal, { bold: true, top: true })
+    + line('กำไรขั้นต้น', pl.gross, { bold: true, top: true, color: pl.gross >= 0 ? green : red })
+    + head('หัก ค่าใช้จ่ายในการดำเนินงาน') + items(pl.opex) + line('รวมค่าใช้จ่ายดำเนินงาน', pl.opexTotal, { bold: true, top: true })
+    + (Math.abs(pl.cashDiff) > 0.004 ? head('รายการปรับปรุง') + line('เงินสดขาด (เกิน) จากการปิดกะ', pl.cashDiff, { indent: true }) : '')
+    + line(pl.net >= 0 ? 'กำไรสุทธิ' : 'ขาดทุนสุทธิ', pl.net, { bold: true, dbl: true, color: netColor })
+    + '</tbody></table>';
+
+  var breakdown = '';
+  if (L.sel === 'all' && L.per.passione && L.per.lotus) {
+    var row = function(name, x) {
+      return '<tr><td style="padding:5px 8px;">' + name + '</td>'
+        + '<td style="padding:5px 8px;text-align:right;font-family:\'DM Mono\',monospace;">' + plFmt(x.revTotal) + '</td>'
+        + '<td style="padding:5px 8px;text-align:right;font-family:\'DM Mono\',monospace;">' + plFmt(x.gross) + '</td>'
+        + '<td style="padding:5px 8px;text-align:right;color:' + muted + ';font-size:11px;">' + plPct(x.gross, x.revTotal) + '</td>'
+        + '<td style="padding:5px 8px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:700;color:' + (x.net >= 0 ? green : red) + ';">' + plFmt(x.net) + '</td></tr>';
+    };
+    breakdown = '<div style="font-weight:700;margin:16px 0 6px;">แยกตามสาขา</div>'
+      + '<table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr>'
+      + '<th style="text-align:left;padding:6px 8px;border-bottom:2px solid #333;">สาขา</th><th style="text-align:right;padding:6px 8px;border-bottom:2px solid #333;">รายได้</th><th style="text-align:right;padding:6px 8px;border-bottom:2px solid #333;">กำไรขั้นต้น</th><th style="text-align:right;padding:6px 8px;border-bottom:2px solid #333;font-size:11px;">%</th><th style="text-align:right;padding:6px 8px;border-bottom:2px solid #333;">กำไร(ขาดทุน)สุทธิ</th></tr></thead><tbody>'
+      + row('แพชชั่นระยอง', L.per.passione) + row('โลตัสระยอง', L.per.lotus)
+      + '</tbody></table>';
+  }
+
+  var n = pl.notes;
+  var notes = '<div style="font-weight:700;margin:16px 0 6px;">หมายเหตุประกอบ</div><ol style="margin:0 0 0 18px;padding:0;font-size:12px;line-height:1.75;">'
+    + '<li><b>เกณฑ์การรับรู้:</b> เงินเดือน ค่าเช่า ค่าน้ำไฟ ภาษี ค่าบริการ — นับเต็มยอดในเดือนที่เกิด (เกณฑ์คงค้าง) แม้ยังไม่จ่าย · วัตถุดิบวางบิล — นับเมื่อจ่ายเงินจริง (เกณฑ์เงินสด) จึงอาจแกว่งตามรอบการจ่ายบิล</li>'
+    + '<li><b>ค้างจ่ายที่นับเป็นค่าใช้จ่ายแล้ว:</b> เงินเดือน ฿' + plFmt(n.salaryUnpaid) + ' · ค่าเช่า/ไฟ/ภาษี/บริการ ฿' + plFmt(n.fixedUnpaid) + '</li>'
+    + '<li><b>วางบิลวัตถุดิบค้างชำระ (ยังไม่นับในงบนี้):</b> ฿' + plFmt(n.rawUnpaid) + ' — จะนับในเดือนที่จ่าย</li>'
+    + '<li><b>กระแสเงินสด (ไม่ใช่กำไร):</b> คืนเงินยืม ฿' + plFmt(n.loanRepay) + ' เป็นการใช้หนี้ ไม่นับเป็นค่าใช้จ่าย · เงินสดเหลือจริงหลังคืนหนี้ ฿' + plFmt(pl.cashAfterDebt) + '</li>'
+    + '<li>รายได้ Line Man ใช้ยอดที่โอนเข้าบัญชีคุณซันจริง (หักค่าธรรมเนียม Line Man แล้ว) · วันที่มียอดขาย ' + n.days + ' วัน</li>'
+    + '<li>ตัวเลขในวงเล็บ ( ) คือค่าติดลบ · ข้อมูลจากระบบบัญชีรายวัน CoffeeToday ณ วันที่ ' + localYmd() + ' — เป็นงบภายในเพื่อการบริหาร ไม่ใช่งบที่ผู้สอบบัญชีรับรอง</li>'
+    + '</ol>';
+
+  var title = '<div style="text-align:center;margin-bottom:12px;"><div style="font-size:17px;font-weight:700;">Coffee Today — งบกำไรขาดทุน</div>'
+    + '<div style="font-size:13px;">' + escHtml(branchLabel) + '</div>'
+    + '<div style="font-size:12px;color:' + muted + ';">สำหรับ' + plPeriodLabel(L.period || 'month', L.month) + '</div></div>';
+
+  var trend = '';
+  if (L.period && L.period !== 'month' && L.byMonth) {
+    var trow = function(m, x) {
+      return '<tr><td style="padding:5px 8px;">' + thMonthLabel(m) + '</td>'
+        + '<td style="padding:5px 8px;text-align:right;font-family:\'DM Mono\',monospace;">' + plFmt(x.revTotal) + '</td>'
+        + '<td style="padding:5px 8px;text-align:right;font-family:\'DM Mono\',monospace;">' + plFmt(x.gross) + '</td>'
+        + '<td style="padding:5px 8px;text-align:right;color:' + muted + ';font-size:11px;">' + plPct(x.gross, x.revTotal) + '</td>'
+        + '<td style="padding:5px 8px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:700;color:' + (x.net >= 0 ? green : red) + ';">' + plFmt(x.net) + '</td></tr>';
+    };
+    trend = '<div style="font-weight:700;margin:16px 0 6px;">แยกรายเดือน</div>'
+      + '<table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr>'
+      + '<th style="text-align:left;padding:6px 8px;border-bottom:2px solid #333;">เดือน</th><th style="text-align:right;padding:6px 8px;border-bottom:2px solid #333;">รายได้</th><th style="text-align:right;padding:6px 8px;border-bottom:2px solid #333;">กำไรขั้นต้น</th><th style="text-align:right;padding:6px 8px;border-bottom:2px solid #333;font-size:11px;">%</th><th style="text-align:right;padding:6px 8px;border-bottom:2px solid #333;">กำไร(ขาดทุน)สุทธิ</th></tr></thead><tbody>'
+      + L.months.filter(function(m) { return L.byMonth[m]; }).map(function(m) { return trow(m, L.byMonth[m]); }).join('')
+      + '</tbody></table>';
+  }
+  var warn = (L.failed && L.failed.length)
+    ? '<div style="margin-top:12px;padding:8px 10px;border:1px solid ' + red + ';border-radius:6px;font-size:12px;color:' + red + ';">⚠ ข้อมูลไม่ครบ — ดึงไม่สำเร็จ: ' + escHtml(L.failed.join(', ')) + '</div>' : '';
+  var body = title + kpi + table + breakdown + trend + notes + warn;
+  return forPrint ? body : '<div class="card">' + body + '</div>';
+}
+
+function printPL() {
+  if (!lastPL) { toast('กรุณาดึงข้อมูลก่อน', 'error'); return; }
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+    + '<title>งบกำไรขาดทุน ' + plPeriodLabel(lastPL.period, lastPL.month) + '</title>'
+    + '<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&family=DM+Mono&display=swap" rel="stylesheet">'
+    + '<style>body{font-family:Sarabun,sans-serif;padding:24px;max-width:760px;margin:0 auto;color:#222;}@media print{.no-print{display:none!important;}body{padding:0;}}</style></head><body>'
+    + '<div class="no-print" style="text-align:center;margin-bottom:16px;"><button onclick="window.print()" style="padding:8px 24px;font-size:14px;background:#8b6f47;color:#fff;border:none;border-radius:6px;font-family:Sarabun,sans-serif;">🖨 พิมพ์ / บันทึก PDF</button></div>'
+    + plHtml(lastPL, true) + '</body></html>';
+  var win = window.open('', '_blank');
+  if (win) { win.document.write(html); win.document.close(); }
+  else toast('กรุณาอนุญาต Pop-up ในเบราว์เซอร์', 'error');
+}
+
+function sharePL() {
+  if (!lastPL) { toast('กรุณาดึงข้อมูลก่อน', 'error'); return; }
+  var pl = lastPL.pl, n = pl.notes;
+  var branchLabel = lastPL.sel === 'all' ? 'รวม 2 สาขา' : (BRANCH_NAMES[lastPL.sel] || lastPL.sel);
+  var t = 'Coffee Today — งบกำไรขาดทุน\n' + branchLabel + ' · ' + plPeriodLabel(lastPL.period, lastPL.month) + '\n\n'
+    + 'รายได้รวม ' + plFmt(pl.revTotal) + '\n'
+    + 'ต้นทุนวัตถุดิบ ' + plFmt(pl.cogsTotal) + '\n'
+    + 'กำไรขั้นต้น ' + plFmt(pl.gross) + ' (' + plPct(pl.gross, pl.revTotal) + ')\n'
+    + 'ค่าใช้จ่ายดำเนินงาน ' + plFmt(pl.opexTotal) + '\n'
+    + (Math.abs(pl.cashDiff) > 0.004 ? 'เงินสดขาด(เกิน) ' + plFmt(pl.cashDiff) + '\n' : '')
+    + (pl.net >= 0 ? 'กำไรสุทธิ ' : 'ขาดทุนสุทธิ ') + plFmt(pl.net) + ' (' + plPct(pl.net, pl.revTotal) + ')\n';
+  if (lastPL.sel === 'all' && lastPL.per.passione && lastPL.per.lotus) {
+    t += '\nแยกสาขา (กำไรสุทธิ)\n- แพชชั่นระยอง ' + plFmt(lastPL.per.passione.net) + '\n- โลตัสระยอง ' + plFmt(lastPL.per.lotus.net) + '\n';
+  }
+  t += '\nกระแสเงินสด: คืนเงินยืม ' + plFmt(n.loanRepay) + ' → เงินสดเหลือจริง ' + plFmt(pl.cashAfterDebt) + ' (ไม่ใช่กำไร)';
+  if (navigator.share) {
+    navigator.share({ title: 'งบกำไรขาดทุน ' + plPeriodLabel(lastPL.period, lastPL.month), text: t }).catch(function() {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(t).then(function() { toast('คัดลอกสรุปแล้ว — วางในแชทได้เลย ✓', 'success'); }, function() { toast('คัดลอกไม่สำเร็จ', 'error'); });
+  } else {
+    toast('อุปกรณ์นี้ไม่รองรับการแชร์', 'error');
+  }
+}
 
 async function loadYearly() {
   if (!cfg.gsUrl) { toast('กรุณาตั้งค่า URL ก่อน','error'); return; }
@@ -4605,7 +4971,6 @@ window.addEventListener('beforeunload', function(e) {
 </div>
 </body>
 </html>
-
 
 
 

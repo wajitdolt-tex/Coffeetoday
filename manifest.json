@@ -1,0 +1,17 @@
+{
+  "name": "Coffee Today POS",
+  "short_name": "Coffee POS",
+  "description": "ระบบขายหน้าร้าน Coffee Today",
+  "lang": "th",
+  "start_url": "./COFFEETODAY-POS.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FBF5EC",
+  "theme_color": "#5A3319",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

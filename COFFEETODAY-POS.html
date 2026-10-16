@@ -477,6 +477,12 @@ body:not(.v-sell) .chrow{display:none}
 .h2ic{margin-bottom:0}
 .h2chips{justify-content:center}
 @media (max-width:700px){.h2grid{grid-template-columns:1fr;gap:14px}.h2card{min-height:190px;padding:22px 22px 20px}.h2ic{width:54px;height:54px}.h2t{margin-top:14px}.h2go{right:20px;top:22px}}
+.svb{position:absolute;left:6px;bottom:6px;z-index:2;font-size:11px;font-weight:800;padding:3px 8px;border-radius:8px;color:#fff;letter-spacing:.2px;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.svb.rf{background:#0E7490}.svb.di{background:#7C3AED}
+.svb.in{position:static;display:inline-block;vertical-align:middle;font-size:11px;padding:2px 7px;box-shadow:none;margin-right:2px}
+.mc.sv-rf{border-color:#0E7490;box-shadow:0 0 0 1.5px #0E7490 inset,var(--cardsh)}
+.mc.sv-di{border-color:#7C3AED;box-shadow:0 0 0 1.5px #7C3AED inset,var(--cardsh)}
+.mc.sv-rf .mc-pr{color:#0E7490}.mc.sv-di .mc-pr{color:#7C3AED}
 </style>
 </head>
 <body>
@@ -1815,7 +1821,7 @@ module.exports = QRCode;
 /* =====================================================================
    COFFEETODAY-POS  v1.0  —  single-file POS (ES5)  ·  Supabase + Star PassPRNT
 ===================================================================== */
-var APP_VER='1.8.8';
+var APP_VER='1.8.9';
 var LOGO='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADpAQAAAAAy94dsAAAHO0lEQVR42p2Zv27kyBHGf2wS4hhY3xBwsjDWIh9B4QYLi4+yj7DhBXunvvMFDvcNrNdwYvdd4gsFv4DbwAbyRVxBASVQLAf9h90kZ3A4JquZmqouVn31dVVtIZx7FL9B/HP4o9gzLr8bz2k/T2eN33PWeFHMZ7Rfznv++bz4Fjlz9ktFlO9oPwL6tPjT2aCKPit+ADAnxXfwVWJr/QDXtOHDWjpCIVGsdtJxEd9re3YHb2E4IX5J3N4Rf4Ya+lNouYXXWZCyZ3Lf2Hrf80coAaZ945/gFSeNz8CNiAzFbtQGKCQVq910HHaNz8C1C7z/JsPa0wGH8KeD7Hh+DxcAVCEpapuOUwX8FNOh9sT3UIe/zVa8Tkf+YlPyKaBJbdNxwrVP8Cb8vS0i0fA+fhrW4gco9Wnjd2mqA9iiWHr4sMNhaXXEJ4BNJUSYVF4EW1p5CWzKHEy57YgmtU71vmu5bRmLDEwpWaVoUjEddWqzyqP2aZNqnYjzdGxivkmHyv69W1dehknp4Son/FT7OQZhya9dxPHueJB+x7UO6B2E7nKwqezuuGXMwaayu0NHN/pF+xYa51ly6hjELzr4ufqFEy/VMS8+dTHfGtoBB5mPIeu29GCagRsvLiSIhyAeoBSL/063GdiUS0cTULCJ2iYdJMymnqAwoSAP0WP/hsojuFhpe7ApuyKrIQObyu+OHaxlCA7voJyS6lIEjzvaNv1sc7CppkwQO61/qFaxWLvpatElaGSOdaqPm8ui4o8b1yQn/D4H28RifE64xtTeuAZs5d+mSG4GQKm8qFVOXfk91kdaWKJm0rvmkMdeZYl+nQBn3sa8/ovJ0aTISONjQnhee8gv1V/XxlYLkPcf7bTHM2bVgmx2qEvlENnaaFKApsxmnfb8m/pzXyWHU/LBaZ9o/3unXXGizEZ/tk6Y6Fe71jlx/oMvXQa2VX3/txkyNKmMNn5MXZi9dkTTd/2amyrQf/NvWex7PqQVP2ZgW5qDXepSPnovajcpytv7Yd0VOLtqFc+POZpUTjit3nie4Ki2q3tSkaCpGH9Sc0ZdmcPf8s9tGRySg3Wfo0ktd9fR+hnpNnPN80U9fDkI1l17oetS4ZRi5O4Zhmwco3K/6PkWjBSMmu6YoElk5lpsKyJwQ62/5rhchP7FWgtSYpiWEbVxrsVMvjIWehNTPnvXrP/UoeeFZw5JGfADNM3Q6m5bBgPINwC8T6Mm4a1g9vwmCxVUCdYmbuEw0jVqQ9CjO8Eh9l16rorV+ejUyn8s6DJOe4ILZmfk1cbzBigmiW/cL2hSodhKigmwekrRpKKO0S/dbhn4/Bntv9MLmlRk9gbGJqvB3ml7NNm+21CUipg9cHWV9YkwxtAAw+/fd+ilt6ALomwSSi9ClVozfUYCzaqIdNo9uHDFCWg8zshUiCmTJl0tXWczF6ulhXjjzttJMalkIApuuhR1Y8UIXSzBKrg2AiPDwfm7vLlOPO9tw1BxIBm+Y4/MgPEJfV64KWmGND32qaji5VL4RmQoRcQIIgYu3RDt4qEidf9IAQb+t7CHx/khtPaiYUqTpmLpfE/FAzD3PC5oCvP0XE61aIoBG2crjrgBVWSqp3KCC/gQfJuoVXBigvkzPCdN3eeFtRlBulAg1k8Krh2buZbhOEJpypl3UPv2rFQhPAMVvIEi9gsPCcadvf946L34QWlWaZ9RPje+iLRDwcVSBg28+fkeg+3BuFH/LaHrpB24rCcuaS0cRewyQvXurF/elly6YoRbKH1naWqhBUTs17QjFDIBrZ9ibS28gVJELMcJkAG4CeLSIeRGxDjxjYFSUnGhaUU0xxm4BI6Bz5sZzQUMiHZB/AU3rYcZRtNCLRPUfoVWxA77APCnD3415/N2ESfoETF8GanFQC0un9dxPJ8Qy7+EWoBahjh6B/GN5Sj2OAGljOBzrtKtXTs8Lm3D67ShNBbpw1ZQQZio/YroWkMrM7hguQAH44UH/YOrKFl4PRRboTmKceEYCVD3Yt2W0M4+WjYuIVSspnd0DwtbfpUzpEipjfNbXljGQz+FXHAjYzIs5Qs0UyOScGedi23NTTqXrZaWttxf0qjAzdpl0JVuue5TZ2gNcG0g2TcRuNnUy4YuMlc4e8QGb0xIRyYejov2UVauVfx1XAj1aqeFnuJCqTBrsaKa4814sdOA/7Ts995uxEVYZt+f2MZarf1+r97bM7Xm2u/32mTfFLT10FlfYu93Z4PGL5TynVAcWsfjOmRZEVWj48kPe4m39VSKmHyNtuzXbDkXW9uJ8WKdjtT4UIhOqmOrTa+7zYouiA9C93e2G9O4+nOMIvvGK8de5cmBS1cZgjfz2Dod+Y7PFHsb07if/vMmZIlrBf9mZ2NapJ1AMZ8cFTX5xnRnkrw6Lzanxf16J7TRfn16nyp2579OsnyX52bgZpOO1dl7G9MYtS9/mM5pH16dn78/cM74rM6K95//A6zsh/hEoQzPAAAAAElFTkSuQmCC';
 var SB_URL='https://ummtqzweedmotrffqrhw.supabase.co';
 var SB_KEY='sb_publishable_yIUQ7A8IjCXKSp7OgKoGjw_65k3iO-X';
@@ -2061,6 +2067,9 @@ function sizeOf(it){var m=String((it&&it.variant)||'').match(/(\d+)\s*oz/i);retu
 function secOf(it){var t=tempOf(it);return t&&sizeOf(it)?t+' '+sizeOf(it)+' oz':t;}
 function tempRank(it){var t=tempOf(it);for(var i=0;i<TEMPS.length;i++)if(TEMPS[i][0]===t)return i+sizeOf(it)/100;return 9;}
 function tempLabel(t){for(var i=0;i<TEMPS.length;i++)if(t.indexOf(TEMPS[i][0])===0)return TEMPS[i][1]+t.slice(TEMPS[i][0].length);return '';}
+function svcTag(it){if(!it)return null;var c=it.category||'',n=it.receipt_name||'';
+  if(c==='รีฟิล'||/รีฟิล/.test(n))return {t:'🔁 รีฟิล',c:'rf',w:'รีฟิล'};
+  if(c==='ทานร้าน'||/ทานร้าน/.test(n))return {t:'🍽️ ทานร้าน',c:'di',w:'ทานร้าน'};return null;}
 function cats(gs){var seen={},out=[];for(var i=0;i<gs.length;i++){if(!seen[gs[i].cat]){seen[gs[i].cat]=1;out.push(gs[i].cat);}}return out;}
 function addons(){return MENU.filter(function(it){return it.is_addon&&it.active!==false&&priceOf(it,'walkin')!=null;}).sort(function(a,b){return (a.sort||0)-(b.sort||0);});}
 
@@ -2130,7 +2139,8 @@ function renderSell(){
     else if(lastCat===null){gh+='<div class="mgrid">';lastCat='';}
     var ic=iconOf(g.grp+' '+(g.items[0].receipt_name||'')),tn=tintOf(g.items,ic),tt=tempTags(g.items);
     var vs=g.split?'':g.items.length>2?(g.items.length+' แบบ'):g.items.length>1?g.items.map(function(x){return x.variant||'ปกติ';}).join(' · '):(g.items[0].variant||'');
-    gh+='<button class="mc'+(allSo?' so':'')+(np?' np':'')+'" data-act="grp" data-v="'+esc(g.key)+'"><div class="mc-img '+tn+'">'+(img?'<img src="'+esc(img)+'" loading="lazy" alt="">':ic)+(tt.length?'<div class="tp">'+tt.map(function(t){return '<i>'+t+'</i>';}).join('')+'</div>':'')+'</div>'+
+    var sv=svcTag(g.items[0]);
+    gh+='<button class="mc'+(allSo?' so':'')+(np?' np':'')+(sv?' sv-'+sv.c:'')+'" data-act="grp" data-v="'+esc(g.key)+'"><div class="mc-img '+tn+'">'+(sv?'<span class="svb '+sv.c+'">'+sv.t+'</span>':'')+(img?'<img src="'+esc(img)+'" loading="lazy" alt="">':ic)+(tt.length?'<div class="tp">'+tt.map(function(t){return '<i>'+t+'</i>';}).join('')+'</div>':'')+'</div>'+
       '<div class="mc-body"><div class="mc-nm">'+esc(g.grp)+'</div>'+(vs?'<div class="mc-vs">'+esc(vs)+'</div>':'')+'<div class="mc-pr">'+(np?'<span class="nop">ยังไม่ตั้งราคา</span>':(mn===mx?baht(mn):baht(mn)+' – '+baht(mx)))+'</div></div></button>';
   }
   if(gh)gh+='</div>';
@@ -2152,7 +2162,7 @@ function renderCart(){
     if(l.sweet)sub.push('🍯 '+esc(l.sweet));
     if(l.note)sub.push('📝 '+esc(l.note));
     var ic=iconOf(l.name),it=menuById(l.mid),tn=tintOf(it?[it]:[{variant:l.variant,kind:l.kind}],ic);
-    h+='<div class="cl"><div class="r1"><div class="ci mc-img '+tn+'">'+ic+'</div><div class="nm">'+esc(l.name)+(sub.length?'<div class="sub">'+sub.join('<br>')+'</div>':'')+'</div><div class="amt">'+baht(lineTotal(l))+'</div></div>'+
+    var lsv=svcTag(it);h+='<div class="cl"><div class="r1"><div class="ci mc-img '+tn+'">'+ic+'</div><div class="nm">'+(lsv?'<span class="svb in '+lsv.c+'">'+lsv.t+'</span> ':'')+esc(l.name)+(sub.length?'<div class="sub">'+sub.join('<br>')+'</div>':'')+'</div><div class="amt">'+baht(lineTotal(l))+'</div></div>'+
       '<div class="r2"><div class="qty"><button data-act="lq" data-i="'+i+'" data-d="-1">−</button><span>'+l.qty+'</span><button data-act="lq" data-i="'+i+'" data-d="1">+</button></div>'+
       '<button class="mini" data-act="ledit" data-i="'+i+'">✏️ '+(l.kind==='drink'&&!(menuById(l.mid)||{}).is_addon?'แก้ไข':'หมายเหตุ')+'</button>'+'<button class="mini del" data-act="ldel" data-i="'+i+'">ลบ</button></div></div>';}
   if(!h)h='<div class="empty" style="padding:40px 0"><div style="font-size:40px;opacity:.35">🛒</div>ยังไม่มีรายการ<br>แตะเมนูเพื่อเพิ่ม</div>';
@@ -2186,7 +2196,7 @@ function openPicker(key,editIdx){
 function renderPicker(){
   var g=groupByKey(PK.key);if(!g){closeModal();return;}
   var gic=iconOf(g.grp+' '+(g.items[0].receipt_name||'')),cur=menuById(PK.sel),gim=(cur&&cur.img&&SET_UI_IMG())?cur.img:null;for(var gi=0;gi<g.items.length;gi++)if(!gim&&g.items[gi].img&&SET_UI_IMG())gim=g.items[gi].img;
-  var h='<div class="mh"><h2><span class="hi mc-img '+tintOf(g.items,gic)+'">'+(gim?'<img src="'+esc(gim)+'" alt="">':gic)+'</span><span>'+esc(g.grp)+'<small>'+(cur?baht(priceOf(cur,S.ch))+(cur.variant?' · '+esc(cur.variant):''):'')+'</small></span></h2><button class="x" data-act="close">✕</button></div><div class="mb">';
+  var h='<div class="mh"><h2><span class="hi mc-img '+tintOf(g.items,gic)+'">'+(gim?'<img src="'+esc(gim)+'" alt="">':gic)+'</span><span>'+(svcTag(g.items[0])?'<span class="svb in '+svcTag(g.items[0]).c+'">'+svcTag(g.items[0]).t+'</span> ':'')+esc(g.grp)+'<small>'+(cur?baht(priceOf(cur,S.ch))+(cur.variant?' · '+esc(cur.variant):''):'')+'</small></span></h2><button class="x" data-act="close">✕</button></div><div class="mb">';
   h+='<div class="sec">เลือกแบบ</div><div class="opts">';
   for(var i=0;i<g.items.length;i++){var it=g.items[i];
     h+='<button class="opt big'+(it.id===PK.sel?' on':'')+'" data-act="pkSel" data-v="'+esc(it.id)+'"'+(isSoldOut(it)||priceOf(it,S.ch)==null?' disabled':'')+'>'+esc(it.variant||'ปกติ')+'<small>'+(isSoldOut(it)?'หมด':priceOf(it,S.ch)==null?'ไม่มีราคา':baht(priceOf(it,S.ch)))+'</small></button>';}
@@ -2213,7 +2223,8 @@ function pickerOk(){
   else addLine(it,PK.qty,ads,note,sweet);
   closeModal();
 }
-function mkLine(it,qty,ads,note,sweet){return {sweet:sweet||'',k:uid(),mid:it.id,rid:it.recipe_id||null,name:it.receipt_name,variant:it.variant||'',grpKey:(it.category||'อื่นๆ')+'|'+it.grp,price:priceOf(it,S.ch),qty:qty,addons:ads,note:note,kind:it.kind||'drink'};}
+function svcName(it){var n=it.receipt_name||'',sv=svcTag(it);return sv&&n.indexOf(sv.w)<0?n+' ('+sv.w+')':n;}
+function mkLine(it,qty,ads,note,sweet){return {sweet:sweet||'',k:uid(),mid:it.id,rid:it.recipe_id||null,name:svcName(it),variant:it.variant||'',grpKey:(it.category||'อื่นๆ')+'|'+it.grp,price:priceOf(it,S.ch),qty:qty,addons:ads,note:note,kind:it.kind||'drink'};}
 function addLine(it,qty,ads,note,sweet){
   sweet=sweet||'';var sig=it.id+'|'+JSON.stringify(ads)+'|'+note+'|'+sweet;
   for(var i=0;i<S.cart.length;i++){var l=S.cart[i];if(l.mid+'|'+JSON.stringify(l.addons)+'|'+l.note+'|'+(l.sweet||'')===sig){l.qty+=qty;renderCart();bump();return;}}

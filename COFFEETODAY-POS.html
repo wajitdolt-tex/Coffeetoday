@@ -488,6 +488,14 @@ body:not(.v-sell) .chrow{display:none}
 @media (max-width:899px){#sellLock{right:64px}}
 .slk{background:#fff;border:1.5px solid var(--line);border-radius:24px;padding:30px 28px;max-width:380px;width:100%;text-align:center;box-shadow:var(--shadow)}
 .slk-ic{font-size:44px}.slk-t{font-size:22px;font-weight:800;color:var(--brandD);margin-top:6px}.slk-s{font-size:13px;color:var(--muted);margin:6px 0 18px;line-height:1.6}
+.shres{text-align:center;padding:4px 0 16px}
+.sr-co{font-size:24px;font-weight:800;color:var(--brandD);margin-bottom:12px}
+.sr-t{display:flex;align-items:center;justify-content:center;gap:10px;font-size:16px;font-weight:700;color:var(--ink);padding:5px 0}
+.sr-t span{font-size:20px}
+.sr-k{margin-top:16px;font-size:15px;color:var(--muted);font-weight:700}
+.sr-v{font-size:44px;font-weight:800;color:var(--brand);line-height:1.15}
+.sr-d{display:inline-block;margin-top:10px;padding:6px 14px;border-radius:999px;font-weight:800;font-size:14px}
+.sr-d.ok{background:var(--okBg);color:var(--ok)}.sr-d.bad{background:var(--errBg);color:var(--err)}.sr-d.warn{background:var(--warnBg);color:var(--warn)}
 </style>
 </head>
 <body>
@@ -1827,7 +1835,7 @@ module.exports = QRCode;
 /* =====================================================================
    COFFEETODAY-POS  v1.0  —  single-file POS (ES5)  ·  Supabase + Star PassPRNT
 ===================================================================== */
-var APP_VER='1.9.3';
+var APP_VER='1.9.5';
 var LOGO='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADpAQAAAAAy94dsAAAHO0lEQVR42p2Zv27kyBHGf2wS4hhY3xBwsjDWIh9B4QYLi4+yj7DhBXunvvMFDvcNrNdwYvdd4gsFv4DbwAbyRVxBASVQLAf9h90kZ3A4JquZmqouVn31dVVtIZx7FL9B/HP4o9gzLr8bz2k/T2eN33PWeFHMZ7Rfznv++bz4Fjlz9ktFlO9oPwL6tPjT2aCKPit+ADAnxXfwVWJr/QDXtOHDWjpCIVGsdtJxEd9re3YHb2E4IX5J3N4Rf4Ya+lNouYXXWZCyZ3Lf2Hrf80coAaZ945/gFSeNz8CNiAzFbtQGKCQVq910HHaNz8C1C7z/JsPa0wGH8KeD7Hh+DxcAVCEpapuOUwX8FNOh9sT3UIe/zVa8Tkf+YlPyKaBJbdNxwrVP8Cb8vS0i0fA+fhrW4gco9Wnjd2mqA9iiWHr4sMNhaXXEJ4BNJUSYVF4EW1p5CWzKHEy57YgmtU71vmu5bRmLDEwpWaVoUjEddWqzyqP2aZNqnYjzdGxivkmHyv69W1dehknp4Son/FT7OQZhya9dxPHueJB+x7UO6B2E7nKwqezuuGXMwaayu0NHN/pF+xYa51ly6hjELzr4ufqFEy/VMS8+dTHfGtoBB5mPIeu29GCagRsvLiSIhyAeoBSL/063GdiUS0cTULCJ2iYdJMymnqAwoSAP0WP/hsojuFhpe7ApuyKrIQObyu+OHaxlCA7voJyS6lIEjzvaNv1sc7CppkwQO61/qFaxWLvpatElaGSOdaqPm8ui4o8b1yQn/D4H28RifE64xtTeuAZs5d+mSG4GQKm8qFVOXfk91kdaWKJm0rvmkMdeZYl+nQBn3sa8/ovJ0aTISONjQnhee8gv1V/XxlYLkPcf7bTHM2bVgmx2qEvlENnaaFKApsxmnfb8m/pzXyWHU/LBaZ9o/3unXXGizEZ/tk6Y6Fe71jlx/oMvXQa2VX3/txkyNKmMNn5MXZi9dkTTd/2amyrQf/NvWex7PqQVP2ZgW5qDXepSPnovajcpytv7Yd0VOLtqFc+POZpUTjit3nie4Ki2q3tSkaCpGH9Sc0ZdmcPf8s9tGRySg3Wfo0ktd9fR+hnpNnPN80U9fDkI1l17oetS4ZRi5O4Zhmwco3K/6PkWjBSMmu6YoElk5lpsKyJwQ62/5rhchP7FWgtSYpiWEbVxrsVMvjIWehNTPnvXrP/UoeeFZw5JGfADNM3Q6m5bBgPINwC8T6Mm4a1g9vwmCxVUCdYmbuEw0jVqQ9CjO8Eh9l16rorV+ejUyn8s6DJOe4ILZmfk1cbzBigmiW/cL2hSodhKigmwekrRpKKO0S/dbhn4/Bntv9MLmlRk9gbGJqvB3ml7NNm+21CUipg9cHWV9YkwxtAAw+/fd+ilt6ALomwSSi9ClVozfUYCzaqIdNo9uHDFCWg8zshUiCmTJl0tXWczF6ulhXjjzttJMalkIApuuhR1Y8UIXSzBKrg2AiPDwfm7vLlOPO9tw1BxIBm+Y4/MgPEJfV64KWmGND32qaji5VL4RmQoRcQIIgYu3RDt4qEidf9IAQb+t7CHx/khtPaiYUqTpmLpfE/FAzD3PC5oCvP0XE61aIoBG2crjrgBVWSqp3KCC/gQfJuoVXBigvkzPCdN3eeFtRlBulAg1k8Krh2buZbhOEJpypl3UPv2rFQhPAMVvIEi9gsPCcadvf946L34QWlWaZ9RPje+iLRDwcVSBg28+fkeg+3BuFH/LaHrpB24rCcuaS0cRewyQvXurF/elly6YoRbKH1naWqhBUTs17QjFDIBrZ9ibS28gVJELMcJkAG4CeLSIeRGxDjxjYFSUnGhaUU0xxm4BI6Bz5sZzQUMiHZB/AU3rYcZRtNCLRPUfoVWxA77APCnD3415/N2ESfoETF8GanFQC0un9dxPJ8Qy7+EWoBahjh6B/GN5Sj2OAGljOBzrtKtXTs8Lm3D67ShNBbpw1ZQQZio/YroWkMrM7hguQAH44UH/YOrKFl4PRRboTmKceEYCVD3Yt2W0M4+WjYuIVSspnd0DwtbfpUzpEipjfNbXljGQz+FXHAjYzIs5Qs0UyOScGedi23NTTqXrZaWttxf0qjAzdpl0JVuue5TZ2gNcG0g2TcRuNnUy4YuMlc4e8QGb0xIRyYejov2UVauVfx1XAj1aqeFnuJCqTBrsaKa4814sdOA/7Ts995uxEVYZt+f2MZarf1+r97bM7Xm2u/32mTfFLT10FlfYu93Z4PGL5TynVAcWsfjOmRZEVWj48kPe4m39VSKmHyNtuzXbDkXW9uJ8WKdjtT4UIhOqmOrTa+7zYouiA9C93e2G9O4+nOMIvvGK8de5cmBS1cZgjfz2Dod+Y7PFHsb07if/vMmZIlrBf9mZ2NapJ1AMZ8cFTX5xnRnkrw6Lzanxf16J7TRfn16nyp2579OsnyX52bgZpOO1dl7G9MYtS9/mM5pH16dn78/cM74rM6K95//A6zsh/hEoQzPAAAAAElFTkSuQmCC';
 var SB_URL='https://ummtqzweedmotrffqrhw.supabase.co';
 var SB_KEY='sb_publishable_yIUQ7A8IjCXKSp7OgKoGjw_65k3iO-X';
@@ -2730,18 +2738,17 @@ function drawShift(hist){
   } else {
     h+='<div class="box"><h3>🟢 กะเปิดอยู่ · '+esc(BR().name)+'</h3><div class="note" style="margin-bottom:10px">เปิดเมื่อ '+dtStr(SHIFT.opened_at)+' (POS #'+SHIFT.device+') · เงินตั้งต้น '+baht(SHIFT.open_cash)+'</div><div id="shCalc" class="note">กำลังคำนวณเงินสดที่ควรมี…</div>'+
       '<div class="sec" style="margin-top:14px">💸 ค่าใช้จ่ายหน้าร้าน (จ่ายจากเงินสดในลิ้นชัก)</div><div id="exList"></div><button class="mini" data-act="exAdd">+ เพิ่มรายการ</button><div id="exTot" class="note" style="margin-top:6px"></div>'+
-      '<label class="lbl" style="margin-top:14px">นับเงินสดจริงในลิ้นชัก</label><input class="in" id="ccash" inputmode="decimal" style="width:100%;font-size:22px;margin-bottom:8px" placeholder="0.00"><div id="shDiff"></div><input class="in" id="cnote" style="width:100%;margin-bottom:12px" placeholder="หมายเหตุ (ถ้ามี)"><button class="btn" data-act="shClose">ปิดกะ</button></div>';
+      '<input class="in" id="cnote" style="width:100%;margin:14px 0 12px" placeholder="หมายเหตุปิดกะ (ถ้ามี)"><button class="btn" data-act="cpOpen">🔒 ปิดการขาย / นับเงิน</button></div>';
   }
   h+='<div class="box"><h3>ลิ้นชักเงิน</h3><button class="btn ghost sm" data-act="drawerPin">🗄️ เปิดลิ้นชัก</button></div>';
   if(MODE==='demo')hist=lsGet('shift_hist',[]);
   if(hist&&hist.length){h+='<div class="box"><h3>ประวัติกะ</h3><table class="sumtbl">';
-    for(var i=0;i<hist.length;i++){var s=hist[i];if(s.status!=='closed')continue;h+='<tr><td>'+dtStr(s.opened_at).slice(0,16)+' → '+(s.closed_at?dtStr(s.closed_at).slice(11,16):'')+'<div class="note">'+(s.expense_total?'ค่าใช้จ่าย '+money(s.expense_total)+' · ':'')+'ควรมี '+money(s.expected_cash)+' · นับได้ '+money(s.counted_cash)+'</div>'+(s.note?'<div class="note">'+esc(s.note)+'</div>':'')+'</td><td class="r" style="color:'+(s.diff<0?'var(--err)':s.diff>0?'var(--warn)':'var(--ok)')+';font-weight:800">'+(s.diff>0?'+':'')+money(s.diff)+'</td></tr>';}
+    SHHIST={};for(var i=0;i<hist.length;i++){var s=hist[i];if(s.status!=='closed')continue;SHHIST[s.id]=s;h+='<tr><td>'+dtStr(s.opened_at).slice(0,16)+' → '+(s.closed_at?dtStr(s.closed_at).slice(11,16):'')+'<div class="note">'+(s.expense_total?'ค่าใช้จ่าย '+money(s.expense_total)+' · ':'')+'ควรมี '+money(s.expected_cash)+' · นับได้ '+money(s.counted_cash)+'</div>'+(s.note?'<div class="note">'+esc(s.note)+'</div>':'')+'</td><td class="r" style="color:'+(s.diff<0?'var(--err)':s.diff>0?'var(--warn)':'var(--ok)')+';font-weight:800">'+(s.diff>0?'+':'')+money(s.diff)+'<div><button class="mini" style="margin-top:4px" data-act="shSlip" data-v="'+esc(s.id)+'">🖨️</button></div></td></tr>';}
     h+='</table></div>';}
   $('shiftPad').innerHTML=h;
   if(SHIFT){
     SHIFT._ex=SHIFT._ex||lsGet('shift_ex_'+SHIFT.id,[]);drawEx();
     expectedCash(SHIFT).then(function(x){SHIFT._base=x.exp;SHIFT._x=x;shCalcDraw();});
-    $('ccash').oninput=shDiff;
   }
 }
 function expectedCash(sh){
@@ -2767,23 +2774,109 @@ function shCalcDraw(){
   $('shCalc').innerHTML='เงินตั้งต้น '+baht(SHIFT.open_cash)+' + เงินสดจากการขาย '+baht(x.cash)+' ('+x.cnt+' บิล)'+(t?' − ค่าใช้จ่าย '+baht(t):'')+'<br><b style="font-size:17px;color:var(--ink)">เงินสดที่ควรมี '+baht(SHIFT._exp)+'</b>'+(x.offline?'<br><span style="color:var(--warn)">ออฟไลน์: ยังไม่รวมบิลจากเครื่องอื่น</span>':'');
   shDiff();
 }
-function shDiff(){var c=num($('ccash').value),el=$('shDiff');if(c==null||SHIFT._exp==null){el.innerHTML='';return;}var d=r2(c-SHIFT._exp);el.innerHTML='<div class="change'+(d<0?' bad':'')+'"><span>'+(d===0?'ตรงพอดี':d<0?'เงินขาด':'เงินเกิน')+'</span><span>'+baht(Math.abs(d))+'</span></div>';}
+function shDiff(){if(!$('ccash'))return;var c=num($('ccash').value),el=$('shDiff');if(c==null||SHIFT._exp==null){el.innerHTML='';return;}var d=r2(c-SHIFT._exp);el.innerHTML='<div class="change'+(d<0?' bad':'')+'"><span>'+(d===0?'ตรงพอดี':d<0?'เงินขาด':'เงินเกิน')+'</span><span>'+baht(Math.abs(d))+'</span></div>';}
+var SHHIST={};
+var SHOPTS=[['pay','ยอดรับ',1],['payd','แจกแจงการชำระ',1],['cat','สรุปยอดสินค้า',1],['items','รายการสินค้า',0]];
+function shOpt(){var o=lsGet('shopt',null)||{};for(var i=0;i<SHOPTS.length;i++)if(!o.hasOwnProperty(SHOPTS[i][0]))o[SHOPTS[i][0]]=!!SHOPTS[i][2];return o;}
+function shiftSlipHTML(sh,A,rows){
+  var C=SET.company,ex=sh.expenses||[],et=+sh.expense_total||0,O=shOpt();
+  var h='<html><head><meta charset="UTF-8"><style>'+RCSS+'</style></head><body>';
+  h+='<div class="c b" style="font-size:30px">'+esc(C.name)+'</div><div class="c b" style="font-size:30px">สรุปการเข้ากะ</div><div class="c">'+esc((BRANCHES[sh.branch_code]||{}).name||sh.branch||'')+' · POS #'+(sh.device||'')+'</div><div class="hr"></div>';
+  h+=rRow('พนักงาน',esc(C.staff||''))+rRow('เปิด',dtStr(sh.opened_at))+rRow('ปิด',sh.closed_at?dtStr(sh.closed_at):'-')+rRow('รอบที่',String(shiftRound(sh)))+'<div class="hr"></div>';
+  h+='<div class="c">สรุปยอดเงินในลิ้นชักเก็บเงิน</div><div class="hr"></div>';
+  h+=rRow('เงินสดเริ่มต้นเปิดกะ',money(sh.open_cash))+rRow('ชำระเงินสด',money(A.cash))+rRow('ค่าใช้จ่ายหน้าร้าน',money(et));
+  for(var i=0;i<ex.length;i++)h+=rRow('&nbsp;&nbsp;• '+esc(ex[i].name),money(ex[i].amt),'sm');
+  h+=rRow('เงินที่คาดไว้',money(sh.expected_cash))+rRow('จำนวนเงินสดจริง',money(sh.counted_cash))+rRow('<b>ผลต่าง</b>','<b>'+money(sh.diff)+'</b>')+'<div class="hr"></div>';
+  if(O.cat||O.items){
+    var cat={},co=[],it={},io=[];
+    for(var r=0;r<rows.length;r++){var o=rows[r];if(o.status==='void')continue;for(var k=0;k<o.items.length;k++){var x=o.items[k];if(x.addon)continue;var m=menuById(x.mid),cn=(m&&m.category)||'อื่นๆ';
+      if(!cat[cn]){cat[cn]=0;co.push(cn);}cat[cn]+=x.qty;if(!it[x.name]){it[x.name]=0;io.push(x.name);}it[x.name]+=x.qty;}}
+    h+='<div class="c">สรุปยอดสินค้า</div><div class="hr"></div>';
+    if(O.cat)for(var c=0;c<co.length;c++)h+=rRow((c+1)+'. '+esc(co[c]),String(cat[co[c]]));
+    if(O.items){if(O.cat)h+='<div class="hr"></div>';io.sort(function(a,b){return it[b]-it[a];});for(var q=0;q<io.length;q++)h+=rRow((q+1)+'. '+esc(io[q]),String(it[io[q]]),'sm');}
+    if(!co.length)h+='<div class="c sm">ไม่มีรายการขาย</div>';
+    h+='<div class="hr"></div>';
+  }
+  if(O.pay||O.payd){h+='<div class="c">สรุปยอดขาย</div><div class="hr"></div>';
+    if(O.pay)h+=rRow('เงินสด',money(A.cash))+rRow('ออนไลน์',money(A.online));
+    if(O.payd)for(var p=0;p<A.payOrder.length;p++){var py=A.pay[A.payOrder[p]];if(py.type!=='cash'||!O.pay)h+=rRow((O.pay?'&nbsp;&nbsp;• ':'')+esc(py.name),money(py.amt),O.pay?'sm':'');}
+    h+='<div class="hr"></div>'+rRow('ยอดรวม',money(A.sub))+rRow('ส่วนลด',money(A.disc))+rRow('จำนวนปัดเศษ',money(A.round))+rRow('<b>ยอดรวมสุทธิ</b>','<b>'+money(A.net)+'</b>')+(A.voids?rRow('บิลยกเลิก',A.voids+' ('+money(A.voidAmt)+')','sm'):'')+'<div class="hr"></div>';}
+  var un=(sh.note||'').replace(/(^|\s·\s)?ค่าใช้จ่าย:.*$/,'').trim();if(un)h+=rRow('หมายเหตุ',esc(un))+'<div class="hr"></div>';
+  h+='<div style="margin-top:26px">ผู้ปิดกะ ............................................</div>';
+  h+='<div class="c" style="margin-top:14px">** '+dtStr(new Date().toISOString())+' **</div><div style="height:16px"></div></body></html>';
+  return h;
+}
+var SHSLIPCTX=null;
+function openShiftSlip(id){
+  var sh=SHHIST[id];if(!sh)return;
+  $('modal').className='wide';$('modal').innerHTML='<div class="mh"><h2>🖨️ สรุปการเข้ากะ</h2><button class="x" data-act="close">✕</button></div><div class="mb"><div class="note">กำลังโหลด…</div></div>';showModal('wide');
+  shiftRows(sh).then(function(rows){SHSLIPCTX={sh:sh,A:aggregate(rows),rows:rows};drawShiftSlip();});
+}
+function drawShiftSlip(){
+  var o=shOpt(),h='<div class="mh"><h2>🖨️ สรุปการเข้ากะ</h2><button class="x" data-act="close">✕</button></div><div class="mb">'+
+    '<div class="pvwrap" id="pvWrap"><div class="pvpaper" id="pvPaper"><iframe id="pvFrame" title="สรุปกะ" scrolling="no"></iframe></div></div><div class="opts" style="margin:12px 0 4px">';
+  for(var i=0;i<SHOPTS.length;i++){var k=SHOPTS[i][0];h+='<button class="opt sopt'+(o[k]?' on':'')+'" data-act="shOptT" data-v="'+k+'">'+(o[k]?'☑︎ ':'☐ ')+SHOPTS[i][1]+'</button>';}
+  h+='</div><div class="btns"><button class="btn sm" data-act="shSlipPrint">🖨️ พิมพ์</button><button class="btn ghost sm" data-act="close">ปิด</button></div></div>';
+  $('modal').innerHTML=h;
+  SHSLIP=shiftSlipHTML(SHSLIPCTX.sh,SHSLIPCTX.A,SHSLIPCTX.rows);
+  var f=$('pvFrame');f.onload=function(){try{f.style.height=f.contentDocument.body.scrollHeight+'px';}catch(e){}pvScale();};f.srcdoc=SHSLIP;
+}
+var SHSLIP=null;
 function shiftOpen(){
   shiftOpenWith(num($('ocash').value)||0);renderShift();
 }
-function shiftClose(){
-  var c=num($('ccash').value);if(c==null){toast('ใส่ยอดเงินสดที่นับได้','err');return;}
-  if(SHIFT._exp==null){toast('รอคำนวณยอดก่อน','err');return;}
-  var ex=(SHIFT._ex||[]).filter(function(e){return (num(e.amt)||0)>0;}).map(function(e){return {name:(e.name||'').trim()||'ค่าใช้จ่าย',amt:r2(num(e.amt))};});
+function shiftClose(){openClosePad();}
+var CPAD='';
+function openClosePad(){
+  if(!SHIFT){toast('ยังไม่ได้เปิดกะ','err');return;}
+  SHIFT._ex=SHIFT._ex||lsGet('shift_ex_'+SHIFT.id,[]);CPAD='';CPNOTE=$('cnote')?$('cnote').value:(CPNOTE||'');
+  var et=exTotal(),n=SHIFT._ex.filter(function(e){return (num(e.amt)||0)>0;}).length;
+  var h='<div class="mh"><h2>🔒 ปิดการขาย #'+CFG.dev+'</h2><div style="display:flex;gap:8px;align-items:center"><button class="mini" style="white-space:nowrap" data-act="drawer">🗄️ เปิดลิ้นชักเก็บเงิน</button><button class="x" data-act="close">✕</button></div></div><div class="mb">'+
+    '<div class="spad"><div class="disp"><span>นับเงินสดจริงในลิ้นชัก</span><b id="cpDisp">0</b></div><div class="keys">';
+  var ks=['7','8','9','4','5','6','1','2','3','.','0','⌫'];for(var i=0;i<ks.length;i++)h+='<button data-act="cpk" data-v="'+ks[i]+'">'+ks[i]+'</button>';
+  h+='</div></div><div class="adl" style="margin-top:10px"><div><div class="an">💸 ค่าใช้จ่ายหน้าร้าน</div><div class="ap" style="color:var(--muted)">'+(n?n+' รายการ · '+baht(et):'ไม่มี')+'</div></div><button class="mini" data-act="cpEx">✏️ แก้ไข</button></div>'+
+    '<button class="btn" style="margin-top:12px" data-act="cpOk">ตกลง · ปิดกะ</button></div>';
+  $('modal').className='';$('modal').innerHTML=h;showModal();
+}
+var CPNOTE='';
+function cpKey(k){
+  if(k==='⌫')CPAD=CPAD.slice(0,-1);else if(k==='.'){if(CPAD.indexOf('.')<0)CPAD=(CPAD||'0')+'.';}else if(CPAD.length<9){if(CPAD==='0')CPAD='';CPAD+=k;}
+  $('cpDisp').textContent=CPAD||'0';
+}
+function cpConfirm(){
+  var c=num(CPAD);if(c==null){toast('ใส่ยอดเงินสดที่นับได้','err');return;}
   for(var q=0;q<(SHIFT._ex||[]).length;q++){var ee=SHIFT._ex[q];if(ee.amt!==''&&ee.amt!=null&&num(ee.amt)==null){toast('ยอดค่าใช้จ่ายไม่ถูกต้อง','err');return;}}
-  var et=0;for(var w=0;w<ex.length;w++)et+=ex[w].amt;et=r2(et);
-  var exTxt=ex.length?'ค่าใช้จ่าย: '+ex.map(function(e){return e.name+' '+money(e.amt);}).join(', ')+' (รวม '+money(et)+')':'';
-  var un=($('cnote').value||'').trim();
-  var s=ext(clone(SHIFT),{closed_at:new Date().toISOString(),counted_cash:c,expected_cash:SHIFT._exp,diff:r2(c-SHIFT._exp),expenses:ex,expense_total:et,note:[un,exTxt].filter(function(x){return !!x;}).join(' · ')||null,status:'closed',updated_at:new Date().toISOString()});
-  delete s._exp;delete s._ex;delete s._base;delete s._x;lsSet('shift_ex_'+SHIFT.id,null);
-  SHIFT=null;lsSet('shift_'+CFG.branch,null);pushShift(s);S.skipShift=false;updLock();
-  var hist=lsGet('shift_hist',[]);hist.unshift(s);lsSet('shift_hist',hist.slice(0,10));
-  toast('ปิดกะแล้ว · '+(s.diff===0?'เงินตรง':(s.diff<0?'ขาด ':'เกิน ')+baht(Math.abs(s.diff))),'ok');renderShift();
+  $('modal').querySelector('[data-act=cpOk]').disabled=true;
+  expectedCash(SHIFT).then(function(x){
+    var ex=(SHIFT._ex||[]).filter(function(e){return (num(e.amt)||0)>0;}).map(function(e){return {name:(e.name||'').trim()||'ค่าใช้จ่าย',amt:r2(num(e.amt))};});
+    var et=0;for(var w=0;w<ex.length;w++)et+=ex[w].amt;et=r2(et);var exp=r2(x.exp-et);
+    var exTxt=ex.length?'ค่าใช้จ่าย: '+ex.map(function(e){return e.name+' '+money(e.amt);}).join(', ')+' (รวม '+money(et)+')':'';
+    var un=(CPNOTE||'').trim();
+    var s=ext(clone(SHIFT),{closed_at:new Date().toISOString(),counted_cash:c,expected_cash:exp,diff:r2(c-exp),expenses:ex,expense_total:et,note:[un,exTxt].filter(function(z){return !!z;}).join(' · ')||null,status:'closed',updated_at:new Date().toISOString()});
+    delete s._exp;delete s._ex;delete s._base;delete s._x;lsSet('shift_ex_'+SHIFT.id,null);
+    SHIFT=null;lsSet('shift_'+CFG.branch,null);pushShift(s);S.skipShift=false;updLock();CPNOTE='';
+    var hist=lsGet('shift_hist',[]);hist.unshift(s);lsSet('shift_hist',hist.slice(0,10));
+    SHHIST[s.id]=s;if(S.view==='shift')renderShift();openShiftResult(s.id);
+  });
+}
+function shiftRound(sh){var d=ymd(new Date(sh.opened_at)),n=0;for(var k in SHHIST)if(SHHIST.hasOwnProperty(k)){var x=SHHIST[k];if(x.branch_code===sh.branch_code&&ymd(new Date(x.opened_at))===d&&x.opened_at<=sh.opened_at)n++;}return Math.max(1,n);}
+function shiftRows(sh){
+  var from=ymd(new Date(sh.opened_at)),to=ymd(new Date(sh.closed_at||new Date().toISOString()));
+  return fetchOrders(from,to,sh.branch_code).then(function(res){return res.rows.filter(function(o){return o.created_at>=sh.opened_at&&(!sh.closed_at||o.created_at<=sh.closed_at);});});
+}
+function openShiftResult(id){
+  var sh=SHHIST[id];if(!sh)return;
+  $('modal').className='';$('modal').innerHTML='<div class="mh"><h2>✅ ปิดกะแล้ว</h2><button class="x" data-act="close">✕</button></div><div class="mb"><div class="note">กำลังสรุป…</div></div>';showModal();
+  shiftRows(sh).then(function(rows){var A=aggregate(rows);
+    var h='<div class="mh"><h2>✅ ปิดกะแล้ว</h2><button class="x" data-act="close">✕</button></div><div class="mb"><div class="shres">'+
+      '<div class="sr-co">'+esc(SET.company.name)+'</div>'+
+      '<div class="sr-t"><span>🕘</span>'+dtStr(sh.opened_at)+'</div><div class="sr-t"><span>🔒</span>'+dtStr(sh.closed_at)+'</div><div class="sr-t"><span>🔁</span>รอบที่ '+shiftRound(sh)+'</div>'+
+      '<div class="sr-k">ยอดรับทั้งหมด</div><div class="sr-v">'+baht(A.net)+'</div>'+
+      '<div class="sr-d '+(sh.diff<0?'bad':sh.diff>0?'warn':'ok')+'">เงินสด '+(sh.diff===0?'ตรงพอดี':sh.diff<0?'ขาด '+baht(-sh.diff):'เกิน '+baht(sh.diff))+'</div></div>'+
+      '<button class="btn" data-act="shSlip" data-v="'+esc(sh.id)+'">🖨️ พิมพ์สรุปกะ</button>'+
+      '<button class="btn ghost" style="margin-top:8px" data-act="shGo">🕘 หน้ากะการขาย</button>'+
+      '<button class="btn ghost" style="margin-top:8px" data-act="close">ปิด</button></div>';
+    $('modal').innerHTML=h;});
 }
 
 /* ---- admin ---- */
@@ -3690,6 +3783,14 @@ document.addEventListener('click',function(e){
     case 'sumOpt':var so=sumOpt();so[v]=!so[v];lsSet('sumopt',so);t.classList.toggle('on',so[v]);for(var sx=0;sx<SUM_OPTS.length;sx++)if(SUM_OPTS[sx][0]===v)t.textContent=(so[v]?'☑︎ ':'☐ ')+SUM_OPTS[sx][1];sumPreview();break;
     case 'shOpen':shiftOpen();break;
     case 'shClose':shiftClose();break;
+    case 'shSlip':openShiftSlip(v);break;
+    case 'shOptT':var so2=shOpt();so2[v]=!so2[v];lsSet('shopt',so2);drawShiftSlip();break;
+    case 'cpOpen':openClosePad();break;
+    case 'cpk':cpKey(v);break;
+    case 'cpOk':cpConfirm();break;
+    case 'cpEx':closeModal();setView('shift');setTimeout(function(){var el=$('exList');if(el)el.scrollIntoView({block:'center'});},300);break;
+    case 'shGo':closeModal();setView('shift');break;
+    case 'shSlipPrint':if(SHSLIP)passprnt(SHSLIP,false);break;
     case 'exAdd':SHIFT._ex.push({name:'',amt:''});lsSet('shift_ex_'+SHIFT.id,SHIFT._ex);drawEx();var exl=$('exList').querySelectorAll('[data-exn]');if(exl.length)exl[exl.length-1].focus();break;
     case 'exDel':SHIFT._ex.splice(i,1);lsSet('shift_ex_'+SHIFT.id,SHIFT._ex);drawEx();break;
     case 'atab':S.atab=v;renderAdmin();break;
@@ -3836,5 +3937,3 @@ startApp();
 </script>
 </body>
 </html>
-
-

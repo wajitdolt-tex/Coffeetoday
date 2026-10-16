@@ -483,6 +483,11 @@ body:not(.v-sell) .chrow{display:none}
 .mc.sv-rf{border-color:#0E7490;box-shadow:0 0 0 1.5px #0E7490 inset,var(--cardsh)}
 .mc.sv-di{border-color:#7C3AED;box-shadow:0 0 0 1.5px #7C3AED inset,var(--cardsh)}
 .mc.sv-rf .mc-pr{color:#0E7490}.mc.sv-di .mc-pr{color:#7C3AED}
+#v-sell .sell{position:relative}
+#sellLock{position:absolute;left:0;top:0;bottom:0;right:78px;z-index:30;background:rgba(251,245,236,.86);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px}
+@media (max-width:899px){#sellLock{right:64px}}
+.slk{background:#fff;border:1.5px solid var(--line);border-radius:24px;padding:30px 28px;max-width:380px;width:100%;text-align:center;box-shadow:var(--shadow)}
+.slk-ic{font-size:44px}.slk-t{font-size:22px;font-weight:800;color:var(--brandD);margin-top:6px}.slk-s{font-size:13px;color:var(--muted);margin:6px 0 18px;line-height:1.6}
 </style>
 </head>
 <body>
@@ -529,6 +534,7 @@ body:not(.v-sell) .chrow{display:none}
           <button class="btn" id="payBtn" data-act="openPay" disabled>💳 ชำระเงิน</button>
         </div>
       </aside>
+      <div id="sellLock" class="hide"><div class="slk"><div class="slk-ic">🔒</div><div class="slk-t">ยังไม่เปิดระบบขาย</div><div class="slk-s">กดเปิดกะเพื่อเริ่มขาย · เมนูด้านขวาและ ☰ ยังใช้ได้ตามปกติ</div><button class="btn" data-act="openShiftPad">🕘 เปิดกะ / เริ่มขาย</button></div></div>
       <nav id="rail">
         <button data-act="view" data-v="home"><span class="ri">🏠</span>หน้าหลัก</button>
         <button data-act="view" data-v="members"><span class="ri">👥</span>สมาชิก</button>
@@ -1821,7 +1827,7 @@ module.exports = QRCode;
 /* =====================================================================
    COFFEETODAY-POS  v1.0  —  single-file POS (ES5)  ·  Supabase + Star PassPRNT
 ===================================================================== */
-var APP_VER='1.9.2';
+var APP_VER='1.9.3';
 var LOGO='data:image/png;base64,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';
 var SB_URL='https://ummtqzweedmotrffqrhw.supabase.co';
 var SB_KEY='sb_publishable_yIUQ7A8IjCXKSp7OgKoGjw_65k3iO-X';
@@ -2008,7 +2014,7 @@ function loadRemote(){
   sb('GET','pos_shifts?select=*&branch_code=eq.'+CFG.branch+'&status=eq.open&order=opened_at.desc&limit=1').then(function(r){
     var pend=lsGet('shift_pend',null),srv=(r&&r[0])||null;
     if(pend&&pend.branch_code===CFG.branch&&(!srv||pend.updated_at>srv.updated_at))return;
-    SHIFT=srv;lsSet('shift_'+CFG.branch,SHIFT);if(S.view==='home')renderHome();
+    SHIFT=srv;lsSet('shift_'+CFG.branch,SHIFT);updLock();if(S.view==='home')renderHome();
   },function(){});
   if(MODE==='live'&&SESSION)loadProfile().then(function(pr){if(pr.role!=='owner'&&pr.branch&&pr.branch!==CFG.branch){toast('บัญชีนี้ผูกกับ'+BRANCHES[pr.branch].name,'ok');CFG=null;lsSet('cfg',null);startApp();}},function(e){if(e.noprofile){toast('บัญชีนี้ไม่มีสิทธิ์ใช้ POS แล้ว','err');logout();}});
   return Promise.all([p1,p2,p3]).then(function(){if(!S.menuLocal)migrateMenu();S.online=true;setSync(OUTBOX.length?'busy':'ok');renderAll();flush();},function(e){
@@ -2625,9 +2631,17 @@ function aggregate(rows){
       if(amd>0){var ml=o.member.label||'ส่วนลดสมาชิก';A.promos[ml]=(A.promos[ml]||0)+amd;}
       if(apd>0){var pn=o.promo_name||'ส่วนลด';A.promos[pn]=(A.promos[pn]||0)+apd;}}
     if(o.member)A.memBills=(A.memBills||0)+1;
+    var kd={drink:0,snack:0,other:0};
     for(var j=0;j<o.items.length;j++){var it=o.items[j],k=it.name,amt=it.price*it.qty;
       if(!A.items[k]){A.items[k]={name:k,qty:0,amt:0};A.itemOrder.push(k);}A.items[k].qty+=it.qty;A.items[k].amt+=amt;
-      if(it.kind==='snack')A.snack+=amt;else if(it.kind==='other')A.other+=amt;else A.drink+=amt;}
+      kd[it.kind==='snack'?'snack':it.kind==='other'?'other':'drink']+=amt;}
+    // แยกประเภทเป็นยอดหลังหักส่วนลด: ส่วนลดสมาชิกหักจากเครื่องดื่ม(+ขนมถ้าตั้งไว้) · ส่วนลดอื่นเฉลี่ยตามสัดส่วน · ปัดเศษรวมในเครื่องดื่ม
+    var bmd=(o.member&&+o.member.disc)||0,bpd=Math.max(0,(+o.discount||0)-bmd),allSc=memCfg().scope==='all';
+    var el=kd.drink+(allSc?kd.snack:0);
+    if(bmd>0&&el>0){var dd=bmd*kd.drink/el,ds=allSc?bmd*kd.snack/el:0;kd.drink-=dd;kd.snack-=ds;}
+    var tt=kd.drink+kd.snack+kd.other;if(bpd>0&&tt>0){var f=1-bpd/tt;kd.drink*=f;kd.snack*=f;kd.other*=f;}
+    kd.drink+=+(o.rounding||0);
+    A.drink+=kd.drink;A.snack+=kd.snack;A.other+=kd.other;
     for(var p=0;p<o.payments.length;p++){var py=o.payments[p];
       if(!A.pay[py.m]){A.pay[py.m]={name:py.name,type:py.type,amt:0,cnt:0};A.payOrder.push(py.m);}A.pay[py.m].amt+=+py.amt;A.pay[py.m].cnt++;
       if(py.type==='cash')A.cash+=+py.amt;else A.online+=+py.amt;}
@@ -2655,16 +2669,15 @@ function renderSummary(){
     h+='<div class="box"><h3>🏬 สรุปรายงานรายวันขาย</h3><table class="sumtbl">'+
       '<tr><td>Sub Total / ยอดขายก่อนลด</td><td class="r">'+money(A.sub)+'</td></tr>'+
       '<tr><td>− Discount / ส่วนลด</td><td class="r">'+money(A.disc)+'</td></tr>'+
-      '<tr><td>ยอดหลังหักส่วนลด (รวม VAT)</td><td class="r">'+money(A.net)+'</td></tr>'+
+      '<tr><td>ยอดหลังหักส่วนลด'+(SET.vat===true?' (รวม VAT)':'')+'</td><td class="r">'+money(A.net)+'</td></tr>'+
       (SET.vat===true?'<tr class="s"><td>ยอดก่อน VAT / VAT 7%</td><td class="r">'+money(A.vatable)+' / '+money(A.vat)+'</td></tr>':'')+
       '<tr><td>Total Rounding / ปัดเศษ</td><td class="r">'+money(A.round)+'</td></tr>'+
       '<tr class="h"><td>Total Sales / ยอดขายทั้งหมด</td><td class="r">'+money(A.net)+'</td></tr>'+
       '<tr><td>แยก *** ยอดขายเครื่องดื่ม</td><td class="r">'+money(A.drink)+'</td></tr>'+
       '<tr><td>ยอดขายขนม/ของว่าง</td><td class="r">'+money(A.snack)+'</td></tr>'+
       (A.other?'<tr><td>ยอดขายอื่นๆ (แก้ว/บัตรสมาชิก/ห้องประชุม)</td><td class="r">'+money(A.other)+'</td></tr>':'')+
-      '<tr><td>ส่งเสริมการขาย</td><td class="r">−'+money(A.disc)+'</td></tr>'+
-      '<tr class="h"><td>Total Sales / ยอดขายทั้งหมด</td><td class="r">'+money(A.drink+A.snack+A.other-A.disc)+'</td></tr></table>'+
-      '<div class="note" style="margin-top:8px">จำนวนบิล '+A.bills+' · ยอดเครื่องดื่มและขนมเป็นยอดก่อนหักส่วนลด</div></div>';
+      '<tr class="h"><td>Total Sales / ยอดขายทั้งหมด</td><td class="r">'+money(A.net)+'</td></tr></table>'+
+      '<div class="note" style="margin-top:8px">จำนวนบิล '+A.bills+' · ยอดเครื่องดื่ม/ขนม/อื่นๆ เป็นยอดหลังหักส่วนลดแล้ว (ส่วนลดสมาชิกหักจากเครื่องดื่ม · ส่วนลดอื่นเฉลี่ยตามสัดส่วน)</div></div>';
     $('sumBody').innerHTML=h;sumPreview();
   });
 }
@@ -2768,7 +2781,7 @@ function shiftClose(){
   var un=($('cnote').value||'').trim();
   var s=ext(clone(SHIFT),{closed_at:new Date().toISOString(),counted_cash:c,expected_cash:SHIFT._exp,diff:r2(c-SHIFT._exp),expenses:ex,expense_total:et,note:[un,exTxt].filter(function(x){return !!x;}).join(' · ')||null,status:'closed',updated_at:new Date().toISOString()});
   delete s._exp;delete s._ex;delete s._base;delete s._x;lsSet('shift_ex_'+SHIFT.id,null);
-  SHIFT=null;lsSet('shift_'+CFG.branch,null);pushShift(s);S.skipShift=false;
+  SHIFT=null;lsSet('shift_'+CFG.branch,null);pushShift(s);S.skipShift=false;updLock();
   var hist=lsGet('shift_hist',[]);hist.unshift(s);lsSet('shift_hist',hist.slice(0,10));
   toast('ปิดกะแล้ว · '+(s.diff===0?'เงินตรง':(s.diff<0?'ขาด ':'เกิน ')+baht(Math.abs(s.diff))),'ok');renderShift();
 }
@@ -3176,13 +3189,14 @@ function renderHome(){
 
 /* ---------------- open shift pad (แบบ POSPOS) ---------------- */
 var SPAD='';
-function checkShiftPrompt(){if(S.view==='sell'&&!SHIFT&&!S.skipShift)openShiftPad();}
+function checkShiftPrompt(){updLock();if(S.view==='sell'&&!SHIFT&&!S.skipShift){S.skipShift=true;openShiftPad();}}
+function updLock(){var l=$('sellLock');if(!l)return;var on=!SHIFT;l.classList.toggle('hide',!on);$('cartBar').style.visibility=on?'hidden':'';}
 function openShiftPad(){
   SPAD='';
   var h='<div class="mh"><h2>🕘 เปิดการขาย · POS #'+CFG.dev+'</h2><button class="x" data-act="close">✕</button></div><div class="mb"><div class="spad"><div class="disp"><span>ระบุเงินในลิ้นชัก</span><b id="spDisp">0</b></div><div class="keys">';
   var ks=['7','8','9','4','5','6','1','2','3','.','0','⌫'];
   for(var i=0;i<ks.length;i++)h+='<button data-act="spk" data-v="'+ks[i]+'">'+ks[i]+'</button>';
-  h+='</div></div><div class="btns"><button class="btn ghost sm" data-act="spSkip">ข้ามกะการขาย</button><button class="btn sm" data-act="spOk">ตกลง</button></div></div>';
+  h+='</div></div><div class="btns"><button class="btn ghost sm" data-act="close">ยกเลิก</button><button class="btn sm" data-act="spOk">ตกลง</button></div></div>';
   $('modal').innerHTML=h;showModal();
 }
 function spKey(k){
@@ -3201,7 +3215,7 @@ function pushShift(s){
 function shiftOpenWith(v){
   var now=new Date().toISOString();
   SHIFT={id:uid('s'),branch:BR().name,branch_code:CFG.branch,device:CFG.dev,opened_at:now,open_cash:r2(v||0),status:'open',updated_at:now};
-  lsSet('shift_'+CFG.branch,SHIFT);pushShift(SHIFT);toast('เปิดกะแล้ว · เงินในลิ้นชัก '+baht(SHIFT.open_cash),'ok');
+  lsSet('shift_'+CFG.branch,SHIFT);pushShift(SHIFT);toast('เปิดกะแล้ว · เงินในลิ้นชัก '+baht(SHIFT.open_cash),'ok');updLock();
 }
 
 /* ---------------- hold bills (พักบิล) ---------------- */
@@ -3721,6 +3735,7 @@ document.addEventListener('click',function(e){
     case 'exitDemo':exitDemo();break;
     case 'spk':spKey(v);break;
     case 'spSkip':S.skipShift=true;closeModal();break;
+    case 'openShiftPad':openShiftPad();break;
     case 'spOk':shiftOpenWith(num(SPAD)||0);closeModal();break;
     case 'hold':openHold();break;
     case 'swAdd':var bx=document.createElement('div');bx.style.cssText='display:flex;gap:8px;margin-bottom:8px';bx.innerHTML='<input class="in" style="flex:1" data-sw="1" placeholder="เช่น หวาน 50%"><button class="mini del" data-act="swRm">✕</button>';$('swList').appendChild(bx);bx.firstChild.focus();break;
@@ -3821,3 +3836,5 @@ startApp();
 </script>
 </body>
 </html>
+
+

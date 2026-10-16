@@ -434,6 +434,12 @@ body:not(.v-sell) .chrow{display:none}
 .scat.on{background:var(--gold);border-color:var(--gold);color:#fff}
 .eye{border:1.5px solid var(--line);background:#fff;border-radius:9px;width:34px;height:34px;font-size:15px;flex-shrink:0}
 .arw.off{opacity:1}.arw.off .an{opacity:.45}.arw.off .eye{background:var(--errBg)}
+.pvz{display:flex;align-items:center;gap:4px;background:var(--soft);border-radius:12px;padding:3px}
+.pvz button{border:none;background:#fff;width:34px;height:32px;border-radius:9px;font-size:16px;font-weight:800;color:var(--brand)}
+.pvz span{min-width:46px;text-align:center;font-weight:800;color:var(--brand);font-size:13px}
+.pvwrap{background:#EEE9E2;border-radius:14px;padding:12px;max-height:60vh;overflow:auto;-webkit-overflow-scrolling:touch}
+.pvpaper{margin:0 auto;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.12);overflow:hidden}
+.pvpaper iframe{width:576px;border:0;transform-origin:0 0;display:block;pointer-events:none}
 </style>
 </head>
 <body>
@@ -1772,7 +1778,7 @@ module.exports = QRCode;
 /* =====================================================================
    COFFEETODAY-POS  v1.0  —  single-file POS (ES5)  ·  Supabase + Star PassPRNT
 ===================================================================== */
-var APP_VER='1.7.4';
+var APP_VER='1.7.7';
 var LOGO='data:image/png;base64,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';
 var SB_URL='https://ummtqzweedmotrffqrhw.supabase.co';
 var SB_KEY='sb_publishable_yIUQ7A8IjCXKSp7OgKoGjw_65k3iO-X';
@@ -2337,7 +2343,7 @@ function showDone(o){
   var h='<div class="mh"><h2>'+esc(o.bill_no)+'</h2><button class="x" data-act="close">✕</button></div><div class="mb"><div class="okbig"><div class="ic">✓</div><div class="t">รับเงินเรียบร้อย '+baht(o.total)+'</div>'+
     (cash?'<div class="note">รับมา '+baht(o.cash_received)+'</div><div class="c">ทอน '+baht(o.change_amt)+'</div>':'<div class="note" style="margin-top:6px">'+esc(o.payments.map(function(p){return p.name+' '+baht(p.amt);}).join(' · '))+'</div>')+
     '</div><div class="btns"><button class="btn ghost sm" data-act="printO" data-v="'+o.id+'">🖨️ พิมพ์ใบเสร็จ</button><button class="btn ghost sm" data-act="drawer">🗄️ เปิดลิ้นชัก</button></div>'+
-    (memOn()&&o.items.some(function(x){return /บัตรสมาชิก/.test(x.name);})?'<button class="btn ghost sm" style="margin-top:8px" data-act="memFromOrder" data-v="'+o.id+'">👤 '+(o.member?'ต่ออายุสมาชิก '+esc(o.member.name):'ลงทะเบียนสมาชิกใหม่')+'</button>':'')+
+    (memOn()&&cardMonths(o)!=null?'<button class="btn ghost sm" style="margin-top:8px" data-act="memFromOrder" data-v="'+o.id+'">👤 '+(o.member?'ต่ออายุสมาชิก '+esc(o.member.name):'ลงทะเบียนสมาชิกใหม่')+'</button>':'')+
     '<button class="btn" style="margin-top:10px" data-act="close">➕ บิลใหม่</button></div>';
   $('modal').className='';$('modal').innerHTML=h;showModal();
 }
@@ -2415,9 +2421,32 @@ function passprnt(html,drawer){
 function printOrder(o){
   var copy=(o.print_count||0)>0;
   var hasCash=false;for(var i=0;i<o.payments.length;i++)if(o.payments[i].type==='cash')hasCash=true;
-  var html=receiptHTML(o,copy);
+  var html=receiptHTML(o,false);
   o.print_count=(o.print_count||0)+1;queueOrder(o);
   passprnt(html,!copy&&hasCash&&o.status!=='void');
+}
+var PV={z:1,id:null};
+function openPrintPreview(id){
+  var o=BILLCACHE[id]||ORD[id];if(!o)return;PV.id=id;
+  var h='<div class="mh"><div class="pvz"><button data-act="pvZ" data-d="-1">－</button><span id="pvPct">'+Math.round(PV.z*100)+'%</span><button data-act="pvZ" data-d="1">＋</button></div><h2 style="flex:1">ตัวอย่างก่อนพิมพ์</h2><button class="x" data-act="billOpen" data-v="'+esc(o.id)+'">✕</button></div><div class="mb">'+
+    '<div class="pvwrap" id="pvWrap"><div class="pvpaper" id="pvPaper"><iframe id="pvFrame" title="ตัวอย่างใบเสร็จ" scrolling="no"></iframe></div></div>'+
+    '<div class="btns"><button class="btn sm" data-act="pvPrint">🖨️ พิมพ์</button><button class="btn ghost sm" data-act="pvShare">📤 แชร์</button></div></div>';
+  $('modal').className='wide';$('modal').innerHTML=h;showModal('wide');
+  var f=$('pvFrame');f.onload=function(){try{f.style.height=f.contentDocument.body.scrollHeight+'px';}catch(e){}pvScale();};
+  f.srcdoc=receiptHTML(o,false);
+}
+function pvScale(){
+  var w=$('pvWrap'),pp=$('pvPaper'),f=$('pvFrame');if(!w||!f)return;
+  var fit=Math.min(420/576,(w.clientWidth-24)/576),sc=fit*PV.z,hh=parseInt(f.style.height,10)||800;
+  f.style.transform='scale('+sc+')';pp.style.width=Math.ceil(576*sc)+'px';pp.style.height=Math.ceil(hh*sc)+'px';
+  if($('pvPct'))$('pvPct').textContent=Math.round(PV.z*100)+'%';
+}
+function receiptText(o){
+  var t=SET.company.name+'\n'+(((SET.branches||{})[o.branch_code]||{}).title||'')+'\nเลขที่ '+o.bill_no+'\n'+dtStr(o.created_at)+'\n--------------------\n';
+  for(var i=0;i<o.items.length;i++){var it=o.items[i];t+=(it.addon?'  + ':'')+it.name+' x'+it.qty+'  '+money(it.price*it.qty)+'\n';}
+  t+='--------------------\nรวม '+money(o.subtotal)+'\n';if(o.discount>0)t+='ส่วนลด '+money(o.discount)+'\n';
+  t+='สุทธิ '+money(o.total)+' บาท\n';for(var p=0;p<o.payments.length;p++)t+=o.payments[p].name+' '+money(o.payments[p].amt)+'\n';
+  if(o.status==='void')t+='*** ยกเลิกแล้ว ***\n';return t+SET.company.footer;
 }
 function openDrawer(){passprnt('',true);}
 
@@ -2496,7 +2525,7 @@ function openBill(id){
   h+='<tr class="big"><td>สุทธิ</td><td></td><td class="r">'+money(o.total)+'</td></tr>';
   for(var p=0;p<o.payments.length;p++)h+='<tr class="s"><td>'+esc(o.payments[p].name)+'</td><td></td><td class="r">'+money(o.payments[p].amt)+'</td></tr>';
   if(o.change_amt!=null)h+='<tr class="s"><td>รับ '+money(o.cash_received)+' · ทอน</td><td></td><td class="r">'+money(o.change_amt)+'</td></tr>';
-  h+='</table><div class="btns"><button class="btn ghost sm" data-act="printO" data-v="'+o.id+'">🖨️ พิมพ์'+((o.print_count||0)>0?'สำเนา':'ใบเสร็จ')+'</button>'+
+  h+='</table><div class="btns"><button class="btn ghost sm" data-act="printPrev" data-v="'+o.id+'">🖨️ พิมพ์ใบเสร็จ</button>'+
     (o.status!=='void'?'<button class="btn danger sm" data-act="voidO" data-v="'+o.id+'">ยกเลิกบิล</button>':'<span></span>')+'</div></div>';
   $('modal').className='';$('modal').innerHTML=h;showModal();
 }
@@ -3145,6 +3174,7 @@ function memValid(m){return !!m&&m.active!==false&&!memExpired(m);}
 function memBday(m){return !!(m&&m.birthday&&m.birthday.slice(5,7)===ymd().slice(5,7));}
 function memStatus(m){
   if(m.active===false)return ['ปิดใช้งาน','v'];
+  if(!m.expires_at)return ['👑 VIP','c'];
   if(memExpired(m))return ['หมดอายุ','v'];
   if(m.expires_at&&m.expires_at<=addDays(ymd(),30))return ['ใกล้หมดอายุ','q'];
   return ['ใช้งานอยู่','ok'];
@@ -3161,8 +3191,14 @@ function memberDiscAmt(){
   var a=c.type==='pct'?r2(base*v/100):Math.min(v,base);
   return Math.max(0,a);
 }
-function memExtend(m){
-  var mo=Number(memCfg().months)||0;if(!mo){m.expires_at=null;return;}
+function memCards(){
+  var c=memCfg();if(c.cards&&c.cards.length)return c.cards.filter(function(x){return x.id!=='__none';});
+  var a=[];for(var i=0;i<MENU.length;i++)if(/บัตรสมาชิก/.test(MENU[i].receipt_name||''))a.push({id:MENU[i].id,months:Number(c.months)||12});return a;
+}
+function cardOf(mid){var cs=memCards();for(var i=0;i<cs.length;i++)if(cs[i].id===mid)return cs[i];return null;}
+function cardMonths(o){for(var i=0;i<o.items.length;i++){var cd=cardOf(o.items[i].mid);if(cd)return Number(cd.months)||0;}return null;}
+function memExtend(m,mo){
+  if(mo==null)mo=Number(memCfg().months)||0;if(!mo){m.expires_at=null;return;}
   var from=(m.expires_at&&m.expires_at>ymd())?m.expires_at:ymd(),p=from.split('-');
   m.expires_at=ymd(new Date(+p[0],+p[1]-1+mo,+p[2]));
 }
@@ -3242,16 +3278,17 @@ function memAttach(m){
   renderCart();
 }
 /* ฟอร์มสมัคร / แก้ไขสมาชิก */
-function editMember(id,preset){
+function editMember(id,preset,months){
   var m=id?clone(memberById(id)):{id:uid('mb'),phone:cleanPhone(preset||''),name:'',birthday:null,note:'',branch_code:CFG.branch,joined_at:new Date().toISOString(),expires_at:null,active:true,visits:0,spent:0,last_visit:null,_new:true};
-  if(!m)return;if(!id)memExtend(m);
-  EDIT_MEM=m;var mo=Number(memCfg().months)||0;
+  if(!m)return;var mo=months!=null?months:(Number(memCfg().months)||12);if(!id)memExtend(m,mo);
+  EDIT_MEM=m;EDIT_MEM._mo=mo||12;var vip=!m.expires_at;
   var h='<div class="mh"><h2>'+(id?'✏️ แก้ไขสมาชิก':'👤 สมัครสมาชิกใหม่')+'</h2><button class="x" data-act="memFormBack">'+(MEM_BACK?'‹':'✕')+'</button></div><div class="mb">'+
     '<div class="row2"><div class="fld"><label class="lbl">เบอร์โทร *</label><input class="in" id="mb_ph" type="tel" inputmode="numeric" maxlength="12" value="'+esc(m.phone)+'" placeholder="08xxxxxxxx"></div>'+
     '<div class="fld"><label class="lbl">ชื่อ</label><input class="in" id="mb_n" value="'+esc(m.name)+'" placeholder="ชื่อเล่น / ชื่อลูกค้า"></div></div>'+
+    '<div class="fld"><label class="lbl">ประเภทสมาชิก</label><div class="seg" id="mb_tier"><button data-act="mbTier" data-v="year" class="'+(vip?'':'on')+'">📅 รายปี</button><button data-act="mbTier" data-v="vip" class="'+(vip?'on':'')+'">👑 VIP (ไม่มีวันหมดอายุ)</button></div></div>'+
     '<div class="row2"><div class="fld"><label class="lbl">วันเกิด (ไม่บังคับ)</label><input class="in" id="mb_bd" type="date" value="'+esc(m.birthday||'')+'"></div>'+
-    '<div class="fld"><label class="lbl">วันหมดอายุ</label><input class="in" id="mb_ex" type="date" value="'+esc(m.expires_at||'')+'"></div></div>'+
-    '<div class="note" style="margin:-4px 0 10px">'+(mo?'สมัครใหม่/ต่ออายุ ระบบตั้งวันหมดอายุให้ '+mo+' เดือน':'ตั้งค่าให้สมาชิกไม่มีวันหมดอายุ')+' · เว้นว่าง = ไม่มีวันหมดอายุ</div>'+
+    '<div class="fld" id="mb_exf"'+(vip?' style="display:none"':'')+'><label class="lbl">วันหมดอายุ</label><input class="in" id="mb_ex" type="date" value="'+esc(m.expires_at||'')+'"></div></div>'+
+    (!id&&!vip?'<div class="note" style="margin:-4px 0 10px">ตั้งวันหมดอายุให้ '+mo+' เดือนตามบัตรสมาชิก · แก้วันที่ได้</div>':'')+
     '<div class="fld"><label class="lbl">หมายเหตุ</label><input class="in" id="mb_no" value="'+esc(m.note||'')+'" placeholder="เช่น ชอบหวานน้อย"></div>'+
     (id?'<div class="fld"><label class="lbl">สถานะ</label><select class="in" id="mb_ac"><option value="1">ใช้งาน</option><option value="0"'+(m.active===false?' selected':'')+'>ปิดใช้งาน</option></select></div>':'')+
     '<button class="btn" data-act="memSave">💾 '+(id?'บันทึก':'สมัครสมาชิก')+'</button>'+
@@ -3260,7 +3297,8 @@ function editMember(id,preset){
 }
 function memSaveForm(){
   var m=EDIT_MEM;if(!m)return;
-  m.phone=cleanPhone($('mb_ph').value);m.name=$('mb_n').value.trim();m.birthday=$('mb_bd').value||null;m.expires_at=$('mb_ex').value||null;m.note=$('mb_no').value.trim();
+  m.phone=cleanPhone($('mb_ph').value);m.name=$('mb_n').value.trim();m.birthday=$('mb_bd').value||null;m.expires_at=EDIT_MEM._vip===true||($('mb_exf')&&$('mb_exf').style.display==='none')?null:($('mb_ex').value||null);m.note=$('mb_no').value.trim();
+  if($('mb_exf').style.display!=='none'&&!m.expires_at){toast('สมาชิกรายปีต้องมีวันหมดอายุ','err');return;}delete m._mo;delete m._vip;
   if($('mb_ac'))m.active=$('mb_ac').value==='1';
   if(m.phone.length<9||m.phone.length>10){toast('ใส่เบอร์โทร 9–10 หลัก','err');return;}
   var dup=memberByPhone(m.phone);if(dup&&dup.id!==m.id){toast('เบอร์นี้เป็นสมาชิกอยู่แล้ว: '+dup.name,'err');return;}
@@ -3277,10 +3315,11 @@ function memDelete(id){
     sb('DELETE','pos_members?id=eq.'+encodeURIComponent(id),null,'return=minimal').then(done,function(e){toast('ลบไม่สำเร็จ: '+e.message,'err');});
   });
 }
-function memRenew(id,cb){
-  var m=memberById(id);if(!m)return;var mo=Number(memCfg().months)||0;
-  if(!mo){toast('ตั้งค่าสมาชิกเป็นแบบไม่มีวันหมดอายุ','err');return;}
-  var c=clone(m);memExtend(c);c.active=true;
+function memRenew(id,cb,months){
+  var m=memberById(id);if(!m)return;var mo=months!=null?months:(Number(memCfg().months)||12);
+  if(!m.expires_at&&m.active!==false){toast(m.name+' เป็นสมาชิก VIP ไม่มีวันหมดอายุอยู่แล้ว','ok');if(cb)cb(m);return;}
+  if(!mo){var cv=clone(m);cv.expires_at=null;cv.active=true;if(!confirm('เปลี่ยน '+m.name+' เป็นสมาชิก VIP (ไม่มีวันหมดอายุ)?'))return;saveMember(cv,function(s){toast('เปลี่ยนเป็น VIP แล้ว','ok');renderCart();if(cb)cb(s);});return;}
+  var c=clone(m);memExtend(c,mo);c.active=true;
   if(!confirm('ต่ออายุ '+m.name+' อีก '+mo+' เดือน\nหมดอายุใหม่ '+thDate(c.expires_at)+'?'))return;
   saveMember(c,function(s){toast('ต่ออายุแล้ว ถึง '+thDate(s.expires_at),'ok');if(S.member&&S.member.id===s.id)S.member=memSnap(s);renderCart();if(cb)cb(s);});
 }
@@ -3291,8 +3330,8 @@ function renderMembers(){
   var ac=0,soon=0,ex=0;
   for(var i=0;i<MEMBERS.length;i++){var s=memStatus(MEMBERS[i])[1];if(s==='v')ex++;else{ac++;if(s==='q')soon++;}}
   h+='<div class="stats">'+stat('👥','a','สมาชิกทั้งหมด',MEMBERS.length)+stat('✅','c','ใช้งานอยู่',ac)+stat('⏳','b','ใกล้หมดอายุ (30 วัน)',soon)+stat('⛔','d','หมดอายุ / ปิด',ex)+'</div>';
-  h+='<div class="box" style="background:var(--goldL)"><b>สิทธิ์สมาชิก:</b> '+esc(memLabel())+' · '+esc(memDiscText())+(Number(memCfg().months)?' · อายุสมาชิก '+memCfg().months+' เดือน':' · ไม่มีวันหมดอายุ')+'</div>';
-  var F=[['all','ทั้งหมด'],['ok','ใช้งานอยู่'],['soon','ใกล้หมดอายุ'],['bad','หมดอายุ/ปิด'],['bday','🎂 เกิดเดือนนี้']];
+  h+='<div class="box" style="background:var(--goldL)"><b>สิทธิ์สมาชิก:</b> '+esc(memLabel())+' · '+esc(memDiscText())+' · มี 2 แบบ: 📅 รายปี (อายุตามบัตรที่ขาย) และ 👑 VIP (ไม่มีวันหมดอายุ)</div>';
+  var F=[['all','ทั้งหมด'],['vip','👑 VIP'],['ok','ใช้งานอยู่'],['soon','ใกล้หมดอายุ'],['bad','หมดอายุ/ปิด'],['bday','🎂 เกิดเดือนนี้']];
   h+='<div class="tools"><input class="in" id="mbQ" type="search" placeholder="🔍 ค้นหาเบอร์ / ชื่อ" style="flex:1;min-width:180px" value="'+esc(MV.q)+'" autocomplete="off"><button class="mini" data-act="memNew"'+(memOn()?'':' disabled')+'>+ สมัครสมาชิก</button></div>';
   h+='<div class="opts" style="margin-bottom:10px">';for(var f=0;f<F.length;f++)h+='<button class="opt'+(MV.f===F[f][0]?' on':'')+'" style="padding:7px 13px;font-size:13px" data-act="mvF" data-v="'+F[f][0]+'">'+F[f][1]+'</button>';h+='</div>';
   h+='<div class="box" id="mbList"></div>';
@@ -3302,7 +3341,7 @@ function renderMembers(){
 }
 function drawMembersList(){
   var rs=memMatch(MV.q).filter(function(m){var s=memStatus(m)[1];
-    if(MV.f==='ok')return s!=='v';if(MV.f==='soon')return s==='q';if(MV.f==='bad')return s==='v';if(MV.f==='bday')return memBday(m);return true;});
+    if(MV.f==='vip')return !m.expires_at&&m.active!==false;if(MV.f==='ok')return s!=='v';if(MV.f==='soon')return s==='q';if(MV.f==='bad')return s==='v';if(MV.f==='bday')return memBday(m);return true;});
   var h='';for(var i=0;i<Math.min(rs.length,300);i++)h+=memRowHTML(rs[i],'memOpen');
   if(!rs.length)h='<div class="empty">'+(MEMBERS.length?'ไม่พบสมาชิก':'ยังไม่มีสมาชิก — กด “+ สมัครสมาชิก”')+'</div>';
   else if(rs.length>300)h+='<div class="note" style="text-align:center;margin-top:8px">แสดง 300 จาก '+rs.length+' คน — พิมพ์ค้นหาเพื่อหาคนอื่น</div>';
@@ -3321,7 +3360,7 @@ function memOpen(id){
     '<tr><td>มาล่าสุด</td><td class="r">'+(m.last_visit?dtStr(m.last_visit):'-')+'</td></tr>'+
     (m.note?'<tr><td>หมายเหตุ</td><td class="r">'+esc(m.note)+'</td></tr>':'')+'</table>';
   h+='<div class="btns"><button class="btn sm" data-act="memUse" data-v="'+esc(m.id)+'">🛒 ใช้กับบิลนี้</button><button class="btn ghost sm" data-act="memEdit" data-v="'+esc(m.id)+'">✏️ แก้ไข</button></div>';
-  if(mo)h+='<button class="btn ghost sm" style="margin-top:8px" data-act="memRenew" data-v="'+esc(m.id)+'">🔄 ต่ออายุ '+mo+' เดือน</button>';
+  if(mo&&m.expires_at)h+='<button class="btn ghost sm" style="margin-top:8px" data-act="memRenew" data-v="'+esc(m.id)+'">🔄 ต่ออายุ '+mo+' เดือน</button>';
   h+='<div class="sec" style="margin-top:16px">บิลล่าสุด</div><div id="mbHist" class="note">กำลังโหลด…</div></div>';
   $('modal').className='';$('modal').innerHTML=h;showModal();
   var loc=[];for(var k in ORD)if(ORD.hasOwnProperty(k)&&ORD[k].member&&ORD[k].member.id===id)loc.push(ORD[k]);
@@ -3346,6 +3385,7 @@ function memChip(inPay){
   return '<div class="cmem'+(ok?'':' bad')+'"><span class="mav">'+(memBday(m)?'🎂':'👤')+'</span><div class="mi" data-act="memOpen" data-v="'+esc(m.id)+'"><b>'+esc(m.name)+'</b><span>'+maskPhone(m.phone)+' · '+(ok&&inPay&&memBlockedByPromo()?'ใช้โปรแทน · ไม่ได้ส่วนลดสมาชิก':ok?esc(memLabel())+(md?' −'+baht(md):''):(m.active===false?'ปิดใช้งาน':'หมดอายุ')+' ไม่มีส่วนลด')+'</span></div>'+
     (inPay?'<button class="mini" data-act="memPickPay">เปลี่ยน</button>':'')+'<button class="lnk" data-act="'+(inPay?'memClearPay':'memClear')+'">✕</button></div>';
 }
+function memCardsFromForm(){var a=[],l=document.querySelectorAll('[data-cardm]');for(var i=0;i<l.length;i++)a.push({id:l[i].getAttribute('data-cardm'),months:Math.max(0,Math.round(num(l[i].value)||0))});if(!a.length)a.push({id:'__none',months:0});return a;}
 function memSettingsHTML(){
   var c=memCfg();
   return '<div class="box"><h3>👥 ส่วนลดสมาชิก</h3><div class="adl"><div><div class="an">เปิดใช้ระบบสมาชิก</div><div class="ap" style="color:var(--muted)">ค้นหาสมาชิกด้วยเบอร์โทรในตะกร้า แล้วลดราคาอัตโนมัติ (ไม่ใช้กับ LINE MAN)</div></div><button class="tg'+(c.on!==false?' on':'')+'" data-act="memTg"></button></div>'+
@@ -3354,8 +3394,9 @@ function memSettingsHTML(){
     '<div class="fld"><label class="lbl">จำนวน</label><input class="in" id="ms_v" inputmode="decimal" value="'+esc(c.value)+'"></div></div>'+
     '<div class="row2"><div class="fld"><label class="lbl">ลดกับ</label><select class="in" id="ms_s"><option value="drink">เครื่องดื่มเท่านั้น</option><option value="all"'+(c.scope==='all'?' selected':'')+'>เครื่องดื่ม + ขนม</option></select></div>'+
     '<div class="fld"><label class="lbl">ใช้ร่วมกับโปรอื่น</label><select class="in" id="ms_c"><option value="0">ไม่ได้ (เลือกอย่างใดอย่างหนึ่ง)</option><option value="1"'+(c.combine?' selected':'')+'>ได้</option></select></div></div>'+
-    '<div class="row2">'+
-    '<div class="fld"><label class="lbl">อายุสมาชิก (เดือน · 0 = ไม่หมดอายุ)</label><input class="in" id="ms_m" inputmode="numeric" value="'+esc(c.months)+'"></div></div>'+
+    '<div class="sec" style="margin-top:6px">บัตรสมาชิกที่ขาย → อายุสมาชิก</div><div class="note" style="margin-bottom:6px">ขายบัตรแล้ว ระบบให้ลงทะเบียน/ต่ออายุตามจำนวนเดือนของบัตร · 0 เดือน = VIP ไม่มีวันหมดอายุ</div><div id="msCards">'+memCards().map(function(cd){var mi=menuById(cd.id);return '<div class="adl"><div class="an" style="flex:1">'+esc(mi?mi.receipt_name:cd.id)+(mi&&mi.price!=null?' · '+baht(mi.price):'')+'</div><input class="in" style="width:70px;text-align:right" data-cardm="'+esc(cd.id)+'" inputmode="numeric" value="'+esc(cd.months)+'"><span class="note" style="margin:0 8px">เดือน</span><button class="mini del" data-act="cardDel" data-v="'+esc(cd.id)+'">✕</button></div>';}).join('')+'</div>'+
+    '<div style="display:flex;gap:8px;margin:8px 0 12px"><select class="in" id="ms_addc" style="flex:1"><option value="">+ เพิ่มบัตรสมาชิก (เลือกสินค้า)</option>'+MENU.filter(function(x){return x.kind==='other'||/บัตร|สมาชิก/.test(x.receipt_name||'');}).map(function(x){return '<option value="'+esc(x.id)+'">'+esc(x.receipt_name)+'</option>';}).join('')+'</select><button class="mini" data-act="cardAdd">เพิ่ม</button></div>'+
+    '<div class="fld"><label class="lbl">อายุรายปีเริ่มต้น (สมัครโดยไม่ได้ขายบัตร / ต่ออายุเอง) · เดือน</label><input class="in" id="ms_m" inputmode="numeric" value="'+esc(c.months||12)+'"></div>'+
     '<div class="note" style="margin-bottom:10px">แอดเพิ่มที่สั่งกับเครื่องดื่มลดด้วย · สินค้าหมวด “อื่นๆ” (แก้ว บัตรสมาชิก ห้องประชุม) ไม่ได้รับส่วนลด</div>'+
     '<button class="btn sm" data-act="memSetSave">💾 บันทึกส่วนลดสมาชิก</button></div>';
 }
@@ -3486,6 +3527,12 @@ document.addEventListener('click',function(e){
     case 'pKey':padKey(v);break;
     case 'payOk':if(!t.disabled)confirmPay();break;
     case 'printO':var po=BILLCACHE[v]||ORD[v];if(po)printOrder(po);break;
+    case 'printPrev':PV.z=1;openPrintPreview(v);break;
+    case 'pvZ':PV.z=Math.max(.5,Math.min(2,Math.round((PV.z+d*.25)*100)/100));pvScale();break;
+    case 'pvPrint':var pvo=BILLCACHE[PV.id]||ORD[PV.id];if(pvo){printOrder(pvo);closeModal();}break;
+    case 'pvShare':var pso=BILLCACHE[PV.id]||ORD[PV.id];if(!pso)break;var ptx=receiptText(pso);
+      if(navigator.share)navigator.share({title:'ใบเสร็จ '+pso.bill_no,text:ptx}).catch(function(){});
+      else{try{navigator.clipboard.writeText(ptx).then(function(){toast('คัดลอกใบเสร็จแล้ว','ok');});}catch(e){toast('เครื่องนี้แชร์ไม่ได้','err');}}break;
     case 'drawer':openDrawer();break;
     case 'drawerPin':openDrawer();break;
     case 'close':closeModal();break;
@@ -3531,7 +3578,7 @@ document.addEventListener('click',function(e){
     case 'payDel':var pd=null;for(var k2=0;k2<SET.pay.length;k2++)if(SET.pay[k2].id===v)pd=SET.pay[k2];if(pd&&confirm('ลบช่องทาง "'+pd.name+'"?\nบิลเก่าที่ใช้ช่องทางนี้ยังอยู่ในสรุปยอดตามเดิม')){SET.pay=SET.pay.filter(function(x){return x.id!==v;});pushSettings();renderSettings();}break;
     case 'apTg':SET.autoprint=!SET.autoprint;t.classList.toggle('on',SET.autoprint);break;
     case 'setSave':saveSettings();break;
-    case 'testPrint':passprnt(receiptHTML({bill_no:'TEST-0000',branch_code:CFG.branch,device:CFG.dev,channel:'walkin',created_at:new Date().toISOString(),items:[{name:'*** ทดสอบการพิมพ์ ***',qty:1,price:0}],subtotal:0,discount:0,total:0,vatable:0,vat:0,payments:[],status:'paid'},true),false);break;
+    case 'testPrint':passprnt(receiptHTML({bill_no:'TEST-0000',branch_code:CFG.branch,device:CFG.dev,channel:'walkin',created_at:new Date().toISOString(),items:[{name:'*** ทดสอบการพิมพ์ ***',qty:1,price:0}],subtotal:0,discount:0,total:0,vatable:0,vat:0,payments:[],status:'paid'},false),false);break;
     case 'setupAgain':showSetup();break;
     case 'back':setView('sell');break;
     case 'login':doLogin();break;
@@ -3571,10 +3618,14 @@ document.addEventListener('click',function(e){
     case 'memEdit':MEM_BACK=function(){memOpen(v);};MEM_AFTER=function(m){if(S.member&&S.member.id===m.id)S.member=memSnap(m);renderCart();memOpen(m.id);if(S.view==='members')renderMembers();};editMember(v);break;
     case 'memRenew':memRenew(v,function(m){memOpen(m.id);if(S.view==='members')renderMembers();});break;
     case 'memUse':var mu=memberById(v);if(mu){MQ.ret=null;memAttach(mu);if(S.view!=='sell')setView('sell');}break;
-    case 'memFromOrder':var mo_=BILLCACHE[v]||ORD[v];if(!mo_)break;if(mo_.member&&memberById(mo_.member.id))memRenew(mo_.member.id,function(){closeModal();});else{MEM_BACK=null;MEM_AFTER=function(m){closeModal();};editMember(null,'');}break;
+    case 'memFromOrder':var mo_=BILLCACHE[v]||ORD[v];if(!mo_)break;var cmo=cardMonths(mo_);if(mo_.member&&memberById(mo_.member.id))memRenew(mo_.member.id,function(){closeModal();},cmo);else{MEM_BACK=null;MEM_AFTER=function(m){closeModal();};editMember(null,'',cmo);}break;
+    case 'mbTier':var tb=$('mb_tier').querySelectorAll('button');for(var tq=0;tq<tb.length;tq++)tb[tq].classList.toggle('on',tb[tq].getAttribute('data-v')===v);$('mb_exf').style.display=v==='vip'?'none':'';
+      if(v==='year'&&!$('mb_ex').value){var tmp={expires_at:null};memExtend(tmp,EDIT_MEM._mo||12);$('mb_ex').value=tmp.expires_at;}break;
     case 'mvF':MV.f=v;renderMembers();break;
     case 'memTg':var mc=memCfg();mc.on=!(mc.on!==false);mc.rule=2;SET.member=mc;t.classList.toggle('on',mc.on);pushSettings();renderCart();break;
-    case 'memSetSave':var mc2=memCfg();mc2.name=$('ms_n').value.trim()||'ส่วนลดสมาชิก';mc2.type=$('ms_t').value;mc2.value=num($('ms_v').value)||0;mc2.scope=$('ms_s').value;mc2.combine=$('ms_c').value==='1';mc2.rule=2;mc2.months=Math.max(0,Math.round(num($('ms_m').value)||0));
+    case 'cardAdd':var cid=$('ms_addc').value;if(!cid)break;var mcx=memCfg();mcx.cards=memCardsFromForm();if(!cardOf(cid)||!mcx.cards.some(function(x){return x.id===cid;}))mcx.cards.push({id:cid,months:12});mcx.rule=2;SET.member=mcx;pushSettings(true);renderPromoAdmin();break;
+    case 'cardDel':var mcd=memCfg();mcd.cards=memCardsFromForm().filter(function(x){return x.id!==v;});mcd.rule=2;SET.member=mcd;if(!mcd.cards.length)mcd.cards=[{id:'__none',months:0}];pushSettings(true);renderPromoAdmin();break;
+    case 'memSetSave':var mc2=memCfg();mc2.name=$('ms_n').value.trim()||'ส่วนลดสมาชิก';mc2.type=$('ms_t').value;mc2.value=num($('ms_v').value)||0;mc2.scope=$('ms_s').value;mc2.combine=$('ms_c').value==='1';mc2.rule=2;mc2.months=Math.max(1,Math.round(num($('ms_m').value)||12));mc2.cards=memCardsFromForm();
       if(mc2.type==='pct'&&mc2.value>100){toast('ส่วนลดเกิน 100%','err');break;}SET.member=mc2;pushSettings();renderCart();break;
     case 'arSel':AR.sel=v;renderArrange();break;
     case 'catHide':var chs=SET.catHide||[],chi=chs.indexOf(v);if(chi>=0)chs.splice(chi,1);else chs.push(v);SET.catHide=chs;pushSettings(true);toast((chi>=0?'แสดงหมวด ':'ซ่อนหมวด ')+v+(chi>=0?' ในหน้าขายแล้ว':' จากหน้าขายแล้ว'),'ok');renderArrange();renderSell();break;

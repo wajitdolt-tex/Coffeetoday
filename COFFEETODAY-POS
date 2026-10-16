@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -13,259 +12,413 @@
 <title>COFFEETODAY POS</title>
 <style>
 :root{
-  --bg:#F4EEE6;--panel:#FFFFFF;--ink:#2B1D14;--muted:#7D6B5D;--line:#E7DCCF;
-  --brand:#6B3E1F;--brand2:#8A5530;--brandInk:#FFFFFF;--soft:#F8F2EA;
-  --ok:#1E7B46;--okBg:#E3F3EA;--warn:#A86500;--warnBg:#FFF1D6;--err:#B3261E;--errBg:#FBE4E2;
-  --lm:#00A74F;--lmBg:#E2F6EA;--shadow:0 6px 24px rgba(43,29,20,.12)
+  --bg:#FBF5EC;--panel:#FFFFFF;--ink:#3A2617;--muted:#94765E;--line:#EBDCC9;--line2:#F3E8DA;
+  --brand:#7A4A28;--brandD:#4E2C16;--brandL:#A8703F;--gold:#D9A441;--goldL:#FFF3D6;
+  --cream:#FFF8EC;--soft:#FBF1E4;--tint:#F6E9D8;
+  --ok:#2E8B57;--okBg:#E3F4EA;--warn:#A86500;--warnBg:#FFF1D6;--err:#C0392B;--errBg:#FDECEA;
+  --lm:#00A84F;--lmD:#007A3A;--lmBg:#E3F8EC;
+  --shadow:0 6px 22px rgba(78,44,22,.16);--cardsh:0 2px 8px rgba(122,74,40,.10)
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#17110E;--panel:#221A15;--ink:#F3EAE1;--muted:#B3A293;--line:#3A2E26;
-  --brand:#C98B55;--brand2:#E0A46E;--brandInk:#1A120D;--soft:#2A201A;
-  --ok:#5CC98A;--okBg:#173525;--warn:#F0B35A;--warnBg:#3A2A10;--err:#F2857D;--errBg:#3D1A17;
-  --lm:#3DDB86;--lmBg:#123423;--shadow:0 6px 24px rgba(0,0,0,.45)}}
-:root[data-theme="dark"]{
-  --bg:#17110E;--panel:#221A15;--ink:#F3EAE1;--muted:#B3A293;--line:#3A2E26;
-  --brand:#C98B55;--brand2:#E0A46E;--brandInk:#1A120D;--soft:#2A201A;
-  --ok:#5CC98A;--okBg:#173525;--warn:#F0B35A;--warnBg:#3A2A10;--err:#F2857D;--errBg:#3D1A17;
-  --lm:#3DDB86;--lmBg:#123423;--shadow:0 6px 24px rgba(0,0,0,.45)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font-family:-apple-system,"Sukhumvit Set","Helvetica Neue",sans-serif;font-size:15px;-webkit-user-select:none;user-select:none;overflow:hidden}
 input,textarea,select{-webkit-user-select:text;user-select:text;font-family:inherit;font-size:16px;color:var(--ink)}
 button{font-family:inherit;color:inherit;cursor:pointer}
 .hide{display:none!important}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}
 
-/* HEADER */
-#hdr{height:58px;padding:0 12px;padding-top:env(safe-area-inset-top);box-sizing:content-box;background:#2B1D14;color:#F6EDE3;display:flex;align-items:center;gap:10px}
-#hdr .brand{display:flex;align-items:center;gap:8px;min-width:0}
-#hdr .brand img{width:34px;height:34px;background:#fff;border-radius:8px;padding:2px}
-#hdr .bn{font-weight:800;font-size:15px;letter-spacing:.5px;white-space:nowrap}
-#hdr .bs{font-size:11px;opacity:.75;white-space:nowrap}
-#nav{display:flex;gap:4px;margin-left:auto}
-#nav button{background:transparent;border:none;color:#E9DCCD;padding:8px 10px;border-radius:10px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:5px}
-#nav button.on{background:#C98B55;color:#1A120D}
+/* ===== HEADER ===== */
+#hdr{height:60px;padding:0 12px;padding-top:env(safe-area-inset-top);box-sizing:content-box;
+  background:linear-gradient(135deg,#5A3319,#7A4A28);color:#fff;display:flex;align-items:center;gap:10px;
+  box-shadow:0 3px 12px rgba(58,38,23,.35);position:relative;z-index:20}
+#hdr .brand{display:flex;align-items:center;gap:9px;flex-shrink:0}
+#hdr .logo{width:40px;height:40px;background:#fff;border-radius:11px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+#hdr .logo img{width:32px;height:32px}
+#hdr .bn{font-weight:800;font-size:16px;letter-spacing:.3px;white-space:nowrap}
+#hdr .bs{font-size:11px;color:rgba(255,255,255,.7);white-space:nowrap}
+.chrow{flex:1;display:flex;gap:4px;background:rgba(0,0,0,.22);border-radius:12px;padding:4px;max-width:420px;margin:0 auto}
+.chrow button{flex:1;border:none;background:transparent;color:rgba(255,255,255,.8);padding:9px 8px;border-radius:9px;font-weight:800;font-size:13px;white-space:nowrap}
+.chrow button.on{background:var(--gold);color:#3A2617;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.chrow button.on.lm{background:var(--lm);color:#fff}
+#nav{display:flex;gap:3px;margin-left:auto;flex-shrink:0}
+#nav button{background:rgba(255,255,255,.12);border:none;color:#fff;padding:8px 11px;border-radius:10px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:5px}
+#nav button.on{background:#fff;color:var(--brand)}
 #nav .ic{font-size:16px}
-#sync{display:flex;align-items:center;gap:6px;font-size:11px;background:rgba(255,255,255,.1);padding:6px 9px;border-radius:20px;white-space:nowrap}
-#sync .dot{width:9px;height:9px;border-radius:50%;background:#9A8B7E}
-#sync.ok .dot{background:#5CC98A}#sync.busy .dot{background:#F0B35A}#sync.err .dot{background:#F2857D}
-@media (max-width:899px){#nav .tx{display:none}#nav button{padding:8px}#hdr .bs{display:none}}
-@media (max-width:520px){#sync .tx{display:none}#hdr .brand>div{display:none}#nav{gap:2px}}
+#sync{display:flex;align-items:center;gap:6px;font-size:11px;background:rgba(0,0,0,.2);padding:7px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+#sync .dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.4)}
+#sync.ok .dot{background:#69F0AE}#sync.busy .dot{background:#FFD54F}#sync.err .dot{background:#FF8A80}
+body:not(.v-sell) .chrow{visibility:hidden}
+@media (max-width:1100px){#nav .tx{display:none}#nav button{padding:9px}}
+@media (max-width:899px){.chrow{display:none}#hdr .bs{display:none}}
+@media (max-width:520px){#sync .tx{display:none}#hdr .brand>div:last-child{display:none}#nav{gap:2px}}
 
-main{height:calc(100% - 58px - env(safe-area-inset-top));overflow:hidden}
+main{height:calc(100% - 60px - env(safe-area-inset-top));overflow:hidden}
 .view{height:100%;overflow:auto;-webkit-overflow-scrolling:touch}
 .pad{padding:14px;max-width:1100px;margin:0 auto}
 
-/* SELL */
+/* ===== SELL ===== */
 #v-sell{overflow:hidden}
 .sell{display:grid;grid-template-columns:1fr 380px;height:100%}
-.mpane{display:flex;flex-direction:column;min-width:0;height:100%}
-.stop{display:flex;gap:8px;padding:10px 12px 6px;align-items:center}
-.seg{display:flex;background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
-.seg button{border:none;background:transparent;padding:8px 14px;border-radius:9px;font-weight:700;font-size:14px;color:var(--muted);white-space:nowrap}
-.seg button.on{background:var(--brand);color:var(--brandInk)}
-.seg button.on.lm{background:var(--lm);color:#fff}
-.search{flex:1;min-width:0;border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:9px 12px}
-#cats{display:flex;gap:6px;overflow-x:auto;padding:4px 12px 8px;scrollbar-width:none;flex-shrink:0}
+.mpane{display:flex;flex-direction:column;min-width:0;height:100%;overflow:hidden}
+#banner{padding:12px 16px;display:flex;align-items:center;justify-content:center;gap:4px;flex-direction:column;border-bottom:2px solid var(--line);flex-shrink:0}
+#banner.walkin{background:linear-gradient(135deg,#FFF8E8,#FCEBD2)}
+#banner.lineman{background:linear-gradient(135deg,#EAFFF3,#CFF5DF);border-bottom-color:#B5E8CB}
+#banner .bt{font-size:20px;font-weight:800;color:var(--brandD);letter-spacing:.5px}
+#banner .bc{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;color:var(--brand)}
+#banner.lineman .bc{color:var(--lmD)}
+#banner .bc small{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.5px}
+#banner .mobch{display:none;margin-top:6px}
+@media (max-width:899px){#banner .mobch{display:flex}#banner .bc{display:none}#banner{padding:10px 12px}}
+.seg{display:flex;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:3px;gap:3px}
+.seg button{border:none;background:transparent;padding:8px 14px;border-radius:9px;font-weight:800;font-size:13px;color:var(--muted);white-space:nowrap}
+.seg button.on{background:linear-gradient(135deg,var(--brandL),var(--brand));color:#fff}
+.seg button.on.lm{background:linear-gradient(135deg,#1FC46B,var(--lmD));color:#fff}
+.stop{display:flex;gap:8px;padding:10px 12px 4px;align-items:center;flex-shrink:0}
+.search{flex:1;min-width:0;border:1.5px solid var(--line);background:#fff;border-radius:22px;padding:9px 16px;outline:none}
+.search:focus{border-color:var(--brandL)}
+#cats{display:flex;gap:6px;overflow-x:auto;padding:6px 12px 8px;scrollbar-width:none;flex-shrink:0}
 #cats::-webkit-scrollbar{display:none}
-.cat{flex-shrink:0;border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:20px;font-weight:700;font-size:13px;color:var(--muted)}
-.cat.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-#grid{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:4px 12px 90px;display:grid;grid-template-columns:repeat(auto-fill,minmax(136px,1fr));gap:10px;align-content:start}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 10px;text-align:left;min-height:92px;display:flex;flex-direction:column;justify-content:space-between;gap:6px;box-shadow:0 1px 0 rgba(0,0,0,.03)}
-.card:active{transform:scale(.97)}
-.card .nm{font-weight:700;font-size:15px;line-height:1.3}
-.card .pr{font-weight:800;color:var(--brand);font-size:15px}
-.card .vs{font-size:11px;color:var(--muted)}
-.card.so{opacity:.45}
-.card.so .pr::after{content:" · หมด";color:var(--err)}
-.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:40px 10px;line-height:1.7}
+.cat{flex-shrink:0;border:1.5px solid var(--line);background:#fff;padding:8px 15px;border-radius:20px;font-weight:700;font-size:13px;color:var(--brand);white-space:nowrap}
+.cat.on{background:linear-gradient(135deg,var(--brandL),var(--brand));border-color:var(--brand);color:#fff;box-shadow:0 3px 8px rgba(122,74,40,.25)}
+#grid{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:2px 12px 100px}
+.slbl{font-size:11px;font-weight:800;color:var(--brandL);letter-spacing:1.2px;margin:14px 0 8px;padding-bottom:5px;border-bottom:2px solid var(--line)}
+.slbl:first-child{margin-top:6px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.mc{background:#fff;border-radius:16px;overflow:hidden;border:1.5px solid var(--line2);box-shadow:var(--cardsh);text-align:left;padding:0;display:flex;flex-direction:column;position:relative}
+.mc:active{transform:scale(.97);opacity:.85}
+.mc-img{height:78px;display:flex;align-items:center;justify-content:center;font-size:36px;position:relative}
+.mc-img.hot{background:linear-gradient(135deg,#FFF1E3,#FFE4CC)}
+.mc-img.iced{background:linear-gradient(135deg,#EAF4FF,#D8EAFF)}
+.mc-img.blend{background:linear-gradient(135deg,#F4EEFF,#E7DDFF)}
+.mc-img.mix{background:linear-gradient(135deg,#FFF6E6,#F6E6D2)}
+.mc-img.tea{background:linear-gradient(135deg,#ECF8EE,#D9F0DE)}
+.mc-img.fruit{background:linear-gradient(135deg,#FFEFF3,#FFDDE6)}
+.mc-img.snack{background:linear-gradient(135deg,#FFFBE6,#FFF0BF)}
+.mc-img .tp{position:absolute;top:6px;right:6px;display:flex;gap:3px}
+.mc-img .tp i{font-style:normal;font-size:10px;font-weight:800;background:rgba(255,255,255,.85);border-radius:6px;padding:2px 5px;color:var(--brand)}
+.mc-body{padding:8px 10px 10px}
+.mc-nm{font-size:14px;font-weight:700;line-height:1.3;color:var(--ink)}
+.mc-vs{font-size:11px;color:var(--muted);margin-top:1px}
+.mc-pr{font-size:15px;font-weight:800;color:var(--brand);margin-top:3px}
+#v-sell.lm .mc-pr{color:var(--lmD)}
+.mc.so{opacity:.45}
+.mc.so .mc-img::after{content:"หมด";position:absolute;inset:auto 0 0 0;background:rgba(192,57,43,.9);color:#fff;font-size:12px;font-weight:800;text-align:center;padding:2px 0}
+.empty{text-align:center;color:var(--muted);padding:40px 10px;line-height:1.7}
 
-#cart{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;height:100%;min-height:0}
-.chd{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line)}
-.chd b{font-size:16px}
-.lnk{background:none;border:none;color:var(--err);font-weight:700;font-size:13px;padding:4px}
-#cartList{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:4px 14px}
-.cl{padding:10px 0;border-bottom:1px dashed var(--line)}
-.cl .r1{display:flex;gap:8px;align-items:flex-start}
-.cl .nm{flex:1;font-weight:700;line-height:1.3}
-.cl .sub{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.45}
-.cl .amt{font-weight:800;white-space:nowrap}
-.cl .r2{display:flex;align-items:center;gap:8px;margin-top:8px}
-.qty{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.qty button{width:36px;height:34px;border:none;background:var(--soft);font-size:18px;font-weight:700}
-.qty span{min-width:34px;text-align:center;font-weight:800}
-.mini{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:7px 10px;font-size:12px;font-weight:700}
-.mini.del{color:var(--err)}
-.cft{padding:12px 14px;border-top:1px solid var(--line);padding-bottom:calc(12px + env(safe-area-inset-bottom))}
-.trow{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:4px}
-.trow.big{font-size:22px;color:var(--ink);font-weight:800;margin:6px 0 10px}
-.btn{display:block;width:100%;border:none;border-radius:14px;padding:15px;font-size:17px;font-weight:800;background:var(--brand);color:var(--brandInk)}
-.btn:disabled{opacity:.4}
-.btn.lm{background:var(--lm);color:#fff}
-.btn.ghost{background:var(--soft);color:var(--ink);border:1px solid var(--line)}
-.btn.danger{background:var(--err);color:#fff}
-.btn.sm{padding:11px;font-size:15px;border-radius:12px}
+/* cart panel */
+#cart{background:#fff;border-left:1.5px solid var(--line);display:flex;flex-direction:column;height:100%;min-height:0}
+.chd{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--line2)}
+.chd b{font-size:16px;display:flex;align-items:center;gap:7px}
+.bdgn{background:linear-gradient(135deg,var(--brandL),var(--brand));color:#fff;font-size:11px;font-weight:800;min-width:24px;height:24px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px}
+.chtag{font-size:11px;font-weight:800;padding:3px 8px;border-radius:6px;background:var(--goldL);color:var(--brand)}
+.chtag.lm{background:var(--lmBg);color:var(--lmD)}
+.lnk{background:none;border:1.5px solid var(--line);border-radius:9px;color:var(--muted);font-weight:700;font-size:12px;padding:5px 11px}
+#cartList{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:4px 16px}
+.cl{padding:11px 0;border-bottom:1px solid var(--line2)}
+.cl .r1{display:flex;gap:10px;align-items:flex-start}
+.cl .ci{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.cl .nm{flex:1;font-weight:700;line-height:1.3;font-size:14px;min-width:0}
+.cl .sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5;font-weight:500}
+.cl .amt{font-weight:800;white-space:nowrap;color:var(--brand)}
+.cl .r2{display:flex;align-items:center;gap:7px;margin-top:8px;padding-left:48px}
+.qty{display:flex;align-items:center;gap:4px}
+.qty button{width:34px;height:34px;border:1.5px solid var(--line);background:var(--soft);font-size:18px;font-weight:800;border-radius:10px;color:var(--brand)}
+.qty button:active{background:var(--tint)}
+.qty span{min-width:28px;text-align:center;font-weight:800}
+.mini{border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:7px 10px;font-size:12px;font-weight:700;color:var(--brand)}
+.mini.del{color:var(--err);border-color:#F2C9C4}
+.cft{padding:12px 16px;border-top:1.5px solid var(--line);background:var(--cream);padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+.trow{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:4px}
+.trow.big{font-size:22px;color:var(--ink);font-weight:800;margin:8px 0 12px;padding-top:8px;border-top:2px solid var(--line)}
+.trow.big span:last-child{color:var(--brand)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:none;border-radius:14px;padding:15px;font-size:17px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--brandL),var(--brandD));box-shadow:0 5px 16px rgba(122,74,40,.32)}
+.btn:active{opacity:.88}
+.btn:disabled{opacity:.4;box-shadow:none}
+.btn.lm{background:linear-gradient(135deg,#1FC46B,var(--lmD));box-shadow:0 5px 16px rgba(0,122,58,.3)}
+.btn.ghost{background:#fff;color:var(--brand);border:1.5px solid var(--line);box-shadow:none}
+.btn.danger{background:linear-gradient(135deg,#E0574A,#B3261E);box-shadow:0 5px 16px rgba(179,38,30,.28)}
+.btn.gold{background:linear-gradient(135deg,#F0C062,#C98D20);color:#3A2617}
+.btn.sm{padding:12px;font-size:15px;border-radius:12px}
 #cartBar{display:none}
+#cartShade{display:none}
 @media (max-width:899px){
   .sell{grid-template-columns:1fr}
-  #cart{position:fixed;left:0;right:0;bottom:0;top:12%;height:auto;z-index:40;border-left:none;border-radius:18px 18px 0 0;box-shadow:var(--shadow);transform:translateY(105%);transition:transform .25s}
+  #cart{position:fixed;left:0;right:0;bottom:0;top:10%;height:auto;z-index:40;border-left:none;border-radius:22px 22px 0 0;box-shadow:0 -8px 30px rgba(58,38,23,.25);transform:translateY(105%);transition:transform .28s ease}
   #cart.open{transform:translateY(0)}
-  #cartBar{display:flex;position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:30;background:var(--brand);color:var(--brandInk);border-radius:16px;padding:14px 16px;align-items:center;justify-content:space-between;font-weight:800;box-shadow:var(--shadow);border:none;font-size:16px}
-  #cartBar.lm{background:var(--lm);color:#fff}
-  #cartBar.zero{opacity:.5}
-  #cartShade{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:35}
+  #cart .chd::before{content:"";position:absolute;left:50%;top:6px;width:40px;height:4px;margin-left:-20px;background:var(--line);border-radius:2px}
+  #cart .chd{position:relative;padding-top:18px}
+  #cartBar{display:flex;position:fixed;right:14px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:30;background:linear-gradient(135deg,var(--brandL),var(--brandD));color:#fff;border-radius:30px;padding:12px 18px;align-items:center;gap:10px;font-weight:800;box-shadow:0 8px 22px rgba(78,44,22,.45);border:none;font-size:15px;transition:transform .12s}
+  #cartBar.lm{background:linear-gradient(135deg,#1FC46B,var(--lmD));box-shadow:0 8px 22px rgba(0,122,58,.4)}
+  #cartBar .fbn{background:#fff;color:var(--brand);min-width:24px;height:24px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px;padding:0 5px}
+  #cartBar.lm .fbn{color:var(--lmD)}
+  #cartShade:not(.hide){display:block;position:fixed;inset:0;background:rgba(30,18,10,.45);z-index:35}
 }
 
-/* LIST / CARDS */
-.box{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
-.box h3{font-size:15px;margin-bottom:10px}
+/* ===== LIST / CARDS ===== */
+.box{background:#fff;border:1.5px solid var(--line2);border-radius:16px;padding:15px;margin-bottom:12px;box-shadow:var(--cardsh)}
+.box h3{font-size:14px;margin-bottom:12px;color:var(--brand);display:flex;align-items:center;gap:6px}
 .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
-.in{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 11px;min-width:0}
-.in.sm{width:90px}
-.lbl{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:4px;display:block}
+.in{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:9px 11px;min-width:0;outline:none}
+.in:focus{border-color:var(--brandL)}
+.lbl{font-size:12px;color:var(--brandL);font-weight:800;margin-bottom:4px;display:block}
 .fld{margin-bottom:10px}
 .fld .in{width:100%}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.bill{display:flex;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid var(--line)}
+.bill{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line2)}
 .bill:last-child{border-bottom:none}
-.bill .t{font-size:12px;color:var(--muted);width:44px}
+.bill .bi{width:40px;height:40px;border-radius:11px;background:var(--goldL);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.bill .bi.lm{background:var(--lmBg)}
+.bill .t{font-size:12px;color:var(--muted);font-weight:700}
 .bill .no{font-weight:800;font-size:14px}
 .bill .ds{font-size:12px;color:var(--muted);margin-top:2px}
-.bill .am{margin-left:auto;font-weight:800;white-space:nowrap}
+.bill .am{margin-left:auto;font-weight:800;white-space:nowrap;color:var(--brand);font-size:16px}
+.bill.void{opacity:.55}
 .bill.void .am{text-decoration:line-through;color:var(--err)}
-.tag{display:inline-block;font-size:11px;font-weight:800;border-radius:6px;padding:2px 6px;margin-right:4px}
-.tag.lm{background:var(--lmBg);color:var(--lm)}
+.tag{display:inline-block;font-size:10px;font-weight:800;border-radius:6px;padding:2px 7px;margin-right:4px}
+.tag.lm{background:var(--lmBg);color:var(--lmD)}
 .tag.v{background:var(--errBg);color:var(--err)}
 .tag.q{background:var(--warnBg);color:var(--warn)}
-.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:12px}
-.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
-.stat .k{font-size:12px;color:var(--muted);font-weight:700}
-.stat .v{font-size:22px;font-weight:800;margin-top:4px}
-.bar{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px}
-.bar .bl{width:150px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar .bt{flex:1;height:14px;background:var(--soft);border-radius:7px;overflow:hidden}
-.bar .bf{height:100%;background:var(--brand);border-radius:7px}
-.bar .bv{width:90px;text-align:right;font-weight:700}
+.tag.c{background:var(--goldL);color:var(--brand)}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:12px}
+.stat{background:#fff;border:1.5px solid var(--line2);border-radius:15px;padding:13px;display:flex;align-items:center;gap:11px;box-shadow:var(--cardsh)}
+.stat .si{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.si.a{background:var(--goldL)}.si.b{background:#EAF4FF}.si.c{background:var(--okBg)}.si.d{background:#F4EEFF}
+.stat .k{font-size:11px;color:var(--muted);font-weight:700}
+.stat .v{font-size:20px;font-weight:800;margin-top:2px;line-height:1.1}
+.bar{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:13px}
+.bar .bl{width:150px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.bar .bt{flex:1;height:22px;background:var(--soft);border-radius:7px;overflow:hidden}
+.bar .bf{height:100%;background:linear-gradient(90deg,var(--brandL),var(--brand));border-radius:7px}
+.bar .bv{width:90px;text-align:right;font-weight:800}
 .hours{display:flex;align-items:flex-end;gap:3px;height:110px}
 .hours div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
-.hours i{display:block;width:100%;background:var(--brand2);border-radius:4px 4px 0 0;min-height:2px}
+.hours i{display:block;width:100%;background:linear-gradient(180deg,var(--gold),var(--brandL));border-radius:4px 4px 0 0;min-height:2px}
 .hours span{font-size:9px;color:var(--muted);margin-top:3px}
 .sumtbl{width:100%;border-collapse:collapse;font-size:14px}
-.sumtbl td{padding:6px 2px;border-bottom:1px solid var(--line)}
+.sumtbl td{padding:7px 2px;border-bottom:1px solid var(--line2)}
 .sumtbl td.r{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
-.sumtbl tr.h td{font-weight:800;border-bottom:2px solid var(--ink)}
+.sumtbl tr.h td{font-weight:800;border-bottom:2px solid var(--line);color:var(--brandD)}
 .sumtbl tr.s td{padding-left:18px;color:var(--muted)}
-.sumtbl tr.big td{font-size:17px;font-weight:800}
-.atabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;scrollbar-width:none}
-.mrow{display:grid;grid-template-columns:1fr 84px 84px 52px 52px 40px;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.sumtbl tr.big td{font-size:18px;font-weight:800;color:var(--brand);border-top:2px solid var(--line)}
+.atabs{display:inline-flex;gap:3px;overflow-x:auto;margin-bottom:14px;scrollbar-width:none;max-width:100%}
+.mrow{display:grid;grid-template-columns:1fr 84px 84px 52px 52px 40px;gap:6px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line2)}
 .mrow .n{font-weight:700;font-size:14px;line-height:1.3}
 .mrow .n small{display:block;font-weight:500;color:var(--muted);font-size:11px}
 .mrow .in{width:100%;padding:7px 6px;text-align:right}
-.mhd{font-size:11px;color:var(--muted);font-weight:800}
-.tg{width:46px;height:28px;border-radius:14px;border:none;background:var(--line);position:relative}
-.tg::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .15s}
+.mhd{font-size:11px;color:var(--brandL);font-weight:800}
+.tg{width:46px;height:28px;border-radius:14px;border:none;background:var(--line);position:relative;transition:background .15s}
+.tg::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .tg.on{background:var(--ok)}
 .tg.on::after{left:21px}
 .tg.so.on{background:var(--err)}
 @media (max-width:600px){.mrow{grid-template-columns:1fr 70px 70px 48px 40px}.mrow .c-so{display:none}.row2{grid-template-columns:1fr}}
 
-/* MODAL */
-#shade{position:fixed;inset:0;background:rgba(20,12,8,.5);z-index:60;display:none}
-#modal{position:fixed;z-index:61;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,94vw);max-height:92vh;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--panel);border-radius:20px;box-shadow:var(--shadow);display:none}
+/* ===== MODAL / SHEET ===== */
+#shade{position:fixed;inset:0;background:rgba(30,18,10,.48);z-index:60;display:none}
+#modal{position:fixed;z-index:61;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,94vw);max-height:92vh;overflow:auto;-webkit-overflow-scrolling:touch;background:#fff;border-radius:22px;box-shadow:0 14px 44px rgba(58,38,23,.3);display:none}
 #modal.wide{width:min(760px,96vw)}
-.mh{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 10px;position:sticky;top:0;background:var(--panel);z-index:2}
-.mh h2{font-size:19px}
-.x{border:none;background:var(--soft);width:36px;height:36px;border-radius:50%;font-size:18px;font-weight:700}
-.mb{padding:4px 18px 18px}
+@media (max-width:899px){
+  #modal,#modal.wide{left:0;right:0;top:auto;bottom:0;transform:none;width:100%;max-height:90vh;border-radius:22px 22px 0 0;padding-bottom:env(safe-area-inset-bottom)}
+  #modal .mh::before{content:"";position:absolute;left:50%;top:7px;width:40px;height:4px;margin-left:-20px;background:var(--line);border-radius:2px}
+}
+.mh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:18px 18px 12px;position:sticky;top:0;background:#fff;z-index:2;border-bottom:1px solid var(--line2);margin-bottom:12px}
+.mh h2{font-size:18px;color:var(--brandD);display:flex;align-items:center;gap:10px}
+.mh h2 .hi{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.mh h2 small{display:block;font-size:13px;color:var(--muted);font-weight:700}
+.x{border:none;background:var(--soft);width:36px;height:36px;border-radius:50%;font-size:16px;font-weight:800;color:var(--brand);flex-shrink:0}
+.mb{padding:0 18px 18px}
 .opts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
-.opt{border:1.5px solid var(--line);background:var(--panel);border-radius:12px;padding:11px 14px;font-weight:700;font-size:14px;text-align:center;min-width:96px}
-.opt small{display:block;font-weight:600;color:var(--muted);font-size:12px;margin-top:2px}
-.opt.on{border-color:var(--brand);background:var(--soft);box-shadow:inset 0 0 0 1px var(--brand)}
-.opt.on small{color:var(--brand)}
+.opt{border:2px solid var(--line);background:var(--soft);border-radius:22px;padding:10px 16px;font-weight:700;font-size:14px;text-align:center;color:var(--ink)}
+.opt small{font-weight:800;color:var(--brand);font-size:13px;margin-left:5px}
+.opt.on{border-color:var(--brand);background:var(--goldL);color:var(--brandD);box-shadow:0 2px 8px rgba(122,74,40,.18)}
 .opt:disabled{opacity:.35}
-.sec{font-size:13px;font-weight:800;color:var(--muted);margin:6px 0 8px}
-.adl{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
-.adl .an{font-weight:600;font-size:14px}
-.adl .ap{font-size:12px;color:var(--muted)}
-.paybig{text-align:center;padding:4px 0 12px}
-.paybig .k{font-size:13px;color:var(--muted);font-weight:700}
-.paybig .v{font-size:40px;font-weight:900;letter-spacing:-.5px}
-.paybig .s{font-size:13px;color:var(--muted)}
-.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:14px}
-.mt{border:1.5px solid var(--line);background:var(--panel);border-radius:14px;padding:14px 8px;font-weight:800;font-size:14px;text-align:center}
-.mt .ic{font-size:22px;display:block;margin-bottom:4px}
-.mt.on{border-color:var(--brand);background:var(--soft);box-shadow:inset 0 0 0 1px var(--brand)}
+.opt.big{border-radius:16px;padding:12px 16px;min-width:110px}
+.opt.big small{display:block;margin:2px 0 0}
+.sec{font-size:11px;font-weight:800;color:var(--brandL);letter-spacing:1px;margin:4px 0 9px}
+.adl{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line2)}
+.adl .an{font-weight:700;font-size:14px}
+.adl .ap{font-size:12px;color:var(--brand);font-weight:700}
+.adl.on .an{color:var(--brandD)}
+.paybig{text-align:center;padding:14px 0 16px;margin:0 0 14px;background:linear-gradient(135deg,#FFF8E8,#FCEBD2);border-radius:18px}
+.paybig.lm{background:linear-gradient(135deg,#EAFFF3,#CFF5DF)}
+.paybig .k{font-size:12px;color:var(--muted);font-weight:800}
+.paybig .v{font-size:42px;font-weight:900;letter-spacing:-.5px;color:var(--brandD)}
+.paybig.lm .v{color:var(--lmD)}
+.paybig .s{font-size:13px;color:var(--muted);font-weight:600}
+.mgrid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:14px}
+.mt{border:2px solid var(--line);background:#fff;border-radius:16px;padding:14px 8px;font-weight:800;font-size:13px;text-align:center;color:var(--ink)}
+.mt .ic{font-size:26px;display:block;margin-bottom:4px}
+.mt.on{border-color:var(--brand);background:var(--goldL);box-shadow:0 3px 10px rgba(122,74,40,.2)}
+.mt.on.lm{border-color:var(--lm);background:var(--lmBg)}
 .quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
-.quick button{border:1px solid var(--line);background:var(--soft);border-radius:12px;padding:12px;font-weight:800;font-size:16px}
-.change{background:var(--okBg);color:var(--ok);border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:18px;margin:6px 0 12px}
+.quick button{border:1.5px solid var(--line);background:var(--soft);border-radius:12px;padding:13px;font-weight:800;font-size:16px;color:var(--brandD)}
+.quick button:active{background:var(--tint)}
+.rcv{width:100%;font-size:28px;font-weight:800;text-align:right;border:2px solid var(--line);border-radius:14px;padding:10px 14px;outline:none;color:var(--brandD)}
+.rcv:focus{border-color:var(--brandL)}
+.change{background:var(--okBg);color:var(--ok);border-radius:14px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:20px;margin:6px 0 14px}
 .change.bad{background:var(--errBg);color:var(--err)}
-#qrBox{display:flex;justify-content:center;padding:12px;background:#fff;border-radius:14px;margin:6px auto 12px;width:fit-content}
+#qrBox{display:flex;justify-content:center;padding:14px;background:#fff;border-radius:16px;margin:6px auto 10px;width:fit-content;border:2px solid var(--line)}
 .note{font-size:13px;color:var(--muted);line-height:1.6}
-.warnbox{background:var(--warnBg);color:var(--warn);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:600;line-height:1.5;margin-bottom:12px}
-.okbig{text-align:center;padding:10px 0}
-.okbig .ic{font-size:46px}
-.okbig .t{font-size:20px;font-weight:800;margin-top:4px}
-.okbig .c{font-size:44px;font-weight:900;color:var(--ok);margin:6px 0}
-.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-.pinpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:300px;margin:10px auto}
-.pinpad button{height:62px;border-radius:16px;border:1px solid var(--line);background:var(--soft);font-size:24px;font-weight:800}
-.pdots{display:flex;justify-content:center;gap:14px;margin:8px 0 4px}
-.pdots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--brand)}
-.pdots i.f{background:var(--brand)}
-.perr{text-align:center;color:var(--err);font-size:13px;height:18px;font-weight:700}
+.warnbox{background:var(--warnBg);color:var(--warn);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:700;line-height:1.5;margin-bottom:12px}
+.okbig{text-align:center;padding:6px 0 4px}
+.okbig .ic{width:76px;height:76px;margin:0 auto 6px;border-radius:50%;background:var(--okBg);display:flex;align-items:center;justify-content:center;font-size:40px}
+.okbig .t{font-size:19px;font-weight:800;color:var(--brandD)}
+.okbig .c{font-size:46px;font-weight:900;color:var(--ok);margin:4px 0}
+.payfoot{position:sticky;bottom:0;background:#fff;padding:12px 0 4px;margin-top:4px;box-shadow:0 -10px 14px -10px rgba(58,38,23,.18);z-index:2}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+
+/* PIN (เต็มจอ) */
+#modal.pinm{left:0;top:0;right:0;bottom:0;transform:none;width:100%;max-height:none;height:100%;border-radius:0;background:linear-gradient(160deg,#3B2010,#7A4A28);display:none;color:#fff}
+#modal.pinm .mh{background:transparent;border:none;justify-content:flex-end}
+#modal.pinm .mh::before{display:none}
+#modal.pinm .x{background:rgba(255,255,255,.15);color:#fff}
+.pinwrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh}
+.pinwrap .pl{width:72px;height:72px;background:#fff;border-radius:20px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.pinwrap .pl img{width:58px}
+.pinwrap .pt{font-size:21px;font-weight:800}
+.pinwrap .ps{font-size:13px;color:rgba(255,255,255,.7);margin:4px 0 22px}
+.pdots{display:flex;justify-content:center;gap:16px;margin-bottom:8px}
+.pdots i{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.45)}
+.pdots i.f{background:var(--gold);border-color:var(--gold)}
+.perr{text-align:center;color:#FFB4A9;font-size:13px;height:20px;font-weight:800;margin-bottom:8px}
+.pinpad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:280px}
+.pinpad button{height:64px;border-radius:16px;border:none;background:rgba(255,255,255,.14);font-size:24px;font-weight:800;color:#fff}
+.pinpad button:active{background:rgba(255,255,255,.3)}
 
 /* SETUP */
-#setup{position:fixed;inset:0;z-index:80;background:var(--bg);display:none;overflow:auto;padding:30px 16px}
-#setup .in{width:100%}
+#setup{position:fixed;inset:0;z-index:80;background:linear-gradient(160deg,#FFF8EC,#F6E6D2);display:none;overflow:auto;padding:30px 16px}
 
 /* TOAST */
 #toasts{position:fixed;left:50%;transform:translateX(-50%);top:calc(70px + env(safe-area-inset-top));z-index:90;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:92vw}
-.toast{background:#2B1D14;color:#fff;padding:11px 16px;border-radius:12px;font-weight:700;font-size:14px;box-shadow:var(--shadow);max-width:100%;text-align:center}
-.toast.err{background:#B3261E}.toast.ok{background:#1E7B46}
+.toast{background:var(--brandD);color:#fff;padding:11px 18px;border-radius:14px;font-weight:700;font-size:14px;box-shadow:var(--shadow);max-width:100%;text-align:center}
+.toast.err{background:#C0392B}.toast.ok{background:#2E8B57}
+/* ===== v1.2 additions ===== */
+.hbtn{border:none;background:rgba(255,255,255,.16);color:#fff;width:38px;height:38px;border-radius:11px;font-size:24px;font-weight:700;line-height:1;flex-shrink:0}
+#hdr .brand{cursor:pointer}
+.htitle{flex:1;text-align:center;font-weight:800;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.v-sell .htitle{display:none}
+body:not(.v-sell) .chrow{display:none}
+.demotag{background:#FFD54F;color:#3A2617;font-size:11px;font-weight:800;padding:5px 9px;border-radius:8px;white-space:nowrap}
+/* rail */
+.sell{grid-template-columns:1fr 360px 78px}
+#rail{background:#fff;border-left:1.5px solid var(--line);display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:env(safe-area-inset-bottom)}
+#rail button{border:none;border-bottom:1px solid var(--line2);background:#fff;padding:12px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:800;color:var(--brand);position:relative}
+#rail button .ri{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:21px;background:var(--soft)}
+#rail button:active .ri{background:var(--tint)}
+#rail .rb{position:absolute;top:6px;right:8px;background:var(--err);color:#fff;font-size:10px;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+@media (max-width:899px){
+  .sell{grid-template-columns:1fr 64px}
+  #rail button{padding:10px 0 8px;font-size:10px}
+  #rail button .ri{width:36px;height:36px;font-size:19px}
+  #cartBar{right:76px!important}
+}
+/* menu card photo / unpriced */
+.mc-img{height:92px}
+.mc-img img{width:100%;height:100%;object-fit:cover;display:block}
+.mc.np{opacity:.55}
+.mc.np .mc-img{filter:grayscale(.6)}
+.nop{font-size:12px;font-weight:800;color:var(--muted);background:var(--soft);padding:2px 7px;border-radius:6px}
+/* image editor */
+.imgedit{display:flex;gap:14px;align-items:center;margin-bottom:14px;padding:12px;background:var(--soft);border-radius:14px}
+.imgbox{width:96px;height:96px;border-radius:14px;overflow:hidden;background:#fff;border:2px dashed var(--line);display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0}
+.imgbox img{width:100%;height:100%;object-fit:cover}
+.filebtn{position:relative;overflow:hidden;display:inline-block}
+.filebtn input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+/* home */
+.home{max-width:760px;margin:0 auto;padding:18px 14px 40px}
+.hcard{background:#fff;border:1.5px solid var(--line2);border-radius:20px;box-shadow:var(--cardsh);padding:18px;margin-bottom:12px;display:flex;align-items:center;gap:16px;width:100%;text-align:left}
+.hcard:active{transform:scale(.99)}
+.hcard .hi{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0}
+.hcard .ht{font-size:20px;font-weight:800;color:var(--brandD)}
+.hcard .hs{font-size:13px;color:var(--muted);margin-top:2px;line-height:1.5}
+.hcard.main{flex-direction:column;text-align:center;padding:26px 18px;background:linear-gradient(135deg,#FFF8E8,#FCEBD2)}
+.hcard.main .hi{width:96px;height:96px;font-size:50px;background:#fff;border-radius:26px;position:relative;box-shadow:0 4px 14px rgba(122,74,40,.15)}
+.hcard.main .hi .dot{position:absolute;right:-4px;bottom:-4px;width:22px;height:22px;border-radius:50%;border:3px solid #fff;background:#9A8B7E}
+.hcard.main .hi .dot.ok{background:#2ECC71}.hcard.main .hi .dot.err{background:#E74C3C}
+.hcard.main .ht{font-size:30px}
+.hgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hgrid .hcard{margin:0;flex-direction:column;text-align:center;padding:18px 10px;gap:10px}
+.hgrid .hcard .hi{width:54px;height:54px;font-size:26px}
+.hgrid .hcard .ht{font-size:16px}
+.hfoot{text-align:center;margin-top:18px;color:var(--muted);font-size:13px;line-height:1.8}
+/* login / setup */
+.auth{max-width:420px;margin:6vh auto 0}
+.auth .lg{width:96px;height:96px;margin:0 auto 12px;background:#fff;border-radius:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(122,74,40,.18)}
+.auth .lg img{width:74px}
+.auth h1{text-align:center;font-size:24px;color:var(--brandD)}
+.auth .sub{text-align:center;color:var(--muted);font-size:13px;margin:4px 0 18px}
+.auth .in{width:100%;font-size:17px;padding:13px 14px;margin-bottom:10px;border-radius:12px}
+.auth .err{color:var(--err);font-weight:700;font-size:13px;min-height:20px;margin-bottom:6px;text-align:center}
+.orline{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:16px 0}
+.orline::before,.orline::after{content:"";flex:1;height:1px;background:var(--line)}
+/* open shift pad */
+.spad{border-radius:18px;overflow:hidden;border:1.5px solid var(--line2)}
+.spad .disp{background:var(--soft);padding:18px 18px;display:flex;justify-content:space-between;align-items:flex-end}
+.spad .disp span{color:var(--muted);font-size:14px}
+.spad .disp b{font-size:44px;font-weight:800;color:var(--brandD);line-height:1}
+.spad .keys{display:grid;grid-template-columns:repeat(3,1fr)}
+.spad .keys button{height:66px;border:none;border-right:1px solid var(--line2);border-top:1px solid var(--line2);background:#fff;font-size:26px;font-weight:600;color:var(--ink)}
+.spad .keys button:nth-child(3n){border-right:none}
+.spad .keys button:active{background:var(--soft)}
+/* held */
+.held{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line2)}
+.held .hl{flex:1;min-width:0}
+.held .hl b{display:block}
+.held .hl span{font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
 
 <header id="hdr">
-  <div class="brand">
-    <img id="hdrLogo" alt="">
-    <div><div class="bn">COFFEE TODAY POS</div><div class="bs" id="hdrSub">—</div></div>
+  <button class="hbtn hide" id="hdrBack" data-act="back">‹</button>
+  <div class="brand" data-act="view" data-v="home">
+    <div class="logo"><img id="hdrLogo" alt=""></div>
+    <div><div class="bn">Coffee Today</div><div class="bs" id="hdrSub">ระบบขาย</div></div>
   </div>
-  <nav id="nav">
-    <button data-act="view" data-v="sell" class="on"><span class="ic">☕</span><span class="tx">ขาย</span></button>
-    <button data-act="view" data-v="bills"><span class="ic">🧾</span><span class="tx">บิล</span></button>
-    <button data-act="view" data-v="summary"><span class="ic">📊</span><span class="tx">สรุปยอด</span></button>
-    <button data-act="view" data-v="shift"><span class="ic">💵</span><span class="tx">กะ</span></button>
-    <button data-act="view" data-v="admin"><span class="ic">⚙️</span><span class="tx">หลังบ้าน</span></button>
-  </nav>
+  <div class="chrow" id="chSeg">
+    <button data-act="ch" data-v="walkin" class="on">🏪 หน้าร้าน</button>
+    <button data-act="ch" data-v="lineman" class="lm">🛵 LINE MAN</button>
+  </div>
+  <div class="htitle" id="hdrTitle"></div>
+  <span class="demotag hide" id="demoTag">ทดลอง</span>
   <div id="sync" data-act="syncNow"><span class="dot"></span><span class="tx" id="syncTx">—</span></div>
 </header>
 
 <main>
+  <section class="view hide" id="v-home"><div id="homePad"></div></section>
   <section class="view" id="v-sell">
     <div class="sell">
       <div class="mpane">
-        <div class="stop">
-          <div class="seg" id="chSeg">
-            <button data-act="ch" data-v="walkin" class="on">🏪 หน้าร้าน</button>
-            <button data-act="ch" data-v="lineman" class="lm">🛵 LINE MAN</button>
-          </div>
-          <input class="search" id="q" type="search" placeholder="ค้นหาเมนู…" autocomplete="off">
+        <div id="banner" class="walkin">
+          <div class="bt" id="bnT">☕ Coffee Today</div>
+          <div class="bc"><span id="bnIc">🏪</span><span id="bnCh">หน้าร้าน</span><small id="bnSub">ราคาปกติ</small></div>
+          <div class="seg mobch"><button data-act="ch" data-v="walkin" class="on">🏪 หน้าร้าน</button><button data-act="ch" data-v="lineman" class="lm">🛵 LINE MAN</button></div>
         </div>
+        <div class="stop"><input class="search" id="q" type="search" placeholder="🔍 ค้นหาเมนู…" autocomplete="off"></div>
         <div id="cats"></div>
         <div id="grid"></div>
       </div>
       <aside id="cart">
-        <div class="chd"><b>ตะกร้า <span id="cartCh"></span></b><button class="lnk" data-act="clearCart">ล้าง</button></div>
+        <div class="chd"><b>🛒 ตะกร้า <span class="bdgn" id="cBdg">0</span><span id="cartCh"></span></b><button class="lnk" data-act="clearCart">ล้าง</button></div>
         <div id="cartList"></div>
         <div class="cft">
-          <div class="trow"><span>จำนวน</span><span id="cCnt">0</span></div>
+          <div class="trow"><span>จำนวน</span><span id="cCnt">0</span></div><div class="trow"><span>ราคา</span><span id="cMode">หน้าร้าน</span></div>
           <div class="trow big"><span>รวม</span><span id="cTot">฿0</span></div>
           <button class="btn" id="payBtn" data-act="openPay" disabled>💳 ชำระเงิน</button>
         </div>
       </aside>
+      <nav id="rail">
+        <button data-act="view" data-v="home"><span class="ri">🏠</span>หน้าหลัก</button>
+        <button data-act="view" data-v="summary"><span class="ri">📊</span>สรุป</button>
+        <button data-act="view" data-v="bills"><span class="ri">🧾</span>บิล</button>
+        <button data-act="hold"><span class="ri">⏸️</span>พักบิล<span class="rb" id="railHeld" style="display:none">0</span></button>
+        <button data-act="drawerPin"><span class="ri">🗄️</span>ลิ้นชัก</button>
+        <button data-act="view" data-v="shift"><span class="ri">💵</span>กะ</button>
+        <button data-act="view" data-v="admin"><span class="ri">⚙️</span>หลังบ้าน</button>
+      </nav>
     </div>
     <div id="cartShade" class="hide" data-act="closeCart"></div>
-    <button id="cartBar" data-act="openCart" class="zero"><span id="cbL">ตะกร้าว่าง</span><span id="cbR">฿0</span></button>
+    <button id="cartBar" data-act="openCart"><span>🛒</span><span class="fbn" id="cbN">0</span><span id="cbR">฿0</span></button>
   </section>
 
   <section class="view hide" id="v-bills"><div class="pad" id="billsPad"></div></section>
@@ -1541,7 +1694,7 @@ module.exports = QRCode;
 /* =====================================================================
    COFFEETODAY-POS  v1.0  —  single-file POS (ES5)  ·  Supabase + Star PassPRNT
 ===================================================================== */
-var APP_VER='1.0.0';
+var APP_VER='1.3.4';
 var LOGO='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADpAQAAAAAy94dsAAAHO0lEQVR42p2Zv27kyBHGf2wS4hhY3xBwsjDWIh9B4QYLi4+yj7DhBXunvvMFDvcNrNdwYvdd4gsFv4DbwAbyRVxBASVQLAf9h90kZ3A4JquZmqouVn31dVVtIZx7FL9B/HP4o9gzLr8bz2k/T2eN33PWeFHMZ7Rfznv++bz4Fjlz9ktFlO9oPwL6tPjT2aCKPit+ADAnxXfwVWJr/QDXtOHDWjpCIVGsdtJxEd9re3YHb2E4IX5J3N4Rf4Ya+lNouYXXWZCyZ3Lf2Hrf80coAaZ945/gFSeNz8CNiAzFbtQGKCQVq910HHaNz8C1C7z/JsPa0wGH8KeD7Hh+DxcAVCEpapuOUwX8FNOh9sT3UIe/zVa8Tkf+YlPyKaBJbdNxwrVP8Cb8vS0i0fA+fhrW4gco9Wnjd2mqA9iiWHr4sMNhaXXEJ4BNJUSYVF4EW1p5CWzKHEy57YgmtU71vmu5bRmLDEwpWaVoUjEddWqzyqP2aZNqnYjzdGxivkmHyv69W1dehknp4Son/FT7OQZhya9dxPHueJB+x7UO6B2E7nKwqezuuGXMwaayu0NHN/pF+xYa51ly6hjELzr4ufqFEy/VMS8+dTHfGtoBB5mPIeu29GCagRsvLiSIhyAeoBSL/063GdiUS0cTULCJ2iYdJMymnqAwoSAP0WP/hsojuFhpe7ApuyKrIQObyu+OHaxlCA7voJyS6lIEjzvaNv1sc7CppkwQO61/qFaxWLvpatElaGSOdaqPm8ui4o8b1yQn/D4H28RifE64xtTeuAZs5d+mSG4GQKm8qFVOXfk91kdaWKJm0rvmkMdeZYl+nQBn3sa8/ovJ0aTISONjQnhee8gv1V/XxlYLkPcf7bTHM2bVgmx2qEvlENnaaFKApsxmnfb8m/pzXyWHU/LBaZ9o/3unXXGizEZ/tk6Y6Fe71jlx/oMvXQa2VX3/txkyNKmMNn5MXZi9dkTTd/2amyrQf/NvWex7PqQVP2ZgW5qDXepSPnovajcpytv7Yd0VOLtqFc+POZpUTjit3nie4Ki2q3tSkaCpGH9Sc0ZdmcPf8s9tGRySg3Wfo0ktd9fR+hnpNnPN80U9fDkI1l17oetS4ZRi5O4Zhmwco3K/6PkWjBSMmu6YoElk5lpsKyJwQ62/5rhchP7FWgtSYpiWEbVxrsVMvjIWehNTPnvXrP/UoeeFZw5JGfADNM3Q6m5bBgPINwC8T6Mm4a1g9vwmCxVUCdYmbuEw0jVqQ9CjO8Eh9l16rorV+ejUyn8s6DJOe4ILZmfk1cbzBigmiW/cL2hSodhKigmwekrRpKKO0S/dbhn4/Bntv9MLmlRk9gbGJqvB3ml7NNm+21CUipg9cHWV9YkwxtAAw+/fd+ilt6ALomwSSi9ClVozfUYCzaqIdNo9uHDFCWg8zshUiCmTJl0tXWczF6ulhXjjzttJMalkIApuuhR1Y8UIXSzBKrg2AiPDwfm7vLlOPO9tw1BxIBm+Y4/MgPEJfV64KWmGND32qaji5VL4RmQoRcQIIgYu3RDt4qEidf9IAQb+t7CHx/khtPaiYUqTpmLpfE/FAzD3PC5oCvP0XE61aIoBG2crjrgBVWSqp3KCC/gQfJuoVXBigvkzPCdN3eeFtRlBulAg1k8Krh2buZbhOEJpypl3UPv2rFQhPAMVvIEi9gsPCcadvf946L34QWlWaZ9RPje+iLRDwcVSBg28+fkeg+3BuFH/LaHrpB24rCcuaS0cRewyQvXurF/elly6YoRbKH1naWqhBUTs17QjFDIBrZ9ibS28gVJELMcJkAG4CeLSIeRGxDjxjYFSUnGhaUU0xxm4BI6Bz5sZzQUMiHZB/AU3rYcZRtNCLRPUfoVWxA77APCnD3415/N2ESfoETF8GanFQC0un9dxPJ8Qy7+EWoBahjh6B/GN5Sj2OAGljOBzrtKtXTs8Lm3D67ShNBbpw1ZQQZio/YroWkMrM7hguQAH44UH/YOrKFl4PRRboTmKceEYCVD3Yt2W0M4+WjYuIVSspnd0DwtbfpUzpEipjfNbXljGQz+FXHAjYzIs5Qs0UyOScGedi23NTTqXrZaWttxf0qjAzdpl0JVuue5TZ2gNcG0g2TcRuNnUy4YuMlc4e8QGb0xIRyYejov2UVauVfx1XAj1aqeFnuJCqTBrsaKa4814sdOA/7Ts995uxEVYZt+f2MZarf1+r97bM7Xm2u/32mTfFLT10FlfYu93Z4PGL5TynVAcWsfjOmRZEVWj48kPe4m39VSKmHyNtuzXbDkXW9uJ8WKdjtT4UIhOqmOrTa+7zYouiA9C93e2G9O4+nOMIvvGK8de5cmBS1cZgjfz2Dod+Y7PFHsb07if/vMmZIlrBf9mZ2NapJ1AMZ8cFTX5xnRnkrw6Lzanxf16J7TRfn16nyp2579OsnyX52bgZpOO1dl7G9MYtS9/mM5pH16dn78/cM74rM6K95//A6zsh/hEoQzPAAAAAElFTkSuQmCC';
 var SB_URL='https://ummtqzweedmotrffqrhw.supabase.co';
 var SB_KEY='sb_publishable_yIUQ7A8IjCXKSp7OgKoGjw_65k3iO-X';
@@ -1563,7 +1716,8 @@ var DEFAULT_SETTINGS={
     {id:'card',name:'บัตรเครดิต',type:'online',active:false},
     {id:'lineman',name:'LINE MAN',type:'lineman',active:true}
   ],
-  pin:'9999',autoprint:true,cut:'partial'
+  pin:'9999',autoprint:true,cut:'partial',
+  sweet:['ไม่หวาน','หวานน้อย','หวานปกติ','หวานมาก']
 };
 /* ราคาที่รู้แล้วจากใบสรุป POSPOS (ใช้ตอนสร้างเมนูจาก recipes ครั้งแรก) */
 var KNOWN={
@@ -1583,12 +1737,16 @@ var KNOWN={
   blend_greenmilktea_22:{p:60,rn:'ชาเขียวนมปั่น 22 oz'},
   snack_crispybreadsugar:{p:30,rn:'ขนมปังกรอบเนยน้ำตาล'}
 };
+/* เมนูตั้งต้น (สร้างจากสูตรใน Stock + ราคาจากใบสรุป POSPOS) — ใช้ได้ทันทีแม้ยังไม่ขึ้นระบบ */
+var DEFAULT_MENU=[{"id":"m_hot_today_8","grp":"ทูเดย์","variant":"ร้อน 8 oz","receipt_name":"ทูเดย์ร้อน 8 oz","category":"กาแฟ","recipe_id":"hot_today_8","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":0},{"id":"m_hot_espresso_8","grp":"เอสเปรสโซ่","variant":"ร้อน 8 oz","receipt_name":"เอสเปรสโซ่ร้อน 8 oz","category":"กาแฟ","recipe_id":"hot_espresso_8","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":10},{"id":"m_hot_cappuccino_8","grp":"คาปูชิโน่","variant":"ร้อน 8 oz","receipt_name":"คาปูชิโน่ร้อน 8 oz","category":"กาแฟ","recipe_id":"hot_cappuccino_8","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":20},{"id":"m_hot_latte_8","grp":"ลาเต้","variant":"ร้อน 8 oz","receipt_name":"ลาเต้ร้อน 8 oz","category":"กาแฟ","recipe_id":"hot_latte_8","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":30},{"id":"m_hot_mocha_8","grp":"มอคค่า","variant":"ร้อน 8 oz","receipt_name":"มอคค่าร้อน 8 oz","category":"กาแฟ","recipe_id":"hot_mocha_8","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":40},{"id":"m_hot_espucino_8","grp":"เอสปูชิโน","variant":"ร้อน 8 oz","receipt_name":"เอสปูชิโนร้อน 8 oz","category":"กาแฟ","recipe_id":"hot_espucino_8","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":50},{"id":"m_hot_americano_8","grp":"อเมริกาโน่","variant":"ร้อน 8 oz","receipt_name":"อเมริกาโนร้อน 8 oz","category":"กาแฟ","recipe_id":"hot_americano_8","kind":"drink","is_addon":false,"price":40,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":60},{"id":"m_hot_americanohoney_8","grp":"อเมริกาโน่น้ำผึ้ง","variant":"ร้อน 8 oz","receipt_name":"อเมริกาโน่น้ำผึ้งร้อน 8 oz","category":"กาแฟ","recipe_id":"hot_americanohoney_8","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":70},{"id":"m_hot_today_12","grp":"ทูเดย์","variant":"ร้อน 12 oz","receipt_name":"ทูเดย์ร้อน 12 oz","category":"กาแฟ","recipe_id":"hot_today_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":80},{"id":"m_hot_espresso_12","grp":"เอสเปรสโซ่","variant":"ร้อน 12 oz","receipt_name":"เอสเปรสโซ่ร้อน 12 oz","category":"กาแฟ","recipe_id":"hot_espresso_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":90},{"id":"m_hot_cappuccino_12","grp":"คาปูชิโน่","variant":"ร้อน 12 oz","receipt_name":"คาปูชิโน่ร้อน 12 oz","category":"กาแฟ","recipe_id":"hot_cappuccino_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":100},{"id":"m_hot_latte_12","grp":"ลาเต้","variant":"ร้อน 12 oz","receipt_name":"ลาเต้ร้อน 12 oz","category":"กาแฟ","recipe_id":"hot_latte_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":110},{"id":"m_hot_mocha_12","grp":"มอคค่า","variant":"ร้อน 12 oz","receipt_name":"มอคค่าร้อน 12 oz","category":"กาแฟ","recipe_id":"hot_mocha_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":120},{"id":"m_hot_espucino_12","grp":"เอสปูชิโน","variant":"ร้อน 12 oz","receipt_name":"เอสปูชิโนร้อน 12 oz","category":"กาแฟ","recipe_id":"hot_espucino_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":130},{"id":"m_hot_americano_12","grp":"อเมริกาโน่","variant":"ร้อน 12 oz","receipt_name":"อเมริกาโน่ร้อน 12 oz","category":"กาแฟ","recipe_id":"hot_americano_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":140},{"id":"m_hot_americanohoney_12","grp":"อเมริกาโน่น้ำผึ้ง","variant":"ร้อน 12 oz","receipt_name":"อเมริกาโน่น้ำผึ้งร้อน 12 oz","category":"กาแฟ","recipe_id":"hot_americanohoney_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":150},{"id":"m_iced_today_22","grp":"ทูเดย์","variant":"เย็น 22 oz","receipt_name":"ทูเดย์เย็น 22 oz","category":"กาแฟ","recipe_id":"iced_today_22","kind":"drink","is_addon":false,"price":55,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":160},{"id":"m_iced_espresso_22","grp":"เอสเปรสโซ่","variant":"เย็น 22 oz","receipt_name":"เอสเปรสโซเย็น 22 oz","category":"กาแฟ","recipe_id":"iced_espresso_22","kind":"drink","is_addon":false,"price":55,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":170},{"id":"m_iced_cappuccino_22","grp":"คาปูชิโน่","variant":"เย็น 22 oz","receipt_name":"คาปูชิโน่เย็น 22 oz","category":"กาแฟ","recipe_id":"iced_cappuccino_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":180},{"id":"m_iced_latte_22","grp":"ลาเต้","variant":"เย็น 22 oz","receipt_name":"ลาเต้เย็น 22 oz","category":"กาแฟ","recipe_id":"iced_latte_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":190},{"id":"m_iced_mocha_22","grp":"มอคค่า","variant":"เย็น 22 oz","receipt_name":"มอคค่าเย็น 22 oz","category":"กาแฟ","recipe_id":"iced_mocha_22","kind":"drink","is_addon":false,"price":65,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":200},{"id":"m_iced_espucino_22","grp":"เอสปูชิโน","variant":"เย็น 22 oz","receipt_name":"เอสปูชิโนเย็น 22 oz","category":"กาแฟ","recipe_id":"iced_espucino_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":210},{"id":"m_iced_americano_22","grp":"อเมริกาโน่","variant":"เย็น 22 oz","receipt_name":"อเมริกาโนเย็น 22 oz","category":"กาแฟ","recipe_id":"iced_americano_22","kind":"drink","is_addon":false,"price":55,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":220},{"id":"m_iced_americanohoney_22","grp":"อเมริกาโน่น้ำผึ้ง","variant":"เย็น 22 oz","receipt_name":"อเมริกาโน่น้ำผึ้งเย็น 22 oz","category":"กาแฟ","recipe_id":"iced_americanohoney_22","kind":"drink","is_addon":false,"price":65,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":230},{"id":"m_blend_today_16","grp":"ทูเดย์","variant":"ปั่น 16 oz","receipt_name":"ทูเดย์ปั่น 16 oz","category":"กาแฟ","recipe_id":"blend_today_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":240},{"id":"m_blend_today_22","grp":"ทูเดย์","variant":"ปั่น 22 oz","receipt_name":"ทูเดย์ปั่น 22 oz","category":"กาแฟ","recipe_id":"blend_today_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":250},{"id":"m_blend_espresso_16","grp":"เอสเปรสโซ่","variant":"ปั่น 16 oz","receipt_name":"เอสเปรสโซ่ปั่น 16 oz","category":"กาแฟ","recipe_id":"blend_espresso_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":260},{"id":"m_blend_espresso_22","grp":"เอสเปรสโซ่","variant":"ปั่น 22 oz","receipt_name":"เอสเปรสโซ่ปั่น 22 oz","category":"กาแฟ","recipe_id":"blend_espresso_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":270},{"id":"m_blend_cappuccino_16","grp":"คาปูชิโน่","variant":"ปั่น 16 oz","receipt_name":"คาปูชิโน่ปั่น 16 oz","category":"กาแฟ","recipe_id":"blend_cappuccino_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":280},{"id":"m_blend_cappuccino_22","grp":"คาปูชิโน่","variant":"ปั่น 22 oz","receipt_name":"คาปูชิโนปั่น 22 oz","category":"กาแฟ","recipe_id":"blend_cappuccino_22","kind":"drink","is_addon":false,"price":75,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":290},{"id":"m_blend_mocha_16","grp":"มอคค่า","variant":"ปั่น 16 oz","receipt_name":"มอคค่าปั่น 16 oz","category":"กาแฟ","recipe_id":"blend_mocha_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":300},{"id":"m_blend_mocha_22","grp":"มอคค่า","variant":"ปั่น 22 oz","receipt_name":"มอคค่าปั่น 22 oz","category":"กาแฟ","recipe_id":"blend_mocha_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":310},{"id":"m_blend_espucino_16","grp":"เอสปูชิโน","variant":"ปั่น 16 oz","receipt_name":"เอสปูชิโนปั่น 16 oz","category":"กาแฟ","recipe_id":"blend_espucino_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":320},{"id":"m_blend_espucino_22","grp":"เอสปูชิโน","variant":"ปั่น 22 oz","receipt_name":"เอสปูชิโนปั่น 22 oz","category":"กาแฟ","recipe_id":"blend_espucino_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":330},{"id":"m_blend_latte_16","grp":"ลาเต้","variant":"ปั่น 16 oz","receipt_name":"ลาเต้ปั่น 16 oz","category":"กาแฟ","recipe_id":"blend_latte_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":340},{"id":"m_blend_latte_22","grp":"ลาเต้","variant":"ปั่น 22 oz","receipt_name":"ลาเต้ปั่น 22 oz","category":"กาแฟ","recipe_id":"blend_latte_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":350},{"id":"m_blend_americano_16","grp":"อเมริกาโน่","variant":"ปั่น 16 oz","receipt_name":"อเมริกาโน่ปั่น 16 oz","category":"กาแฟ","recipe_id":"blend_americano_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":360},{"id":"m_blend_americano_22","grp":"อเมริกาโน่","variant":"ปั่น 22 oz","receipt_name":"อเมริกาโน่ปั่น 22 oz","category":"กาแฟ","recipe_id":"blend_americano_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":370},{"id":"m_hot_thaimilktea_8","grp":"ชาไทย","variant":"ร้อน 8 oz","receipt_name":"ชาไทยร้อน 8 oz","category":"ชา / นม / โกโก้","recipe_id":"hot_thaimilktea_8","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":380},{"id":"m_hot_greentea_8","grp":"ชาเขียว","variant":"ร้อน 8 oz","receipt_name":"ชาเขียวร้อน 8 oz","category":"ชา / นม / โกโก้","recipe_id":"hot_greentea_8","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":390},{"id":"m_hot_greenmilktea_8","grp":"ชาเขียวนม","variant":"ร้อน 8 oz","receipt_name":"ชาเขียวนมร้อน 8 oz","category":"ชา / นม / โกโก้","recipe_id":"hot_greenmilktea_8","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":400},{"id":"m_hot_chocolate_8","grp":"ช็อคโกแลต","variant":"ร้อน 8 oz","receipt_name":"ช็อคโกแลตร้อน 8 oz","category":"ชา / นม / โกโก้","recipe_id":"hot_chocolate_8","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":410},{"id":"m_hot_freshmilk_8","grp":"นมสด","variant":"ร้อน 8 oz","receipt_name":"นมสดร้อน 8 oz","category":"ชา / นม / โกโก้","recipe_id":"hot_freshmilk_8","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":420},{"id":"m_hot_blacktea_8","grp":"ชาดำ","variant":"ร้อน 8 oz","receipt_name":"ชาดำร้อน 8 oz","category":"ชา / นม / โกโก้","recipe_id":"hot_blacktea_8","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":430},{"id":"m_hot_thaiteatlatte_8","grp":"ชาไทยลาเต","variant":"ร้อน 8 oz","receipt_name":"ชาไทยลาเตร้อน 8 oz","category":"ชา / นม / โกโก้","recipe_id":"hot_thaiteatlatte_8","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":440},{"id":"m_hot_cocoa_8","grp":"โกโก้","variant":"ร้อน 8 oz","receipt_name":"โกโก้ร้อน 8 oz","category":"ชา / นม / โกโก้","recipe_id":"hot_cocoa_8","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":450},{"id":"m_hot_thaimilktea_12","grp":"ชาไทย","variant":"ร้อน 12 oz","receipt_name":"ชาไทยร้อน 12 oz","category":"ชา / นม / โกโก้","recipe_id":"hot_thaimilktea_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":460},{"id":"m_hot_greentea_12","grp":"ชาเขียว","variant":"ร้อน 12 oz","receipt_name":"ชาเขียวร้อน 12 oz","category":"ชา / นม / โกโก้","recipe_id":"hot_greentea_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":470},{"id":"m_hot_greenmilktea_12","grp":"ชาเขียวนม","variant":"ร้อน 12 oz","receipt_name":"ชาเขียวนมร้อน 12 oz","category":"ชา / นม / โกโก้","recipe_id":"hot_greenmilktea_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":480},{"id":"m_hot_chocolate_12","grp":"ช็อคโกแลต","variant":"ร้อน 12 oz","receipt_name":"ช็อคโกแลตร้อน 12 oz","category":"ชา / นม / โกโก้","recipe_id":"hot_chocolate_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":490},{"id":"m_hot_freshmilk_12","grp":"นมสด","variant":"ร้อน 12 oz","receipt_name":"นมสดร้อน 12 oz","category":"ชา / นม / โกโก้","recipe_id":"hot_freshmilk_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":500},{"id":"m_hot_blacktea_12","grp":"ชาดำ","variant":"ร้อน 12 oz","receipt_name":"ชาดำร้อน 12 oz","category":"ชา / นม / โกโก้","recipe_id":"hot_blacktea_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":510},{"id":"m_hot_thaiteatlatte_12","grp":"ชาไทยลาเต","variant":"ร้อน 12 oz","receipt_name":"ชาไทยลาเตร้อน 12 oz","category":"ชา / นม / โกโก้","recipe_id":"hot_thaiteatlatte_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":520},{"id":"m_hot_cocoa_12","grp":"โกโก้","variant":"ร้อน 12 oz","receipt_name":"โกโก้ร้อน 12 oz","category":"ชา / นม / โกโก้","recipe_id":"hot_cocoa_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":530},{"id":"m_iced_chocolate_22","grp":"ช็อคโกแลต","variant":"เย็น 22 oz","receipt_name":"ช็อคโกแลตต์เย็น 22 oz","category":"ชา / นม / โกโก้","recipe_id":"iced_chocolate_22","kind":"drink","is_addon":false,"price":65,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":540},{"id":"m_iced_cocoa_22","grp":"โกโก้","variant":"เย็น 22 oz","receipt_name":"โกโก้เย็น 22 oz","category":"ชา / นม / โกโก้","recipe_id":"iced_cocoa_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":550},{"id":"m_iced_freshmilk_22","grp":"นมสด","variant":"เย็น 22 oz","receipt_name":"นมสดเย็น 22 oz","category":"ชา / นม / โกโก้","recipe_id":"iced_freshmilk_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":560},{"id":"m_iced_thaimilktea_22","grp":"ชาไทย","variant":"เย็น 22 oz","receipt_name":"ชาไทย 22 oz","category":"ชา / นม / โกโก้","recipe_id":"iced_thaimilktea_22","kind":"drink","is_addon":false,"price":50,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":570},{"id":"m_iced_blacktea_22","grp":"ชาดำ","variant":"เย็น 22 oz","receipt_name":"ชาดำเย็น 22 oz","category":"ชา / นม / โกโก้","recipe_id":"iced_blacktea_22","kind":"drink","is_addon":false,"price":45,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":580},{"id":"m_iced_greentea_22","grp":"ชาเขียว","variant":"เย็น 22 oz","receipt_name":"ชาเขียวเย็น 22 oz","category":"ชา / นม / โกโก้","recipe_id":"iced_greentea_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":590},{"id":"m_iced_greenmilktea_22","grp":"ชาเขียวนม","variant":"เย็น 22 oz","receipt_name":"ชาเขียวนม 22 oz","category":"ชา / นม / โกโก้","recipe_id":"iced_greenmilktea_22","kind":"drink","is_addon":false,"price":50,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":600},{"id":"m_iced_lemontea_22","grp":"ชามะนาว","variant":"เย็น 22 oz","receipt_name":"ชามะนาวเย็น 22 oz","category":"ชา / นม / โกโก้","recipe_id":"iced_lemontea_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":610},{"id":"m_iced_appletea_22","grp":"ชาแอปเปิ้ล","variant":"เย็น 22 oz","receipt_name":"ชาแอปเปิ้ลเย็น 22 oz","category":"ชา / นม / โกโก้","recipe_id":"iced_appletea_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":620},{"id":"m_iced_peachtea_22","grp":"ชาพีช","variant":"เย็น 22 oz","receipt_name":"ชาพีชเย็น 22 oz","category":"ชา / นม / โกโก้","recipe_id":"iced_peachtea_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":630},{"id":"m_blend_thaitea_16","grp":"ชาไทย","variant":"ปั่น 16 oz","receipt_name":"ชาไทยปั่น 16 oz","category":"ชา / นม / โกโก้","recipe_id":"blend_thaitea_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":640},{"id":"m_blend_thaitea_22","grp":"ชาไทย","variant":"ปั่น 22 oz","receipt_name":"ชาไทยปั่น 22 oz","category":"ชา / นม / โกโก้","recipe_id":"blend_thaitea_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":650},{"id":"m_blend_thaiteablack_16","grp":"ชาไทยดำ","variant":"ปั่น 16 oz","receipt_name":"ชาไทยดำปั่น 16 oz","category":"ชา / นม / โกโก้","recipe_id":"blend_thaiteablack_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":660},{"id":"m_blend_thaiteablack_22","grp":"ชาไทยดำ","variant":"ปั่น 22 oz","receipt_name":"ชาไทยดำปั่น 22 oz","category":"ชา / นม / โกโก้","recipe_id":"blend_thaiteablack_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":670},{"id":"m_blend_greenmilktea_16","grp":"ชาเขียวนม","variant":"ปั่น 16 oz","receipt_name":"ชาเขียวนมปั่น 16 oz","category":"ชา / นม / โกโก้","recipe_id":"blend_greenmilktea_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":680},{"id":"m_blend_greenmilktea_22","grp":"ชาเขียวนม","variant":"ปั่น 22 oz","receipt_name":"ชาเขียวนมปั่น 22 oz","category":"ชา / นม / โกโก้","recipe_id":"blend_greenmilktea_22","kind":"drink","is_addon":false,"price":60,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":690},{"id":"m_blend_lemontea_16","grp":"ชามะนาว","variant":"ปั่น 16 oz","receipt_name":"ชามะนาวปั่น 16 oz","category":"ชา / นม / โกโก้","recipe_id":"blend_lemontea_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":700},{"id":"m_blend_lemontea_22","grp":"ชามะนาว","variant":"ปั่น 22 oz","receipt_name":"ชามะนาวปั่น 22 oz","category":"ชา / นม / โกโก้","recipe_id":"blend_lemontea_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":710},{"id":"m_blend_appletea_16","grp":"ชาแอปเปิ้ล","variant":"ปั่น 16 oz","receipt_name":"ชาแอปเปิ้ลปั่น 16 oz","category":"ชา / นม / โกโก้","recipe_id":"blend_appletea_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":720},{"id":"m_blend_appletea_22","grp":"ชาแอปเปิ้ล","variant":"ปั่น 22 oz","receipt_name":"ชาแอปเปิ้ลปั่น 22 oz","category":"ชา / นม / โกโก้","recipe_id":"blend_appletea_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":730},{"id":"m_blend_peachtea_16","grp":"ชาพีช","variant":"ปั่น 16 oz","receipt_name":"ชาพีชปั่น 16 oz","category":"ชา / นม / โกโก้","recipe_id":"blend_peachtea_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":740},{"id":"m_blend_peachtea_22","grp":"ชาพีช","variant":"ปั่น 22 oz","receipt_name":"ชาพีชปั่น 22 oz","category":"ชา / นม / โกโก้","recipe_id":"blend_peachtea_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":750},{"id":"m_blend_chocolate_16","grp":"ช็อคโกแลต","variant":"ปั่น 16 oz","receipt_name":"ช็อคโกแลตปั่น 16 oz","category":"ชา / นม / โกโก้","recipe_id":"blend_chocolate_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":760},{"id":"m_blend_chocolate_22","grp":"ช็อคโกแลต","variant":"ปั่น 22 oz","receipt_name":"ช็อคโกแลตปั่น 22 oz","category":"ชา / นม / โกโก้","recipe_id":"blend_chocolate_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":770},{"id":"m_blend_freshmilk_16","grp":"นมสด","variant":"ปั่น 16 oz","receipt_name":"นมสดปั่น 16 oz","category":"ชา / นม / โกโก้","recipe_id":"blend_freshmilk_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":780},{"id":"m_blend_freshmilk_22","grp":"นมสด","variant":"ปั่น 22 oz","receipt_name":"นมสดปั่น 22 oz","category":"ชา / นม / โกโก้","recipe_id":"blend_freshmilk_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":790},{"id":"m_blend_cocoa_16","grp":"โกโก้","variant":"ปั่น 16 oz","receipt_name":"โกโก้ปั่น 16 oz","category":"ชา / นม / โกโก้","recipe_id":"blend_cocoa_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":800},{"id":"m_blend_cocoa_22","grp":"โกโก้","variant":"ปั่น 22 oz","receipt_name":"โกโก้ปั่น 22 oz","category":"ชา / นม / โกโก้","recipe_id":"blend_cocoa_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":810},{"id":"m_smoothie_strawberry_16","grp":"สตรอเบอรี่สมูทตี้","variant":"16 oz","receipt_name":"สตรอเบอรี่สมูทตี้ 16 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"smoothie_strawberry_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":820},{"id":"m_smoothie_blueberry_16","grp":"บลูเบอรี่สมูทตี้","variant":"16 oz","receipt_name":"บลูเบอรี่สมูทตี้ 16 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"smoothie_blueberry_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":830},{"id":"m_smoothie_yogurt_16","grp":"โยเกิร์ตสมูทตี้","variant":"16 oz","receipt_name":"โยเกิร์ตสมูทตี้ 16 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"smoothie_yogurt_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":840},{"id":"m_smoothie_kiwi_16","grp":"กีวีสมูทตี้","variant":"16 oz","receipt_name":"กีวีสมูทตี้ 16 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"smoothie_kiwi_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":850},{"id":"m_smoothie_mango_16","grp":"มะม่วงสมูทตี้","variant":"16 oz","receipt_name":"มะม่วงสมูทตี้ 16 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"smoothie_mango_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":860},{"id":"m_smoothie_strawberry_22","grp":"สตรอเบอรี่สมูทตี้","variant":"22 oz","receipt_name":"สตรอเบอรี่สมูทตี้ 22 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"smoothie_strawberry_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":870},{"id":"m_smoothie_blueberry_22","grp":"บลูเบอรี่สมูทตี้","variant":"22 oz","receipt_name":"บลูเบอรี่สมูทตี้ 22 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"smoothie_blueberry_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":880},{"id":"m_smoothie_kiwi_22","grp":"กีวีสมูทตี้","variant":"22 oz","receipt_name":"กีวีสมูทตี้ 22 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"smoothie_kiwi_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":890},{"id":"m_smoothie_mango_22","grp":"มะม่วงสมูทตี้","variant":"22 oz","receipt_name":"มะม่วงสมูทตี้ 22 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"smoothie_mango_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":900},{"id":"m_smoothie_yogurt_22","grp":"โยเกิร์ตสมูทตี้","variant":"22 oz","receipt_name":"โยเกิร์ตสมูทตี้ 22 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"smoothie_yogurt_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":910},{"id":"m_juice_strawberry_22","grp":"สตรอเบอรี่เย็น (น้ำผลไม้)","variant":"22 oz","receipt_name":"สตรอเบอรี่เย็น (น้ำผลไม้) 22 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"juice_strawberry_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":920},{"id":"m_juice_blueberry_22","grp":"บลูเบอรี่เย็น (น้ำผลไม้)","variant":"22 oz","receipt_name":"บลูเบอรี่เย็น (น้ำผลไม้) 22 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"juice_blueberry_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":930},{"id":"m_juice_kiwi_22","grp":"กีวีเย็น (น้ำผลไม้)","variant":"22 oz","receipt_name":"กีวีเย็น (น้ำผลไม้) 22 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"juice_kiwi_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":940},{"id":"m_juice_lychee_22","grp":"ลิ้นจี่เย็น (น้ำผลไม้)","variant":"22 oz","receipt_name":"ลิ้นจี่เย็น (น้ำผลไม้) 22 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"juice_lychee_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":950},{"id":"m_soda_strawberry_22","grp":"สตรอเบอรี่โซดา","variant":"เย็น 22 oz","receipt_name":"สตรอเบอรี่โซดาเย็น 22 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"soda_strawberry_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":960},{"id":"m_soda_blueberry_22","grp":"บลูเบอรี่โซดา","variant":"เย็น 22 oz","receipt_name":"บลูเบอรี่โซดาเย็น 22 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"soda_blueberry_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":970},{"id":"m_soda_kiwi_22","grp":"กีวีโซดา","variant":"เย็น 22 oz","receipt_name":"กีวีโซดาเย็น 22 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"soda_kiwi_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":980},{"id":"m_soda_lychee_22","grp":"ลิ้นจี่โซดา","variant":"เย็น 22 oz","receipt_name":"ลิ้นจี่โซดาเย็น 22 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"soda_lychee_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":990},{"id":"m_soda_pomegranate_22","grp":"ทับทิมเบอรี่โซดา","variant":"เย็น 22 oz","receipt_name":"ทับทิมเบอรี่โซดาเย็น 22 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"soda_pomegranate_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1000},{"id":"m_caramelmac_hot_8","grp":"คาราเมลมัคคิอาโต้","variant":"ร้อน 8 oz","receipt_name":"คาราเมลมัคคิอาโต้ร้อน 8 oz","category":"คาราเมลมัคคิอาโต","recipe_id":"caramelmac_hot_8","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1010},{"id":"m_caramelmac_hot_12","grp":"คาราเมลมัคคิอาโต้","variant":"ร้อน 12 oz","receipt_name":"คาราเมล มัคคีเอโต้ ร้อน 12 oz","category":"คาราเมลมัคคิอาโต","recipe_id":"caramelmac_hot_12","kind":"drink","is_addon":false,"price":65,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1020},{"id":"m_caramelmac_iced_22","grp":"คาราเมลมัคคิอาโต้","variant":"เย็น 22 oz","receipt_name":"คาราเมลมัคคิอาโต้เย็น 22 oz","category":"คาราเมลมัคคิอาโต","recipe_id":"caramelmac_iced_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1030},{"id":"m_caramelmac_blend_16","grp":"คาราเมลมัคคิอาโต้","variant":"ปั่น 16 oz","receipt_name":"คาราเมลมัคคิอาโต้ปั่น 16 oz","category":"คาราเมลมัคคิอาโต","recipe_id":"caramelmac_blend_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1040},{"id":"m_caramelmac_blend_22","grp":"คาราเมลมัคคิอาโต้","variant":"ปั่น 22 oz","receipt_name":"คาราเมลมัคคิอาโต้ปั่น 22 oz","category":"คาราเมลมัคคิอาโต","recipe_id":"caramelmac_blend_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1050},{"id":"m_caramelmilk_hot_8","grp":"นมคาราเมล","variant":"ร้อน 8 oz","receipt_name":"นมคาราเมลร้อน 8 oz","category":"นมคาราเมล","recipe_id":"caramelmilk_hot_8","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1060},{"id":"m_caramelmilk_hot_12","grp":"นมคาราเมล","variant":"ร้อน 12 oz","receipt_name":"นมคาราเมลร้อน 12 oz","category":"นมคาราเมล","recipe_id":"caramelmilk_hot_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1070},{"id":"m_caramelmilk_iced_22","grp":"นมคาราเมล","variant":"เย็น 22 oz","receipt_name":"นมคาราเมลเย็น 22 oz","category":"นมคาราเมล","recipe_id":"caramelmilk_iced_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1080},{"id":"m_caramelmilk_blend_16","grp":"นมคาราเมล","variant":"ปั่น 16 oz","receipt_name":"นมคาราเมลปั่น 16 oz","category":"นมคาราเมล","recipe_id":"caramelmilk_blend_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1090},{"id":"m_caramelmilk_blend_22","grp":"นมคาราเมล","variant":"ปั่น 22 oz","receipt_name":"นมคาราเมลปั่น 22 oz","category":"นมคาราเมล","recipe_id":"caramelmilk_blend_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1100},{"id":"m_matcha_hot_12","grp":"ชาเขียวมัทฉะ","variant":"ร้อน 12 oz","receipt_name":"ชาเขียวมัทฉะร้อน 12 oz","category":"มัทฉะ","recipe_id":"matcha_hot_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1110},{"id":"m_matcha_iced_22","grp":"ชาเขียวมัทฉะ","variant":"เย็น 22 oz","receipt_name":"ชาเขียวมัทฉะเย็น 22 oz","category":"มัทฉะ","recipe_id":"matcha_iced_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1120},{"id":"m_matcha_blend_16","grp":"ชาเขียวมัทฉะ","variant":"ปั่น 16 oz","receipt_name":"ชาเขียวมัทฉะปั่น 16 oz","category":"มัทฉะ","recipe_id":"matcha_blend_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1130},{"id":"m_matcha_blend_22","grp":"ชาเขียวมัทฉะ","variant":"ปั่น 22 oz","receipt_name":"ชาเขียวมัทฉะปั่น 22 oz","category":"มัทฉะ","recipe_id":"matcha_blend_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1140},{"id":"m_brownsugar_iced_16","grp":"นมสดบราวน์ชูการ์","variant":"เย็น 16 oz","receipt_name":"นมสดบราวน์ชูการ์เย็น 16 oz","category":"บราวน์ชูการ์","recipe_id":"brownsugar_iced_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1150},{"id":"m_brownsugar_iced_22","grp":"นมสดบราวน์ชูการ์","variant":"เย็น 22 oz","receipt_name":"นมสดบราวน์ชูการ์เย็น 22 oz","category":"บราวน์ชูการ์","recipe_id":"brownsugar_iced_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1160},{"id":"m_lemonhoney_22","grp":"ชามะนาวน้ำผึ้ง","variant":"22 oz","receipt_name":"ชามะนาวน้ำผึ้ง 22 oz","category":"ชามะนาวน้ำผึ้ง","recipe_id":"lemonhoney_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1170},{"id":"m_orange_coffee_16","grp":"กาแฟส้ม","variant":"เย็น 16 oz","receipt_name":"กาแฟส้มเย็น 16 oz","category":"เครื่องดื่มส้ม","recipe_id":"orange_coffee_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1180},{"id":"m_orange_thaitea_16","grp":"ชาไทยส้ม","variant":"เย็น 16 oz","receipt_name":"ชาไทยส้มเย็น 16 oz","category":"เครื่องดื่มส้ม","recipe_id":"orange_thaitea_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1190},{"id":"m_orange_chocolate_16","grp":"ช็อคโกแลตส้ม","variant":"เย็น 16 oz","receipt_name":"ช็อคโกแลตส้มเย็น 16 oz","category":"เครื่องดื่มส้ม","recipe_id":"orange_chocolate_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1200},{"id":"m_cocomint_16","grp":"Cocomint (โกโกมิ้นท์)","variant":"16 oz","receipt_name":"Cocomint (โกโกมิ้นท์) 16 oz","category":"เมนูพิเศษ","recipe_id":"cocomint_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1210},{"id":"m_moccamint_16","grp":"Moccamint (มอคคามิ้นท์)","variant":"16 oz","receipt_name":"Moccamint (มอคคามิ้นท์) 16 oz","category":"เมนูพิเศษ","recipe_id":"moccamint_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1220},{"id":"m_week_monday_16","grp":"Monday - good morning","variant":"16 oz","receipt_name":"Monday - good morning 16 oz","category":"โซดาประจำสัปดาห์","recipe_id":"week_monday_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1230},{"id":"m_week_tuesday_16","grp":"Tuesday - pink lady","variant":"16 oz","receipt_name":"Tuesday - pink lady 16 oz","category":"โซดาประจำสัปดาห์","recipe_id":"week_tuesday_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1240},{"id":"m_week_wednesday_16","grp":"Wednesday - in the garden","variant":"16 oz","receipt_name":"Wednesday - in the garden 16 oz","category":"โซดาประจำสัปดาห์","recipe_id":"week_wednesday_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1250},{"id":"m_week_thursday_16","grp":"Thursday - happy sunrise","variant":"16 oz","receipt_name":"Thursday - happy sunrise 16 oz","category":"โซดาประจำสัปดาห์","recipe_id":"week_thursday_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1260},{"id":"m_week_friday_16","grp":"Friday - on the beach","variant":"16 oz","receipt_name":"Friday - on the beach 16 oz","category":"โซดาประจำสัปดาห์","recipe_id":"week_friday_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1270},{"id":"m_week_saturday_16","grp":"Saturday - go to the galaxy","variant":"16 oz","receipt_name":"Saturday - go to the galaxy 16 oz","category":"โซดาประจำสัปดาห์","recipe_id":"week_saturday_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1280},{"id":"m_week_sunday_16","grp":"Sunday - just the chilling time","variant":"16 oz","receipt_name":"Sunday - just the chilling time 16 oz","category":"โซดาประจำสัปดาห์","recipe_id":"week_sunday_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1290},{"id":"m_yuzu_iced_22","grp":"ยูสุ","variant":"เย็น 22 oz","receipt_name":"ยูสุเย็น 22 oz","category":"ยูสุ","recipe_id":"yuzu_iced_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1300},{"id":"m_yuzu_blend_16","grp":"ยูสุ","variant":"ปั่น 16 oz","receipt_name":"ยูสุปั่น 16 oz","category":"ยูสุ","recipe_id":"yuzu_blend_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1310},{"id":"m_yuzu_blend_22","grp":"ยูสุ","variant":"ปั่น 22 oz","receipt_name":"ยูสุปั่น 22 oz","category":"ยูสุ","recipe_id":"yuzu_blend_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1320},{"id":"m_yuzu_coffee_22","grp":"ยูสุกาแฟ (Yuzu Blessing Coffee)","variant":"22 oz","receipt_name":"ยูสุกาแฟ (Yuzu Blessing Coffee) 22 oz","category":"ยูสุ","recipe_id":"yuzu_coffee_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1330},{"id":"m_yuzu_honey_22","grp":"ยูสุน้ำผึ้ง (Freshy Honey Yuzu)","variant":"22 oz","receipt_name":"ยูสุน้ำผึ้ง (Freshy Honey Yuzu) 22 oz","category":"ยูสุ","recipe_id":"yuzu_honey_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1340},{"id":"m_yuzu_tea_22","grp":"ชายูสุน้ำผึ้ง (Tea with Yuzu)","variant":"22 oz","receipt_name":"ชายูสุน้ำผึ้ง (Tea with Yuzu) 22 oz","category":"ยูสุ","recipe_id":"yuzu_tea_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1350},{"id":"m_yuzu_coffee_blend_16","grp":"กาแฟยูสุ","variant":"ปั่น 16 oz","receipt_name":"กาแฟยูสุปั่น 16 oz","category":"ยูสุ","recipe_id":"yuzu_coffee_blend_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1360},{"id":"m_yuzu_thaitea_blend_16","grp":"ชาไทยยูสุ","variant":"ปั่น 16 oz","receipt_name":"ชาไทยยูสุปั่น 16 oz","category":"ยูสุ","recipe_id":"yuzu_thaitea_blend_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1370},{"id":"m_yuzu_matcha_blend_16","grp":"มัทฉะยูสุ","variant":"ปั่น 16 oz","receipt_name":"มัทฉะยูสุปั่น 16 oz","category":"ยูสุ","recipe_id":"yuzu_matcha_blend_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1380},{"id":"m_yuzu_coffee_blend_22","grp":"กาแฟยูสุ","variant":"ปั่น 22 oz","receipt_name":"กาแฟยูสุปั่น 22 oz","category":"ยูสุ","recipe_id":"yuzu_coffee_blend_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1390},{"id":"m_yuzu_thaitea_blend_22","grp":"ชาไทยยูสุ","variant":"ปั่น 22 oz","receipt_name":"ชาไทยยูสุปั่น 22 oz","category":"ยูสุ","recipe_id":"yuzu_thaitea_blend_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1400},{"id":"m_yuzu_matcha_blend_22","grp":"มัทฉะยูสุ","variant":"ปั่น 22 oz","receipt_name":"มัทฉะยูสุปั่น 22 oz","category":"ยูสุ","recipe_id":"yuzu_matcha_blend_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1410},{"id":"m_kyoho_coffee_22","grp":"กาแฟองุ่นๆ (KYOHO Fresh Coffee)","variant":"22 oz","receipt_name":"กาแฟองุ่นๆ (KYOHO Fresh Coffee) 22 oz","category":"องุ่นๆ Kyoho","recipe_id":"kyoho_coffee_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1420},{"id":"m_kyoho_juice_22","grp":"องุ่นๆ (KYOHO Juice)","variant":"22 oz","receipt_name":"องุ่นๆ (KYOHO Juice) 22 oz","category":"องุ่นๆ Kyoho","recipe_id":"kyoho_juice_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1430},{"id":"m_kyoho_soda_22","grp":"องุ่นๆโซดา (KYOHO Soda)","variant":"22 oz","receipt_name":"องุ่นๆโซดา (KYOHO Soda) 22 oz","category":"องุ่นๆ Kyoho","recipe_id":"kyoho_soda_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1440},{"id":"m_kyoho_tea_22","grp":"ชาองุ่นๆ (KYOHO Green Tea)","variant":"22 oz","receipt_name":"ชาองุ่นๆ (KYOHO Green Tea) 22 oz","category":"องุ่นๆ Kyoho","recipe_id":"kyoho_tea_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1450},{"id":"m_ceylon_hot_12","grp":"ชานมซีลอน","variant":"ร้อน 12 oz","receipt_name":"ชานมซีลอนร้อน 12 oz","category":"ชาซีลอน","recipe_id":"ceylon_hot_12","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1460},{"id":"m_ceylon_iced_22","grp":"ชานมซีลอน","variant":"เย็น 22 oz","receipt_name":"ชานมซีลอนเย็น 22 oz","category":"ชาซีลอน","recipe_id":"ceylon_iced_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1470},{"id":"m_ceylon_brownsugar_22","grp":"ชานมซีลอนบราวน์ชูก้า","variant":"22 oz","receipt_name":"ชานมซีลอนบราวน์ชูก้า 22 oz","category":"ชาซีลอน","recipe_id":"ceylon_brownsugar_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1480},{"id":"m_ceylon_strawberry_22","grp":"ชาซีลอนสตรอเบอร์รี่","variant":"22 oz","receipt_name":"ชาซีลอนสตรอเบอร์รี่ 22 oz","category":"ชาซีลอน","recipe_id":"ceylon_strawberry_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1490},{"id":"m_ceylon_chocolate_22","grp":"ชาซีลอนช็อกโกแลต","variant":"22 oz","receipt_name":"ชาซีลอนช็อกโกแลต 22 oz","category":"ชาซีลอน","recipe_id":"ceylon_chocolate_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1500},{"id":"m_lychee_freshy_coffee_22","grp":"Lychee Freshy Coffee","variant":"22 oz","receipt_name":"Lychee Freshy Coffee 22 oz","category":"ลิ้นจี่พิเศษ","recipe_id":"lychee_freshy_coffee_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1510},{"id":"m_lychee_peach_22","grp":"Lychee Peach Blossom Summer","variant":"22 oz","receipt_name":"Lychee Peach Blossom Summer 22 oz","category":"ลิ้นจี่พิเศษ","recipe_id":"lychee_peach_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1520},{"id":"m_lychee_cherrymint_22","grp":"Lychee Cherry Blossom Mint","variant":"22 oz","receipt_name":"Lychee Cherry Blossom Mint 22 oz","category":"ลิ้นจี่พิเศษ","recipe_id":"lychee_cherrymint_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1530},{"id":"m_holiday_hohoho_matcha_22","grp":"Ho Ho Ho! Matcha","variant":"22 oz","receipt_name":"Ho Ho Ho! Matcha 22 oz","category":"เมนูฮอลิเดย์","recipe_id":"holiday_hohoho_matcha_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1540},{"id":"m_holiday_jinglebell_22","grp":"Jingle bell Yuzu & Matcha","variant":"22 oz","receipt_name":"Jingle bell Yuzu & Matcha 22 oz","category":"เมนูฮอลิเดย์","recipe_id":"holiday_jinglebell_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1550},{"id":"m_holiday_matchacoconut_22","grp":"Matcha Coconut snowy","variant":"22 oz","receipt_name":"Matcha Coconut snowy 22 oz","category":"เมนูฮอลิเดย์","recipe_id":"holiday_matchacoconut_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1560},{"id":"m_holiday_darknight_22","grp":"Dark night Coconut","variant":"22 oz","receipt_name":"Dark night Coconut 22 oz","category":"เมนูฮอลิเดย์","recipe_id":"holiday_darknight_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1570},{"id":"m_freppe_matchastrawberry_22","grp":"Matcha Strawberry Snowy (Freppe)","variant":"22 oz","receipt_name":"Matcha Strawberry Snowy (Freppe) 22 oz","category":"Freppe","recipe_id":"freppe_matchastrawberry_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1580},{"id":"m_freppe_twinkleblue_22","grp":"Twinkle Blue Sky (Freppe)","variant":"22 oz","receipt_name":"Twinkle Blue Sky (Freppe) 22 oz","category":"Freppe","recipe_id":"freppe_twinkleblue_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1590},{"id":"m_freppe_santacruz_22","grp":"Happiness Santacruz (Freppe)","variant":"22 oz","receipt_name":"Happiness Santacruz (Freppe) 22 oz","category":"Freppe","recipe_id":"freppe_santacruz_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1600},{"id":"m_vegan_cocoa_22","grp":"โกโกเจ","variant":"22 oz","receipt_name":"โกโกเจ 22 oz","category":"เมนูเจ","recipe_id":"vegan_cocoa_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1610},{"id":"m_vegan_latte_22","grp":"ลาเตเจ","variant":"22 oz","receipt_name":"ลาเตเจ 22 oz","category":"เมนูเจ","recipe_id":"vegan_latte_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1620},{"id":"m_vegan_greenmilktea_22","grp":"ชาเขียวนมเจ","variant":"22 oz","receipt_name":"ชาเขียวนมเจ 22 oz","category":"เมนูเจ","recipe_id":"vegan_greenmilktea_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1630},{"id":"m_vegan_thaitea_22","grp":"ชาไทยเจ","variant":"22 oz","receipt_name":"ชาไทยเจ 22 oz","category":"เมนูเจ","recipe_id":"vegan_thaitea_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1640},{"id":"m_maple_latte","grp":"เมเปิลลาเต้คอฟฟี่","variant":"22 oz","receipt_name":"เมเปิลลาเต้คอฟฟี่ 22 oz","category":"Maple Autumn","recipe_id":"maple_latte","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1650},{"id":"m_maple_thaitea","grp":"ชาไทยเมเปิล","variant":"22 oz","receipt_name":"ชาไทยเมเปิล 22 oz","category":"Maple Autumn","recipe_id":"maple_thaitea","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1660},{"id":"m_maple_greentea","grp":"ชาเขียวนมเมเปิล","variant":"22 oz","receipt_name":"ชาเขียวนมเมเปิล 22 oz","category":"Maple Autumn","recipe_id":"maple_greentea","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1670},{"id":"m_drink_water600","grp":"น้ำดื่ม (600ml)","variant":"","receipt_name":"น้ำดื่ม (600ml)","category":"เครื่องดื่มสำเร็จรูป","recipe_id":"drink_water600","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1680},{"id":"m_drink_water1500","grp":"น้ำดื่ม (1500ml)","variant":"","receipt_name":"น้ำดื่ม (1500ml)","category":"เครื่องดื่มสำเร็จรูป","recipe_id":"drink_water1500","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1690},{"id":"m_snack_mama","grp":"มาม่า","variant":"","receipt_name":"มาม่า","category":"เครื่องดื่มสำเร็จรูป","recipe_id":"snack_mama","kind":"snack","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1700},{"id":"m_drink_soda","grp":"โซดา","variant":"","receipt_name":"โซดา","category":"เครื่องดื่มสำเร็จรูป","recipe_id":"drink_soda","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1710},{"id":"m_drink_vitamilk","grp":"ไวตามิลค์เจ","variant":"","receipt_name":"ไวตามิลค์เจ","category":"เครื่องดื่มสำเร็จรูป","recipe_id":"drink_vitamilk","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1720},{"id":"m_drink_oatmilk","grp":"นมโอ๊ต","variant":"","receipt_name":"นมโอ๊ต","category":"เครื่องดื่มสำเร็จรูป","recipe_id":"drink_oatmilk","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1730},{"id":"m_snack_crispybread1","grp":"ขนมปังกรอบพริกเผาหมูหยอง","variant":"","receipt_name":"ขนมปังกรอบพริกเผาหมูหยอง","category":"เบเกอรี่/ขนม","recipe_id":"snack_crispybread1","kind":"snack","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1740},{"id":"m_snack_crispybreadbutter","grp":"ขนมปังกรอบรสเนย","variant":"","receipt_name":"ขนมปังกรอบรสเนย","category":"เบเกอรี่/ขนม","recipe_id":"snack_crispybreadbutter","kind":"snack","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1750},{"id":"m_snack_crispybreadsugar","grp":"ขนมปังกรอบเนยน้ำตาล","variant":"","receipt_name":"ขนมปังกรอบเนยน้ำตาล","category":"เบเกอรี่/ขนม","recipe_id":"snack_crispybreadsugar","kind":"snack","is_addon":false,"price":30,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1760},{"id":"m_snack_crispybreadgarlic","grp":"ขนมปังกรอบเนยกระเทียม","variant":"","receipt_name":"ขนมปังกรอบเนยกระเทียม","category":"เบเกอรี่/ขนม","recipe_id":"snack_crispybreadgarlic","kind":"snack","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1770},{"id":"m_toast_butter","grp":"ขนมปังปิ้งเนย","variant":"","receipt_name":"ขนมปังปิ้งเนย","category":"ขนมปังปิ้ง","recipe_id":"toast_butter","kind":"snack","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1780},{"id":"m_toast_butter_condensed","grp":"ขนมปังปิ้งเนย+นมข้น","variant":"","receipt_name":"ขนมปังปิ้งเนย+นมข้น","category":"ขนมปังปิ้ง","recipe_id":"toast_butter_condensed","kind":"snack","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1790},{"id":"m_toast_butter_sugar","grp":"ขนมปังปิ้งเนย+น้ำตาล","variant":"","receipt_name":"ขนมปังปิ้งเนย+น้ำตาล","category":"ขนมปังปิ้ง","recipe_id":"toast_butter_sugar","kind":"snack","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1800},{"id":"m_toast_jam_strawberry","grp":"ขนมปังปิ้งแยมสตรอเบอร์รี่","variant":"","receipt_name":"ขนมปังปิ้งแยมสตรอเบอร์รี่","category":"ขนมปังปิ้ง","recipe_id":"toast_jam_strawberry","kind":"snack","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1810},{"id":"m_toast_jam_orange","grp":"ขนมปังปิ้งแยมส้ม","variant":"","receipt_name":"ขนมปังปิ้งแยมส้ม","category":"ขนมปังปิ้ง","recipe_id":"toast_jam_orange","kind":"snack","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1820},{"id":"m_toast_chocolate","grp":"ขนมปังปิ้งช็อกโกแลต","variant":"","receipt_name":"ขนมปังปิ้งช็อกโกแลต","category":"ขนมปังปิ้ง","recipe_id":"toast_chocolate","kind":"snack","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1830},{"id":"m_toast_caramel","grp":"ขนมปังปิ้งคาราเมล","variant":"","receipt_name":"ขนมปังปิ้งคาราเมล","category":"ขนมปังปิ้ง","recipe_id":"toast_caramel","kind":"snack","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1840},{"id":"m_snack_bananachips","grp":"กล้วยฉาบ","variant":"","receipt_name":"กล้วยฉาบ","category":"เบเกอรี่/ขนม","recipe_id":"snack_bananachips","kind":"snack","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1850},{"id":"m_snack_tarochips","grp":"เผือกฉาบ","variant":"","receipt_name":"เผือกฉาบ","category":"เบเกอรี่/ขนม","recipe_id":"snack_tarochips","kind":"snack","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1860},{"id":"m_snack_pineappletart","grp":"ทาร์ตสับปะรด","variant":"","receipt_name":"ทาร์ตสับปะรด","category":"เบเกอรี่/ขนม","recipe_id":"snack_pineappletart","kind":"snack","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1870},{"id":"m_snack_fruitjelly","grp":"เยลลี่ผลไม้","variant":"","receipt_name":"เยลลี่ผลไม้","category":"เบเกอรี่/ขนม","recipe_id":"snack_fruitjelly","kind":"snack","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1880},{"id":"m_snack_cornflake","grp":"คอนเฟรก","variant":"","receipt_name":"คอนเฟรก","category":"เบเกอรี่/ขนม","recipe_id":"snack_cornflake","kind":"snack","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1890},{"id":"m_snack_graincracker","grp":"แครเกอร์ธัญพืช","variant":"","receipt_name":"แครเกอร์ธัญพืช","category":"เบเกอรี่/ขนม","recipe_id":"snack_graincracker","kind":"snack","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1900},{"id":"m_honeylemon_hot_8","grp":"น้ำผึ้งมะนาว","variant":"ร้อน 8 oz","receipt_name":"น้ำผึ้งมะนาวร้อน 8 oz","category":"ชามะนาวน้ำผึ้ง","recipe_id":"honeylemon_hot_8","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1910},{"id":"m_honeylemon_soda_22","grp":"น้ำผึ้งมะนาวโซดา","variant":"เย็น 22 oz","receipt_name":"น้ำผึ้งมะนาวโซดาเย็น 22 oz","category":"ชามะนาวน้ำผึ้ง","recipe_id":"honeylemon_soda_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1920},{"id":"m_honeylemon_blend_22","grp":"น้ำผึ้งมะนาว","variant":"ปั่น 22 oz","receipt_name":"น้ำผึ้งมะนาวปั่น 22 oz","category":"ชามะนาวน้ำผึ้ง","recipe_id":"honeylemon_blend_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1930},{"id":"m_chaokuay_milk_16","grp":"เฉาก๊วยนมสด","variant":"16 oz","receipt_name":"เฉาก๊วยนมสด 16 oz","category":"เมนูพิเศษ","recipe_id":"chaokuay_milk_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1940},{"id":"m_chaokuay_milk_22","grp":"เฉาก๊วยนมสด","variant":"22 oz","receipt_name":"เฉาก๊วยนมสด 22 oz","category":"เมนูพิเศษ","recipe_id":"chaokuay_milk_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1950},{"id":"m_chaokuay_brownsugar_22","grp":"เฉาก๊วยนมสดบราวน์ชูการ์","variant":"22 oz","receipt_name":"เฉาก๊วยนมสดบราวน์ชูการ์ 22 oz","category":"เมนูพิเศษ","recipe_id":"chaokuay_brownsugar_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1960},{"id":"m_matcha_oatmilk_22","grp":"มัทฉะลาเต้นมโอ๊ต","variant":"22 oz","receipt_name":"มัทฉะลาเต้นมโอ๊ต 22 oz","category":"นมโอ๊ต","recipe_id":"matcha_oatmilk_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1970},{"id":"m_greenmilktea_oatmilk_22","grp":"ชาเขียวนมโอ๊ต","variant":"22 oz","receipt_name":"ชาเขียวนมโอ๊ต 22 oz","category":"นมโอ๊ต","recipe_id":"greenmilktea_oatmilk_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1980},{"id":"m_thaitea_oatmilk_22","grp":"ชาไทยนมโอ๊ต","variant":"22 oz","receipt_name":"ชาไทยนมโอ๊ต 22 oz","category":"นมโอ๊ต","recipe_id":"thaitea_oatmilk_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":1990},{"id":"m_cocoa_oatmilk_22","grp":"โกโก้นมโอ๊ต","variant":"22 oz","receipt_name":"โกโก้นมโอ๊ต 22 oz","category":"นมโอ๊ต","recipe_id":"cocoa_oatmilk_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2000},{"id":"m_coffee_oatmilk_16","grp":"กาแฟนมโอ๊ต","variant":"16 oz","receipt_name":"กาแฟนมโอ๊ต 16 oz","category":"นมโอ๊ต","recipe_id":"coffee_oatmilk_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2010},{"id":"m_americano_soda_22","grp":"อเมริกาโน่โซดา","variant":"22 oz","receipt_name":"อเมริกาโน่โซดา 22 oz","category":"กาแฟ","recipe_id":"americano_soda_22","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2020},{"id":"m_strawberry_smoothie_16","grp":"สตรอเบอรี่สมูทตี้","variant":"16 oz","receipt_name":"สตรอเบอรี่สมูทตี้ 16 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"strawberry_smoothie_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2030},{"id":"m_mixberry_smoothie_16","grp":"มิกซ์เบอรี่สมูทตี้","variant":"16 oz","receipt_name":"มิกซ์เบอรี่สมูทตี้ 16 oz","category":"สมูทตี้และน้ำผลไม้","recipe_id":"mixberry_smoothie_16","kind":"drink","is_addon":false,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2040},{"id":"m_addshot_td1","grp":"Add Shot กาแฟ TD1","variant":"","receipt_name":"Add Shot กาแฟ TD1","category":"แอดเพิ่ม","recipe_id":"addshot_td1","kind":"drink","is_addon":true,"price":15,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2050},{"id":"m_addshot_td2","grp":"Add Shot กาแฟ TD2","variant":"","receipt_name":"Add Shot กาแฟ TD2","category":"แอดเพิ่ม","recipe_id":"addshot_td2","kind":"drink","is_addon":true,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2060},{"id":"m_addshot_td3","grp":"Add Shot กาแฟ TD3","variant":"","receipt_name":"Add Shot กาแฟ TD3","category":"แอดเพิ่ม","recipe_id":"addshot_td3","kind":"drink","is_addon":true,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2070},{"id":"m_addshot_td4","grp":"Add Shot กาแฟ TD4","variant":"","receipt_name":"Add Shot กาแฟ TD4","category":"แอดเพิ่ม","recipe_id":"addshot_td4","kind":"drink","is_addon":true,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2080},{"id":"m_addshot_naturalgreentea","grp":"Add Shot ชาเขียวธรรมชาติ","variant":"","receipt_name":"Add Shot ชาเขียวธรรมชาติ","category":"แอดเพิ่ม","recipe_id":"addshot_naturalgreentea","kind":"drink","is_addon":true,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2090},{"id":"m_addshot_greenmilktea","grp":"Add Shot ชาเขียวนม","variant":"","receipt_name":"Add Shot ชาเขียวนม","category":"แอดเพิ่ม","recipe_id":"addshot_greenmilktea","kind":"drink","is_addon":true,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2100},{"id":"m_addshot_thaitea","grp":"Add Shot ชาไทย","variant":"","receipt_name":"Add Shot ชาไทย","category":"แอดเพิ่ม","recipe_id":"addshot_thaitea","kind":"drink","is_addon":true,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2110},{"id":"m_add_whipcream","grp":"วิปครีม","variant":"","receipt_name":"วิปครีม","category":"แอดเพิ่ม","recipe_id":"add_whipcream","kind":"drink","is_addon":true,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2120},{"id":"m_add_caramelwhip","grp":"คาราเมล วิปครีม","variant":"","receipt_name":"คาราเมล วิปครีม","category":"แอดเพิ่ม","recipe_id":"add_caramelwhip","kind":"drink","is_addon":true,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2130},{"id":"m_add_chaokuay","grp":"เพิ่มเฉากัวย","variant":"","receipt_name":"เพิ่มเฉากัวย","category":"แอดเพิ่ม","recipe_id":"add_chaokuay","kind":"drink","is_addon":true,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2140},{"id":"m_add_buk","grp":"เพิ่มเม็ดบุก","variant":"","receipt_name":"เพิ่มเม็ดบุก","category":"แอดเพิ่ม","recipe_id":"add_buk","kind":"drink","is_addon":true,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2150},{"id":"m_add_sakura","grp":"ชากุระคริสตัล","variant":"","receipt_name":"ชากุระคริสตัล","category":"แอดเพิ่ม","recipe_id":"add_sakura","kind":"drink","is_addon":true,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2160},{"id":"m_add_freshlime","grp":"ผลมะนาว 1 ลูก","variant":"","receipt_name":"ผลมะนาว 1 ลูก","category":"แอดเพิ่ม","recipe_id":"add_freshlime","kind":"drink","is_addon":true,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2170},{"id":"m_add_vitamilk2oz","grp":"Add นมเมจิ 2 ออนซ์","variant":"","receipt_name":"Add นมเมจิ 2 ออนซ์","category":"แอดเพิ่ม","recipe_id":"add_vitamilk2oz","kind":"drink","is_addon":true,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2180},{"id":"m_add_condensedmilk","grp":"เพิ่มนมข้นหวาน","variant":"","receipt_name":"เพิ่มนมข้นหวาน","category":"แอดเพิ่ม","recipe_id":"add_condensedmilk","kind":"drink","is_addon":true,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2190},{"id":"m_add_evapmilk","grp":"Add นมข้นจืด","variant":"","receipt_name":"Add นมข้นจืด","category":"แอดเพิ่ม","recipe_id":"add_evapmilk","kind":"drink","is_addon":true,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2200},{"id":"m_add_brownsugar","grp":"Add ไซรัปบราวน์ชูก้า","variant":"","receipt_name":"Add ไซรัปบราวน์ชูก้า","category":"แอดเพิ่ม","recipe_id":"add_brownsugar","kind":"drink","is_addon":true,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2210},{"id":"m_add_honey","grp":"Add น้ำผึ้ง","variant":"","receipt_name":"Add น้ำผึ้ง","category":"แอดเพิ่ม","recipe_id":"add_honey","kind":"drink","is_addon":true,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2220},{"id":"m_add_thbag","grp":"Add ถุง TH","variant":"","receipt_name":"Add ถุง TH","category":"แอดเพิ่ม","recipe_id":"add_thbag","kind":"drink","is_addon":true,"price":null,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":2230},{"id":"x_sandwich_boran","grp":"แซนวิชโบราณ","variant":"","receipt_name":"แซนวิชโบราณ","category":"เบเกอรี่/ขนม","recipe_id":null,"kind":"snack","is_addon":false,"price":8,"price_lm":null,"img":null,"bp":{},"so":{},"active":true,"sort":9000}];
 var EXTRA_MENU=[
   {id:'x_sandwich_boran',grp:'แซนวิชโบราณ',variant:'',receipt_name:'แซนวิชโบราณ',category:'เบเกอรี่/ขนม',recipe_id:null,kind:'snack',is_addon:false,price:8,price_lm:null,sort:9000}
 ];
 var CAT_MERGE={'กาแฟร้อน':'กาแฟ','กาแฟเย็น':'กาแฟ','กาแฟปั่น':'กาแฟ','ชาร้อน':'ชา / นม / โกโก้','ชาเย็น':'ชา / นม / โกโก้','ชาปั่น':'ชา / นม / โกโก้'};
 var SNACK_CATS=['เบเกอรี่/ขนม','ขนมปังปิ้ง'];
 var NOTE_CHIPS=['หวานน้อย','หวานปกติ','ไม่หวาน','หวานมาก','น้ำแข็งน้อย','แยกน้ำแข็ง','กลับบ้าน'];
+var MODE=(function(){try{return localStorage.getItem('ctpos_mode');}catch(e){return null;}})();
+var PFX=MODE==='demo'?'ctposdemo_':'ctpos_';
 var VOID_REASONS=['คีย์ผิด','ลูกค้ายกเลิก','เปลี่ยนรายการ','ชำระเงินผิดช่องทาง'];
 
 /* ---------------- utils ---------------- */
@@ -1607,19 +1765,21 @@ function uid(p){return (p||'')+Date.now().toString(36)+Math.random().toString(36
 function clone(o){return JSON.parse(JSON.stringify(o));}
 function ext(a,b){for(var k in b)if(b.hasOwnProperty(k))a[k]=b[k];return a;}
 function num(v){if(v===''||v==null)return null;var n=Number(String(v).replace(/,/g,''));return isNaN(n)?null:n;}
-function lsGet(k,d){try{var v=localStorage.getItem('ctpos_'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}}
-function lsSet(k,v){try{localStorage.setItem('ctpos_'+k,JSON.stringify(v));}catch(e){}}
+function lsGet(k,d){try{var v=localStorage.getItem(PFX+k);return v==null?d:JSON.parse(v);}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(PFX+k,JSON.stringify(v));}catch(e){}}
 function toast(msg,type){var t=document.createElement('div');t.className='toast '+(type||'');t.textContent=msg;$('toasts').appendChild(t);setTimeout(function(){t.style.transition='opacity .3s';t.style.opacity='0';setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},300);},type==='err'?4500:2600);}
 
 /* ---------------- state ---------------- */
 var CFG=lsGet('cfg',null);              // {branch:'PS',dev:1}
 var SET=ext(clone(DEFAULT_SETTINGS),lsGet('settings',{}));
-var MENU=lsGet('menu',[]);
+var MENU=lsGet('menu',null)||clone(DEFAULT_MENU);
+var SESSION=lsGet('session',null);
+var PROFILE=lsGet('profile',null);
 var PROMOS=lsGet('promos',[]);
 var ORD=lsGet('orders',{});             // id -> order (เก็บในเครื่อง 10 วัน)
 var OUTBOX=lsGet('outbox',[]);          // id ของบิลที่รอส่งขึ้น Supabase
 var RECIPES=lsGet('recipes',[]);
-var S={view:'sell',ch:'walkin',cat:null,q:'',cart:[],adminUntil:0,atab:'dash',billDate:ymd(),sumDate:ymd(),sumAll:false,dashRange:'today',dashAll:false,menuQ:'',menuCat:'',menuNoPrice:false,syncing:false,online:true};
+var S={view:'home',skipShift:false,menuLocal:false,ch:'walkin',cat:null,q:'',cart:[],adminUntil:0,atab:'dash',billDate:ymd(),sumDate:ymd(),sumAll:false,dashRange:'today',dashAll:false,menuQ:'',menuCat:'',menuNoPrice:false,syncing:false,online:true};
 var P=null;      // payment state
 var PK=null;     // picker state
 
@@ -1628,19 +1788,26 @@ function BS(){return (SET.branches&&SET.branches[CFG.branch])||{};}
 function payDef(id){for(var i=0;i<SET.pay.length;i++)if(SET.pay[i].id===id)return SET.pay[i];return {id:id,name:id,type:'online'};}
 
 /* ---------------- Supabase ---------------- */
-function sb(method,path,body,prefer){
-  var h={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
-  if(prefer)h['Prefer']=prefer;
-  return fetch(SB_URL+'/rest/v1/'+path,{method:method,headers:h,body:body?JSON.stringify(body):undefined}).then(function(r){
+function sb(method,path,body,prefer,opt){
+  opt=opt||{};
+  if(MODE==='demo')return Promise.reject(new Error('demo'));
+  return authFresh().then(function(){
+    var h={'apikey':SB_KEY,'Authorization':'Bearer '+(opt.anon?SB_KEY:tok()),'Content-Type':'application/json'};
+    if(prefer)h['Prefer']=prefer;
+    return fetch(SB_URL+'/rest/v1/'+path,{method:method,headers:h,body:body?JSON.stringify(body):undefined});
+  }).then(function(r){
+    if(r.status===401&&!opt.retry&&MODE==='live'&&SESSION){SESSION.expires_at=0;return sb(method,path,body,prefer,{anon:opt.anon,retry:true});}
     if(!r.ok)return r.text().then(function(t){throw new Error(r.status+' '+t.slice(0,200));});
-    if(r.status===204)return null;
+    if(r.status===204||r.status===201)return r.text().then(function(t){return t?JSON.parse(t):null;});
     return r.text().then(function(t){return t?JSON.parse(t):null;});
   });
 }
-function upsert(table,rows,key){return sb('POST',table+'?on_conflict='+(key||'id'),rows,'resolution=merge-duplicates,return=minimal');}
+function upsert(table,rows,key){if(MODE==='demo')return Promise.resolve(null);return sb('POST',table+'?on_conflict='+(key||'id'),rows,'resolution=merge-duplicates,return=minimal');}
 
 function setSync(st,tx){
-  var el=$('sync');el.className=st;
+  var el=$('sync');
+  if(MODE==='demo'){el.className='ok';$('syncTx').textContent='โหมดทดลอง';return;}
+  el.className=st;if(st==='ok')lsSet('last_sync',new Date().toISOString());
   var pend=OUTBOX.length;
   $('syncTx').textContent=tx||(st==='ok'?(pend?'รอส่ง '+pend:'ซิงค์แล้ว'):st==='busy'?'กำลังซิงค์…':st==='err'?('ออฟไลน์'+(pend?' · รอส่ง '+pend:'')):'—');
 }
@@ -1658,6 +1825,8 @@ function queueOrder(o){
 }
 function flush(){
   if(S.syncing)return;
+  if(MODE==='live'&&!SESSION)return;
+  var sp=lsGet('shift_pend',null);if(sp&&MODE==='live')pushShift(sp);
   if(!OUTBOX.length){setSync('ok');return;}
   S.syncing=true;setSync('busy');
   var ids=OUTBOX.slice(0,50),rows=[],stamp={};
@@ -1685,7 +1854,7 @@ function fetchOrders(from,to,branchCode){
   },function(){
     S.online=false;setSync('err');
     var out=local();out.sort(function(a,b){return a.created_at<b.created_at?1:-1;});
-    return {rows:out,offline:true};
+    return {rows:out,offline:MODE!=='demo'};
   });
 }
 
@@ -1694,8 +1863,9 @@ function loadRemote(){
   var p1=sb('GET','pos_settings?select=*&key=eq.main').then(function(r){
     if(r&&r.length&&r[0].value){SET=ext(clone(DEFAULT_SETTINGS),r[0].value);mergeDefaultsPay();lsSet('settings',SET);}
   });
-  var p2=sb('GET','pos_menu?select=*&order=sort.asc,id.asc&limit=5000').then(function(r){MENU=r||[];lsSet('menu',MENU);});
+  var p2=sb('GET','pos_menu?select=*&order=sort.asc,id.asc&limit=5000').then(function(r){if(r&&r.length){MENU=r;S.menuLocal=false;lsSet('menu',MENU);}else S.menuLocal=true;});
   var p3=sb('GET','pos_promos?select=*&order=sort.asc').then(function(r){PROMOS=r||[];lsSet('promos',PROMOS);});
+  if(MODE==='live'&&SESSION)loadProfile().then(function(pr){if(pr.role!=='owner'&&pr.branch&&pr.branch!==CFG.branch){toast('บัญชีนี้ผูกกับ'+BRANCHES[pr.branch].name,'ok');CFG=null;lsSet('cfg',null);startApp();}},function(e){if(e.noprofile){toast('บัญชีนี้ไม่มีสิทธิ์ใช้ POS แล้ว','err');logout();}});
   return Promise.all([p1,p2,p3]).then(function(){S.online=true;setSync(OUTBOX.length?'busy':'ok');renderAll();flush();},function(e){
     setSync('err');
     if(/42P01|does not exist|404/.test(String(e.message)))toast('ยังไม่พบตาราง POS ใน Supabase — รันไฟล์ SQL ก่อน','err');
@@ -1723,7 +1893,8 @@ function priceOf(it,ch){
   return p;
 }
 function isSoldOut(it){return !!(it.so&&it.so[CFG.branch]);}
-function sellable(it){return it.active!==false&&!it.is_addon&&priceOf(it,'walkin')!=null;}
+function priced(it){return priceOf(it,'walkin')!=null;}
+function sellable(it){return it.active!==false&&(priced(it)||!SET.hideNoPrice);}
 function menuById(id){for(var i=0;i<MENU.length;i++)if(MENU[i].id===id)return MENU[i];return null;}
 function groups(){
   var g={},order=[];
@@ -1743,30 +1914,66 @@ function addons(){return MENU.filter(function(it){return it.is_addon&&it.active!
 function renderAll(){renderHeader();renderSell();if(S.view!=='sell')renderView();}
 function renderHeader(){
   $('hdrLogo').src=LOGO;
-  $('hdrSub').textContent=BR().short+' · POS #'+CFG.dev+(S.ch==='lineman'?' · LINE MAN':'');
-  var bs=$('nav').querySelectorAll('button');for(var i=0;i<bs.length;i++)bs[i].classList.toggle('on',bs[i].getAttribute('data-v')===S.view);
+  $('hdrSub').textContent='ระบบขาย · '+BR().short+' · POS #'+CFG.dev;
+  var T={home:'หน้าหลัก',bills:'🧾 บิลขาย',summary:'📊 สรุปยอด',shift:'💵 กะ & ลิ้นชัก',admin:'⚙️ หลังบ้าน'};
+  $('hdrTitle').textContent=T[S.view]||'';
+  $('hdrBack').classList.toggle('hide',S.view==='sell'||S.view==='home');
+  $('demoTag').classList.toggle('hide',MODE!=='demo');
+  document.body.className='v-'+S.view;updRail();
 }
+var ICON_RULES=[
+  [/มาม่า/,'🍜'],[/แซนวิช/,'🥪'],[/ขนมปังปิ้ง/,'🍞'],[/ขนมปัง/,'🥖'],[/กล้วย/,'🍌'],[/เผือก/,'🍠'],[/ทาร์ต/,'🥧'],[/เยลลี่/,'🍬'],[/คอนเฟรก|แครเกอร์|แครกเกอร์/,'🥣'],
+  [/น้ำดื่ม/,'💧'],[/วิปครีม/,'🍦'],[/เฉาก/,'🧋'],[/บุก|ชากุระ/,'🫧'],
+  [/อเมริกาโน|เอสเปรสโซ|ลาเต|คาปูชิโน|มอคค|ทูเดย์|เอสปูชิโน|กาแฟ|มัคคิ|Coffee|Add Shot กาแฟ/i,'☕'],
+  [/มัทฉะ|ชาเขียว|Matcha/i,'🍵'],[/ชาไทย|ชานม|ซีลอน/,'🧋'],[/ส้ม/,'🍊'],[/มะนาว|ยูสุ|Yuzu/i,'🍋'],
+  [/ช็อค|ช็อก|โกโก|Coco|Dark night/i,'🍫'],[/สตรอ/,'🍓'],[/บลูเบอ|มิกซ์เบอ|Blue/i,'🫐'],[/กีวี/,'🥝'],[/มะม่วง/,'🥭'],[/องุ่น|KYOHO/i,'🍇'],[/ลิ้นจี่|Lychee/i,'🍒'],[/ทับทิม/,'🍒'],
+  [/โยเกิร์ต|นม/,'🥛'],[/คาราเมล/,'🍮'],[/น้ำผึ้ง/,'🍯'],[/โซดา|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Santacruz|Twinkle/i,'🍹'],
+  [/ชา/,'🫖']
+];
+var FRUITY='🍓🫐🥝🥭🍇🍒🍋🍊🍹🫧';
+function iconOf(name){for(var i=0;i<ICON_RULES.length;i++)if(ICON_RULES[i][0].test(name))return ICON_RULES[i][1];return '☕';}
+function tintOf(items,ic){
+  if(items[0]&&items[0].kind==='snack')return 'snack';
+  if(FRUITY.indexOf(ic)>=0)return 'fruit';
+  var h=0,c=0,b=0;for(var i=0;i<items.length;i++){var v=items[i].variant||'';if(v.indexOf('ร้อน')>=0)h++;if(v.indexOf('เย็น')>=0)c++;if(v.indexOf('ปั่น')>=0)b++;}
+  if(ic==='🍵')return 'tea';
+  if(h&&!c&&!b)return 'hot';if(c&&!h&&!b)return 'iced';if(b&&!h&&!c)return 'blend';
+  return 'mix';
+}
+function tempTags(items){var t=[];var j=items.map(function(x){return x.variant||'';}).join(' ');
+  if(j.indexOf('ร้อน')>=0)t.push('ร้อน');if(j.indexOf('เย็น')>=0)t.push('เย็น');if(j.indexOf('ปั่น')>=0)t.push('ปั่น');return t.length>1?t:[];}
 function renderSell(){
-  var b=$('chSeg').querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].classList.toggle('on',b[i].getAttribute('data-v')===S.ch);
+  var b=document.querySelectorAll('[data-act="ch"]');for(var i=0;i<b.length;i++)b[i].classList.toggle('on',b[i].getAttribute('data-v')===S.ch);
+  var lm=S.ch==='lineman';
+  $('banner').className=lm?'lineman':'walkin';
+  $('bnT').textContent='☕ Coffee Today · '+BR().short;
+  $('bnIc').textContent=lm?'🛵':'🏪';$('bnCh').textContent=lm?'LINE MAN':'หน้าร้าน';$('bnSub').textContent=lm?'ราคา LINE MAN':'ราคาปกติ';
+  $('v-sell').classList.toggle('lm',lm);
   var gs=groups(),cs=cats(gs);
-  if(!S.cat||cs.indexOf(S.cat)<0)S.cat=cs[0]||null;
+  if(!S.cat||(S.cat!=='__all'&&cs.indexOf(S.cat)<0))S.cat='__all';
   var q=S.q.trim().toLowerCase();
   var h='';
-  if(!q){for(var c=0;c<cs.length;c++)h+='<button class="cat'+(cs[c]===S.cat?' on':'')+'" data-act="cat" data-v="'+esc(cs[c])+'">'+esc(cs[c])+'</button>';}
+  if(!q&&cs.length){h+='<button class="cat'+(S.cat==='__all'?' on':'')+'" data-act="cat" data-v="__all">ทั้งหมด</button>';
+    for(var c=0;c<cs.length;c++)h+='<button class="cat'+(cs[c]===S.cat?' on':'')+'" data-act="cat" data-v="'+esc(cs[c])+'">'+esc(cs[c])+'</button>';}
   $('cats').innerHTML=h;
   var list=gs.filter(function(g){
     if(q){if(g.grp.toLowerCase().indexOf(q)>=0)return true;for(var i=0;i<g.items.length;i++)if((g.items[i].receipt_name||'').toLowerCase().indexOf(q)>=0)return true;return false;}
-    return g.cat===S.cat;});
-  var gh='';
+    return S.cat==='__all'||g.cat===S.cat;});
+  var gh='',lastCat=null;
   for(var j=0;j<list.length;j++){
-    var g=list[j],mn=1e9,mx=0,allSo=true;
-    for(var k=0;k<g.items.length;k++){var p=priceOf(g.items[k],S.ch);if(p<mn)mn=p;if(p>mx)mx=p;if(!isSoldOut(g.items[k]))allSo=false;}
-    var vs=g.items.length>1?g.items.map(function(x){return x.variant||'ปกติ';}).join(' · '):(g.items[0].variant||'');
-    gh+='<button class="card'+(allSo?' so':'')+'" data-act="grp" data-v="'+esc(g.key)+'"><div class="nm">'+esc(g.grp)+'</div>'+(vs?'<div class="vs">'+esc(vs)+'</div>':'')+'<div class="pr">'+(mn===mx?baht(mn):baht(mn)+' – '+baht(mx))+'</div></button>';
+    var g=list[j],mn=1e9,mx=0,allSo=true,np=true,img=null;
+    for(var k=0;k<g.items.length;k++){var p=priceOf(g.items[k],S.ch);if(p!=null){np=false;if(p<mn)mn=p;if(p>mx)mx=p;}if(!isSoldOut(g.items[k]))allSo=false;if(!img&&g.items[k].img)img=g.items[k].img;}
+    if(!q&&S.cat==='__all'&&g.cat!==lastCat){if(lastCat!==null)gh+='</div>';gh+='<div class="slbl">'+esc(g.cat)+'</div><div class="mgrid">';lastCat=g.cat;}
+    else if(lastCat===null){gh+='<div class="mgrid">';lastCat='';}
+    var ic=iconOf(g.grp+' '+(g.items[0].receipt_name||'')),tn=tintOf(g.items,ic),tt=tempTags(g.items);
+    var vs=g.items.length>2?(g.items.length+' แบบ'):g.items.length>1?g.items.map(function(x){return x.variant||'ปกติ';}).join(' · '):(g.items[0].variant||'');
+    gh+='<button class="mc'+(allSo?' so':'')+(np?' np':'')+'" data-act="grp" data-v="'+esc(g.key)+'"><div class="mc-img '+tn+'">'+(img?'<img src="'+esc(img)+'" loading="lazy" alt="">':ic)+(tt.length?'<div class="tp">'+tt.map(function(t){return '<i>'+t+'</i>';}).join('')+'</div>':'')+'</div>'+
+      '<div class="mc-body"><div class="mc-nm">'+esc(g.grp)+'</div>'+(vs?'<div class="mc-vs">'+esc(vs)+'</div>':'')+'<div class="mc-pr">'+(np?'<span class="nop">ยังไม่ตั้งราคา</span>':(mn===mx?baht(mn):baht(mn)+' – '+baht(mx)))+'</div></div></button>';
   }
+  if(gh)gh+='</div>';
   if(!gh){
     gh=MENU.length?'<div class="empty">'+(q?'ไม่พบเมนู “'+esc(S.q)+'”':'ยังไม่มีเมนูที่ตั้งราคาในหมวดนี้')+'</div>'
-      :'<div class="empty">ยังไม่มีเมนูในระบบ<br><button class="btn sm" style="max-width:300px;margin:14px auto 0" data-act="seedPrompt">📥 สร้างเมนูจากสูตรใน Stock</button><div class="note" style="margin-top:8px">ต้องรันไฟล์ SQL ใน Supabase ก่อน</div></div>';
+      :'<div class="empty"><div style="font-size:48px">☕</div>ยังไม่มีเมนูในระบบ<br><button class="btn sm" style="max-width:300px;margin:14px auto 0" data-act="seedPrompt">📥 สร้างเมนูจากสูตรใน Stock</button><div class="note" style="margin-top:8px">ต้องรันไฟล์ SQL ใน Supabase ก่อน</div></div>';
   }
   $('grid').innerHTML=gh;
   renderCart();
@@ -1775,21 +1982,24 @@ function lineTotal(l){var a=0;for(var i=0;i<l.addons.length;i++)a+=l.addons[i].p
 function cartSub(){var t=0;for(var i=0;i<S.cart.length;i++)t+=lineTotal(S.cart[i]);return r2(t);}
 function cartCount(){var c=0;for(var i=0;i<S.cart.length;i++)c+=S.cart[i].qty;return c;}
 function renderCart(){
-  var h='';
+  var h='',lm=S.ch==='lineman';
   for(var i=0;i<S.cart.length;i++){var l=S.cart[i],sub=[];
     for(var a=0;a<l.addons.length;a++)sub.push('+ '+esc(l.addons[a].name)+(l.addons[a].qty>1?' ×'+l.addons[a].qty:'')+' ('+baht(l.addons[a].price*l.addons[a].qty)+')');
+    if(l.sweet)sub.push('🍯 '+esc(l.sweet));
     if(l.note)sub.push('📝 '+esc(l.note));
-    h+='<div class="cl"><div class="r1"><div class="nm">'+esc(l.name)+(sub.length?'<div class="sub">'+sub.join('<br>')+'</div>':'')+'</div><div class="amt">'+baht(lineTotal(l))+'</div></div>'+
+    var ic=iconOf(l.name),it=menuById(l.mid),tn=tintOf(it?[it]:[{variant:l.variant,kind:l.kind}],ic);
+    h+='<div class="cl"><div class="r1"><div class="ci mc-img '+tn+'">'+ic+'</div><div class="nm">'+esc(l.name)+(sub.length?'<div class="sub">'+sub.join('<br>')+'</div>':'')+'</div><div class="amt">'+baht(lineTotal(l))+'</div></div>'+
       '<div class="r2"><div class="qty"><button data-act="lq" data-i="'+i+'" data-d="-1">−</button><span>'+l.qty+'</span><button data-act="lq" data-i="'+i+'" data-d="1">+</button></div>'+
-      '<button class="mini" data-act="ledit" data-i="'+i+'">✏️ แอด/โน้ต</button><button class="mini del" data-act="ldel" data-i="'+i+'">ลบ</button></div></div>';}
-  if(!h)h='<div class="empty" style="padding:30px 0">ยังไม่มีรายการ<br>แตะเมนูเพื่อเพิ่ม</div>';
+      '<button class="mini" data-act="ledit" data-i="'+i+'">✏️ '+(l.kind!=='snack'&&!(menuById(l.mid)||{}).is_addon?'แก้ไข':'หมายเหตุ')+'</button>'+'<button class="mini del" data-act="ldel" data-i="'+i+'">ลบ</button></div></div>';}
+  if(!h)h='<div class="empty" style="padding:40px 0"><div style="font-size:40px;opacity:.35">🛒</div>ยังไม่มีรายการ<br>แตะเมนูเพื่อเพิ่ม</div>';
   $('cartList').innerHTML=h;
   var cnt=cartCount(),tot=cartSub();
-  $('cCnt').textContent=cnt+' รายการ';$('cTot').textContent=baht(tot);
-  $('payBtn').disabled=!cnt;$('payBtn').className='btn'+(S.ch==='lineman'?' lm':'');
-  $('cartCh').textContent=S.ch==='lineman'?'· LINE MAN':'';
-  $('cbL').textContent=cnt?('🛒 '+cnt+' รายการ · ดูตะกร้า'):'ตะกร้าว่าง';$('cbR').textContent=baht(tot);
-  $('cartBar').className=(cnt?'':'zero')+(S.ch==='lineman'?' lm':'');
+  $('cCnt').textContent=cnt+' รายการ';$('cTot').textContent=baht(tot);$('cBdg').textContent=cnt;
+  $('cMode').textContent=lm?'LINE MAN':'หน้าร้าน';
+  $('payBtn').disabled=!cnt;$('payBtn').className='btn'+(lm?' lm':'');
+  $('cartCh').innerHTML=' <span class="chtag'+(lm?' lm':'')+'">'+(lm?'🛵 LINE MAN':'🏪 หน้าร้าน')+'</span>';
+  $('cbN').textContent=cnt;$('cbR').textContent=baht(tot);
+  $('cartBar').className=lm?'lm':'';
 }
 
 /* ---------------- picker ---------------- */
@@ -1798,32 +2008,31 @@ function openPicker(key,editIdx){
   var g=groupByKey(key);if(!g)return;
   var line=editIdx!=null?S.cart[editIdx]:null;
   var sel=line?line.mid:null;
-  if(!sel){for(var i=0;i<g.items.length;i++)if(!isSoldOut(g.items[i])){sel=g.items[i].id;break;}}
-  if(!sel){toast('เมนูนี้หมดแล้ว','err');return;}
+  if(!sel){for(var i=0;i<g.items.length;i++)if(!isSoldOut(g.items[i])&&priceOf(g.items[i],S.ch)!=null){sel=g.items[i].id;break;}}
+  if(!sel){var anyP=false;for(var i2=0;i2<g.items.length;i2++)if(priceOf(g.items[i2],S.ch)!=null)anyP=true;toast(anyP?'เมนูนี้หมดแล้ว':'ยังไม่ได้ตั้งราคาเมนูนี้ (หลังบ้าน → เมนู & ราคา)','err');return;}
+  var pz=g.items.filter(function(x){return priceOf(x,S.ch)!=null;});
   // เมนูเดียว ไม่มีแอด (ขนม) → ใส่ตะกร้าเลย
-  if(!line&&g.items.length===1&&g.items[0].kind==='snack'){addLine(g.items[0],1,[],'');return;}
-  if(!line&&g.items.length===1&&!addons().length){addLine(g.items[0],1,[],'');return;}
-  PK={key:key,sel:sel,qty:line?line.qty:1,ad:{},note:line?line.note:'',edit:editIdx};
+  if(!line&&pz.length===1&&(pz[0].kind==='snack'||pz[0].is_addon||!(SET.sweet||[]).length)&&!isSoldOut(pz[0])){addLine(pz[0],1,[],'');return;}
+  PK={key:key,sel:sel,qty:line?line.qty:1,ad:{},note:line?line.note:'',sweet:line?(line.sweet||''):'',edit:editIdx};
   if(line)for(var a=0;a<line.addons.length;a++)PK.ad[line.addons[a].mid]=line.addons[a].qty;
   renderPicker();showModal();
 }
 function renderPicker(){
   var g=groupByKey(PK.key);if(!g){closeModal();return;}
-  var h='<div class="mh"><h2>'+esc(g.grp)+'</h2><button class="x" data-act="close">✕</button></div><div class="mb">';
+  var gic=iconOf(g.grp+' '+(g.items[0].receipt_name||'')),cur=menuById(PK.sel);
+  var h='<div class="mh"><h2><span class="hi mc-img '+tintOf(g.items,gic)+'">'+gic+'</span><span>'+esc(g.grp)+'<small>'+(cur?baht(priceOf(cur,S.ch))+(cur.variant?' · '+esc(cur.variant):''):'')+'</small></span></h2><button class="x" data-act="close">✕</button></div><div class="mb">';
   h+='<div class="sec">เลือกแบบ</div><div class="opts">';
   for(var i=0;i<g.items.length;i++){var it=g.items[i];
-    h+='<button class="opt'+(it.id===PK.sel?' on':'')+'" data-act="pkSel" data-v="'+esc(it.id)+'"'+(isSoldOut(it)?' disabled':'')+'>'+esc(it.variant||'ปกติ')+'<small>'+(isSoldOut(it)?'หมด':baht(priceOf(it,S.ch)))+'</small></button>';}
+    h+='<button class="opt big'+(it.id===PK.sel?' on':'')+'" data-act="pkSel" data-v="'+esc(it.id)+'"'+(isSoldOut(it)||priceOf(it,S.ch)==null?' disabled':'')+'>'+esc(it.variant||'ปกติ')+'<small>'+(isSoldOut(it)?'หมด':priceOf(it,S.ch)==null?'ไม่มีราคา':baht(priceOf(it,S.ch)))+'</small></button>';}
   h+='</div>';
   var sel=menuById(PK.sel),ads=addons();
-  if(sel&&sel.kind!=='snack'&&ads.length){
-    h+='<div class="sec">แอดเพิ่ม</div>';
-    for(var a=0;a<ads.length;a++){var ad=ads[a],q=PK.ad[ad.id]||0;
-      h+='<div class="adl"><div><div class="an">'+esc(ad.receipt_name)+'</div><div class="ap">+'+baht(priceOf(ad,S.ch))+'</div></div><div class="qty"><button data-act="pkAd" data-v="'+esc(ad.id)+'" data-d="-1">−</button><span>'+q+'</span><button data-act="pkAd" data-v="'+esc(ad.id)+'" data-d="1">+</button></div></div>';}
-    h+='<div style="height:12px"></div>';
+  var sw=SET.sweet||[];
+  if(sel&&sel.kind!=='snack'&&!sel.is_addon&&sw.length){
+    h+='<div class="sec">ระดับความหวาน</div><div class="opts">';
+    for(var n=0;n<sw.length;n++)h+='<button class="opt'+(PK.sweet===sw[n]?' on':'')+'" data-act="pkSweet" data-v="'+esc(sw[n])+'">'+esc(sw[n])+'</button>';
+    h+='</div>';
   }
-  h+='<div class="sec">หมายเหตุ</div><div class="opts" style="margin-bottom:8px">';
-  for(var n=0;n<NOTE_CHIPS.length;n++){var on=(' '+PK.note+' ').indexOf(NOTE_CHIPS[n])>=0;h+='<button class="opt'+(on?' on':'')+'" style="min-width:0;padding:8px 12px" data-act="pkNote" data-v="'+esc(NOTE_CHIPS[n])+'">'+esc(NOTE_CHIPS[n])+'</button>';}
-  h+='</div><input class="in" style="width:100%;margin-bottom:14px" id="pkNoteIn" placeholder="พิมพ์หมายเหตุเพิ่ม…" value="'+esc(PK.note)+'">';
+  h+='<div class="sec">หมายเหตุ</div><input class="in" style="width:100%;margin-bottom:16px" id="pkNoteIn" placeholder="เช่น ไม่ใส่วิป, แยกน้ำเชื่อม…" value="'+esc(PK.note)+'">';
   h+='<div style="display:flex;gap:10px;align-items:center"><div class="qty"><button data-act="pkQty" data-d="-1">−</button><span>'+PK.qty+'</span><button data-act="pkQty" data-d="1">+</button></div>'+
      '<button class="btn'+(S.ch==='lineman'?' lm':'')+'" style="flex:1" data-act="pkOk">'+(PK.edit!=null?'บันทึก':'เพิ่มลงตะกร้า')+' · '+baht(pickerTotal())+'</button></div></div>';
   $('modal').className='';$('modal').innerHTML=h;
@@ -1833,16 +2042,16 @@ function pickerTotal(){var it=menuById(PK.sel);if(!it)return 0;var t=priceOf(it,
 function pickerOk(){
   var it=menuById(PK.sel);if(!it)return;
   var ads=[];for(var k in PK.ad)if(PK.ad.hasOwnProperty(k)&&PK.ad[k]>0){var a=menuById(k);if(a)ads.push({mid:a.id,rid:a.recipe_id||null,name:a.receipt_name,price:priceOf(a,S.ch),qty:PK.ad[k],kind:a.kind||'drink'});}
-  var note=(PK.note||'').trim();
-  if(PK.edit!=null){S.cart.splice(PK.edit,1,mkLine(it,PK.qty,ads,note));renderCart();}
-  else addLine(it,PK.qty,ads,note);
+  var note=(PK.note||'').trim(),sweet=(it.kind==='snack'||it.is_addon)?'':(PK.sweet||'');
+  if(PK.edit!=null){S.cart.splice(PK.edit,1,mkLine(it,PK.qty,ads,note,sweet));renderCart();}
+  else addLine(it,PK.qty,ads,note,sweet);
   closeModal();
 }
-function mkLine(it,qty,ads,note){return {k:uid(),mid:it.id,rid:it.recipe_id||null,name:it.receipt_name,variant:it.variant||'',grpKey:(it.category||'อื่นๆ')+'|'+it.grp,price:priceOf(it,S.ch),qty:qty,addons:ads,note:note,kind:it.kind||'drink'};}
-function addLine(it,qty,ads,note){
-  var sig=it.id+'|'+JSON.stringify(ads)+'|'+note;
-  for(var i=0;i<S.cart.length;i++){var l=S.cart[i];if(l.mid+'|'+JSON.stringify(l.addons)+'|'+l.note===sig){l.qty+=qty;renderCart();bump();return;}}
-  S.cart.push(mkLine(it,qty,ads,note));renderCart();bump();
+function mkLine(it,qty,ads,note,sweet){return {sweet:sweet||'',k:uid(),mid:it.id,rid:it.recipe_id||null,name:it.receipt_name,variant:it.variant||'',grpKey:(it.category||'อื่นๆ')+'|'+it.grp,price:priceOf(it,S.ch),qty:qty,addons:ads,note:note,kind:it.kind||'drink'};}
+function addLine(it,qty,ads,note,sweet){
+  sweet=sweet||'';var sig=it.id+'|'+JSON.stringify(ads)+'|'+note+'|'+sweet;
+  for(var i=0;i<S.cart.length;i++){var l=S.cart[i];if(l.mid+'|'+JSON.stringify(l.addons)+'|'+l.note+'|'+(l.sweet||'')===sig){l.qty+=qty;renderCart();bump();return;}}
+  S.cart.push(mkLine(it,qty,ads,note,sweet));renderCart();bump();
 }
 function bump(){var b=$('cartBar');b.style.transform='scale(1.04)';setTimeout(function(){b.style.transform='';},120);}
 function repriceCart(){
@@ -1867,10 +2076,10 @@ function payNet(){var sub=cartSub();return r2(sub-discAmt(sub));}
 function renderPay(){
   var sub=cartSub(),dis=discAmt(sub),net=r2(sub-dis),lm=S.ch==='lineman';
   var h='<div class="mh"><h2>ชำระเงิน'+(lm?' · LINE MAN':'')+'</h2><button class="x" data-act="close">✕</button></div><div class="mb">';
-  h+='<div class="paybig"><div class="k">ยอดที่ต้องชำระ</div><div class="v">'+baht(net)+'</div><div class="s">รวม '+baht(sub)+(dis?' · ส่วนลด −'+baht(dis):'')+'</div></div>';
+  h+='<div class="paybig'+(lm?' lm':'')+'"><div class="k">ยอดที่ต้องชำระ</div><div class="v">'+baht(net)+'</div><div class="s">รวม '+baht(sub)+(dis?' · ส่วนลด −'+baht(dis):'')+'</div></div>';
   // promos
   h+='<div class="sec">โปรส่วนลด</div><div class="opts">';
-  h+='<button class="opt'+(!P.disc?' on':'')+'" data-act="pDisc" data-v="">ไม่มี</button>';
+  h+='<button class="opt'+(!P.disc?' on':'')+'" data-act="pDisc" data-v="">ไม่ใช้โปร</button>';
   var ps=PROMOS.filter(function(p){return p.active!==false;});
   for(var i=0;i<ps.length;i++)h+='<button class="opt'+(P.disc&&P.disc.id===ps[i].id?' on':'')+'" data-act="pDisc" data-v="'+esc(ps[i].id)+'">'+esc(ps[i].name)+'<small>'+(ps[i].type==='pct'?ps[i].value+'%':'−'+baht(ps[i].value))+'</small></button>';
   h+='<button class="opt'+(P.disc&&P.disc.id==='__custom'?' on':'')+'" data-act="pDisc" data-v="__custom">กำหนดเอง</button></div>';
@@ -1878,17 +2087,17 @@ function renderPay(){
     h+='<div style="display:flex;gap:8px;margin:-6px 0 14px"><input class="in" id="cdVal" inputmode="decimal" placeholder="จำนวน" style="flex:1" value="'+esc(P.custom.value)+'"><div class="seg"><button data-act="cdType" data-v="baht" class="'+(P.custom.type==='baht'?'on':'')+'">บาท</button><button data-act="cdType" data-v="pct" class="'+(P.custom.type==='pct'?'on':'')+'">%</button></div></div>';
   }
   if(lm){
-    h+='<div class="sec">ช่องทางชำระ</div><div class="mgrid"><div class="mt on"><span class="ic">🛵</span>LINE MAN</div></div>';
+    h+='<div class="sec">ช่องทางชำระ</div><div class="mgrid2"><div class="mt on lm"><span class="ic">🛵</span>LINE MAN</div></div>';
     h+='<label class="lbl">เลขออเดอร์ LINE MAN (ไม่บังคับ)</label><input class="in" id="lmNo" style="width:100%;margin-bottom:14px" value="'+esc(P.lmno)+'" placeholder="เช่น LM-12345">';
   } else {
-    h+='<div class="sec" style="display:flex;justify-content:space-between;align-items:center">ช่องทางชำระ <button class="mini" data-act="pSplit">'+(P.split?'↩ จ่ายช่องทางเดียว':'➗ แยกจ่ายหลายช่องทาง')+'</button></div>';
+    h+='<div class="sec" style="display:flex;justify-content:space-between;align-items:center">ช่องทางชำระเงิน <button class="mini" data-act="pSplit">'+(P.split?'↩ จ่ายช่องทางเดียว':'➗ แยกจ่ายหลายช่องทาง')+'</button></div>';
     if(!P.split){
-      var ap=activePay();h+='<div class="mgrid">';
+      var ap=activePay();h+='<div class="mgrid2">';
       for(var m=0;m<ap.length;m++)h+='<button class="mt'+(P.method===ap[m].id?' on':'')+'" data-act="pMethod" data-v="'+esc(ap[m].id)+'"><span class="ic">'+payIcon(ap[m].type)+'</span>'+esc(ap[m].name)+'</button>';
       h+='</div>';
       var md=payDef(P.method);
       if(md.type==='cash'){
-        h+='<label class="lbl">รับเงินมา</label><input class="in" id="rcv" inputmode="decimal" style="width:100%;font-size:24px;font-weight:800;text-align:right" placeholder="'+money(net)+'" value="'+esc(P.received)+'">';
+        h+='<label class="lbl">รับเงินมา</label><input class="rcv" id="rcv" inputmode="decimal" placeholder="'+money(net)+'" value="'+esc(P.received)+'">';
         h+='<div class="quick"><button data-act="pQuick" data-v="exact">พอดี</button>';
         var qs=quickNotes(net);for(var qn=0;qn<qs.length;qn++)h+='<button data-act="pQuick" data-v="'+qs[qn]+'">'+baht(qs[qn])+'</button>';
         h+='</div><div id="chgBox"></div>';
@@ -1903,8 +2112,8 @@ function renderPay(){
       h+='<div id="splitBox">'+splitHTML(net)+'</div>';
     }
   }
-  h+='<button class="btn'+(lm?' lm':'')+'" id="payOk" data-act="payOk">✅ ยืนยันรับเงิน '+baht(net)+'</button>';
-  h+='<div class="note" style="text-align:center;margin-top:8px">'+(SET.autoprint?'จะพิมพ์ใบเสร็จอัตโนมัติ':'ไม่พิมพ์อัตโนมัติ (ตั้งค่าในหลังบ้าน)')+'</div></div>';
+  h+='<div class="payfoot"><button class="btn'+(lm?' lm':'')+'" id="payOk" data-act="payOk">✅ ยืนยันรับเงิน '+baht(net)+'</button>';
+  h+='<div class="note" style="text-align:center;margin-top:6px">'+(SET.autoprint?'🖨️ จะพิมพ์ใบเสร็จอัตโนมัติ':'ไม่พิมพ์อัตโนมัติ (ตั้งค่าในหลังบ้าน)')+'</div></div></div>';
   $('modal').innerHTML=h;
   if($('cdVal'))$('cdVal').oninput=function(){P.custom.value=this.value;P.disc.value=num(this.value)||0;updPayTotals();};
   if($('lmNo'))$('lmNo').oninput=function(){P.lmno=this.value;};
@@ -1924,7 +2133,7 @@ function updPayTotals(){
   updChange();validatePay();
 }
 function payIcon(t){return t==='cash'?'💵':t==='qr'?'📱':t==='lineman'?'🛵':'💳';}
-function quickNotes(net){var c=[20,50,100,500,1000],o=[];for(var i=0;i<c.length;i++){var v=Math.ceil(net/c[i])*c[i];if(v>=net&&o.indexOf(v)<0)o.push(v);}o.sort(function(a,b){return a-b;});return o.slice(0,5);}
+function quickNotes(net){var c=[20,50,100,500,1000],o=[];for(var i=0;i<c.length;i++){var v=Math.ceil(net/c[i])*c[i];if(v>net&&o.indexOf(v)<0)o.push(v);}o.sort(function(a,b){return a-b;});return o.slice(0,5);}
 function updChange(){
   var box=$('chgBox');if(!box)return;var net=payNet(),r=num(P.received);
   if(r==null){box.innerHTML='';return;}
@@ -1972,7 +2181,7 @@ function confirmPay(){
   var now=new Date(),bd=ymd(now);
   var items=[];
   for(var j=0;j<S.cart.length;j++){var l=S.cart[j];
-    items.push({mid:l.mid,rid:l.rid,name:l.name,qty:l.qty,price:l.price,kind:l.kind,addon:false,note:l.note||''});
+    items.push({mid:l.mid,rid:l.rid,name:l.name,qty:l.qty,price:l.price,kind:l.kind,addon:false,note:[l.sweet,l.note].filter(function(x){return !!x;}).join(' · ')});
     for(var k=0;k<l.addons.length;k++){var ad=l.addons[k];items.push({mid:ad.mid,rid:ad.rid,name:ad.name,qty:ad.qty*l.qty,price:ad.price,kind:ad.kind||l.kind,addon:true,note:''});}}
   var vatable=r2(net/1.07),vat=r2(net-vatable);
   var o={id:uid('o'),bill_no:nextBillNo(bd),branch:BR().name,branch_code:CFG.branch,device:CFG.dev,channel:S.ch,business_date:bd,created_at:now.toISOString(),
@@ -1988,7 +2197,7 @@ function billPrefix(d){return CFG.branch+CFG.dev+'-'+d.slice(2,4)+d.slice(5,7)+d
 function nextBillNo(d){var k='seq_'+d,n=lsGet(k,0)+1;lsSet(k,n);return billPrefix(d)+pad(n,4);}
 function showDone(o){
   var cash=o.change_amt!=null;
-  var h='<div class="mh"><h2>'+esc(o.bill_no)+'</h2><button class="x" data-act="close">✕</button></div><div class="mb"><div class="okbig"><div class="ic">✅</div><div class="t">รับเงินเรียบร้อย '+baht(o.total)+'</div>'+
+  var h='<div class="mh"><h2>'+esc(o.bill_no)+'</h2><button class="x" data-act="close">✕</button></div><div class="mb"><div class="okbig"><div class="ic">✓</div><div class="t">รับเงินเรียบร้อย '+baht(o.total)+'</div>'+
     (cash?'<div class="note">รับมา '+baht(o.cash_received)+'</div><div class="c">ทอน '+baht(o.change_amt)+'</div>':'<div class="note" style="margin-top:6px">'+esc(o.payments.map(function(p){return p.name+' '+baht(p.amt);}).join(' · '))+'</div>')+
     '</div><div class="btns"><button class="btn ghost sm" data-act="printO" data-v="'+o.id+'">🖨️ พิมพ์ใบเสร็จ</button><button class="btn ghost sm" data-act="drawer">🗄️ เปิดลิ้นชัก</button></div>'+
     '<button class="btn" style="margin-top:10px" data-act="close">➕ บิลใหม่</button></div>';
@@ -2068,14 +2277,14 @@ function openDrawer(){passprnt('',true);}
 
 /* ---------------- modal / pin ---------------- */
 function showModal(cls){$('modal').className=cls||$('modal').className||'';$('modal').style.display='block';$('shade').style.display='block';$('modal').scrollTop=0;}
-function closeModal(){$('modal').style.display='none';$('shade').style.display='none';$('modal').innerHTML='';P=null;PK=null;}
+function closeModal(){$('modal').style.display='none';$('shade').style.display='none';$('modal').innerHTML='';$('modal').className='';P=null;PK=null;}
 var PIN={buf:'',cb:null};
 function needPin(title,cb){
   PIN={buf:'',cb:cb};
-  var h='<div class="mh"><h2>'+esc(title||'ใส่ PIN')+'</h2><button class="x" data-act="close">✕</button></div><div class="mb"><div class="pdots" id="pdots"></div><div class="perr" id="perr"></div><div class="pinpad">';
+  var h='<div class="mh"><button class="x" data-act="close">✕</button></div><div class="mb"><div class="pinwrap"><div class="pl"><img src="'+LOGO+'"></div><div class="pt">'+esc(title||'ใส่ PIN')+'</div><div class="ps">ใส่รหัส 4 หลัก</div><div class="pdots" id="pdots"></div><div class="perr" id="perr"></div><div class="pinpad">';
   var ks=['1','2','3','4','5','6','7','8','9','','0','⌫'];
   for(var i=0;i<ks.length;i++)h+=ks[i]?'<button data-act="pin" data-v="'+ks[i]+'">'+ks[i]+'</button>':'<span></span>';
-  h+='</div></div>';$('modal').className='';$('modal').innerHTML=h;showModal();drawPin();
+  h+='</div></div></div>';$('modal').innerHTML=h;showModal('pinm');drawPin();
 }
 function drawPin(){var h='';for(var i=0;i<4;i++)h+='<i class="'+(i<PIN.buf.length?'f':'')+'"></i>';$('pdots').innerHTML=h;}
 function pinKey(k){
@@ -2091,12 +2300,13 @@ function adminGate(cb){if(Date.now()<S.adminUntil){cb();return;}needPin('PIN ห
 /* ---------------- views ---------------- */
 function setView(v){
   if(v==='admin'&&Date.now()>=S.adminUntil){adminGate(function(){setView('admin');});return;}
-  S.view=v;var vs=['sell','bills','summary','shift','admin'];
+  S.view=v;var vs=['home','sell','bills','summary','shift','admin'];closeCart();if(v!=='sell'&&v!=='home')S.lastSub=v;
   for(var i=0;i<vs.length;i++)$('v-'+vs[i]).classList.toggle('hide',vs[i]!==v);
   renderHeader();renderView();
 }
 function renderView(){
-  if(S.view==='sell')renderSell();
+  if(S.view==='home')renderHome();
+  else if(S.view==='sell'){renderSell();checkShiftPrompt();}
   else if(S.view==='bills')renderBills();
   else if(S.view==='summary')renderSummary();
   else if(S.view==='shift')renderShift();
@@ -2114,7 +2324,7 @@ function renderBills(){
     if(res.offline)h+='<div class="warnbox">ออฟไลน์ — แสดงเฉพาะบิลที่อยู่ในเครื่องนี้</div>';
     if(!rows.length)h+='<div class="empty">ไม่มีบิลในวันนี้</div>';
     for(var i=0;i<rows.length;i++){var o=rows[i],v=o.status==='void',pend=OUTBOX.indexOf(o.id)>=0;
-      h+='<div class="bill'+(v?' void':'')+'" data-act="billOpen" data-v="'+esc(o.id)+'"><div class="t">'+hm(o.created_at)+'</div><div><div class="no">'+esc(o.bill_no)+'</div><div class="ds">'+
+      h+='<div class="bill'+(v?' void':'')+'" data-act="billOpen" data-v="'+esc(o.id)+'"><div class="bi'+(o.channel==='lineman'?' lm':'')+'">'+(o.channel==='lineman'?'🛵':payIcon((o.payments[0]||{}).type))+'</div><div><div class="no">'+esc(o.bill_no)+' <span class="t">· '+hm(o.created_at)+'</span></div><div class="ds">'+
         (o.channel==='lineman'?'<span class="tag lm">LINE MAN</span>':'')+(v?'<span class="tag v">ยกเลิก</span>':'')+(pend?'<span class="tag q">รอส่ง</span>':'')+
         esc((o.payments||[]).map(function(p){return p.name;}).join(' + '))+' · '+itemCount(o)+' รายการ</div></div><div class="am">'+baht(o.total)+'</div></div>';}
     $('billList').innerHTML=h;
@@ -2176,14 +2386,14 @@ function aggregate(rows){
 }
 function renderSummary(){
   var el=$('sumPad');
-  el.innerHTML=dateNav('sd',S.sumDate)+'<div class="seg"><button data-act="sumAll" data-v="0" class="'+(!S.sumAll?'on':'')+'">'+esc(BR().short)+'</button><button data-act="sumAll" data-v="1" class="'+(S.sumAll?'on':'')+'">ทุกสาขา</button></div></div><div id="sumBody"><div class="note">กำลังโหลด…</div></div>';
+  el.innerHTML=dateNav('sd',S.sumDate)+allSeg('sumAll',S.sumAll)+'</div><div id="sumBody"><div class="note">กำลังโหลด…</div></div>';
   $('sdIn').onchange=function(){S.sumDate=this.value||ymd();renderSummary();};
   fetchOrders(S.sumDate,S.sumDate,S.sumAll?null:CFG.branch).then(function(res){
     var A=aggregate(res.rows);SUMCACHE={A:A,date:S.sumDate,all:S.sumAll};
     var h='';
     if(res.offline)h+='<div class="warnbox">ออฟไลน์ — ยอดนี้มาจากบิลในเครื่องนี้เท่านั้น ยังไม่รวมเครื่องอื่น</div>';
-    h+='<div class="stats"><div class="stat"><div class="k">ยอดสุทธิ</div><div class="v">'+baht(A.net)+'</div></div><div class="stat"><div class="k">จำนวนบิล</div><div class="v">'+A.bills+'</div></div><div class="stat"><div class="k">เงินสด</div><div class="v">'+baht(A.cash)+'</div></div><div class="stat"><div class="k">ออนไลน์</div><div class="v">'+baht(A.online)+'</div></div></div>';
-    h+='<div class="box"><h3>สรุปยอดขาย '+thDate(S.sumDate)+' · '+(S.sumAll?'ทุกสาขา':esc(BR().name))+'</h3><table class="sumtbl">';
+    h+='<div class="stats">'+stat('💰','a','ยอดสุทธิ',baht(A.net))+stat('🧾','b','จำนวนบิล',A.bills+' บิล')+stat('💵','c','เงินสด',baht(A.cash))+stat('📱','d','ออนไลน์',baht(A.online))+'</div>';
+    h+='<div class="box"><h3>📋 สรุปยอดขาย '+thDate(S.sumDate)+' · '+(S.sumAll?'ทุกสาขา':esc(BR().name))+'</h3><table class="sumtbl">';
     for(var i=0;i<A.itemOrder.length;i++){var it=A.items[A.itemOrder[i]];h+='<tr><td>'+(i+1)+'. '+esc(it.name)+'</td><td class="r">'+money(it.amt)+' ('+it.qty+')</td></tr>';}
     if(!A.itemOrder.length)h+='<tr><td class="note">ยังไม่มีรายการขาย</td><td></td></tr>';
     h+='<tr class="h"><td>เงินสด</td><td class="r">'+money(A.cash)+'</td></tr><tr class="h"><td>ออนไลน์</td><td class="r">'+money(A.online)+'</td></tr>';
@@ -2192,7 +2402,7 @@ function renderSummary(){
     h+='<tr class="big"><td>ยอดรวมสุทธิ</td><td class="r">'+money(A.net)+'</td></tr></table>';
     h+='<div class="note" style="margin-top:8px">หน้าร้าน '+money(A.ch.walkin||0)+' ('+(A.chCnt.walkin||0)+' บิล) · LINE MAN '+money(A.ch.lineman||0)+' ('+(A.chCnt.lineman||0)+' บิล)'+(A.voids?' · ยกเลิก '+A.voids+' บิล ('+money(A.voidAmt)+')':'')+'</div>';
     h+='<button class="btn sm" style="margin-top:12px" data-act="printSum">🖨️ พิมพ์สรุปยอด</button></div>';
-    h+='<div class="box"><h3>รายงานส่งห้าง (รายวันขาย)</h3><table class="sumtbl">'+
+    h+='<div class="box"><h3>🏬 รายงานส่งห้าง (รายวันขาย)</h3><table class="sumtbl">'+
       '<tr><td>Sub Total / ยอดขายก่อนลด</td><td class="r">'+money(A.sub)+'</td></tr>'+
       '<tr><td>− Discount / ส่วนลด</td><td class="r">'+money(A.disc)+'</td></tr>'+
       '<tr><td>ยอดหลังหักส่วนลด (รวม VAT)</td><td class="r">'+money(A.net)+'</td></tr>'+
@@ -2226,9 +2436,11 @@ var SHIFT=lsGet('shift_'+(CFG?CFG.branch:''),null);
 function renderShift(){
   var el=$('shiftPad');el.innerHTML='<div class="note">กำลังโหลด…</div>';
   sb('GET','pos_shifts?select=*&branch_code=eq.'+CFG.branch+'&order=opened_at.desc&limit=10').then(function(r){
-    SHIFT=null;for(var i=0;i<r.length;i++)if(r[i].status==='open'){SHIFT=r[i];break;}
+    var srv=null;for(var i=0;i<r.length;i++)if(r[i].status==='open'){srv=r[i];break;}
+    var pend=lsGet('shift_pend',null);
+    if(pend&&pend.branch_code===CFG.branch&&(!srv||pend.updated_at>srv.updated_at))SHIFT=pend.status==='open'?pend:null;else SHIFT=srv;
     lsSet('shift_'+CFG.branch,SHIFT);drawShift(r);
-  },function(){drawShift(null);});
+  },function(){drawShift(MODE==='demo'?[]:null);});
 }
 function drawShift(hist){
   var h='';
@@ -2240,6 +2452,7 @@ function drawShift(hist){
       '<label class="lbl" style="margin-top:12px">นับเงินสดจริงในลิ้นชัก</label><input class="in" id="ccash" inputmode="decimal" style="width:100%;font-size:22px;margin-bottom:8px" placeholder="0.00"><div id="shDiff"></div><input class="in" id="cnote" style="width:100%;margin-bottom:12px" placeholder="หมายเหตุ (ถ้ามี)"><button class="btn" data-act="shClose">ปิดกะ</button></div>';
   }
   h+='<div class="box"><h3>ลิ้นชักเงิน</h3><button class="btn ghost sm" data-act="drawerPin">🗄️ เปิดลิ้นชัก (ใส่ PIN)</button></div>';
+  if(MODE==='demo')hist=lsGet('shift_hist',[]);
   if(hist&&hist.length){h+='<div class="box"><h3>ประวัติกะ</h3><table class="sumtbl">';
     for(var i=0;i<hist.length;i++){var s=hist[i];if(s.status!=='closed')continue;h+='<tr><td>'+dtStr(s.opened_at).slice(0,16)+' → '+(s.closed_at?dtStr(s.closed_at).slice(11,16):'')+'<div class="note">ควรมี '+money(s.expected_cash)+' · นับได้ '+money(s.counted_cash)+'</div></td><td class="r" style="color:'+(s.diff<0?'var(--err)':s.diff>0?'var(--warn)':'var(--ok)')+';font-weight:800">'+(s.diff>0?'+':'')+money(s.diff)+'</td></tr>';}
     h+='</table></div>';}
@@ -2260,15 +2473,15 @@ function expectedCash(sh){
 }
 function shDiff(){var c=num($('ccash').value),el=$('shDiff');if(c==null||SHIFT._exp==null){el.innerHTML='';return;}var d=r2(c-SHIFT._exp);el.innerHTML='<div class="change'+(d<0?' bad':'')+'"><span>'+(d===0?'ตรงพอดี':d<0?'เงินขาด':'เงินเกิน')+'</span><span>'+baht(Math.abs(d))+'</span></div>';}
 function shiftOpen(){
-  var v=num($('ocash').value)||0;
-  var s={id:uid('s'),branch:BR().name,branch_code:CFG.branch,device:CFG.dev,opened_at:new Date().toISOString(),open_cash:v,status:'open',updated_at:new Date().toISOString()};
-  upsert('pos_shifts',[s]).then(function(){toast('เปิดกะแล้ว','ok');renderShift();},function(){toast('เปิดกะไม่สำเร็จ (ต้องออนไลน์)','err');});
+  shiftOpenWith(num($('ocash').value)||0);renderShift();
 }
 function shiftClose(){
   var c=num($('ccash').value);if(c==null){toast('ใส่ยอดเงินสดที่นับได้','err');return;}
   if(SHIFT._exp==null){toast('รอคำนวณยอดก่อน','err');return;}
   var s=ext(clone(SHIFT),{closed_at:new Date().toISOString(),counted_cash:c,expected_cash:SHIFT._exp,diff:r2(c-SHIFT._exp),note:($('cnote').value||'').trim()||null,status:'closed',updated_at:new Date().toISOString()});delete s._exp;
-  upsert('pos_shifts',[s]).then(function(){toast('ปิดกะแล้ว','ok');renderShift();},function(){toast('ปิดกะไม่สำเร็จ (ต้องออนไลน์)','err');});
+  SHIFT=null;lsSet('shift_'+CFG.branch,null);pushShift(s);S.skipShift=false;
+  var hist=lsGet('shift_hist',[]);hist.unshift(s);lsSet('shift_hist',hist.slice(0,10));
+  toast('ปิดกะแล้ว · '+(s.diff===0?'เงินตรง':(s.diff<0?'ขาด ':'เกิน ')+baht(Math.abs(s.diff))),'ok');renderShift();
 }
 
 /* ---- admin ---- */
@@ -2284,26 +2497,27 @@ function dashRange(){var t=ymd();if(S.dashRange==='today')return [t,t];if(S.dash
 function renderDash(){
   var r=dashRange();
   var h='<div class="tools"><div class="seg"><button data-act="dr" data-v="today" class="'+(S.dashRange==='today'?'on':'')+'">วันนี้</button><button data-act="dr" data-v="7d" class="'+(S.dashRange==='7d'?'on':'')+'">7 วัน</button><button data-act="dr" data-v="month" class="'+(S.dashRange==='month'?'on':'')+'">เดือนนี้</button></div>'+
-    '<div class="seg"><button data-act="dAll" data-v="0" class="'+(!S.dashAll?'on':'')+'">'+esc(BR().short)+'</button><button data-act="dAll" data-v="1" class="'+(S.dashAll?'on':'')+'">ทุกสาขา</button></div></div><div id="dBody"><div class="note">กำลังโหลด…</div></div>';
+    allSeg('dAll',S.dashAll)+'</div><div id="dBody"><div class="note">กำลังโหลด…</div></div>';
   $('aBody').innerHTML=h;
   fetchOrders(r[0],r[1],S.dashAll?null:CFG.branch).then(function(res){
     var A=aggregate(res.rows),h2='';
     if(res.offline)h2+='<div class="warnbox">ออฟไลน์ — แสดงเฉพาะข้อมูลในเครื่อง</div>';
-    h2+='<div class="stats"><div class="stat"><div class="k">ยอดสุทธิ</div><div class="v">'+baht(A.net)+'</div></div><div class="stat"><div class="k">จำนวนบิล</div><div class="v">'+A.bills+'</div></div><div class="stat"><div class="k">เฉลี่ย/บิล</div><div class="v">'+baht(A.bills?A.net/A.bills:0)+'</div></div><div class="stat"><div class="k">ส่วนลด</div><div class="v">'+baht(A.disc)+'</div></div></div>';
-    h2+='<div class="box"><h3>แยกช่องทางชำระ</h3>'+bars(A.payOrder.map(function(k){return [A.pay[k].name,A.pay[k].amt];}))+'</div>';
-    h2+='<div class="box"><h3>แยกช่องขาย</h3>'+bars([['หน้าร้าน',A.ch.walkin||0],['LINE MAN',A.ch.lineman||0]])+'</div>';
-    if(S.dashAll)h2+='<div class="box"><h3>แยกสาขา</h3>'+bars([[BRANCHES.PS.short,A.branch.PS||0],[BRANCHES.LT.short,A.branch.LT||0]])+'</div>';
+    h2+='<div class="stats">'+stat('💰','a','ยอดสุทธิ',baht(A.net))+stat('🧾','b','จำนวนบิล',A.bills+' บิล')+stat('📈','c','เฉลี่ย/บิล',baht(A.bills?A.net/A.bills:0))+stat('🏷️','d','ส่วนลด',baht(A.disc))+'</div>';
+    h2+='<div class="box"><h3>💳 แยกช่องทางชำระ</h3>'+bars(A.payOrder.map(function(k){return [A.pay[k].name,A.pay[k].amt];}))+'</div>';
+    h2+='<div class="box"><h3>🛵 แยกช่องขาย</h3>'+bars([['หน้าร้าน',A.ch.walkin||0],['LINE MAN',A.ch.lineman||0]])+'</div>';
+    if(S.dashAll)h2+='<div class="box"><h3>🏪 แยกสาขา</h3>'+bars([[BRANCHES.PS.short,A.branch.PS||0],[BRANCHES.LT.short,A.branch.LT||0]])+'</div>';
     var mx=Math.max.apply(null,A.hours)||1,hh='<div class="hours">';
     for(var i=7;i<=22;i++)hh+='<div><i style="height:'+Math.round(A.hours[i]/mx*100)+'%"></i><span>'+i+'</span></div>';
-    h2+='<div class="box"><h3>ยอดขายรายชั่วโมง</h3>'+hh+'</div></div>';
+    h2+='<div class="box"><h3>⏰ ยอดขายรายชั่วโมง</h3>'+hh+'</div></div>';
     var top=A.itemOrder.map(function(k){return A.items[k];}).sort(function(a,b){return b.qty-a.qty;}).slice(0,12);
-    h2+='<div class="box"><h3>เมนูขายดี</h3><table class="sumtbl">';
-    for(var t=0;t<top.length;t++)h2+='<tr><td>'+(t+1)+'. '+esc(top[t].name)+'</td><td class="r">×'+top[t].qty+'</td><td class="r">'+money(top[t].amt)+'</td></tr>';
+    h2+='<div class="box"><h3>🏆 เมนูขายดี</h3><table class="sumtbl">';
+    var MD=['🥇','🥈','🥉'];for(var t=0;t<top.length;t++)h2+='<tr><td>'+(MD[t]||(t+1)+'.')+' '+iconOf(top[t].name)+' '+esc(top[t].name)+'</td><td class="r">×'+top[t].qty+'</td><td class="r">'+money(top[t].amt)+'</td></tr>';
     if(!top.length)h2+='<tr><td class="note">ยังไม่มีข้อมูล</td></tr>';
     h2+='</table></div>';
     $('dBody').innerHTML=h2;
   });
 }
+function stat(ic,c,k,v){return '<div class="stat"><div class="si '+c+'">'+ic+'</div><div><div class="k">'+k+'</div><div class="v">'+v+'</div></div></div>';}
 function bars(arr){var mx=1,h='';for(var i=0;i<arr.length;i++)if(arr[i][1]>mx)mx=arr[i][1];
   for(var j=0;j<arr.length;j++)h+='<div class="bar"><div class="bl">'+esc(arr[j][0])+'</div><div class="bt"><div class="bf" style="width:'+Math.round(arr[j][1]/mx*100)+'%"></div></div><div class="bv">'+baht(arr[j][1])+'</div></div>';
   return h||'<div class="note">ยังไม่มีข้อมูล</div>';}
@@ -2311,9 +2525,9 @@ function bars(arr){var mx=1,h='';for(var i=0;i<arr.length;i++)if(arr[i][1]>mx)mx
 function menuCats(){var s={},o=[];for(var i=0;i<MENU.length;i++){var c=MENU[i].category||'อื่นๆ';if(!s[c]){s[c]=1;o.push(c);}}return o;}
 function renderMenuAdmin(){
   var cs=menuCats(),noPrice=0;for(var i=0;i<MENU.length;i++)if(MENU[i].price==null&&MENU[i].active!==false)noPrice++;
-  var h='<div class="tools"><input class="in" id="mq" placeholder="ค้นหา…" value="'+esc(S.menuQ)+'" style="flex:1;min-width:140px"><select class="in" id="mcat"><option value="">ทุกหมวด</option>';
+  var h=(S.menuLocal&&MODE==='live'?'<div class="warnbox">เมนูชุดนี้ยังอยู่ในเครื่องเท่านั้น ยังไม่ได้ขึ้นระบบ <button class="mini" data-act="menuUpload">⬆️ อัปโหลดเมนูขึ้นระบบ</button></div>':'')+'<div class="tools"><input class="in" id="mq" placeholder="ค้นหา…" value="'+esc(S.menuQ)+'" style="flex:1;min-width:140px"><select class="in" id="mcat"><option value="">ทุกหมวด</option>';
   for(var c=0;c<cs.length;c++)h+='<option'+(cs[c]===S.menuCat?' selected':'')+'>'+esc(cs[c])+'</option>';
-  h+='</select><button class="mini" data-act="mNoPrice" style="'+(S.menuNoPrice?'background:var(--warnBg);color:var(--warn)':'')+'">ยังไม่ตั้งราคา ('+noPrice+')</button><button class="mini" data-act="mAdd">+ เพิ่มเมนู</button><button class="mini" data-act="seedPrompt">📥 ดึงเมนูจากสูตร</button></div>';
+  h+='</select><button class="mini" data-act="mNoPrice" style="'+(S.menuNoPrice?'background:var(--warnBg);color:var(--warn)':'')+'">ยังไม่ตั้งราคา ('+noPrice+')</button><button class="mini" data-act="mAdd">+ เพิ่มเมนู</button>'+(MODE==='live'?'<button class="mini" data-act="seedPrompt">📥 ดึงเมนูใหม่จากสูตร</button>':'')+'</div>';
   h+='<div class="note" style="margin-bottom:8px">ราคากลาง (ใช้ทุกสาขา) — แก้ราคาแล้วกดออกจากช่องจะบันทึกทันที · ราคาแยกสาขาตั้งได้ในปุ่ม ✏️ · เมนูที่ยังไม่ตั้งราคาจะไม่แสดงในหน้าขาย</div>';
   h+='<div class="box"><div class="mrow mhd"><div>เมนู</div><div style="text-align:right">หน้าร้าน</div><div style="text-align:right">LINE MAN</div><div>ขาย</div><div class="c-so">หมด*</div><div></div></div><div id="mList"></div></div><div class="note">* หมด = ของหมดเฉพาะ'+esc(BR().short)+'</div>';
   $('aBody').innerHTML=h;
@@ -2353,6 +2567,7 @@ function editMenu(id){
   if(!it.bp)it.bp={};
   var bp=function(b,f){return it.bp[b]&&it.bp[b][f]!=null?it.bp[b][f]:'';};
   var h='<div class="mh"><h2>'+(id?'แก้ไขเมนู':'เพิ่มเมนู')+'</h2><button class="x" data-act="close">✕</button></div><div class="mb">'+
+    '<div class="imgedit"><div class="imgbox" id="e_imgbox"></div><div><div class="lbl">รูปเมนู</div><label class="mini filebtn">📷 เลือกรูป<input type="file" accept="image/*" id="e_file"></label> <button class="mini del" data-act="imgDel">ลบรูป</button><div class="note" style="margin-top:6px">ระบบตัดเป็นสี่เหลี่ยมจัตุรัสและย่อให้อัตโนมัติ · ถ้าไม่ใส่รูปจะแสดงไอคอนแทน</div></div></div>'+
     '<div class="fld"><label class="lbl">ชื่อบนใบเสร็จ *</label><input class="in" id="e_rn" value="'+esc(it.receipt_name)+'" placeholder="เช่น อเมริกาโนเย็น 22 oz"></div>'+
     '<div class="row2"><div class="fld"><label class="lbl">ชื่อการ์ดเมนู (กลุ่ม) *</label><input class="in" id="e_grp" value="'+esc(it.grp)+'" placeholder="เช่น อเมริกาโน"></div><div class="fld"><label class="lbl">แบบ (ปุ่มเลือก)</label><input class="in" id="e_var" value="'+esc(it.variant)+'" placeholder="เช่น เย็น 22 oz"></div></div>'+
     '<div class="row2"><div class="fld"><label class="lbl">หมวด</label><input class="in" id="e_cat" list="catList" value="'+esc(it.category)+'"><datalist id="catList">'+menuCats().map(function(c){return '<option value="'+esc(c)+'">';}).join('')+'</datalist></div><div class="fld"><label class="lbl">ลำดับ</label><input class="in" id="e_sort" inputmode="numeric" value="'+(it.sort||0)+'"></div></div>'+
@@ -2365,6 +2580,7 @@ function editMenu(id){
     '<div class="fld"><label class="lbl">ผูกกับสูตรใน Stock (recipe_id)</label><input class="in" id="e_rid" list="ridList" value="'+esc(it.recipe_id||'')+'" placeholder="ว่างได้"><datalist id="ridList">'+RECIPES.map(function(r){return '<option value="'+esc(r.id)+'">'+esc(r.name+' '+(r.size||''))+'</option>';}).join('')+'</datalist></div>'+
     '<button class="btn" data-act="mSave" data-v="'+esc(it.id)+'">บันทึก</button>'+(id?'<button class="btn ghost sm" style="margin-top:8px" data-act="mDel" data-v="'+esc(it.id)+'">ปิดการขายเมนูนี้</button>':'')+'</div>';
   EDIT_ITEM=it;$('modal').className='';$('modal').innerHTML=h;showModal();
+  drawImgBox();$('e_file').onchange=function(){onImgPick(this.files&&this.files[0]);this.value='';};
 }
 var EDIT_ITEM=null;
 function saveEdit(){
@@ -2396,7 +2612,7 @@ function parseRecipe(r,idx){
 }
 function seedFromRecipes(){
   toast('กำลังดึงสูตรจาก Stock…');
-  sb('GET','recipes?select=id,name,size,category,hide_from_sales,sort_order&order=sort_order.asc,id.asc').then(function(rs){
+  sb('GET','recipes?select=id,name,size,category,hide_from_sales,sort_order&order=sort_order.asc,id.asc',null,null,{anon:true}).then(function(rs){
     RECIPES=rs||[];lsSet('recipes',RECIPES);
     var have={},add=[];for(var i=0;i<MENU.length;i++){have[MENU[i].id]=1;if(MENU[i].recipe_id)have['m_'+MENU[i].recipe_id]=1;}
     for(var j=0;j<RECIPES.length;j++){var it=parseRecipe(RECIPES[j],j);if(!have[it.id])add.push(it);}
@@ -2406,7 +2622,7 @@ function seedFromRecipes(){
     return upsert('pos_menu',add).then(function(){MENU=MENU.concat(add);lsSet('menu',MENU);toast('เพิ่มเมนู '+add.length+' รายการ','ok');renderAll();if(S.view==='admin')renderAdmin();});
   }).catch(function(e){toast('ดึงสูตรไม่สำเร็จ: '+e.message,'err');});
 }
-function loadRecipesQuiet(){sb('GET','recipes?select=id,name,size,category&order=sort_order.asc,id.asc').then(function(r){RECIPES=r||[];lsSet('recipes',RECIPES);},function(){});}
+function loadRecipesQuiet(){sb('GET','recipes?select=id,name,size,category&order=sort_order.asc,id.asc',null,null,{anon:true}).then(function(r){RECIPES=r||[];lsSet('recipes',RECIPES);},function(){});}
 
 /* promos */
 function renderPromoAdmin(){
@@ -2433,7 +2649,8 @@ function savePromo(p,cb){
 
 /* settings */
 function renderSettings(){
-  var C=SET.company,h='<div class="box"><h3>บริษัท (หัวใบเสร็จ)</h3>'+
+  var acc='<div class="box"><h3>👤 บัญชี</h3><div class="note" style="margin-bottom:10px">'+(MODE==='demo'?'โหมดทดลอง — ข้อมูลอยู่ในเครื่องนี้เท่านั้น':esc((PROFILE&&PROFILE.email)||'')+' · '+(isOwner()?'เจ้าของ (เห็นทุกสาขา)':'พนักงาน '+esc(BR().name)))+'</div>'+(MODE==='demo'?'<button class="mini" data-act="exitDemo">ออกจากโหมดทดลอง</button>':'<button class="mini" data-act="logout">ออกจากระบบ</button>')+'</div>';
+  var C=SET.company,h=acc+'<div class="box"><h3>บริษัท (หัวใบเสร็จ)</h3>'+
     '<div class="fld"><label class="lbl">ชื่อบริษัท</label><input class="in" id="s_cn" value="'+esc(C.name)+'"></div>'+
     '<div class="row2"><div class="fld"><label class="lbl">เลขผู้เสียภาษี</label><input class="in" id="s_tax" value="'+esc(C.tax_id)+'"></div><div class="fld"><label class="lbl">ชื่อพนักงานบนใบเสร็จ</label><input class="in" id="s_staff" value="'+esc(C.staff)+'"></div></div>'+
     '<div class="fld"><label class="lbl">ข้อความท้ายใบเสร็จ</label><input class="in" id="s_foot" value="'+esc(C.footer)+'"></div></div>';
@@ -2442,16 +2659,21 @@ function renderSettings(){
       '<div class="row2"><div class="fld"><label class="lbl">สาขาที่ (ตามทะเบียนภาษี)</label><input class="in" id="s_'+b+'_tb" value="'+esc(B.tax_branch)+'" placeholder="เช่น 00005"></div><div class="fld"><label class="lbl">เลขพร้อมเพย์ (เบอร์/เลขนิติบุคคล)</label><input class="in" id="s_'+b+'_pp" inputmode="numeric" value="'+esc(B.promptpay)+'"></div></div>'+
       '<div class="fld"><label class="lbl">ชื่อสาขาบนใบเสร็จ</label><input class="in" id="s_'+b+'_ti" value="'+esc(B.title)+'"></div>'+
       '<div class="fld"><label class="lbl">เลขทะเบียนเครื่อง POS (ถ้าได้รับอนุมัติแล้ว)</label><input class="in" id="s_'+b+'_reg" value="'+esc(B.pos_reg)+'"></div></div>';}
-  h+='<div class="box"><h3>ช่องทางชำระเงิน</h3>';
+  h+='<div class="box"><h3>💳 ช่องทางชำระเงิน</h3><div class="note" style="margin-bottom:6px">เปิด/ปิด แก้ชื่อ หรือเพิ่มช่องทางใหม่ได้ · <b>บันทึกอัตโนมัติ</b></div>';
   for(var i=0;i<SET.pay.length;i++){var m=SET.pay[i];
-    h+='<div class="adl"><div style="flex:1;margin-right:10px"><input class="in" style="width:100%" id="s_pay_'+esc(m.id)+'" value="'+esc(m.name)+'"'+(m.id==='cash'||m.id==='lineman'?' readonly':'')+'><div class="ap">'+(m.type==='cash'?'เงินสด (เปิดลิ้นชัก)':m.type==='qr'?'แสดง QR พร้อมเพย์':m.type==='lineman'?'ใช้อัตโนมัติเมื่อขายช่อง LINE MAN':'ออนไลน์')+'</div></div><button class="tg'+(m.active?' on':'')+'" data-act="payTg" data-v="'+esc(m.id)+'"'+(m.id==='cash'||m.id==='lineman'?' disabled':'')+'></button></div>';}
-  h+='</div>';
+    h+='<div class="adl"><div style="flex:1;margin-right:10px"><input class="in" style="width:100%" id="s_pay_'+esc(m.id)+'" data-pay="'+esc(m.id)+'" value="'+esc(m.name)+'"'+(m.id==='cash'||m.id==='lineman'?' readonly':'')+'><div class="ap">'+(m.type==='cash'?'เงินสด (เปิดลิ้นชัก)':m.type==='qr'?'แสดง QR พร้อมเพย์':m.type==='lineman'?'ใช้อัตโนมัติเมื่อขายช่อง LINE MAN':'ออนไลน์')+'</div></div><button class="tg'+(m.active?' on':'')+'" data-act="payTg" data-v="'+esc(m.id)+'"'+(m.id==='cash'||m.id==='lineman'?' disabled':'')+'></button>'+(m.custom?'<button class="mini del" style="margin-left:8px" data-act="payDel" data-v="'+esc(m.id)+'">ลบ</button>':'')+'</div>';}
+  h+='<button class="mini" style="margin-top:10px" data-act="payAdd">+ เพิ่มช่องทางชำระเงิน</button></div>';
+  var sw=SET.sweet||[];
+  h+='<div class="box"><h3>🍯 ระดับความหวาน</h3><div class="note" style="margin-bottom:8px">แสดงให้เลือกตอนสั่งเครื่องดื่ม (เลือกได้ 1 ระดับ) · พิมพ์บนใบเสร็จใต้ชื่อเมนู · <b>แก้แล้วบันทึกอัตโนมัติ</b></div><div id="swList">';
+  for(var w=0;w<sw.length;w++)h+='<div style="display:flex;gap:8px;margin-bottom:8px"><input class="in" style="flex:1" data-sw="1" value="'+esc(sw[w])+'"><button class="mini del" data-act="swDel" data-i="'+w+'">✕</button></div>';
+  h+='</div><button class="mini" data-act="swAdd">+ เพิ่มระดับ</button></div>';
+  h+='<div class="box"><h3>หน้าขาย</h3><div class="adl"><div><div class="an">ซ่อนเมนูที่ยังไม่ตั้งราคา</div><div class="ap" style="color:var(--muted)">ปิดไว้ = แสดงเป็นการ์ดสีเทา (กดขายไม่ได้)</div></div><button class="tg'+(SET.hideNoPrice?' on':'')+'" data-act="hnpTg"></button></div></div>';
   h+='<div class="box"><h3>การพิมพ์</h3><div class="adl"><div><div class="an">พิมพ์ใบเสร็จอัตโนมัติหลังรับเงิน</div></div><button class="tg'+(SET.autoprint?' on':'')+'" data-act="apTg"></button></div>'+
     '<div class="fld" style="margin-top:10px"><label class="lbl">การตัดกระดาษ</label><select class="in" id="s_cut"><option value="partial">ตัดบางส่วน</option><option value="full"'+(SET.cut==='full'?' selected':'')+'>ตัดขาด</option><option value="nocut"'+(SET.cut==='nocut'?' selected':'')+'>ไม่ตัด</option></select></div>'+
     '<button class="mini" data-act="testPrint">🖨️ พิมพ์ทดสอบ</button></div>';
   h+='<div class="box"><h3>PIN หลังบ้าน / ยกเลิกบิล</h3><input class="in" id="s_pin" inputmode="numeric" maxlength="4" placeholder="PIN ใหม่ 4 หลัก (ว่าง = ไม่เปลี่ยน)" style="width:100%"></div>';
   h+='<button class="btn" data-act="setSave">💾 บันทึกการตั้งค่า</button>';
-  h+='<div class="box" style="margin-top:12px"><h3>เครื่องนี้</h3><div class="note" style="margin-bottom:10px">'+esc(BR().name)+' · POS #'+CFG.dev+' · v'+APP_VER+' · รอส่ง '+OUTBOX.length+' บิล</div><button class="mini" data-act="setupAgain">เปลี่ยนสาขา / เลขเครื่อง</button></div>';
+  h+='<div class="box" style="margin-top:12px"><h3>เครื่องนี้</h3><div class="note" style="margin-bottom:10px">'+esc(BR().name)+' · POS #'+CFG.dev+' · v'+APP_VER+' · รอส่ง '+OUTBOX.length+' บิล</div>'+(isOwner()?'<button class="mini" data-act="setupAgain">เปลี่ยนสาขา</button>':'<span class="note">เลขเครื่องระบบตั้งให้อัตโนมัติ</span>')+'</div>';
   $('aBody').innerHTML=h;
 }
 function saveSettings(){
@@ -2459,6 +2681,7 @@ function saveSettings(){
   for(var b in BRANCHES){var B=SET.branches[b]||(SET.branches[b]={});B.tax_branch=$('s_'+b+'_tb').value.trim();B.promptpay=$('s_'+b+'_pp').value.replace(/[^0-9]/g,'');B.title=$('s_'+b+'_ti').value.trim();B.pos_reg=$('s_'+b+'_reg').value.trim();}
   for(var i=0;i<SET.pay.length;i++){var el=$('s_pay_'+SET.pay[i].id);if(el&&el.value.trim())SET.pay[i].name=el.value.trim();}
   SET.cut=$('s_cut').value;
+  SET.sweet=[];var swi=document.querySelectorAll('[data-sw]');for(var q=0;q<swi.length;q++){var tv=swi[q].value.trim();if(tv)SET.sweet.push(tv);}
   var pin=$('s_pin').value.trim();if(pin){if(!/^\d{4}$/.test(pin)){toast('PIN ต้องเป็นตัวเลข 4 หลัก','err');return;}SET.pin=pin;}
   pushSettings();
 }
@@ -2469,17 +2692,215 @@ function pushSettings(){
 
 /* ---------------- setup ---------------- */
 function showSetup(){
-  var cur=CFG||{branch:'',dev:1};
-  var h='<div style="max-width:440px;margin:0 auto"><div style="text-align:center;margin-bottom:18px"><img src="'+LOGO+'" style="width:90px;background:#fff;border-radius:16px;padding:6px"><h1 style="font-size:22px;margin-top:10px">ตั้งค่าเครื่องนี้</h1><div class="note">ทำครั้งเดียวต่อเครื่อง</div></div>'+
-    '<div class="box"><div class="sec" style="margin-top:0">สาขา</div><div class="opts">';
-  for(var b in BRANCHES)h+='<button class="opt'+(cur.branch===b?' on':'')+'" style="flex:1" data-act="suBr" data-v="'+b+'">'+esc(BRANCHES[b].name)+'</button>';
-  h+='</div><div class="sec">เลขเครื่อง (ห้ามซ้ำกับเครื่องอื่นในสาขาเดียวกัน)</div><div class="opts">';
-  for(var d=1;d<=6;d++)h+='<button class="opt'+(cur.dev===d?' on':'')+'" style="min-width:56px" data-act="suDev" data-v="'+d+'">POS #'+d+'</button>';
-  h+='</div><div class="note" style="margin-bottom:12px">เช่น iPad = POS #1 · iPhone = POS #2 · เลขเครื่องใช้เป็นส่วนหนึ่งของเลขบิล</div><button class="btn" data-act="suOk">เริ่มใช้งาน</button></div></div>';
-  SU={branch:cur.branch,dev:cur.dev};
+  // ใช้เฉพาะ: บัญชีเจ้าของ (เลือกสาขาได้) และโหมดทดลอง · บัญชีสาขาเข้าหน้าหลักทันที
+  var h='<div class="auth"><div class="lg"><img src="'+LOGO+'"></div><h1>เลือกสาขา</h1><div class="sub">'+(MODE==='demo'?'โหมดทดลอง':esc((PROFILE&&PROFILE.email)||''))+'</div><div class="box"><div class="opts" style="flex-direction:column;margin:0">';
+  for(var b in BRANCHES)h+='<button class="opt big" style="width:100%;font-size:17px;padding:16px" data-act="suBr" data-v="'+b+'">🏪 '+esc(BRANCHES[b].name)+'</button>';
+  h+='</div><div class="err" id="suErr" style="color:var(--err);font-weight:700;text-align:center;margin-top:10px"></div></div>'+
+    '<div style="text-align:center">'+(MODE==='live'?'<button class="mini" data-act="logout">ออกจากระบบ</button>':'<button class="mini" data-act="exitDemo">ออกจากโหมดทดลอง</button>')+'</div></div>';
   $('setup').innerHTML=h;$('setup').style.display='block';
 }
-var SU=null;
+function devId(){var d=null;try{d=localStorage.getItem('ctpos_devid');if(!d){d=uid('d');localStorage.setItem('ctpos_devid',d);}}catch(e){d='d0';}return d;}
+function claimDevice(branch){
+  var id=devId()+'_'+branch;
+  return sb('GET','pos_devices?select=*&id=eq.'+encodeURIComponent(id)).then(function(r){
+    if(r&&r.length)return r[0].dev;
+    return sb('GET','pos_devices?select=dev&branch_code=eq.'+branch+'&order=dev.desc&limit=1').then(function(r2){
+      var n=((r2&&r2[0]&&r2[0].dev)||0)+1;
+      var ua=navigator.userAgent||'',lbl=/iPad/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1)?'iPad':/iPhone/.test(ua)?'iPhone':/Android/.test(ua)?'Android':'อื่นๆ';
+      return upsert('pos_devices',[{id:id,branch_code:branch,dev:n,label:lbl,email:(SESSION&&SESSION.email)||null,created_at:new Date().toISOString()}]).then(function(){return n;});
+    });
+  });
+}
+function enterBranch(b){
+  if(CFG&&CFG.branch!==b){S.cart=[];S.ch='walkin';S.skipShift=false;}
+  if(MODE==='demo'){CFG={branch:b,dev:1};lsSet('cfg',CFG);$('setup').style.display='none';SHIFT=null;S.view='home';boot();return;}
+  if($('suErr'))$('suErr').textContent='กำลังลงทะเบียนเครื่อง…';
+  claimDevice(b).then(function(dev){
+    CFG={branch:b,dev:dev};lsSet('cfg',CFG);$('setup').style.display='none';SHIFT=null;S.view='home';boot();
+    toast('เครื่องนี้คือ POS #'+dev+' · '+BRANCHES[b].name,'ok');
+  },function(e){
+    var msg='ลงทะเบียนเครื่องไม่สำเร็จ: '+(/Failed to fetch|Load failed/i.test(e.message)?'ไม่มีอินเทอร์เน็ต':e.message);
+    if($('suErr'))$('suErr').textContent=msg;else{showSetup();$('suErr').textContent=msg;}
+  });
+}
+function startApp(){
+  if(!MODE||(MODE==='live'&&!SESSION)){showLogin();return;}
+  var lockBr=MODE==='live'&&PROFILE&&PROFILE.role!=='owner'&&PROFILE.branch;
+  if(CFG&&CFG.branch&&CFG.dev&&(!lockBr||CFG.branch===lockBr)){boot();return;}
+  if(lockBr){$('setup').innerHTML='<div class="auth"><div class="lg"><img src="'+LOGO+'"></div><h1>'+esc(BRANCHES[lockBr].name)+'</h1><div class="sub">กำลังเตรียมเครื่อง…</div><div class="err" id="suErr" style="text-align:center;color:var(--err);font-weight:700"></div><div style="text-align:center;margin-top:10px"><button class="mini" data-act="retryEnter">ลองใหม่</button> <button class="mini" data-act="logout">ออกจากระบบ</button></div></div>';$('setup').style.display='block';enterBranch(lockBr);return;}
+  showSetup();
+}
+/* ---------------- auth (Supabase email login) ---------------- */
+function tok(){return (MODE==='live'&&SESSION&&SESSION.access_token)?SESSION.access_token:SB_KEY;}
+function saveSession(j){SESSION={access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Date.now()+(j.expires_in||3600)*1000,email:String((j.user&&j.user.email)||(SESSION&&SESSION.email)||'').toLowerCase()};lsSet('session',SESSION);}
+var _refreshing=null;
+function authFresh(){
+  if(MODE!=='live'||!SESSION)return Promise.resolve();
+  if(Date.now()<SESSION.expires_at-90000)return Promise.resolve();
+  if(_refreshing)return _refreshing;
+  _refreshing=fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'apikey':SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:SESSION.refresh_token})})
+    .then(function(r){return r.json().then(function(j){if(!r.ok){var e=new Error('auth '+r.status+' '+(j.error_description||j.msg||''));e.auth=true;throw e;}saveSession(j);});})
+    .then(function(){_refreshing=null;},function(e){_refreshing=null;if(e.auth){toast('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่','err');showLogin();}throw e;});
+  return _refreshing;
+}
+function doLoginReq(email,pw){
+  return fetch(SB_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'apikey':SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw})})
+    .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error_description||j.msg||j.error||('HTTP '+r.status));saveSession(j);});});
+}
+function loadProfile(){
+  return sb('GET','pos_users?select=*&email=eq.'+encodeURIComponent(SESSION.email)).then(function(r){
+    if(!r||!r.length){var e=new Error('noprofile');e.noprofile=true;throw e;}
+    PROFILE={email:r[0].email,branch:r[0].branch||null,role:r[0].role||'staff',name:r[0].name||''};lsSet('profile',PROFILE);return PROFILE;
+  });
+}
+function isOwner(){return MODE==='demo'||(PROFILE&&PROFILE.role==='owner');}
+function canAll(){return isOwner();}
+function allSeg(act,on){return canAll()?'<div class="seg"><button data-act="'+act+'" data-v="0" class="'+(!on?'on':'')+'">'+esc(BR().short)+'</button><button data-act="'+act+'" data-v="1" class="'+(on?'on':'')+'">ทุกสาขา</button></div>':'';}
+function showLogin(){
+  var h='<div class="auth"><div class="lg"><img src="'+LOGO+'"></div><h1>Coffee Today POS</h1><div class="sub">เข้าสู่ระบบด้วยอีเมลของสาขา</div>'+
+    '<input class="in" id="lgEmail" type="email" autocomplete="username" placeholder="อีเมล" value="'+esc((SESSION&&SESSION.email)||'')+'">'+
+    '<input class="in" id="lgPw" type="password" autocomplete="current-password" placeholder="รหัสผ่าน">'+
+    '<div class="err" id="lgErr"></div><button class="btn" data-act="login" id="lgBtn">เข้าสู่ระบบ</button>'+
+    '<div class="orline">หรือ</div><button class="btn ghost" data-act="demo">👀 ลองใช้แบบทดลอง (ไม่บันทึกขึ้นระบบ)</button>'+
+    '<div class="note" style="text-align:center;margin-top:14px">โหมดทดลองใช้ข้อมูลในเครื่องนี้เท่านั้น ไว้ดูหน้าตาและลองขายก่อนติดตั้งจริง</div></div>';
+  $('setup').innerHTML=h;$('setup').style.display='block';
+  $('lgPw').onkeydown=function(e){if(e.keyCode===13)doLogin();};
+}
+function doLogin(){
+  var em=$('lgEmail').value.trim().toLowerCase(),pw=$('lgPw').value;
+  if(!em||!pw){$('lgErr').textContent='ใส่อีเมลและรหัสผ่าน';return;}
+  $('lgBtn').disabled=true;$('lgBtn').textContent='กำลังเข้าสู่ระบบ…';$('lgErr').textContent='';
+  try{localStorage.setItem('ctpos_mode','live');}catch(e){}
+  MODE='live';
+  doLoginReq(em,pw).then(loadProfile).then(function(pr){
+    startApp();
+  }).catch(function(e){
+    $('lgBtn').disabled=false;$('lgBtn').textContent='เข้าสู่ระบบ';
+    $('lgErr').textContent=e.noprofile?'อีเมลนี้ยังไม่ได้ผูกกับสาขา — เพิ่มในตาราง pos_users ก่อน':/Invalid login/i.test(e.message)?'อีเมลหรือรหัสผ่านไม่ถูกต้อง':/Failed to fetch|NetworkError|Load failed/i.test(e.message)?'เชื่อมต่ออินเทอร์เน็ตไม่ได้':('เข้าสู่ระบบไม่สำเร็จ: '+e.message);
+  });
+}
+function logout(){
+  if(OUTBOX.length&&!confirm('ยังมี '+OUTBOX.length+' บิลที่ยังไม่ได้ส่งขึ้นระบบ\nบิลจะยังอยู่ในเครื่องและส่งต่อเมื่อเข้าสู่ระบบใหม่ ต้องการออกจากระบบ?'))return;
+  SESSION=null;PROFILE=null;lsSet('session',null);lsSet('profile',null);closeModal();showLogin();
+}
+function startDemo(){
+  try{localStorage.setItem('ctpos_mode','demo');}catch(e){}
+  location.reload();
+}
+function exitDemo(){
+  if(!confirm('ออกจากโหมดทดลอง? ข้อมูลทดลองในเครื่องจะถูกลบ'))return;
+  try{var ks=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('ctposdemo_')===0)ks.push(k);}for(var j=0;j<ks.length;j++)localStorage.removeItem(ks[j]);localStorage.removeItem('ctpos_mode');}catch(e){}
+  location.reload();
+}
+
+/* ---------------- home ---------------- */
+function renderHome(){
+  var st=MODE==='demo'?'ok':(S.online?'ok':'err');
+  var h='<div class="home">';
+  if(MODE==='demo')h+='<div class="warnbox">👀 โหมดทดลอง — ข้อมูลอยู่ในเครื่องนี้เท่านั้น ไม่ส่งขึ้นระบบ ลองขาย ตั้งราคา ใส่รูปเมนูได้ตามสบาย</div>';
+  h+='<button class="hcard main" data-act="view" data-v="sell"><div class="note">POS: POS #'+CFG.dev+'</div><div class="hi">🏪<span class="dot '+st+'"></span></div><div class="ht">หน้าขาย</div><div class="hs">Coffee Today '+esc(BR().name)+(OUTBOX.length?' · <b style="color:var(--warn)">รอส่ง '+OUTBOX.length+' บิล</b>':'')+'</div></button>';
+  h+='<div class="hgrid">'+
+    '<button class="hcard" data-act="view" data-v="summary"><div class="hi" style="background:var(--goldL)">📊</div><div><div class="ht">สรุปยอดวันนี้</div><div class="hs" id="homeToday">…</div></div></button>'+
+    '<button class="hcard" data-act="view" data-v="bills"><div class="hi" style="background:#EAF4FF">🧾</div><div><div class="ht">บิลขาย</div><div class="hs">ดู · พิมพ์ซ้ำ · ยกเลิก</div></div></button>'+
+    '<button class="hcard" data-act="view" data-v="shift"><div class="hi" style="background:var(--okBg)">💵</div><div><div class="ht">กะ & ลิ้นชัก</div><div class="hs">'+(SHIFT?'กะเปิดอยู่':'ยังไม่เปิดกะ')+'</div></div></button>'+
+    '<button class="hcard" data-act="view" data-v="admin"><div class="hi" style="background:#F4EEFF">⚙️</div><div><div class="ht">หลังบ้าน</div><div class="hs">เมนู · ราคา · โปร · ตั้งค่า</div></div></button>'+
+    '</div>';
+  var last=lsGet('last_sync',null);
+  h+='<div class="hfoot">'+(MODE==='demo'?'โหมดทดลอง':('👤 '+esc((PROFILE&&PROFILE.email)||'')+(isOwner()?' · เจ้าของ':'')))+'<br>'+(last?'ซิงค์ล่าสุด '+dtStr(last)+' · ':'')+'v'+APP_VER+'<br>'+
+    (isOwner()?'<button class="mini" data-act="setupAgain" style="margin-right:6px">🔄 เปลี่ยนสาขา</button>':'')+
+    (MODE==='demo'?'<button class="mini" data-act="exitDemo">ออกจากโหมดทดลอง</button>':'<button class="mini" data-act="logout">ออกจากระบบ</button>')+
+    (!isOwner()?'<div class="note" style="margin-top:6px">บัญชีนี้ใช้ได้เฉพาะ'+esc(BR().name)+' · ใช้สาขาอื่นให้ออกจากระบบแล้วเข้าด้วยอีเมลของสาขานั้น</div>':'')+'</div></div>';
+  $('homePad').innerHTML=h;
+  fetchOrders(ymd(),ymd(),CFG.branch).then(function(res){var A=aggregate(res.rows);if($('homeToday'))$('homeToday').textContent=baht(A.net)+' · '+A.bills+' บิล';});
+}
+
+/* ---------------- open shift pad (แบบ POSPOS) ---------------- */
+var SPAD='';
+function checkShiftPrompt(){if(S.view==='sell'&&!SHIFT&&!S.skipShift)openShiftPad();}
+function openShiftPad(){
+  SPAD='';
+  var h='<div class="mh"><h2>🕘 เปิดการขาย · POS #'+CFG.dev+'</h2><button class="x" data-act="close">✕</button></div><div class="mb"><div class="spad"><div class="disp"><span>ระบุเงินในลิ้นชัก</span><b id="spDisp">0</b></div><div class="keys">';
+  var ks=['7','8','9','4','5','6','1','2','3','.','0','⌫'];
+  for(var i=0;i<ks.length;i++)h+='<button data-act="spk" data-v="'+ks[i]+'">'+ks[i]+'</button>';
+  h+='</div></div><div class="btns"><button class="btn ghost sm" data-act="spSkip">ข้ามกะการขาย</button><button class="btn sm" data-act="spOk">ตกลง</button></div></div>';
+  $('modal').innerHTML=h;showModal();
+}
+function spKey(k){
+  if(k==='⌫')SPAD=SPAD.slice(0,-1);
+  else if(k==='.'){if(SPAD.indexOf('.')<0)SPAD=(SPAD||'0')+'.';}
+  else if(SPAD.length<9){if(SPAD==='0')SPAD='';SPAD+=k;}
+  $('spDisp').textContent=SPAD||'0';
+}
+function pushShift(s){
+  lsSet('shift_pend',s);
+  return upsert('pos_shifts',[s]).then(function(){var p=lsGet('shift_pend',null);if(p&&p.id===s.id&&p.updated_at===s.updated_at)lsSet('shift_pend',null);},function(){});
+}
+function shiftOpenWith(v){
+  var now=new Date().toISOString();
+  SHIFT={id:uid('s'),branch:BR().name,branch_code:CFG.branch,device:CFG.dev,opened_at:now,open_cash:r2(v||0),status:'open',updated_at:now};
+  lsSet('shift_'+CFG.branch,SHIFT);pushShift(SHIFT);toast('เปิดกะแล้ว · เงินในลิ้นชัก '+baht(SHIFT.open_cash),'ok');
+}
+
+/* ---------------- hold bills (พักบิล) ---------------- */
+var HELD=lsGet('held',[]);
+function updRail(){var b=$('railHeld');if(b){b.textContent=HELD.length;b.style.display=HELD.length?'flex':'none';}}
+function openHold(){
+  var h='<div class="mh"><h2>⏸️ พักบิล</h2><button class="x" data-act="close">✕</button></div><div class="mb">';
+  if(S.cart.length){
+    h+='<div class="box" style="background:var(--soft)"><h3>พักบิลปัจจุบัน · '+baht(cartSub())+' ('+cartCount()+' รายการ)</h3><input class="in" id="hdLbl" style="width:100%;margin-bottom:10px" placeholder="ชื่อลูกค้า / โต๊ะ / หมายเหตุ (ไม่บังคับ)"><button class="btn sm" data-act="holdNow">⏸️ พักบิลนี้</button></div>';
+  }
+  h+='<div class="sec">บิลที่พักไว้ ('+HELD.length+')</div>';
+  if(!HELD.length)h+='<div class="empty" style="padding:20px">ยังไม่มีบิลที่พักไว้</div>';
+  for(var i=HELD.length-1;i>=0;i--){var x=HELD[i],t=0,c=0;for(var j=0;j<x.cart.length;j++){t+=lineTotal(x.cart[j]);c+=x.cart[j].qty;}
+    h+='<div class="held"><div class="hl"><b>'+esc(x.label||'บิลพัก #'+(i+1))+(x.ch==='lineman'?' <span class="tag lm">LINE MAN</span>':'')+'</b><span>'+hm(new Date(x.at).toISOString())+' · '+c+' รายการ · '+baht(t)+'</span></div><button class="mini" data-act="holdBack" data-i="'+i+'">เรียกคืน</button><button class="mini del" data-act="holdDel" data-i="'+i+'">ลบ</button></div>';}
+  h+='</div>';$('modal').innerHTML=h;showModal();
+}
+function holdNow(lbl){
+  if(!S.cart.length)return;
+  HELD.push({id:uid('h'),at:Date.now(),ch:S.ch,cart:clone(S.cart),label:(lbl||'').trim()});lsSet('held',HELD);
+  S.cart=[];renderCart();updRail();
+}
+function holdBack(i){
+  var x=HELD[i];if(!x)return;
+  if(S.cart.length){if(!confirm('ตะกร้ามีรายการอยู่ — พักบิลปัจจุบันไว้ก่อน แล้วเรียกบิลนี้คืน?'))return;holdNow('');i=HELD.indexOf(x);}
+  HELD.splice(i,1);lsSet('held',HELD);
+  S.ch=x.ch||'walkin';S.cart=x.cart;renderHeader();renderSell();updRail();closeModal();toast('เรียกคืนบิล '+(x.label||''),'ok');
+}
+
+/* ---------------- menu image ---------------- */
+function resizeImg(file,cb){
+  var fr=new FileReader();
+  fr.onload=function(){var im=new Image();im.onload=function(){
+    var Z=480,c=document.createElement('canvas');c.width=Z;c.height=Z;var x=c.getContext('2d');var s=Math.min(im.width,im.height);
+    x.fillStyle='#fff';x.fillRect(0,0,Z,Z);x.drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,Z,Z);cb(c);};
+    im.onerror=function(){toast('เปิดรูปไม่ได้','err');};im.src=fr.result;};
+  fr.readAsDataURL(file);
+}
+function sbUpload(path,blob){
+  return authFresh().then(function(){
+    return fetch(SB_URL+'/storage/v1/object/pos-menu/'+path,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+tok(),'x-upsert':'true','Content-Type':'image/jpeg','cache-control':'86400'},body:blob});
+  }).then(function(r){if(!r.ok)return r.text().then(function(t){throw new Error(r.status+' '+t.slice(0,120));});return SB_URL+'/storage/v1/object/public/pos-menu/'+path+'?v='+Date.now();});
+}
+function onImgPick(file){
+  if(!file)return;var it=EDIT_ITEM;
+  $('e_imgbox').innerHTML='<span style="font-size:14px">กำลังย่อรูป…</span>';
+  resizeImg(file,function(c){
+    if(MODE==='demo'){it.img=c.toDataURL('image/jpeg',0.8);drawImgBox();return;}
+    $('e_imgbox').innerHTML='<span style="font-size:14px">กำลังอัปโหลด…</span>';
+    c.toBlob(function(b){
+      sbUpload(it.id.replace(/[^a-zA-Z0-9_-]/g,'_')+'.jpg',b).then(function(url){it.img=url;drawImgBox();toast('อัปโหลดรูปแล้ว กด "บันทึก" เพื่อใช้รูปนี้','ok');},
+        function(e){drawImgBox();toast('อัปโหลดรูปไม่สำเร็จ: '+e.message,'err');});
+    },'image/jpeg',0.82);
+  });
+}
+function drawImgBox(){var it=EDIT_ITEM,b=$('e_imgbox');if(!b)return;b.innerHTML=it.img?'<img src="'+esc(it.img)+'">':iconOf((it.grp||'')+' '+(it.receipt_name||''));}
+function uploadMenu(){
+  adminGate(function(){
+    if(!confirm('อัปโหลดเมนู '+MENU.length+' รายการขึ้นระบบ?'))return;
+    var now=new Date().toISOString(),rows=MENU.map(function(m){var r=clone(m);r.updated_at=now;if(r.img&&r.img.indexOf('data:')===0)r.img=null;return r;});
+    upsert('pos_menu',rows).then(function(){S.menuLocal=false;toast('อัปโหลดเมนูขึ้นระบบแล้ว','ok');if(S.view==='admin')renderAdmin();},function(e){toast('อัปโหลดไม่สำเร็จ: '+e.message,'err');});
+  });
+}
 
 /* ---------------- events ---------------- */
 document.addEventListener('click',function(e){
@@ -2501,7 +2922,7 @@ document.addEventListener('click',function(e){
     case 'pkSel':PK.sel=v;renderPicker();break;
     case 'pkAd':PK.ad[v]=Math.max(0,(PK.ad[v]||0)+d);renderPicker();break;
     case 'pkQty':PK.qty=Math.max(1,PK.qty+d);renderPicker();break;
-    case 'pkNote':var nt=(' '+PK.note+' ');PK.note=(nt.indexOf(' '+v+' ')>=0?nt.replace(' '+v+' ',' '):nt+v).replace(/\s+/g,' ').trim();renderPicker();break;
+    case 'pkSweet':PK.sweet=PK.sweet===v?'':v;renderPicker();break;
     case 'pkOk':pickerOk();break;
     case 'openPay':openPay();break;
     case 'pDisc':P.disc=!v?null:(v==='__custom'?{id:'__custom',type:P.custom.type,value:num(P.custom.value)||0}:promoById(v));renderPay();break;
@@ -2542,14 +2963,33 @@ document.addEventListener('click',function(e){
     case 'prEdit':editPromo(v);break;
     case 'prSave':var pp=EDIT_ITEM;pp.name=$('p_n').value.trim();pp.type=$('p_t').value;pp.value=num($('p_v').value)||0;if(!pp.name){toast('ใส่ชื่อโปร','err');break;}savePromo(pp,function(){closeModal();renderPromoAdmin();});break;
     case 'prAct':var pr=promoById(v);pr.active=pr.active===false;savePromo(pr,renderPromoAdmin);break;
-    case 'payTg':for(var k=0;k<SET.pay.length;k++)if(SET.pay[k].id===v){SET.pay[k].active=!SET.pay[k].active;t.classList.toggle('on',SET.pay[k].active);}break;
+    case 'payTg':for(var k=0;k<SET.pay.length;k++)if(SET.pay[k].id===v){SET.pay[k].active=!SET.pay[k].active;t.classList.toggle('on',SET.pay[k].active);}pushSettings();break;
+    case 'payAdd':$('modal').className='';$('modal').innerHTML='<div class="mh"><h2>💳 เพิ่มช่องทางชำระเงิน</h2><button class="x" data-act="close">✕</button></div><div class="mb"><div class="fld"><label class="lbl">ชื่อช่องทาง (พิมพ์บนใบเสร็จและสรุปยอด)</label><input class="in" id="pa_n" placeholder="เช่น Grab, ShopeeFood, บัตรเครดิต, คนละครึ่ง"></div><div class="fld"><label class="lbl">ประเภท</label><select class="in" id="pa_t"><option value="online">ออนไลน์ / โอน (ไม่เปิดลิ้นชัก)</option><option value="qr">แสดง QR พร้อมเพย์ของสาขา</option></select></div><button class="btn" data-act="payAddOk">เพิ่ม</button></div>';showModal();setTimeout(function(){$('pa_n').focus();},50);break;
+    case 'payAddOk':var pn=$('pa_n').value.trim();if(!pn){toast('ใส่ชื่อช่องทาง','err');break;}SET.pay.push({id:uid('pm_'),name:pn,type:$('pa_t').value,active:true,custom:true});pushSettings();closeModal();renderSettings();break;
+    case 'payDel':var pd=null;for(var k2=0;k2<SET.pay.length;k2++)if(SET.pay[k2].id===v)pd=SET.pay[k2];if(pd&&confirm('ลบช่องทาง "'+pd.name+'"?\nบิลเก่าที่ใช้ช่องทางนี้ยังอยู่ในสรุปยอดตามเดิม')){SET.pay=SET.pay.filter(function(x){return x.id!==v;});pushSettings();renderSettings();}break;
     case 'apTg':SET.autoprint=!SET.autoprint;t.classList.toggle('on',SET.autoprint);break;
     case 'setSave':saveSettings();break;
     case 'testPrint':passprnt(receiptHTML({bill_no:'TEST-0000',branch_code:CFG.branch,device:CFG.dev,channel:'walkin',created_at:new Date().toISOString(),items:[{name:'*** ทดสอบการพิมพ์ ***',qty:1,price:0}],subtotal:0,discount:0,total:0,vatable:0,vat:0,payments:[],status:'paid'},true),false);break;
     case 'setupAgain':showSetup();break;
-    case 'suBr':SU.branch=v;showSetupSel();break;
-    case 'suDev':SU.dev=+v;showSetupSel();break;
-    case 'suOk':if(!SU.branch){toast('เลือกสาขาก่อน','err');break;}CFG={branch:SU.branch,dev:SU.dev};lsSet('cfg',CFG);$('setup').style.display='none';SHIFT=null;boot();break;
+    case 'back':setView('sell');break;
+    case 'login':doLogin();break;
+    case 'demo':startDemo();break;
+    case 'logout':logout();break;
+    case 'exitDemo':exitDemo();break;
+    case 'spk':spKey(v);break;
+    case 'spSkip':S.skipShift=true;closeModal();break;
+    case 'spOk':shiftOpenWith(num(SPAD)||0);closeModal();break;
+    case 'hold':openHold();break;
+    case 'swAdd':var bx=document.createElement('div');bx.style.cssText='display:flex;gap:8px;margin-bottom:8px';bx.innerHTML='<input class="in" style="flex:1" data-sw="1" placeholder="เช่น หวาน 50%"><button class="mini del" data-act="swRm">✕</button>';$('swList').appendChild(bx);bx.firstChild.focus();break;
+    case 'swDel':case 'swRm':t.parentNode.parentNode.removeChild(t.parentNode);saveSweet();break;
+    case 'holdNow':holdNow($('hdLbl')?$('hdLbl').value:'');closeModal();toast('พักบิลแล้ว','ok');break;
+    case 'holdBack':holdBack(i);break;
+    case 'holdDel':if(confirm('ลบบิลที่พักไว้?')){HELD.splice(i,1);lsSet('held',HELD);updRail();openHold();}break;
+    case 'imgDel':EDIT_ITEM.img=null;drawImgBox();break;
+    case 'menuUpload':uploadMenu();break;
+    case 'hnpTg':SET.hideNoPrice=!SET.hideNoPrice;t.classList.toggle('on',SET.hideNoPrice);lsSet('settings',SET);renderSell();break;
+    case 'suBr':enterBranch(v);break;
+    case 'retryEnter':startApp();break;
   }
 });
 function showSetupSel(){var bs=$('setup').querySelectorAll('[data-act="suBr"]'),ds=$('setup').querySelectorAll('[data-act="suDev"]');
@@ -2558,6 +2998,9 @@ function showSetupSel(){var bs=$('setup').querySelectorAll('[data-act="suBr"]'),
 function closeCart(){$('cart').classList.remove('open');$('cartShade').classList.add('hide');}
 $('q').addEventListener('input',function(){S.q=this.value;renderSell();});
 window.addEventListener('online',flush);
+function saveSweet(){var a=[],l=document.querySelectorAll('[data-sw]');for(var i=0;i<l.length;i++){var v=l[i].value.trim();if(v&&a.indexOf(v)<0)a.push(v);}SET.sweet=a;pushSettings();}
+document.addEventListener('change',function(e){if(!e.target||!e.target.getAttribute)return;if(e.target.getAttribute('data-sw'))saveSweet();
+  var pid=e.target.getAttribute('data-pay');if(pid){var nv=e.target.value.trim();for(var i=0;i<SET.pay.length;i++)if(SET.pay[i].id===pid&&nv)SET.pay[i].name=nv;pushSettings();}});
 setInterval(flush,20000);
 
 /* ---------------- boot ---------------- */
@@ -2574,11 +3017,11 @@ function handleReturn(){
 function boot(){
   mergeDefaultsPay();
   SHIFT=lsGet('shift_'+CFG.branch,null);
-  renderAll();setSync(OUTBOX.length?'err':'busy');
+  setView(S.view||'home');renderAll();setSync(OUTBOX.length?'err':'busy');
   loadRemote();recoverSeq();loadRecipesQuiet();
   handleReturn();
 }
-if(!CFG)showSetup();else boot();
+startApp();
 </script>
 </body>
 </html>

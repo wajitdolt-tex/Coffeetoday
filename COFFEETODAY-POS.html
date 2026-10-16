@@ -416,6 +416,9 @@ body:not(.v-sell) .chrow{display:none}
 #grid[data-sz=l] .mc-nm{font-size:15.5px}
 #grid[data-fit=contain] .mc-img img{object-fit:contain;background:#fff}
 @media (max-width:600px){#membersPad .stats{grid-template-columns:1fr 1fr}#membersPad .stat{padding:10px}}
+.sopt{padding:8px 13px;font-size:13px}
+.sprev{border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;height:200px;position:relative;max-width:580px;margin:0 auto}
+.sprev iframe{width:576px;border:0;transform-origin:0 0;display:block;pointer-events:none}
 </style>
 </head>
 <body>
@@ -1753,7 +1756,7 @@ module.exports = QRCode;
 /* =====================================================================
    COFFEETODAY-POS  v1.0  —  single-file POS (ES5)  ·  Supabase + Star PassPRNT
 ===================================================================== */
-var APP_VER='1.6.1';
+var APP_VER='1.6.3';
 var LOGO='data:image/png;base64,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';
 var SB_URL='https://ummtqzweedmotrffqrhw.supabase.co';
 var SB_KEY='sb_publishable_yIUQ7A8IjCXKSp7OgKoGjw_65k3iO-X';
@@ -1778,7 +1781,7 @@ var DEFAULT_SETTINGS={
   pin:'9999',autoprint:true,cut:'partial',
   sweet:['ไม่หวาน','หวานน้อย','หวานปกติ','หวานมาก'],
   member:{on:true,name:'ส่วนลดสมาชิก',type:'pct',value:10,scope:'drink',combine:false,months:12,rule:2},
-  ui:{size:'m',img:true,fit:'contain'},
+  ui:{size:'m',img:true,fit:'contain',split:false},
   catOrder:[]
 };
 /* ราคาที่รู้แล้วจากใบสรุป POSPOS (ใช้ตอนสร้างเมนูจาก recipes ครั้งแรก) */
@@ -1963,10 +1966,10 @@ function priced(it){return priceOf(it,'walkin')!=null;}
 function sellable(it){return it.active!==false&&(priced(it)||!SET.hideNoPrice);}
 function menuById(id){for(var i=0;i<MENU.length;i++)if(MENU[i].id===id)return MENU[i];return null;}
 function groups(all){
-  var g={},order=[];
+  var g={},order=[],sp=!all&&uiCfg().split;
   for(var i=0;i<MENU.length;i++){var it=MENU[i];if(!all&&!sellable(it))continue;
-    var k=(it.category||'อื่นๆ')+'|'+it.grp;
-    if(!g[k]){g[k]={key:k,cat:it.category||'อื่นๆ',grp:it.grp,items:[],sort:it.sort||0};order.push(k);}
+    var k=(it.category||'อื่นๆ')+'|'+it.grp+(sp?'|'+it.id:'');
+    if(!g[k]){g[k]={key:k,cat:it.category||'อื่นๆ',grp:sp?(it.receipt_name||it.grp):it.grp,split:sp,items:[],sort:it.sort||0};order.push(k);}
     g[k].items.push(it);if((it.sort||0)<g[k].sort)g[k].sort=it.sort||0;}
   var arr=order.map(function(k){return g[k];});
   arr.sort(function(a,b){return (catRank(a.cat)-catRank(b.cat))||(a.sort-b.sort);});
@@ -2032,7 +2035,7 @@ function renderSell(){
     if(!q&&S.cat==='__all'&&g.cat!==lastCat){if(lastCat!==null)gh+='</div>';gh+='<div class="slbl">'+esc(g.cat)+'</div><div class="mgrid">';lastCat=g.cat;}
     else if(lastCat===null){gh+='<div class="mgrid">';lastCat='';}
     var ic=iconOf(g.grp+' '+(g.items[0].receipt_name||'')),tn=tintOf(g.items,ic),tt=tempTags(g.items);
-    var vs=g.items.length>2?(g.items.length+' แบบ'):g.items.length>1?g.items.map(function(x){return x.variant||'ปกติ';}).join(' · '):(g.items[0].variant||'');
+    var vs=g.split?'':g.items.length>2?(g.items.length+' แบบ'):g.items.length>1?g.items.map(function(x){return x.variant||'ปกติ';}).join(' · '):(g.items[0].variant||'');
     gh+='<button class="mc'+(allSo?' so':'')+(np?' np':'')+'" data-act="grp" data-v="'+esc(g.key)+'"><div class="mc-img '+tn+'">'+(img?'<img src="'+esc(img)+'" loading="lazy" alt="">':ic)+(tt.length?'<div class="tp">'+tt.map(function(t){return '<i>'+t+'</i>';}).join('')+'</div>':'')+'</div>'+
       '<div class="mc-body"><div class="mc-nm">'+esc(g.grp)+'</div>'+(vs?'<div class="mc-vs">'+esc(vs)+'</div>':'')+'<div class="mc-pr">'+(np?'<span class="nop">ยังไม่ตั้งราคา</span>':(mn===mx?baht(mn):baht(mn)+' – '+baht(mx)))+'</div></div></button>';
   }
@@ -2088,7 +2091,7 @@ function openPicker(key,editIdx){
 }
 function renderPicker(){
   var g=groupByKey(PK.key);if(!g){closeModal();return;}
-  var gic=iconOf(g.grp+' '+(g.items[0].receipt_name||'')),cur=menuById(PK.sel),gim=null;for(var gi=0;gi<g.items.length;gi++)if(!gim&&g.items[gi].img&&SET_UI_IMG())gim=g.items[gi].img;
+  var gic=iconOf(g.grp+' '+(g.items[0].receipt_name||'')),cur=menuById(PK.sel),gim=(cur&&cur.img&&SET_UI_IMG())?cur.img:null;for(var gi=0;gi<g.items.length;gi++)if(!gim&&g.items[gi].img&&SET_UI_IMG())gim=g.items[gi].img;
   var h='<div class="mh"><h2><span class="hi mc-img '+tintOf(g.items,gic)+'">'+(gim?'<img src="'+esc(gim)+'" alt="">':gic)+'</span><span>'+esc(g.grp)+'<small>'+(cur?baht(priceOf(cur,S.ch))+(cur.variant?' · '+esc(cur.variant):''):'')+'</small></span></h2><button class="x" data-act="close">✕</button></div><div class="mb">';
   h+='<div class="sec">เลือกแบบ</div><div class="opts">';
   for(var i=0;i<g.items.length;i++){var it=g.items[i];
@@ -2492,7 +2495,7 @@ function renderSummary(){
     h+='<tr><td>ยอดรวม</td><td class="r">'+money(A.sub)+'</td></tr><tr><td>ส่วนลด</td><td class="r">'+money(A.disc)+'</td></tr><tr><td>จำนวนปัดเศษ</td><td class="r">'+money(A.round)+'</td></tr><tr><td>คืนเงิน</td><td class="r">0.00</td></tr>';
     h+='<tr class="big"><td>ยอดรวมสุทธิ</td><td class="r">'+money(A.net)+'</td></tr></table>';
     h+='<div class="note" style="margin-top:8px">หน้าร้าน '+money(A.ch.walkin||0)+' ('+(A.chCnt.walkin||0)+' บิล) · LINE MAN '+money(A.ch.lineman||0)+' ('+(A.chCnt.lineman||0)+' บิล)'+(A.voids?' · ยกเลิก '+A.voids+' บิล ('+money(A.voidAmt)+')':'')+'</div>';
-    h+='<button class="btn sm" style="margin-top:12px" data-act="printSum">🖨️ พิมพ์สรุปยอด</button></div>';
+    h+='</div>'+sumOptBox();
     h+='<div class="box"><h3>🏬 รายงานส่งห้าง (รายวันขาย)</h3><table class="sumtbl">'+
       '<tr><td>Sub Total / ยอดขายก่อนลด</td><td class="r">'+money(A.sub)+'</td></tr>'+
       '<tr><td>− Discount / ส่วนลด</td><td class="r">'+money(A.disc)+'</td></tr>'+
@@ -2506,20 +2509,36 @@ function renderSummary(){
       '<tr><td>ส่งเสริมการขาย</td><td class="r">−'+money(A.disc)+'</td></tr>'+
       '<tr class="h"><td>Total Sales / ยอดขายทั้งหมด</td><td class="r">'+money(A.drink+A.snack+A.other-A.disc)+'</td></tr></table>'+
       '<div class="note" style="margin-top:8px">จำนวนบิล '+A.bills+' · ยอดเครื่องดื่มและขนมเป็นยอดก่อนหักส่วนลด</div></div>';
-    $('sumBody').innerHTML=h;
+    $('sumBody').innerHTML=h;sumPreview();
   });
 }
 var SUMCACHE=null;
+var SUM_OPTS=[['name','ชื่อบริษัท',1],['branch','ชื่อสาขา',1],['items','สินค้า',1],['pay','ยอดรับ (เงินสด/ออนไลน์)',1],['payd','แจกแจงช่องทางชำระ',1],['total','ยอดรวม · ส่วนลด · สุทธิ',1],['promo','แจกแจงส่วนลดตามโปร',0],['ch','หน้าร้าน / LINE MAN / จำนวนบิล',1],['vat','ยอดก่อน VAT / VAT',0],['mall','รายวันขาย (ส่งห้าง)',0]];
+function sumOpt(){var o=lsGet('sumopt',null)||{};for(var i=0;i<SUM_OPTS.length;i++)if(!o.hasOwnProperty(SUM_OPTS[i][0]))o[SUM_OPTS[i][0]]=!!SUM_OPTS[i][2];return o;}
+function sumOptBox(){
+  var o=sumOpt(),h='<div class="box"><h3>🖨️ พิมพ์สรุปยอด</h3><div class="note" style="margin-bottom:8px">เลือกสิ่งที่จะพิมพ์ · เครื่องนี้จำค่าที่เลือกไว้</div><div class="opts">';
+  for(var i=0;i<SUM_OPTS.length;i++){var k=SUM_OPTS[i][0];h+='<button class="opt sopt'+(o[k]?' on':'')+'" data-act="sumOpt" data-v="'+k+'">'+(o[k]?'☑︎ ':'☐ ')+SUM_OPTS[i][1]+'</button>';}
+  h+='</div><div class="sprev" id="sumPrev"><iframe id="sumFrame" title="ตัวอย่าง" scrolling="no"></iframe></div><button class="btn" style="margin-top:12px" data-act="printSum">🖨️ พิมพ์สรุปยอด</button></div>';
+  return h;
+}
+function sumPreview(){
+  var f=$('sumFrame');if(!f||!SUMCACHE)return;var box=$('sumPrev'),sc=Math.min(1,(box.clientWidth-2)/576);
+  f.onload=function(){try{var hh=f.contentDocument.body.scrollHeight;f.style.height=hh+'px';box.style.height=Math.ceil(hh*sc)+'px';}catch(e){}};
+  f.style.transform='scale('+sc+')';f.srcdoc=summaryHTML();
+}
 function summaryHTML(){
-  var A=SUMCACHE.A,C=SET.company;
-  var h='<html><head><meta charset="UTF-8"><style>'+RCSS+'</style></head><body><div class="c b" style="font-size:32px">'+esc(C.name)+'</div><div class="hr"></div><div class="c b" style="font-size:32px">สรุปยอดขาย '+thDate(SUMCACHE.date)+'</div><div class="c">'+(SUMCACHE.all?'ทุกสาขา':esc(BR().name))+'</div><div class="hr"></div>';
-  for(var i=0;i<A.itemOrder.length;i++){var it=A.items[A.itemOrder[i]];h+=rRow((i+1)+'. '+esc(it.name),money(it.amt)+' ('+it.qty+')');}
-  h+='<div class="hr"></div>'+rRow('<b>เงินสด</b>',money(A.cash))+rRow('<b>ออนไลน์</b>',money(A.online));
-  for(var p=0;p<A.payOrder.length;p++){var py=A.pay[A.payOrder[p]];if(py.type!=='cash')h+=rRow('&nbsp;&nbsp;• '+esc(py.name),money(py.amt),'sm');}
-  h+='<div class="hr"></div>'+rRow('ยอดรวม',money(A.sub))+rRow('ส่วนลด',money(A.disc))+rRow('จำนวนปัดเศษ',money(A.round))+rRow('คืนเงิน','0.00')+rRow('<b>ยอดรวมสุทธิ</b>','<b>'+money(A.net)+'</b>');
-  h+='<div class="hr"></div>'+rRow('หน้าร้าน',money(A.ch.walkin||0))+rRow('LINE MAN',money(A.ch.lineman||0))+rRow('จำนวนบิล',String(A.bills))+(A.voids?rRow('บิลยกเลิก',A.voids+' ('+money(A.voidAmt)+')'):'');
-  h+='<div class="hr"></div><div class="c b">รายวันขาย (ส่งห้าง)</div>'+rRow('ยอดขายก่อนลด',money(A.sub))+rRow('ส่วนลด',money(A.disc))+rRow('ยอดขายเครื่องดื่ม',money(A.drink))+rRow('ยอดขายขนม/ของว่าง',money(A.snack))+(A.other?rRow('ยอดขายอื่นๆ',money(A.other)):'')+rRow('ยอดขายทั้งหมด',money(A.net));
-  h+='<div class="c" style="margin-top:12px">** วันที่พิมพ์ '+dtStr(new Date().toISOString())+' **</div><div style="height:16px"></div></body></html>';
+  var A=SUMCACHE.A,C=SET.company,O=sumOpt();
+  var h='<html><head><meta charset="UTF-8"><style>'+RCSS+'</style></head><body>'+(O.name?'<div class="c b" style="font-size:32px">'+esc(C.name)+'</div><div class="hr"></div>':'')+'<div class="c b" style="font-size:32px">สรุปยอดขาย '+thDate(SUMCACHE.date)+'</div>'+(O.branch?'<div class="c">'+(SUMCACHE.all?'ทุกสาขา':esc(BR().name))+'</div>':'')+'<div class="hr"></div>';
+  if(O.items){for(var i=0;i<A.itemOrder.length;i++){var it=A.items[A.itemOrder[i]];h+=rRow((i+1)+'. '+esc(it.name),money(it.amt)+' ('+it.qty+')');}h+='<div class="hr"></div>';}
+  if(O.pay||O.payd){if(O.pay)h+=rRow('<b>เงินสด</b>',money(A.cash))+rRow('<b>ออนไลน์</b>',money(A.online));
+    if(O.payd)for(var p=0;p<A.payOrder.length;p++){var py=A.pay[A.payOrder[p]];if(py.type!=='cash'||!O.pay)h+=rRow((O.pay?'&nbsp;&nbsp;• ':'')+esc(py.name),money(py.amt)+(O.pay?'':' ('+py.cnt+')'),O.pay?'sm':'');}
+    h+='<div class="hr"></div>';}
+  if(O.total){h+=rRow('ยอดรวม',money(A.sub))+rRow('ส่วนลด',money(A.disc))+rRow('จำนวนปัดเศษ',money(A.round))+rRow('คืนเงิน','0.00')+rRow('<b>ยอดรวมสุทธิ</b>','<b>'+money(A.net)+'</b>')+'<div class="hr"></div>';}
+  if(O.promo&&A.disc>0){h+='<div class="b">ส่วนลด</div>';for(var pk in A.promos)if(A.promos.hasOwnProperty(pk))h+=rRow('&nbsp;&nbsp;• '+esc(pk),money(A.promos[pk]),'sm');h+='<div class="hr"></div>';}
+  if(O.vat)h+=rRow('ยอดก่อน VAT',money(A.vatable))+rRow('VAT 7%',money(A.vat))+'<div class="hr"></div>';
+  if(O.ch)h+=rRow('หน้าร้าน',money(A.ch.walkin||0))+rRow('LINE MAN',money(A.ch.lineman||0))+rRow('จำนวนบิล',String(A.bills))+(A.voids?rRow('บิลยกเลิก',A.voids+' ('+money(A.voidAmt)+')'):'')+'<div class="hr"></div>';
+  if(O.mall)h+='<div class="c b">รายวันขาย (ส่งห้าง)</div>'+rRow('ยอดขายก่อนลด',money(A.sub))+rRow('ส่วนลด',money(A.disc))+rRow('ยอดขายเครื่องดื่ม',money(A.drink))+rRow('ยอดขายขนม/ของว่าง',money(A.snack))+(A.other?rRow('ยอดขายอื่นๆ',money(A.other)):'')+rRow('ยอดขายทั้งหมด',money(A.net))+'<div class="hr"></div>';
+  h+='<div class="c" style="margin-top:4px">** วันที่พิมพ์ '+dtStr(new Date().toISOString())+' **</div><div style="height:16px"></div></body></html>';
   return h;
 }
 
@@ -3265,6 +3284,7 @@ function renderArrange(){
   var U=uiCfg(),h='';
   h+='<div class="box"><h3>🖼️ การแสดงผลหน้าขาย</h3>'+
     '<div class="adl"><div class="an">ขนาดการ์ดเมนู</div><div class="seg">'+[['s','เล็ก'],['m','กลาง'],['l','ใหญ่']].map(function(x){return '<button data-act="uiSz" data-v="'+x[0]+'" class="'+(U.size===x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div></div>'+
+    '<div class="adl"><div><div class="an">การ์ดเมนู</div><div class="ap" style="color:var(--muted)">รวมแบบ = ร้อน/เย็น/ปั่น อยู่การ์ดเดียว (รูปของแบบแรก) · แยกทุกแบบ = การ์ดละ 1 แบบ มีรูปของตัวเอง เหมือน POSPOS</div></div><div class="seg">'+[[0,'รวมแบบ'],[1,'แยกทุกแบบ']].map(function(x){return '<button data-act="uiSplit" data-v="'+x[0]+'" class="'+(!!U.split===!!x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div></div>'+
     '<div class="adl"><div class="an">แสดงรูปเมนู</div><button class="tg'+(U.img?' on':'')+'" data-act="uiImg"></button></div>'+
     '<div class="adl"><div class="an">การแสดงรูป</div><div class="seg">'+[['contain','ทั้งรูป'],['cover','เต็มกรอบ']].map(function(x){return '<button data-act="uiFit" data-v="'+x[0]+'" class="'+(U.fit===x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div></div>'+
     '<div class="adl"><div><div class="an">ซ่อนเมนูที่ยังไม่ตั้งราคา</div></div><button class="tg'+(SET.hideNoPrice?' on':'')+'" data-act="hnpTg"></button></div>'+
@@ -3385,6 +3405,7 @@ document.addEventListener('click',function(e){
     case 'sd':S.sumDate=d===0?ymd():addDays(S.sumDate,d);renderSummary();break;
     case 'sumAll':S.sumAll=v==='1';renderSummary();break;
     case 'printSum':if(SUMCACHE)passprnt(summaryHTML(),false);break;
+    case 'sumOpt':var so=sumOpt();so[v]=!so[v];lsSet('sumopt',so);t.classList.toggle('on',so[v]);for(var sx=0;sx<SUM_OPTS.length;sx++)if(SUM_OPTS[sx][0]===v)t.textContent=(so[v]?'☑︎ ':'☐ ')+SUM_OPTS[sx][1];sumPreview();break;
     case 'shOpen':shiftOpen();break;
     case 'shClose':shiftClose();break;
     case 'atab':S.atab=v;renderAdmin();break;
@@ -3461,6 +3482,7 @@ document.addEventListener('click',function(e){
     case 'uiSz':uiSet('size',v);break;
     case 'uiFit':uiSet('fit',v);break;
     case 'uiImg':uiSet('img',!uiCfg().img);break;
+    case 'uiSplit':S.cat=null;uiSet('split',v==='1');break;
   }
 });
 function showSetupSel(){var bs=$('setup').querySelectorAll('[data-act="suBr"]'),ds=$('setup').querySelectorAll('[data-act="suDev"]');

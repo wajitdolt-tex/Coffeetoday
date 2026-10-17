@@ -1915,7 +1915,9 @@ var QUEST_POOL = [
   {id:'uncommon',icon:'✨',text:'ค้นพบอารมณ์ Uncommon ขึ้นไป',goal:1,xp:25}
 ];
 
-function todayKey(){ return new Date().toISOString().slice(0,10); }
+function localDateKey(d){ var m=d.getMonth()+1, dd=d.getDate(); return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(dd<10?'0':'')+dd; }
+function histDayKey(h){ return localDateKey(new Date(h.date)); }
+function todayKey(){ return localDateKey(new Date()); }
 
 function rollQuests(){
   var tk=todayKey();
@@ -2175,9 +2177,9 @@ function updateAlpacaEvo(){
 function streak(){
   if(!ST.hist.length) return 0;
   var map={};
-  ST.hist.forEach(function(h){map[h.date.slice(0,10)]=true});
+  ST.hist.forEach(function(h){map[histDayKey(h)]=true});
   var d=new Date(),n=0;
-  while(true){var k=d.toISOString().slice(0,10);if(map[k]){n++;d.setDate(d.getDate()-1);}else break;}
+  while(true){var k=localDateKey(d);if(map[k]){n++;d.setDate(d.getDate()-1);}else break;}
   return n;
 }
 
@@ -2187,8 +2189,8 @@ function setMood(id){
   var m=MOODS[id]; if(!m) return;
   var a=document.getElementById('aura');
   a.style.background=m.a; a.style.opacity='0.22';
-  document.getElementById('bl').setAttribute('fill',m.b);
-  document.getElementById('br').setAttribute('fill',m.b);
+  var bl=document.getElementById('bl'); if(bl) bl.setAttribute('fill',m.b);
+  var br=document.getElementById('br'); if(br) br.setAttribute('fill',m.b);
   document.getElementById('mood-pill').textContent=m.l;
   wiggleEars();
 }
@@ -2634,7 +2636,7 @@ function renderTrend(days){
   /* group by date */
   var dayMap={};
   ST.hist.forEach(function(h){
-    var d=h.date.slice(0,10);
+    var d=histDayKey(h);
     var dt=new Date(d);
     if(dt<cutoff) return;
     var em=EMOTIONS.filter(function(e){return e.id===h.emotionId;})[0];
@@ -2750,7 +2752,7 @@ function renderProfile(){
     if(!em) return;
     freq[em.id]=(freq[em.id]||0)+1;
     if(posEms.indexOf(em.id)>=0) posCount++;
-    var d=h.date.slice(0,10);
+    var d=histDayKey(h);
     if(prevD){
       var diff=(new Date(d)-new Date(prevD))/(1000*86400);
       if(diff===1){streak++; if(streak>maxStreak)maxStreak=streak;}
@@ -2821,7 +2823,7 @@ function renderCal(){
   var dim=new Date(ST.calY,ST.calM+1,0).getDate();
   var dmap={};
   ST.hist.forEach(function(h){
-    var p=h.date.slice(0,10).split('-');
+    var p=histDayKey(h).split('-');
     if(parseInt(p[0])===ST.calY&&parseInt(p[1])-1===ST.calM){
       var day=parseInt(p[2]);
       if(!dmap[day]) dmap[day]=[];
@@ -2872,7 +2874,7 @@ function genMonthProfile(){
   body.textContent='AI กำลังวิเคราะห์...';
   /* collect this month's emotions */
   var monthEnts=ST.hist.filter(function(h){
-    var p=h.date.slice(0,10).split('-');
+    var p=histDayKey(h).split('-');
     return parseInt(p[0])===ST.calY&&parseInt(p[1])-1===ST.calM;
   });
   if(!monthEnts.length){toast('ไม่มีข้อมูลเดือนนี้');return;}
@@ -2916,7 +2918,7 @@ function calDay(d){
   // refresh selected highlight
   document.querySelectorAll('.cal-day').forEach(function(c){c.classList.remove('selected');});
   var ents=ST.hist.filter(function(h){
-    var p=h.date.slice(0,10).split('-');
+    var p=histDayKey(h).split('-');
     return parseInt(p[0])===ST.calY&&parseInt(p[1])-1===ST.calM&&parseInt(p[2])===d;
   });
   var det=document.getElementById('cal-detail');
@@ -2956,7 +2958,7 @@ function renderTimeline(){
   var groups={};
   var order=[];
   ST.hist.forEach(function(h){
-    var dk=h.date.slice(0,10);
+    var dk=histDayKey(h);
     if(!groups[dk]){ groups[dk]=[]; order.push(dk); }
     groups[dk].push(h);
   });
@@ -3135,8 +3137,8 @@ function renderMemory(){
   var found=null,days=0;
   for(var i=0;i<offsets.length;i++){
     var target=new Date(now); target.setDate(target.getDate()-offsets[i]);
-    var key=target.toISOString().slice(0,10);
-    var hits=ST.hist.filter(function(h){return h.date.slice(0,10)===key;});
+    var key=localDateKey(target);
+    var hits=ST.hist.filter(function(h){return histDayKey(h)===key;});
     if(hits.length){found=hits[0];days=offsets[i];break;}
   }
   if(!found){container.innerHTML='';return;}
@@ -3209,6 +3211,7 @@ function init(){
   safeCall(checkPinLock,'checkPinLock');
   safeCall(function(){
     var ob=document.getElementById('onboard');
+    if(ST.onboarded){ ob.style.display='none'; ob.classList.add('hidden'); return; }
     ob.style.display='';
     ob.classList.remove('hidden');
   },'onboardShow');
@@ -3294,7 +3297,7 @@ function spinFortune(){
   btn.disabled=true;card.classList.add('spinning');
   var pool=FORTUNES[FORTUNE_TYPE]||FORTUNES.cheer;
   /* avoid repeat: pick differently if pool > 1 */
-  var lastT=ST_FORTUNE&&ST_FORTUNE.type===FORTUNE_TYPE?ST_FORTUNE.item.t:'';
+  var lastT=ST_FORTUNE&&ST_FORTUNE.item&&ST_FORTUNE.type===FORTUNE_TYPE?ST_FORTUNE.item.t:'';
   var tries=0,item;
   do{ item=pool[Math.floor(Math.random()*pool.length)]; tries++; }
   while(item.t===lastT&&pool.length>1&&tries<10);
@@ -3367,7 +3370,7 @@ function tlSearchInput(v){ST.tlSearch=v.toLowerCase();renderTimeline();}
 function tlSetFilter(f){ST.tlFilter=f;document.querySelectorAll('.tl-filter').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-f')===f);});renderTimeline();}
 
 /* ── DAILY REMINDER / MILESTONES ── */
-function checkDailyReminder(){var el=document.getElementById('daily-reminder');if(!el)return;var tk=todayKey();el.style.display=ST.hist.some(function(h){return h.date.slice(0,10)===tk;})?'none':'block';}
+function checkDailyReminder(){var el=document.getElementById('daily-reminder');if(!el)return;var tk=todayKey();el.style.display=ST.hist.some(function(h){return histDayKey(h)===tk;})?'none':'block';}
 var MILESTONES=[
   {id:'s3',type:'streak',d:3,e:'\uD83C\uDF31',t:'3 \u0E27\u0E31\u0E19\u0E15\u0E48\u0E2D\u0E40\u0E19\u0E37\u0E48\u0E2D\u0E07',m:'\u0E40\u0E23\u0E34\u0E48\u0E21\u0E40\u0E1B\u0E47\u0E19\u0E19\u0E34\u0E2A\u0E31\u0E22\u0E41\u0E25\u0E49\u0E27! \u2726'},
   {id:'s7',type:'streak',d:7,e:'\u2B50',t:'1 \u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E40\u0E15\u0E47\u0E21',m:'\u0E40\u0E22\u0E35\u0E48\u0E22\u0E21\u0E21\u0E32\u0E01! \u2726'},

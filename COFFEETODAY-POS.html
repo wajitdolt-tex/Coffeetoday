@@ -257,6 +257,18 @@ main{height:calc(100% - 60px - env(safe-area-inset-top));overflow:hidden}
 .quick button:active{background:var(--tint)}
 .rcv{width:100%;font-size:28px;font-weight:800;text-align:right;border:2px solid var(--line);border-radius:14px;padding:10px 14px;outline:none;color:var(--brandD)}
 .rcv:focus{border-color:var(--brandL)}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin-bottom:16px}
+.vopt{position:relative;border:2px solid var(--line);background:var(--soft);border-radius:18px;padding:10px 6px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--ink);font-family:inherit}
+.vopt .vth{width:56px!important;height:56px!important;border-radius:14px;overflow:hidden;font-size:28px!important;margin-bottom:4px;display:flex;align-items:center;justify-content:center}
+.vopt .vth img{width:100%;height:100%;object-fit:contain;background:#fff}
+.vopt .vt{font-weight:800;font-size:15px}
+.vopt .vp{font-weight:800;font-size:14px;color:var(--brand)}
+.vopt:disabled{opacity:.4}
+.vopt.on{border-color:var(--brandD);background:var(--brand);color:#fff;box-shadow:0 4px 12px rgba(78,44,22,.3)}
+.vopt.on .vp{color:var(--goldL)}
+.vck{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:var(--brandD);font-size:13px;font-weight:900;display:none;align-items:center;justify-content:center}
+.vopt.on .vck{display:flex}
+.vneed{color:var(--err);font-weight:800}
 .pk-s{font-weight:700;opacity:.9}
 .change{background:var(--okBg);color:var(--ok);border-radius:14px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:20px;margin:6px 0 14px}
 .change.bad{background:var(--errBg);color:var(--err)}
@@ -1836,7 +1848,7 @@ module.exports = QRCode;
 /* =====================================================================
    COFFEETODAY-POS  v1.0  —  single-file POS (ES5)  ·  Supabase + Star PassPRNT
 ===================================================================== */
-var APP_VER='2.0.0';
+var APP_VER='2.1.0';
 var LOGO='data:image/png;base64,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';
 var SB_URL='https://ummtqzweedmotrffqrhw.supabase.co';
 var SB_KEY='sb_publishable_yIUQ7A8IjCXKSp7OgKoGjw_65k3iO-X';
@@ -2223,12 +2235,12 @@ function groupByKey(k){var gs=groups(),n=gkNorm(k);for(var i=0;i<gs.length;i++)i
 function openPicker(key,editIdx){
   var g=groupByKey(key);if(!g)return;
   var line=editIdx!=null?S.cart[editIdx]:null;
-  var sel=line?line.mid:null;
-  if(!sel){for(var i=0;i<g.items.length;i++)if(!isSoldOut(g.items[i])&&priceOf(g.items[i],S.ch)!=null){sel=g.items[i].id;break;}}
-  if(!sel){var anyP=false;for(var i2=0;i2<g.items.length;i2++)if(priceOf(g.items[i2],S.ch)!=null)anyP=true;toast(anyP?'เมนูนี้หมดแล้ว':'ยังไม่ได้ตั้งราคาเมนูนี้ (หลังบ้าน → เมนู & ราคา)','err');return;}
+  var avail=g.items.filter(function(x){return !isSoldOut(x)&&priceOf(x,S.ch)!=null;});
+  var sel=line?line.mid:(avail.length===1?avail[0].id:null); // เลือกเองเสมอ ยกเว้นมีแบบเดียว / แก้ไขรายการเดิม
+  if(!line&&!avail.length){var anyP=false;for(var i2=0;i2<g.items.length;i2++)if(priceOf(g.items[i2],S.ch)!=null)anyP=true;toast(anyP?'เมนูนี้หมดแล้ว':'ยังไม่ได้ตั้งราคาเมนูนี้ (หลังบ้าน → เมนู & ราคา)','err');return;}
   var pz=g.items.filter(function(x){return priceOf(x,S.ch)!=null;});
   // เมนูเดียว ไม่มีแอด (ขนม) → ใส่ตะกร้าเลย
-  if(!line&&pz.length===1&&(pz[0].kind==='snack'||pz[0].kind==='other'||pz[0].is_addon||!(SET.sweet||[]).length)&&!isSoldOut(pz[0])){addLine(pz[0],1,[],'');return;}
+  if(!line&&pz.length===1&&avail.length===1&&(pz[0].kind==='snack'||pz[0].kind==='other'||pz[0].is_addon||!(SET.sweet||[]).length)&&!isSoldOut(pz[0])){addLine(pz[0],1,[],'');return;}
   PK={key:key,sel:sel,qty:line?line.qty:1,ad:{},note:line?line.note:'',sweet:line?(line.sweet||''):'',edit:editIdx};
   if(line)for(var a=0;a<line.addons.length;a++)PK.ad[line.addons[a].mid]=line.addons[a].qty;
   renderPicker();showModal();
@@ -2237,11 +2249,12 @@ function renderPicker(){
   var g=groupByKey(PK.key);if(!g){closeModal();return;}
   var gic=iconOf(g.grp+' '+(g.items[0].receipt_name||'')),cur=menuById(PK.sel),gim=(cur&&cur.img&&SET_UI_IMG())?cur.img:null;for(var gi=0;gi<g.items.length;gi++)if(!gim&&g.items[gi].img&&SET_UI_IMG())gim=g.items[gi].img;
   var h='<div class="mh"><h2><span class="hi mc-img '+tintOf(g.items,gic)+'">'+(gim?'<img src="'+esc(gim)+'" alt="">':gic)+'</span><span>'+(svcTag(g.items[0])?'<span class="svb in '+svcTag(g.items[0]).c+'">'+svcTag(g.items[0]).t+'</span> ':'')+esc(g.grp)+'<small>'+(cur?baht(priceOf(cur,S.ch))+(cur.variant?' · '+esc(cur.variant):''):'')+'</small></span></h2><button class="x" data-act="close">✕</button></div><div class="mb">';
-  h+='<div class="sec">เลือกแบบ</div><div class="opts">';
-  for(var i=0;i<g.items.length;i++){var it=g.items[i];
-    h+='<button class="opt big'+(it.id===PK.sel?' on':'')+'" data-act="pkSel" data-v="'+esc(it.id)+'"'+(isSoldOut(it)||priceOf(it,S.ch)==null?' disabled':'')+'>'+esc(it.variant||'ปกติ')+'<small>'+(isSoldOut(it)?'หมด':priceOf(it,S.ch)==null?'ไม่มีราคา':baht(priceOf(it,S.ch)))+'</small></button>';}
+  h+='<div class="sec">เลือกแบบ'+(PK.sel?'':' <span class="vneed">· แตะเลือกแบบก่อน</span>')+'</div><div class="vgrid">';
+  var vs=varSort(g.items);
+  for(var i=0;i<vs.length;i++){var it=vs[i],vic=iconOf(g.grp+' '+(it.receipt_name||'')),vim=it.img&&SET_UI_IMG()?it.img:null;
+    h+='<button class="vopt'+(it.id===PK.sel?' on':'')+'" data-act="pkSel" data-v="'+esc(it.id)+'"'+(isSoldOut(it)||priceOf(it,S.ch)==null?' disabled':'')+'><span class="vck">✓</span><span class="vth mc-img '+tintOf([it],vic)+'">'+(vim?'<img src="'+esc(vim)+'" alt="" loading="lazy">':vic)+'</span><span class="vt">'+esc(it.variant||'ปกติ')+'</span><span class="vp">'+(isSoldOut(it)?'หมด':priceOf(it,S.ch)==null?'ไม่มีราคา':baht(priceOf(it,S.ch)))+'</span></button>';}
   h+='</div>';
-  var sel=menuById(PK.sel),ads=addons();
+  var sel=menuById(PK.sel)||g.items[0],ads=addons();
   var sw=SET.sweet||[];
   if(sel&&sel.kind==='drink'&&!sel.is_addon&&sw.length){
     h+='<div class="sec">ระดับความหวาน</div><div class="opts">';
@@ -2250,13 +2263,13 @@ function renderPicker(){
   }
   h+='<div class="sec">หมายเหตุ</div><input class="in" style="width:100%;margin-bottom:16px" id="pkNoteIn" placeholder="เช่น ไม่ใส่วิป, แยกน้ำเชื่อม…" value="'+esc(PK.note)+'">';
   h+='<div style="display:flex;gap:10px;align-items:center"><div class="qty"><button data-act="pkQty" data-d="-1">−</button><span>'+PK.qty+'</span><button data-act="pkQty" data-d="1">+</button></div>'+
-     '<button class="btn'+(S.ch==='lineman'?' lm':'')+'" style="flex:1" data-act="pkOk">'+(PK.edit!=null?'บันทึก':'เพิ่มลงตะกร้า')+' · '+baht(pickerTotal())+'</button></div></div>';
+     (PK.sel?'<button class="btn'+(S.ch==='lineman'?' lm':'')+'" style="flex:1" data-act="pkOk">'+(PK.edit!=null?'บันทึก':'เพิ่มลงตะกร้า')+' · '+baht(pickerTotal())+'</button>':'<button class="btn" style="flex:1" disabled>เลือกแบบก่อน</button>')+'</div></div>';
   $('modal').className='';$('modal').innerHTML=h;
   $('pkNoteIn').oninput=function(){PK.note=this.value;};
 }
 function pickerTotal(){var it=menuById(PK.sel);if(!it)return 0;var t=priceOf(it,S.ch);for(var k in PK.ad)if(PK.ad.hasOwnProperty(k)&&PK.ad[k]>0){var a=menuById(k);if(a)t+=priceOf(a,S.ch)*PK.ad[k];}return r2(t*PK.qty);}
 function pickerOk(){
-  var it=menuById(PK.sel);if(!it)return;
+  var it=menuById(PK.sel);if(!it){toast('เลือกแบบก่อน','err');return;}
   var ads=[];for(var k in PK.ad)if(PK.ad.hasOwnProperty(k)&&PK.ad[k]>0){var a=menuById(k);if(a)ads.push({mid:a.id,rid:a.recipe_id||null,name:a.receipt_name,price:priceOf(a,S.ch),qty:PK.ad[k],kind:a.kind||'drink'});}
   var note=(PK.note||'').trim(),sweet=(it.kind!=='drink'||it.is_addon)?'':(PK.sweet||'');
   if(PK.edit!=null){S.cart.splice(PK.edit,1,mkLine(it,PK.qty,ads,note,sweet));renderCart();}
@@ -3182,7 +3195,8 @@ function catRename(oldN,newN){
   var ex=menuCats().indexOf(newN)>=0;if(ex&&!confirm('มีหมวด "'+newN+'" อยู่แล้ว — รวมเมนูของ "'+oldN+'" เข้าไปในหมวดนี้?'))return;
   var ids=MENU.filter(function(m){return (m.category||'อื่นๆ')===oldN;}).map(function(m){return m.id;});
   function fixList(a){if(!a)return a;var o=[];for(var i=0;i<a.length;i++){var v=a[i]===oldN?newN:a[i];if(o.indexOf(v)<0)o.push(v);}return o;}
-  SET.catOrder=fixList(SET.catOrder);SET.catHide=fixList(SET.catHide);SET.catExtra=(SET.catExtra||[]).filter(function(x){return x!==oldN&&x!==newN;});
+  SET.catOrder=fixList(SET.catOrder);SET.catHide=fixList(SET.catHide);
+  for(var bk in BRANCHES){var bo=SET['br_'+bk];if(bo){bo=ext({},bo);if(bo.catOrder)bo.catOrder=fixList(bo.catOrder);if(bo.catHide)bo.catHide=fixList(bo.catHide);SET['br_'+bk]=bo;}}SET.catExtra=(SET.catExtra||[]).filter(function(x){return x!==oldN&&x!==newN;});
   if(!ids.length)SET.catExtra.push(newN);
   pushSettings(true);if(S.menuCat===oldN)S.menuCat=newN;if(S.cat===oldN)S.cat=newN;
   if(!ids.length){toast('เปลี่ยนชื่อหมวดแล้ว','ok');openCatMgr();renderMenuAdmin();return;}
@@ -3875,11 +3889,15 @@ function memSettingsHTML(){
 
 /* ---------------- จัดลำดับหน้าขาย ---------------- */
 var AR=null;
-function catHidden(c){return (SET.catHide||[]).indexOf(c)>=0;}
-function catRank(c){var o=SET.catOrder||[],i=o.indexOf(c);return i<0?1000:i;}
-function allPins(){var a=SET.allPins||[],o=[];for(var i=0;i<a.length;i++){var k=gkNorm(a[i]);if(o.indexOf(k)<0)o.push(k);}return o;}
-function pinToggle(k){var a=allPins().slice(),i=a.indexOf(k);if(i>=0)a.splice(i,1);else a.push(k);SET.allPins=a;pushSettings(true);renderArrange();renderSell();}
-function pinMove(i,d){var a=allPins().slice(),x=a[i],to=d===-2?0:d===2?a.length-1:i+d;if(to<0||to>=a.length||to===i)return;a.splice(i,1);a.splice(to,0,x);SET.allPins=a;pushSettings(true);renderArrange();renderSell();}
+// การแสดงผลหน้าขายแยกตามสาขา: เก็บใน SET.br_PS / SET.br_LT (ยังไม่ตั้ง = ใช้ค่าเดิมที่ใช้ร่วมกัน)
+function BRK(){return 'br_'+CFG.branch;}
+function bget(k,def){var b=SET[BRK()];if(b&&b.hasOwnProperty(k))return b[k];return SET.hasOwnProperty(k)&&SET[k]!=null?SET[k]:def;}
+function bset(k,v){var key=BRK(),b=ext({},SET[key]||{});b[k]=v;SET[key]=b;}
+function catHidden(c){return (bget('catHide',[])||[]).indexOf(c)>=0;}
+function catRank(c){var o=bget('catOrder',[])||[],i=o.indexOf(c);return i<0?1000:i;}
+function allPins(){var a=bget('allPins',[])||[],o=[];for(var i=0;i<a.length;i++){var k=gkNorm(a[i]);if(o.indexOf(k)<0)o.push(k);}return o;}
+function pinToggle(k){var a=allPins().slice(),i=a.indexOf(k);if(i>=0)a.splice(i,1);else a.push(k);bset('allPins',a);pushSettings(true);renderArrange();renderSell();}
+function pinMove(i,d){var a=allPins().slice(),x=a[i],to=d===-2?0:d===2?a.length-1:i+d;if(to<0||to>=a.length||to===i)return;a.splice(i,1);a.splice(to,0,x);bset('allPins',a);pushSettings(true);renderArrange();renderSell();}
 function arInit(){
   var gs=groups(true);AR={cats:cats(gs),g:{},info:{},sel:null,dirty:false};
   for(var i=0;i<gs.length;i++){var g=gs[i];(AR.g[g.cat]=AR.g[g.cat]||[]).push(g.key);
@@ -3895,8 +3913,9 @@ function renderArrange(){
     '<div class="adl"><div><div class="an">การ์ดเมนู</div><div class="ap" style="color:var(--muted)">รวมแบบ = ร้อน/เย็น/ปั่น อยู่การ์ดเดียว (รูปของแบบแรก) · แยกทุกแบบ = การ์ดละ 1 แบบ มีรูปของตัวเอง เหมือน POSPOS</div></div><div class="seg">'+[[0,'รวมแบบ'],[1,'แยกทุกแบบ']].map(function(x){return '<button data-act="uiSplit" data-v="'+x[0]+'" class="'+(!!U.split===!!x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div></div>'+
     '<div class="adl"><div class="an">แสดงรูปเมนู</div><button class="tg'+(U.img?' on':'')+'" data-act="uiImg"></button></div>'+
     '<div class="adl"><div class="an">การแสดงรูป</div><div class="seg">'+[['contain','ทั้งรูป'],['cover','เต็มกรอบ']].map(function(x){return '<button data-act="uiFit" data-v="'+x[0]+'" class="'+(U.fit===x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div></div>'+
-    '<div class="adl"><div><div class="an">ซ่อนเมนูที่ยังไม่ตั้งราคา</div></div><button class="tg'+(SET.hideNoPrice?' on':'')+'" data-act="hnpTg"></button></div>'+
-    '<div class="note" style="margin-top:8px">ตั้งค่าส่วนนี้บันทึกอัตโนมัติ · ใช้กับทุกเครื่องทุกสาขา</div></div>';
+    '<div class="adl"><div><div class="an">ลำดับปุ่มแบบ (ตอนกดเลือกเมนู)</div><div class="ap" style="color:var(--muted)">ในแต่ละแบบเรียงขนาดเล็ก → ใหญ่</div></div><div class="seg">'+VORD.map(function(x){return '<button data-act="uiVord" data-v="'+x[0]+'" class="'+(varOrd()===x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div></div>'+
+    '<div class="adl"><div><div class="an">ซ่อนเมนูที่ยังไม่ตั้งราคา <small style="color:var(--muted)">(ทุกสาขา)</small></div></div><button class="tg'+(SET.hideNoPrice?' on':'')+'" data-act="hnpTg"></button></div>'+
+    '<div class="note" style="margin-top:8px">บันทึกอัตโนมัติ · <b>ใช้เฉพาะ'+esc(BR().name)+'</b> (ทุกเครื่องในสาขานี้) · ลำดับหมวด หมวดที่ซ่อน และ ⭐ เมนูแนะนำ ก็แยกตามสาขาเช่นกัน · ลำดับเมนูในหมวดใช้ร่วมกันทุกสาขา</div></div>';
   h+='<div class="arr"><div class="box"><h3>หมวดหมู่</h3><div class="note" style="margin-bottom:8px">แตะชื่อหมวดเพื่อจัดลำดับเมนูในหมวด · กด 👁 เพื่อซ่อนหมวดจากหน้าขาย (บันทึกทันที)</div>';
   h+='<div class="arw'+(AR.sel==='__all'?' on':'')+'"><span class="eye">⭐</span><div class="an" data-act="arSel" data-v="__all">ทั้งหมด <small>'+(allPins().length?'ติดดาว '+allPins().length+' เมนู':'ยังไม่ติดดาว')+'</small></div></div>';
   for(var c=0;c<AR.cats.length;c++){var cn=AR.cats[c];
@@ -3933,14 +3952,19 @@ function arSave(){
   for(var c=0;c<AR.cats.length;c++){var ks=AR.g[AR.cats[c]];
     for(var g=0;g<ks.length;g++){var its=AR.info[ks[g]].items;
       for(var v=0;v<its.length;v++){var ns=(c+1)*100000+(g+1)*100+v;if(its[v].sort!==ns){its[v].sort=ns;its[v].updated_at=now;ch.push(its[v]);}}}}
-  SET.catOrder=AR.cats.slice();lsSet('menu',MENU);pushSettings(true);
+  bset('catOrder',AR.cats.slice());lsSet('menu',MENU);pushSettings(true);
   var rows=ch.map(function(x){var r=clone(x);if(r.img&&r.img.indexOf('data:')===0&&MODE!=='demo')r.img=null;return r;});
   var p=Promise.resolve(),chunks=[];for(var k=0;k<rows.length;k+=150)chunks.push(rows.slice(k,k+150));
   chunks.forEach(function(cc){p=p.then(function(){return upsert('pos_menu',cc);});});
   p.then(function(){AR.dirty=false;toast('บันทึกลำดับหน้าขายแล้ว','ok');renderArrange();renderSell();},function(e){toast('บันทึกลำดับไม่สำเร็จ: '+e.message,'err');});
 }
-function uiCfg(){return ext(clone(DEFAULT_SETTINGS.ui),SET.ui||{});}
-function uiSet(k,v){var u=uiCfg();u[k]=v;SET.ui=u;pushSettings(true);renderArrange();renderSell();}
+var VORD=[['hcb','ร้อน › เย็น › ปั่น'],['cbh','เย็น › ปั่น › ร้อน'],['bch','ปั่น › เย็น › ร้อน']];
+function varOrd(){var v=bget('varOrder','hcb');return v==='cbh'||v==='bch'?v:'hcb';}
+function varSort(items){var o=varOrd(),T={h:'ร้อน',c:'เย็น',b:'ปั่น'},rk={};for(var i=0;i<3;i++)rk[T[o.charAt(i)]]=i;
+  var a=items.slice(),ix={};for(var j=0;j<a.length;j++)ix[a[j].id]=j;
+  a.sort(function(x,y){var tx=tempOf(x),ty=tempOf(y),rx=tx?rk[tx]:9,ry=ty?rk[ty]:9;if(rx!==ry)return rx-ry;if(tx&&ty){var d=sizeOf(x)-sizeOf(y);if(d)return d;}return ix[x.id]-ix[y.id];});return a;}
+function uiCfg(){return ext(clone(DEFAULT_SETTINGS.ui),bget('ui',{})||{});}
+function uiSet(k,v){var u=uiCfg();u[k]=v;bset('ui',u);pushSettings(true);renderArrange();renderSell();}
 
 /* ---------------- เมนูด้านข้าง (☰) ---------------- */
 function navOpen(){
@@ -4142,8 +4166,9 @@ document.addEventListener('click',function(e){
     case 'memSetSave':var mc2=memCfg();mc2.name=$('ms_n').value.trim()||'ส่วนลดสมาชิก';mc2.type=$('ms_t').value;mc2.value=num($('ms_v').value)||0;mc2.scope=$('ms_s').value;mc2.combine=$('ms_c').value==='1';mc2.rule=2;mc2.months=Math.max(1,Math.round(num($('ms_m').value)||12));mc2.cards=memCardsFromForm();
       if(mc2.type==='pct'&&mc2.value>100){toast('ส่วนลดเกิน 100%','err');break;}SET.member=mc2;pushSettings();renderCart();break;
     case 'arSel':AR.sel=v;renderArrange();break;
-    case 'catHide':var chs=SET.catHide||[],chi=chs.indexOf(v);if(chi>=0)chs.splice(chi,1);else chs.push(v);SET.catHide=chs;pushSettings(true);toast((chi>=0?'แสดงหมวด ':'ซ่อนหมวด ')+v+(chi>=0?' ในหน้าขายแล้ว':' จากหน้าขายแล้ว'),'ok');renderArrange();renderSell();break;
+    case 'catHide':var chs=(bget('catHide',[])||[]).slice(),chi=chs.indexOf(v);if(chi>=0)chs.splice(chi,1);else chs.push(v);bset('catHide',chs);pushSettings(true);toast((chi>=0?'แสดงหมวด ':'ซ่อนหมวด ')+v+(chi>=0?' ในหน้าขายแล้ว':' จากหน้าขายแล้ว'),'ok');renderArrange();renderSell();break;
     case 'arMv':arMove(v,i,d);break;
+    case 'uiVord':bset('varOrder',v);pushSettings(true);renderArrange();break;
     case 'arPin':pinToggle(v);break;
     case 'arReset':AR=null;renderArrange();break;
     case 'arSave':arSave();break;

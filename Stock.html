@@ -152,6 +152,7 @@
         <button data-admintab="recipe" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">📝 แก้ไขสูตร</button>
         <button data-admintab="borrow" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">🔄 ยืม/คืน</button>
         <button data-admintab="past" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">📅 ย้อนหลัง</button>
+        <button data-admintab="trace" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">🔎 ตรวจย้อนหลัง</button>
         <button data-admintab="export" class="admin-tab-btn flex-1 sm:flex-none px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 whitespace-nowrap transition">📥 ส่งออก</button>
       </div>
 
@@ -399,6 +400,34 @@
           </div>
           <div id="pastListWrap" class="px-5 pb-5 space-y-4 bg-slate-50/60">
             <p class="text-sm text-slate-400 text-center py-6">เลือกวันที่แล้วกด "โหลดข้อมูลวันนี้ที่เลือก" ก่อน</p>
+          </div>
+        </div>
+
+        <!-- ตรวจย้อนหลัง: สแกนหาจุดผิด + ประวัติรายวัตถุดิบ (อ่านอย่างเดียว) -->
+        <div id="adminTabTrace" class="admin-tab-panel hidden">
+          <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2.5">
+            <span class="w-6 h-6 rounded-md bg-accent-50 text-accent-700 text-xs font-bold flex items-center justify-center shrink-0">🔎</span>
+            <h2 class="font-heading font-semibold text-slate-900">ตรวจย้อนหลัง — หาวันที่ลงข้อมูลพลาด</h2>
+          </div>
+          <div class="p-5 pb-3 bg-slate-50/60 space-y-3">
+            <p class="text-xs text-slate-500">ระบบไล่เทียบยอดทุกวันให้ (อ่านอย่างเดียว ไม่แก้ข้อมูล) — กดรายการที่สงสัยเพื่อดูประวัติ หรือไปแก้วันนั้นในแท็บย้อนหลัง</p>
+            <div class="flex items-center gap-2 flex-wrap">
+              <label class="text-[11px] text-slate-500 font-semibold">ตั้งแต่</label>
+              <input id="traceFrom" type="date" class="input-base input-sm w-auto">
+              <label class="text-[11px] text-slate-500 font-semibold">ถึง</label>
+              <input id="traceTo" type="date" class="input-base input-sm w-auto">
+              <button id="traceScanBtn" class="h-10 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition shrink-0">🔎 สแกนหาจุดผิด</button>
+            </div>
+            <p id="traceStatus" class="text-[11px] text-slate-400"></p>
+          </div>
+          <div id="traceScanWrap" class="px-5 pb-3 bg-slate-50/60"></div>
+          <div class="px-5 py-4 border-t border-slate-100 space-y-2">
+            <p class="text-sm font-semibold text-slate-700">📈 ประวัติรายวัตถุดิบ</p>
+            <div class="flex items-center gap-2">
+              <select id="traceMatSelect" class="input-base input-sm flex-1 min-w-0"></select>
+              <button id="traceShowBtn" class="h-10 px-4 rounded-lg bg-accent-600 hover:bg-accent-700 text-white font-semibold text-xs transition shrink-0">แสดง</button>
+            </div>
+            <div id="traceTimelineWrap"></div>
           </div>
         </div>
 
@@ -1942,7 +1971,7 @@ document.getElementById('closeAdminBtn').addEventListener('click', () => {
   adminModal.classList.add('hidden');
 });
 
-const ADMIN_TABS = ['audit', 'restock', 'menu', 'addmenu', 'edit', 'recipe', 'borrow', 'past', 'export'];
+const ADMIN_TABS = ['audit', 'restock', 'menu', 'addmenu', 'edit', 'recipe', 'borrow', 'past', 'trace', 'export'];
 
 function showAdminTab(tab){
   ADMIN_TABS.forEach(t => {
@@ -1984,6 +2013,7 @@ function showAdminTab(tab){
     }, 30);
   }
   if (tab === 'borrow') renderBorrowTab().catch(function(e){ console.error(e); });
+  if (tab === 'trace') { try { traceInitDefaults(); } catch(e){ console.error(e); } }
 }
 document.querySelectorAll('.admin-tab-btn').forEach(btn => {
   btn.addEventListener('click', () => showAdminTab(btn.dataset.admintab));
@@ -6238,6 +6268,344 @@ async function ensureRefillQtyColumn(){
     }
   }
 }
+
+/* ===========================================================
+   ตรวจย้อนหลัง — สแกนหาจุดผิด + ประวัติรายวัตถุดิบ (อ่านอย่างเดียว)
+   ใช้ข้อมูล daily_counts / borrow_logs ของสาขาที่เลือก คำนวณเหมือนตาราง audit ย้อนหลัง
+=========================================================== */
+var traceCache = null; // { key, days:[iso], perMat:{matId:[dayRec]}, borrowsByDay:{iso:{matId:[log]}} }
+var TRACE_LOOKBACK_DAYS = 14; // ดึงข้อมูลก่อนวันเริ่มเพิ่ม เพื่อหายอดยกมาของวันแรก
+
+function traceIsoAdd(iso, n){
+  var d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + n);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function traceShortDate(iso){
+  try { return new Date(iso + 'T00:00:00').toLocaleDateString('th-TH', { day:'numeric', month:'short' }); } catch(e){ return iso; }
+}
+function traceEsc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+function traceInitDefaults(){
+  var toEl = document.getElementById('traceTo'), fromEl = document.getElementById('traceFrom');
+  if (toEl && !toEl.value) toEl.value = todayDateStr();
+  if (fromEl && !fromEl.value) fromEl.value = traceIsoAdd(todayDateStr(), -29);
+  if (toEl) toEl.max = todayDateStr();
+  var sel = document.getElementById('traceMatSelect');
+  if (sel && !sel.options.length) {
+    sel.innerHTML = '<option value="">-- เลือกวัตถุดิบ --</option>' + categories().map(function(cat){
+      return '<optgroup label="' + traceEsc(cat) + '">' + MATERIALS.filter(function(m){ return m.category === cat; })
+        .map(function(m){ return '<option value="' + m.id + '">' + traceEsc(m.name) + '</option>'; }).join('') + '</optgroup>';
+    }).join('');
+  }
+}
+
+// ดึงทุกแถวแบบแบ่งหน้า (Supabase ส่งได้ครั้งละ ~1000 แถว)
+async function traceFetchAll(pathBase){
+  var out = [], offset = 0, page = 1000;
+  for (var i = 0; i < 30; i++) {
+    var rows = await sb(pathBase + '&limit=' + page + '&offset=' + offset);
+    if (!Array.isArray(rows) || !rows.length) break;
+    out = out.concat(rows);
+    if (rows.length < page) break;
+    offset += page;
+  }
+  return out;
+}
+
+async function traceLoad(from, to){
+  var branch = branchSelectEl.value;
+  var key = branch + '|' + from + '|' + to;
+  if (traceCache && traceCache.key === key) return traceCache;
+  var b = encodeURIComponent(branch);
+  var lookFrom = traceIsoAdd(from, -TRACE_LOOKBACK_DAYS);
+  var rows = await traceFetchAll('daily_counts?branch=eq.' + b + '&count_date=gte.' + lookFrom + '&count_date=lte.' + to + '&select=*&order=count_date.asc,material_id.asc');
+  var logs = [];
+  try { logs = await traceFetchAll('borrow_logs?branch=eq.' + b + '&date=gte.' + from + '&date=lte.' + to + '&select=*&order=date.asc'); } catch(e){ console.warn('trace borrow load', e); }
+
+  var days = [];
+  for (var d = from; d <= to; d = traceIsoAdd(d, 1)) days.push(d);
+
+  var rowsByMat = {};
+  rows.forEach(function(r){ (rowsByMat[r.material_id] = rowsByMat[r.material_id] || []).push(r); });
+  var borrowsByDay = {};
+  logs.forEach(function(l){
+    var day = borrowsByDay[l.date] = borrowsByDay[l.date] || {};
+    (day[l.material_id] = day[l.material_id] || []).push(l);
+  });
+
+  var perMat = {};
+  MATERIALS.forEach(function(mat){
+    var list = (rowsByMat[mat.id] || []).slice().sort(function(a, b){ return a.count_date < b.count_date ? -1 : a.count_date > b.count_date ? 1 : 0; });
+    var byDate = {}; list.forEach(function(r){ byDate[r.count_date] = r; });
+    var lastActual = null, lastActualDate = null;
+    // ยอดยกมาก่อนวันแรก = นับล่าสุดในช่วง lookback
+    list.forEach(function(r){
+      if (r.count_date < from && r.actual_big !== null && r.actual_big !== undefined) {
+        lastActual = (Number(r.actual_big) || 0) * mat.ratio + (mat.noFraction ? 0 : (Number(r.actual_small) || 0));
+        lastActualDate = r.count_date;
+      }
+    });
+    perMat[mat.id] = days.map(function(day){
+      var r = byDate[day];
+      var counted = !!r && r.actual_big !== null && r.actual_big !== undefined;
+      var note = r && r.note ? r.note.split('​')[0].split('‌')[0] : '';
+      var borrowNote = r && r.note && r.note.indexOf('‌') >= 0 ? r.note.split('‌')[1] : '';
+      var rec = { date: day, row: r || null, counted: counted, carry: lastActual, carryDate: lastActualDate, note: note, borrowNote: borrowNote,
+                  borrows: (borrowsByDay[day] || {})[mat.id] || [] };
+      if (counted) {
+        var received = (Number(r.received) || 0) * mat.ratio + (Number(r.received_small) || 0);
+        var actual = (Number(r.actual_big) || 0) * mat.ratio + (mat.noFraction ? 0 : (Number(r.actual_small) || 0));
+        var waste = (Number(r.waste_qty_big) || 0) * mat.ratio + (Number(r.waste_qty) || 0);
+        var pos = Number(r.pos_sale) || 0;
+        rec.received = received; rec.actual = actual; rec.waste = waste; rec.pos = pos;
+        rec.wasteNote = r.waste_note || '';
+        if (lastActual !== null) {
+          rec.used = (lastActual + received) - actual;
+          rec.variance = (pos + waste) - rec.used;
+        }
+        lastActual = actual; lastActualDate = day;
+      }
+      return rec;
+    });
+  });
+  traceCache = { key: key, branch: branch, from: from, to: to, days: days, perMat: perMat, borrowsByDay: borrowsByDay };
+  return traceCache;
+}
+
+function traceMedian(arr){
+  if (!arr.length) return 0;
+  var s = arr.slice().sort(function(a, b){ return a - b; }); var m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m-1] + s[m]) / 2;
+}
+function traceBorrowHint(rec){
+  if (!rec.borrows.length && !rec.borrowNote) return '';
+  var hasOut = rec.borrows.some(function(l){ return l.type === 'lend_out'; });
+  var hasIn = rec.borrows.some(function(l){ return l.type === 'borrow_in'; });
+  return ' · วันนั้นมี' + (hasOut ? 'ให้ยืม' : '') + (hasOut && hasIn ? '/' : '') + (hasIn ? 'ยืมมา' : '') + ((!hasOut && !hasIn) ? 'ยืม-คืน' : '') + ' อาจเป็นสาเหตุ';
+}
+
+// ตรวจหาจุดผิด — คืน [{sev:3|2|1, date, matId|null, title, detail}]
+function traceAnalyze(data){
+  var issues = [];
+  var missingPosByDay = {};
+  MATERIALS.forEach(function(mat){
+    var recs = data.perMat[mat.id] || [];
+    var u = function(v){ return fmtNum(v) + ' ' + mat.smallUnit; };
+    var tol = mat.noFraction ? 0.5 : Math.max(0.5, mat.ratio * 0.02);
+    var countedRecs = recs.filter(function(r){ return r.counted; });
+    var usedPos = countedRecs.filter(function(r){ return r.used !== undefined && r.used > tol; }).map(function(r){ return r.used; });
+    var medUsed = traceMedian(usedPos);
+    var posDays = countedRecs.filter(function(r){ return r.pos > 0; }).length;
+    var usesRecipe = countedRecs.length >= 3 && posDays / countedRecs.length >= 0.5;
+
+    recs.forEach(function(r){
+      if (!r.counted) return;
+      // 1) นับได้มากกว่ายกมา+รับเข้า → ใช้ไปติดลบ
+      if (r.used !== undefined && r.used < -tol) {
+        // ถ้าวันนั้นมียืม-คืน ลดระดับเป็น "ควรตรวจ" เพราะยอดอาจเพิ่มจากของที่ยืมมาจริง
+        issues.push({ sev: traceBorrowHint(r) ? 2 : 3, date: r.date, matId: mat.id,
+          title: 'นับได้มากกว่ายกมา + รับเข้า ' + formatAsBigSmall(mat, -r.used),
+          detail: 'ยกมา ' + formatAsBigSmall(mat, r.carry) + ' + รับเข้า ' + formatAsBigSmall(mat, r.received) + ' แต่นับได้ ' + formatAsBigSmall(mat, r.actual) + ' — อาจลืมลงรับเข้า หรือกรอกยอดนับผิด (วันนี้หรือวันก่อน)' + traceBorrowHint(r) });
+        return;
+      }
+      // 2) ใช้ไปมากผิดปกติเมื่อเทียบกับวันอื่น
+      var bigUsedFlag = false;
+      if (r.used !== undefined && usedPos.length >= 5 && r.used > medUsed * 3 && (r.used - medUsed) > (mat.noFraction ? 0.5 : mat.ratio * 0.5)) {
+        issues.push({ sev: 2, date: r.date, matId: mat.id,
+          title: 'ใช้ไปมากผิดปกติ ' + u(r.used) + ' (ปกติราว ' + u(medUsed) + ')',
+          detail: 'อาจกรอกยอดนับต่ำไป หรือวันก่อนหน้ากรอกยอดนับสูงเกิน' + traceBorrowHint(r) });
+        bigUsedFlag = true;
+      }
+      // 3) ผลต่างกับสูตรสูง (เฉพาะวันที่มียอดขายตามสูตร)
+      if (!bigUsedFlag && r.variance !== undefined && r.pos > 0) {
+        var thr = Math.max(r.pos * 0.2, mat.noFraction ? 1 : mat.ratio * 0.25);
+        if (Math.abs(r.variance) > thr) {
+          issues.push({ sev: 2, date: r.date, matId: mat.id,
+            title: (r.variance < 0 ? 'ใช้เกินสูตร ' : 'ใช้ไม่ถึงสูตร ') + u(Math.abs(r.variance)),
+            detail: 'ใช้ไปจริง ' + u(r.used) + ' · ขายตามสูตร ' + u(r.pos) + (r.waste ? ' · หักลบ ' + u(r.waste) : '') + traceBorrowHint(r) });
+        }
+      }
+      // 4) ปกติมียอดขายตามสูตร แต่วันนั้นไม่มี
+      if (usesRecipe && r.pos === 0 && r.used !== undefined && r.used > (mat.noFraction ? 0.5 : mat.ratio * 0.25)) {
+        (missingPosByDay[r.date] = missingPosByDay[r.date] || []).push({ mat: mat, r: r });
+      }
+      // 5) หักลบแต่ไม่ระบุสาเหตุ
+      if (r.waste > 0 && !r.wasteNote) {
+        issues.push({ sev: 1, date: r.date, matId: mat.id, title: 'หักลบ ' + formatAsBigSmall(mat, r.waste) + ' โดยไม่ระบุสาเหตุ', detail: '' });
+      }
+    });
+
+    // 6) วันที่ไม่ได้นับ (เฉพาะรายการที่ปกตินับเกือบทุกวัน)
+    if (recs.length >= 5 && countedRecs.length / recs.length >= 0.7) {
+      var firstIdx = recs.findIndex(function(r){ return r.counted; });
+      var lastIdx = recs.length - 1 - recs.slice().reverse().findIndex(function(r){ return r.counted; });
+      var gaps = recs.filter(function(r, i){ return !r.counted && i > firstIdx && i < lastIdx; });
+      if (gaps.length) {
+        issues.push({ sev: 1, date: gaps[gaps.length - 1].date, matId: mat.id,
+          title: 'ไม่ได้นับ ' + gaps.length + ' วัน',
+          detail: gaps.map(function(g){ return traceShortDate(g.date); }).join(', ') + ' — ยอดยกมาวันถัดไปใช้ยอดนับครั้งก่อน' });
+      }
+    }
+  });
+
+  Object.keys(missingPosByDay).forEach(function(day){
+    var list = missingPosByDay[day];
+    if (list.length >= 3) {
+      issues.push({ sev: 2, date: day, matId: null,
+        title: 'ไม่มียอดขายตามสูตรเลย ' + list.length + ' รายการ',
+        detail: 'อาจลืมกรอกยอดขายเมนูวันนั้น — ' + list.slice(0, 6).map(function(x){ return x.mat.name; }).join(', ') + (list.length > 6 ? ' ฯลฯ' : '') });
+    } else {
+      list.forEach(function(x){
+        issues.push({ sev: 2, date: day, matId: x.mat.id,
+          title: 'ไม่มียอดขายตามสูตร แต่ใช้ไป ' + fmtNum(x.r.used) + ' ' + x.mat.smallUnit,
+          detail: 'ปกติรายการนี้มียอดขายตามสูตร — อาจลืมกรอกเมนูที่ใช้วัตถุดิบนี้' });
+      });
+    }
+  });
+
+  issues.sort(function(a, b){ return b.sev - a.sev || (a.date < b.date ? 1 : a.date > b.date ? -1 : 0); });
+  return issues;
+}
+
+function traceRenderScan(issues, data){
+  var wrap = document.getElementById('traceScanWrap');
+  if (!issues.length) {
+    wrap.innerHTML = '<p class="text-sm text-green-700 bg-green-50 border rounded-xl" style="border-color:#bbf7d0 px-4 py-3">✓ ไม่พบจุดที่น่าสงสัยในช่วง ' + traceShortDate(data.from) + ' – ' + traceShortDate(data.to) + '</p>';
+    return;
+  }
+  var SEV = {
+    3: { label: '🔴 น่าจะลงพลาด', style: 'background:#fef2f2;border-color:#fecaca', text: 'text-red-600' },
+    2: { label: '🟠 ควรตรวจ', style: 'background:#fffbeb;border-color:#fde68a', text: 'text-amber-700' },
+    1: { label: '⚪ ข้อสังเกต', style: 'background:#f8fafc;border-color:#e2e8f0', text: 'text-slate-500' },
+  };
+  var counts = { 3: 0, 2: 0, 1: 0 }; issues.forEach(function(i){ counts[i.sev]++; });
+  var html = '<div class="flex gap-2 flex-wrap mb-3 text-xs font-semibold">' +
+    [3, 2, 1].map(function(s){ return '<span class="border rounded-lg px-3 py-1 ' + SEV[s].text + '" style="' + SEV[s].style + '">' + SEV[s].label + ' ' + counts[s] + '</span>'; }).join('') + '</div>';
+  [3, 2, 1].forEach(function(s){
+    var list = issues.filter(function(i){ return i.sev === s; });
+    if (!list.length) return;
+    html += '<details class="mb-2"' + (s >= 2 ? ' open' : '') + '><summary class="text-xs font-semibold ' + SEV[s].text + ' cursor-pointer list-none py-1">' + SEV[s].label + ' (' + list.length + ')</summary><div class="space-y-1.5 mt-1">';
+    html += list.map(function(i){
+      var mat = i.matId ? materialById(i.matId) : null;
+      return '<div class="border rounded-lg px-3 py-2 bg-white" style="' + SEV[s].style + '">' +
+        '<div class="flex items-start justify-between gap-2">' +
+          '<div class="min-w-0">' +
+            '<p class="text-xs"><span class="font-semibold text-slate-900">' + traceShortDate(i.date) + '</span>' + (mat ? ' · <span class="font-semibold text-slate-700">' + traceEsc(mat.name) + '</span>' : '') + '</p>' +
+            '<p class="text-xs font-semibold ' + SEV[s].text + ' mt-0.5">' + traceEsc(i.title) + '</p>' +
+            (i.detail ? '<p class="text-[11px] text-slate-500 mt-0.5">' + traceEsc(i.detail) + '</p>' : '') +
+          '</div>' +
+          '<div class="flex flex-col gap-1 shrink-0">' +
+            (mat ? '<button type="button" data-tracehist="' + mat.id + '" data-tracedate="' + i.date + '" class="text-[11px] font-semibold text-accent-700 bg-white border border-accent-200 rounded-md px-2 py-1">📈 ประวัติ</button>' : '') +
+            '<button type="button" data-tracegoto="' + i.date + '" class="text-[11px] font-semibold text-slate-600 bg-white border border-slate-200 rounded-md px-2 py-1">✏️ แก้วันนั้น</button>' +
+          '</div>' +
+        '</div></div>';
+    }).join('');
+    html += '</div></details>';
+  });
+  wrap.innerHTML = html;
+}
+
+function traceRenderTimeline(matId, data, focusDate, issues){
+  var wrap = document.getElementById('traceTimelineWrap');
+  var mat = materialById(matId);
+  if (!mat) { wrap.innerHTML = ''; return; }
+  var recs = (data.perMat[matId] || []).slice().reverse(); // ใหม่สุดอยู่บน
+  var flagged = {};
+  (issues || []).forEach(function(i){ if (i.matId === matId && i.sev >= 2) (flagged[i.date] = flagged[i.date] || []).push(i); });
+  var cell = 'px-2 py-1.5 font-num whitespace-nowrap';
+  var th = '<th class="px-2 py-1.5 text-left text-[10px] font-semibold text-slate-400 whitespace-nowrap">';
+  var rowsHtml = recs.map(function(r){
+    var f = flagged[r.date];
+    var rowStyle = f ? (f.some(function(x){ return x.sev === 3; }) ? 'background:#fef2f2' : 'background:#fffbeb') : '';
+    if (r.date === focusDate) rowStyle += ';outline:2px solid #c2693a;outline-offset:-2px';
+    var extra = (r.note ? '<span class="block">' + traceEsc(r.note) + '</span>' : '') +
+      (r.counted && r.waste > 0 ? '<span class="block text-red-500">🗑️ หักลบ ' + formatAsBigSmall(mat, r.waste) + (r.wasteNote ? ' — ' + traceEsc(r.wasteNote) : '') + '</span>' : '') +
+      (r.borrowNote ? '<span class="block" style="color:#2563eb">🔄 ' + traceEsc(r.borrowNote) + '</span>' : '') +
+      r.borrows.filter(function(l){ return !r.borrowNote; }).map(function(l){ return '<span class="block" style="color:#2563eb">🔄 ' + (l.type === 'lend_out' ? 'ให้ยืม' : 'ยืมมา') + ' ' + traceEsc(l.counterpart || '') + ' ' + fmtNum(l.qty_big || 0) + ' ' + mat.bigUnit + (Number(l.qty_small) ? ' + ' + fmtNum(l.qty_small) + ' ' + mat.smallUnit : '') + '</span>'; }).join('') +
+      (f ? f.map(function(x){ return '<span class="block font-semibold ' + (x.sev === 3 ? 'text-red-600' : 'text-amber-700') + '">⚠️ ' + traceEsc(x.title) + '</span>'; }).join('') : '');
+    var dateCell = '<button type="button" data-tracegoto="' + r.date + '" class="font-semibold text-accent-700 whitespace-nowrap" title="ไปแก้วันนั้น">' + traceShortDate(r.date) + ' ✏️</button>';
+    if (!r.counted) {
+      return '<tr id="tracerow_' + r.date + '" class="border-b border-slate-100 align-top" style="' + rowStyle + '"><td class="px-2 py-1.5">' + dateCell + '</td>' +
+        '<td class="px-2 py-1.5 text-slate-400 italic" colspan="6">ไม่ได้นับ</td><td class="px-2 py-1.5 text-[11px] text-slate-500" style="min-width:160px">' + extra + '</td></tr>';
+    }
+    var varCell = (r.variance !== undefined && r.pos > 0) ? varianceBadge(r.variance) : '<span class="text-slate-300">—</span>';
+    return '<tr id="tracerow_' + r.date + '" class="border-b border-slate-100 align-top" style="' + rowStyle + '">' +
+      '<td class="px-2 py-1.5">' + dateCell + '</td>' +
+      '<td class="' + cell + '">' + (r.carry !== null ? formatAsBigSmall(mat, r.carry) : '<span class="text-slate-300">—</span>') + '</td>' +
+      '<td class="' + cell + '">' + (r.received ? formatAsBigSmall(mat, r.received) : '<span class="text-slate-300">0</span>') + '</td>' +
+      '<td class="' + cell + ' font-semibold text-slate-900">' + formatAsBigSmall(mat, r.actual) + '</td>' +
+      '<td class="' + cell + (r.used !== undefined && r.used < 0 ? ' text-red-600 font-semibold' : '') + '">' + (r.used !== undefined ? fmtNum(r.used) + ' ' + mat.smallUnit : '—') + '</td>' +
+      '<td class="' + cell + '">' + (r.pos ? fmtNum(r.pos) + ' ' + mat.smallUnit : '<span class="text-slate-300">0</span>') + '</td>' +
+      '<td class="' + cell + '">' + varCell + '</td>' +
+      '<td class="px-2 py-1.5 text-[11px] text-slate-500" style="min-width:160px;white-space:normal;word-break:break-word">' + extra + '</td></tr>';
+  }).join('');
+  wrap.innerHTML =
+    '<p class="text-[11px] text-slate-400 mt-1 mb-1.5">' + traceEsc(mat.name) + ' · ' + traceShortDate(data.from) + ' – ' + traceShortDate(data.to) + ' · ใหม่สุดอยู่บน · หน่วยใช้ไป/ขายตามสูตรเป็น ' + mat.smallUnit + '</p>' +
+    '<div class="overflow-x-auto border border-slate-200 rounded-xl bg-white"><table class="w-full text-xs">' +
+    '<thead><tr class="border-b border-slate-200 bg-slate-50">' + th + 'วันที่</th>' + th + 'ยกมา</th>' + th + 'รับเข้า</th>' + th + 'นับจริง</th>' + th + 'ใช้ไปจริง</th>' + th + 'ขายตามสูตร</th>' + th + 'ผลต่าง</th>' + th + 'หมายเหตุ / หักลบ / ยืม</th></tr></thead>' +
+    '<tbody>' + rowsHtml + '</tbody></table></div>';
+  if (focusDate) {
+    var rowEl = document.getElementById('tracerow_' + focusDate);
+    if (rowEl) setTimeout(function(){ rowEl.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 50);
+  }
+}
+
+var traceLastIssues = null;
+function traceRange(){
+  var from = document.getElementById('traceFrom').value, to = document.getElementById('traceTo').value;
+  if (!branchSelectEl.value) { alert('กรุณาเลือกสาขา (ที่หน้าหลัก) ก่อน'); return null; }
+  if (!from || !to || from > to) { alert('กรุณาเลือกช่วงวันที่ให้ถูกต้อง'); return null; }
+  var span = Math.round((new Date(to + 'T00:00:00') - new Date(from + 'T00:00:00')) / 86400000) + 1;
+  if (span > 92) { alert('เลือกช่วงได้ไม่เกิน 92 วันต่อครั้ง'); return null; }
+  return { from: from, to: to };
+}
+async function traceRunScan(){
+  var rg = traceRange(); if (!rg) return;
+  var st = document.getElementById('traceStatus');
+  st.textContent = 'กำลังโหลดและตรวจข้อมูล...';
+  setSyncStatus('syncing');
+  try {
+    traceCache = null;
+    var data = await traceLoad(rg.from, rg.to);
+    traceLastIssues = traceAnalyze(data);
+    traceRenderScan(traceLastIssues, data);
+    st.textContent = 'สาขา ' + data.branch + ' · ' + traceShortDate(rg.from) + ' – ' + traceShortDate(rg.to) + ' (' + data.days.length + ' วัน)';
+    setSyncStatus('online');
+    var sel = document.getElementById('traceMatSelect');
+    if (sel.value) traceRenderTimeline(sel.value, data, null, traceLastIssues);
+  } catch (e) { console.error('trace scan failed', e); st.textContent = 'โหลดข้อมูลไม่สำเร็จ: ' + e.message; setSyncStatus('error'); }
+}
+async function traceShowHistory(matId, focusDate){
+  var rg = traceRange(); if (!rg || !matId) return;
+  var st = document.getElementById('traceStatus');
+  try {
+    if (!traceCache || traceCache.key !== branchSelectEl.value + '|' + rg.from + '|' + rg.to) st.textContent = 'กำลังโหลดข้อมูล...';
+    var data = await traceLoad(rg.from, rg.to);
+    if (!traceLastIssues) traceLastIssues = traceAnalyze(data);
+    traceRenderTimeline(matId, data, focusDate || null, traceLastIssues);
+    st.textContent = 'สาขา ' + data.branch + ' · ' + traceShortDate(rg.from) + ' – ' + traceShortDate(rg.to);
+  } catch (e) { console.error('trace history failed', e); st.textContent = 'โหลดข้อมูลไม่สำเร็จ: ' + e.message; }
+}
+
+document.getElementById('traceScanBtn').addEventListener('click', traceRunScan);
+document.getElementById('traceShowBtn').addEventListener('click', function(){ traceShowHistory(document.getElementById('traceMatSelect').value); });
+['traceFrom', 'traceTo'].forEach(function(id){
+  document.getElementById(id).addEventListener('change', function(){ traceCache = null; traceLastIssues = null; });
+});
+document.getElementById('adminTabTrace').addEventListener('click', function(e){
+  var h = e.target.closest('[data-tracehist]');
+  if (h) {
+    var sel = document.getElementById('traceMatSelect'); sel.value = h.dataset.tracehist;
+    traceShowHistory(h.dataset.tracehist, h.dataset.tracedate);
+    return;
+  }
+  var g = e.target.closest('[data-tracegoto]');
+  if (g) {
+    pastDateInputEl.value = g.dataset.tracegoto;
+    showAdminTab('past');
+    loadPastDate();
+  }
+});
 
 (async function init(){
   const today = new Date();

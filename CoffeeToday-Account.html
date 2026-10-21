@@ -3066,7 +3066,14 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
     acctTbody.innerHTML = '';
     if (acctExpRows.length) {
       if (acctListEmpty) acctListEmpty.style.display = 'none';
-      acctExpRows.forEach(function(r) {
+      // เรียงตามวันที่ ใหม่สุดอยู่บน (วันเดียวกัน — รายการที่ลงทีหลังอยู่บน)
+      // ไม่พึ่งลำดับแถวในชีท เพราะรายการที่ลงย้อนหลังหรือซิงค์จากอีกเครื่องจะต่อท้ายชีท ทำให้ลำดับสลับ
+      var sortedAcct = acctExpRows.slice().sort(function(a, b) {
+        var da = ymdOf(a[0]), db = ymdOf(b[0]);
+        if (da !== db) return da < db ? 1 : -1;
+        return (parseFloat(b[6]) || 0) - (parseFloat(a[6]) || 0);
+      });
+      sortedAcct.forEach(function(r) {
         var date   = String(r[0] || '');
         var desc   = String(r[2] || '-');
         var cat    = String(r[3] || '-');
@@ -5268,6 +5275,5 @@ window.addEventListener('beforeunload', function(e) {
 </div>
 </body>
 </html>
-
 
 

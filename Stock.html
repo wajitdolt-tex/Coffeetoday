@@ -5981,6 +5981,7 @@ async function renderBorrowTab(filterText){
         var completedDate = /^\d{4}-\d{2}-\d{2}$/.test(answer.trim()) ? answer.trim() : defaultDate;
         completeBorrowLog(id, completedDate).catch(function(e){ console.error(e); });
       }
+      if (action === 'partial')    partialReturnBorrowLog(id).catch(function(e){ console.error(e); });
       if (action === 'uncomplete') uncompleteBorrowLog(id).catch(function(e){ console.error(e); });
       if (action === 'delete')     deleteBorrowLog(id).catch(function(e){ console.error(e); });
       if (action === 'edit')       editBorrowLog(id).catch(function(e){ console.error(e); });
@@ -6015,6 +6016,7 @@ function borrowRowHTML(l){
           '<button data-bid="' + l.id + '" data-baction="complete" class="flex-1 text-xs py-1.5 rounded-lg bg-green-50 text-green-700 font-semibold border border-green-200">' +
             (l.type === 'borrow_in' ? '✓ คืนแล้ว' : '✓ รับคืนแล้ว') +
           '</button>' +
+          '<button data-bid="' + l.id + '" data-baction="partial" class="flex-1 text-xs py-1.5 rounded-lg bg-white text-accent-700 font-semibold border border-accent-200">↩︎ ' + (l.type === 'borrow_in' ? 'คืนบางส่วน' : 'รับคืนบางส่วน') + '</button>' +
           '<button data-bid="' + l.id + '" data-baction="edit" class="px-3 py-1.5 rounded-lg bg-slate-50 text-slate-600 text-xs border border-slate-200">✎</button>' +
           '<button data-bid="' + l.id + '" data-baction="delete" class="px-3 py-1.5 rounded-lg bg-red-50 text-red-500 text-xs border border-red-100">🗑</button>' +
         '</div>'
@@ -6129,6 +6131,67 @@ async function completeBorrowLog(id, completedDate){
     // เลือกวันที่คืนเป็นวันอื่น (ย้อนหลัง) — ไม่กระทบสต็อก/badge ของวันนี้เลย
     // เพราะข้อมูลของวันนี้ปิดไปแล้วไม่เกี่ยวกับการคืนที่เกิดขึ้นวันอื่น ต้องไปแก้ที่หน้า "ย้อนหลัง" ของวันนั้นแทน
     showToast('บันทึกวันที่คืนแล้ว ✓ (ไม่กระทบสต็อกวันนี้ — ถ้าต้องการปรับยอดของวันที่ ' + finalDate + ' ให้ไปแก้ที่แท็บ "ย้อนหลัง")', 'success');
+  }
+  await renderBorrowTab(document.getElementById('borrowSearchInput') ? document.getElementById('borrowSearchInput').value : '');
+}
+
+// คืนบางส่วน — แยกรายการ: ส่วนที่คืนกลายเป็นรายการใหม่ (เสร็จแล้ว) ส่วนที่เหลือยังค้างอยู่ในรายการเดิม
+// ผลต่อสต็อกเหมือนกดคืนปกติ แต่คิดเฉพาะจำนวนที่คืน (คืนวันนี้ = ปรับสต็อกวันนี้ / คืนวันอื่น = ไม่กระทบวันนี้)
+async function partialReturnBorrowLog(id){
+  var allLogs = await loadBorrowLogs();
+  var log = allLogs.find(function(l){ return l.id === id; });
+  if (!log || log.status !== 'pending') return;
+  var mat = materialById(log.materialId);
+  var ratio = mat ? mat.ratio : 1;
+  var noFrac = !mat || mat.noFraction;
+  var bigU = mat ? mat.bigUnit : '', smallU = mat ? mat.smallUnit : '';
+  var totalSmall = (log.qtyBig || 0) * ratio + (noFrac ? 0 : (log.qtySmall || 0));
+  var totalStr = mat ? formatAsBigSmall(mat, totalSmall) : String(log.qtyBig);
+  var verb = log.type === 'borrow_in' ? 'คืน' : 'รับคืน';
+
+  var ans = prompt(verb + 'เท่าไหร่? (ค้างอยู่ ' + totalStr + ')\n' +
+    (noFrac ? 'ใส่จำนวน ' + bigU + ' เช่น 2' : 'ใส่จำนวน ' + bigU + ' เช่น 2 หรือมีเศษใส่ 2+50 (= 2 ' + bigU + ' 50 ' + smallU + ')'), '');
+  if (ans === null) return;
+  var m = String(ans).trim().match(/^(\d+(?:\.\d+)?)?\s*(?:\+\s*(\d+(?:\.\d+)?))?$/);
+  if (!m || (!m[1] && !m[2])) { alert('รูปแบบจำนวนไม่ถูกต้อง'); return; }
+  var retBig = parseFloat(m[1] || '0'), retSmallIn = noFrac ? 0 : parseFloat(m[2] || '0');
+  var retSmall = retBig * ratio + retSmallIn;
+  if (!(retSmall > 0)) { alert('กรุณาใส่จำนวนที่มากกว่า 0'); return; }
+  if (retSmall > totalSmall + 0.0001) { alert('จำนวนที่' + verb + 'มากกว่ายอดที่ค้างอยู่ (' + totalStr + ')'); return; }
+
+  var dateAns = prompt(verb + 'วันที่เท่าไหร่? (ปกติเป็นวันนี้)\nรูปแบบ: YYYY-MM-DD', todayISO());
+  if (dateAns === null) return;
+  var completedDate = /^\d{4}-\d{2}-\d{2}$/.test(dateAns.trim()) ? dateAns.trim() : todayISO();
+
+  // คืนครบพอดี → ใช้ขั้นตอนคืนปกติ
+  if (Math.abs(retSmall - totalSmall) < 0.0001) { await completeBorrowLog(id, completedDate); return; }
+
+  var toBigSmall = function(sm){
+    if (noFrac) return { big: Math.round(sm * 10000) / 10000, small: 0 };
+    var b = Math.floor((sm + 0.0001) / ratio);
+    return { big: b, small: Math.round((sm - b * ratio) * 100) / 100 };
+  };
+  var ret = toBigSmall(retSmall), rem = toBigSmall(totalSmall - retSmall);
+
+  var returnedLog = Object.assign({}, log, {
+    id: Date.now().toString(),
+    qtyBig: ret.big, qtySmall: ret.small,
+    note: (log.note ? log.note + ' · ' : '') + verb + 'บางส่วน',
+    status: 'completed', completedDate: completedDate,
+  });
+  var remainingLog = Object.assign({}, log, { qtyBig: rem.big, qtySmall: rem.small });
+  try {
+    await upsertBorrowLog(returnedLog);
+    await upsertBorrowLog(remainingLog);
+  } catch(e){ showToast('บันทึกไม่สำเร็จ: ' + e.message, 'warn'); return; }
+
+  var retStr = mat ? formatAsBigSmall(mat, retSmall) : String(ret.big);
+  var remStr = mat ? formatAsBigSmall(mat, totalSmall - retSmall) : String(rem.big);
+  if (completedDate === todayISO()) {
+    applyBorrowStockImpact(returnedLog, true);
+    showToast(verb + 'แล้ว ' + retStr + ' ✓ เหลือค้าง ' + remStr, 'success');
+  } else {
+    showToast('บันทึก' + verb + ' ' + retStr + ' (วันที่ ' + completedDate + ') ✓ เหลือค้าง ' + remStr + ' — ไม่กระทบสต็อกวันนี้', 'success');
   }
   await renderBorrowTab(document.getElementById('borrowSearchInput') ? document.getElementById('borrowSearchInput').value : '');
 }

@@ -2071,7 +2071,7 @@ function liveStatusHTML(id){
   const displayUsed = (mat.id === 'creamer' && rec.usedActual < 0) ? 0 : rec.usedActual;
 
   const wasteLine = rec.wasteQty > 0
-    ? `<span class="block text-red-500 mt-0.5">🗑️ หักลบ ${fmtNum(rec.wasteQty)} ${mat.smallUnit}${rec.wasteNote ? ' — ' + rec.wasteNote : ''} (นับรวมในการเทียบสูตรแล้ว)</span>`
+    ? `<span class="block text-red-500 mt-0.5">🗑️ หักลบ ${wasteQtyLabel(mat, ri.wasteQtyBig, ri.wasteQty) || (fmtNum(rec.wasteQty) + ' ' + mat.smallUnit)}${rec.wasteNote ? ' — ' + rec.wasteNote : ''} (นับรวมในการเทียบสูตรแล้ว)</span>`
     : '';
 
   const posTouched = ri.posSale !== undefined && ri.posSale !== '';
@@ -2168,14 +2168,19 @@ function wasteReasonOptionsHTML(currentNote){
   // ถ้าเคยพิมพ์เหตุผลเองที่ไม่ตรงกับรายการมาตรฐาน ให้ default dropdown ไปที่ "อื่นๆ" แทน (ไม่ต้อง fabricate option ใหม่)
   return isStandard ? opts : opts.replace('value="อื่นๆ"', 'value="อื่นๆ" selected');
 }
-function wasteSummaryText(mat, ri){
-  const big = Number(ri.wasteQtyBig) || 0;
-  const small = Number(ri.wasteQty) || 0;
-  if (!big && !small) return '';
+// แสดงจำนวนหักลบตามหน่วยที่กรอกจริง เช่น "2 ถุง", "40 กรัม", "1 ถุง + 40 กรัม" (ไม่แปลงเป็นหน่วยเศษ)
+function wasteQtyLabel(mat, wasteBig, wasteSmall){
+  const big = Number(wasteBig) || 0;
+  const small = Number(wasteSmall) || 0;
   const parts = [];
   if (big > 0) parts.push(`${fmtNum(big)} ${mat.bigUnit}`);
   if (small > 0) parts.push(`${fmtNum(small)} ${mat.smallUnit}`);
-  return `(${parts.join(' + ')})`;
+  return parts.join(' + ');
+}
+
+function wasteSummaryText(mat, ri){
+  const label = wasteQtyLabel(mat, ri.wasteQtyBig, ri.wasteQty);
+  return label ? `(${label})` : '';
 }
 
 function materialCardHTML(mat){
@@ -4591,7 +4596,7 @@ function renderTable(){
               class="pos-input w-24 input-base input-sm !h-9 font-num">
             <span class="text-[11px] text-slate-400">${mat.smallUnit}</span>
           </div>
-          ${rec.wasteQty > 0 ? `<p class="text-[10px] text-red-500 mt-1">🗑️ หักลบ ${fmtNum(rec.wasteQty)} ${mat.smallUnit}</p>` : ''}
+          ${rec.wasteQty > 0 ? `<p class="text-[10px] text-red-500 mt-1">🗑️ หักลบ ${wasteQtyLabel(mat, (rawInputs[mat.id] || {}).wasteQtyBig, (rawInputs[mat.id] || {}).wasteQty) || (fmtNum(rec.wasteQty) + ' ' + mat.smallUnit)}${rec.wasteNote ? ' — ' + rec.wasteNote : ''}</p>` : ''}
         </td>
         <td class="px-4 py-3 font-num font-semibold text-slate-900">${fmtNum(rec.usedActual)} <span class="text-[11px] font-normal text-slate-400">${mat.smallUnit}</span></td>
         <td class="px-4 py-3">${varianceBadge(rec.variance)}</td>
@@ -4779,7 +4784,7 @@ const auditBackToTodayBtn = document.getElementById('auditBackToTodayBtn');
 function pastExtraInfoHTML(mat, wasteBig, wasteSmall, wasteNote, borrowNote){
   const wasteTotal = (Number(wasteBig) || 0) * mat.ratio + (Number(wasteSmall) || 0);
   let html = '';
-  if (wasteTotal > 0) html += `<span class="block text-red-500 mt-0.5">🗑️ หักลบ ${formatAsBigSmall(mat, wasteTotal)}${wasteNote ? ' — ' + wasteNote : ' — (ไม่ได้ระบุสาเหตุ)'}</span>`;
+  if (wasteTotal > 0) html += `<span class="block text-red-500 mt-0.5">🗑️ หักลบ ${wasteQtyLabel(mat, wasteBig, wasteSmall)}${wasteNote ? ' — ' + wasteNote : ' — (ไม่ได้ระบุสาเหตุ)'}</span>`;
   if (borrowNote) html += `<span class="block text-blue-600 mt-0.5">🔄 ${borrowNote}</span>`;
   return html;
 }
@@ -6494,7 +6499,7 @@ function traceAnalyze(data){
       }
       // 5) หักลบแต่ไม่ระบุสาเหตุ
       if (r.waste > 0 && !r.wasteNote) {
-        issues.push({ sev: 1, date: r.date, matId: mat.id, title: 'หักลบ ' + formatAsBigSmall(mat, r.waste) + ' โดยไม่ระบุสาเหตุ', detail: '' });
+        issues.push({ sev: 1, date: r.date, matId: mat.id, title: 'หักลบ ' + wasteQtyLabel(mat, r.row.waste_qty_big, r.row.waste_qty) + ' โดยไม่ระบุสาเหตุ', detail: '' });
       }
     });
 
@@ -6582,7 +6587,7 @@ function traceRenderTimeline(matId, data, focusDate, issues){
     var rowStyle = f ? (f.some(function(x){ return x.sev === 3; }) ? 'background:#fef2f2' : 'background:#fffbeb') : '';
     if (r.date === focusDate) rowStyle += ';outline:2px solid #c2693a;outline-offset:-2px';
     var extra = (r.note ? '<span class="block">' + traceEsc(r.note) + '</span>' : '') +
-      (r.counted && r.waste > 0 ? '<span class="block text-red-500">🗑️ หักลบ ' + formatAsBigSmall(mat, r.waste) + (r.wasteNote ? ' — ' + traceEsc(r.wasteNote) : '') + '</span>' : '') +
+      (r.counted && r.waste > 0 ? '<span class="block text-red-500">🗑️ หักลบ ' + wasteQtyLabel(mat, r.row.waste_qty_big, r.row.waste_qty) + (r.wasteNote ? ' — ' + traceEsc(r.wasteNote) : '') + '</span>' : '') +
       (r.borrowNote ? '<span class="block" style="color:#2563eb">🔄 ' + traceEsc(r.borrowNote) + '</span>' : '') +
       r.borrows.filter(function(l){ return !r.borrowNote; }).map(function(l){ return '<span class="block" style="color:#2563eb">🔄 ' + (l.type === 'lend_out' ? 'ให้ยืม' : 'ยืมมา') + ' ' + traceEsc(l.counterpart || '') + ' ' + fmtNum(l.qty_big || 0) + ' ' + mat.bigUnit + (Number(l.qty_small) ? ' + ' + fmtNum(l.qty_small) + ' ' + mat.smallUnit : '') + '</span>'; }).join('') +
       (f ? f.map(function(x){ return '<span class="block font-semibold ' + (x.sev === 3 ? 'text-red-600' : 'text-amber-700') + '">⚠️ ' + traceEsc(x.title) + '</span>'; }).join('') : '');

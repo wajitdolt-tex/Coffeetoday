@@ -642,6 +642,11 @@ function evalExpr(str) {
   return isFinite(total) ? Math.round(total * 10000) / 10000 : parseFloat(str) || 0;
 }
 function hasExpr(val) { return String(val||'').includes('+'); }
+// นิพจน์ที่พิมพ์ครบแล้ว เช่น "40+8" (ไม่นับ "10+" หรือ "+5" ที่พิมพ์ค้าง/พิมพ์ผิด)
+function isCompleteExpr(val) {
+  const parts = String(val||'').split('+').map(p => p.trim());
+  return parts.length > 1 && parts.every(p => p !== '' && !isNaN(Number(p)));
+}
 function exprHintText(val) { return hasExpr(val) ? '= ' + fmtNum(evalExpr(val)) : ''; }
 
 function FR(id, name, category, bigUnit, smallUnit, ratio, carry, subUnit, subRatio) {
@@ -1478,7 +1483,7 @@ async function loadCarryForward(branch){
       // แต่ละช่องเก็บ + ล่าสุดของตัวเอง ไม่ถูกลบด้วยการแก้ไขช่องอื่นหรือแก้เป็นค่าไม่มี + ทีหลัง
       const bigExpr = useRow.carry_expr_big || '';
       const smallExpr = useRow.carry_expr_small || '';
-      mat.carryExpr = [bigExpr, smallExpr].filter(e => e && e.includes('+')).join(' + ') || null;
+      mat.carryExpr = [bigExpr, smallExpr].filter(e => e && isCompleteExpr(e)).join(' + ') || null;
       // sticky napuka credit: หาแถวล่าสุด (ไม่จำกัดแค่ useRow) ที่เคยมีการตีน้ำคาปูไว้ ให้คงอยู่ข้ามวันจนกว่าจะตีรอบใหม่
       if (matId === 'evapmilk' || matId === 'creamer') {
         const napukaRow = matRows.find(r => r.napuka_credit_big !== null && r.napuka_credit_big !== undefined);
@@ -1609,8 +1614,8 @@ async function saveDailyCount(matId){
   // sticky expression แยกอิสระต่อช่อง: อัปเดตเฉพาะตอนช่องนั้นๆ มี + ใหม่ ถ้าช่องนั้นไม่มี + ให้คงค่าที่เคย sticky ไว้ (ไม่ลบ)
   // เพื่อรองรับ workflow ร้าน: เช้ากรอกเต็ม "20+13" (นับของไม่เคลื่อนไหวก่อน) บ่ายแก้เต็มเป็นยอดจริง "33" แต่เศษกลับมี + ใหม่ "3+3"
   // ทั้งสองช่องต้องเก็บ sticky ของตัวเองแยกกัน ไม่ให้ฝั่งหนึ่งไปลบอีกฝั่งที่ยังไม่ได้แก้
-  if (hasExpr(ri.actualBig)) ri.stickyBigExpr = ri.actualBig;
-  if (hasExpr(ri.actualSmall)) ri.stickySmallExpr = ri.actualSmall;
+  if (hasExpr(ri.actualBig)) ri.stickyBigExpr = isCompleteExpr(ri.actualBig) ? ri.actualBig : null;
+  if (hasExpr(ri.actualSmall)) ri.stickySmallExpr = isCompleteExpr(ri.actualSmall) ? ri.actualSmall : null;
   setSyncStatus('syncing');
   try {
     await sb('daily_counts?on_conflict=branch,count_date,material_id', {
@@ -2301,7 +2306,7 @@ async function refreshSingleMaterialCarry(matId, cardEl){
     mat.carry = (Number(useRow.actual_big) || 0) * mat.ratio + (mat.noFraction ? 0 : (Number(useRow.actual_small) || 0));
     const bigExpr = useRow.carry_expr_big || '';
     const smallExpr = useRow.carry_expr_small || '';
-    mat.carryExpr = [bigExpr, smallExpr].filter(e => e && e.includes('+')).join(' + ') || null;
+    mat.carryExpr = [bigExpr, smallExpr].filter(e => e && isCompleteExpr(e)).join(' + ') || null;
     // re-render เฉพาะการ์ดนี้ให้เห็นยอดล่าสุดทันที ไม่ต้อง render ทั้งหน้าใหม่
     if (cardEl) cardEl.innerHTML = materialCardHTML(mat);
   } catch (e) { console.error('refreshSingleMaterialCarry failed', e); }
@@ -2628,6 +2633,9 @@ function bindMaterialInputDelegation(container){
     if (field === 'userNote') rawInputs[id].noteIsAutoFilled = false;
     if (field.startsWith('qfsize_')) applyQuickFill(id);
     if (['received', 'actualBig', 'actualSmall', 'posSale'].includes(field)) clearStaleReview(id);
+    // พิมพ์ช่องนับจริงใหม่เป็นตัวเลขธรรมดา (ไม่มี +) → ล้างนิพจน์ที่เคยจำไว้ของช่องนั้น ไม่ให้ค้างไปโชว์ในยกมา
+    if (field === 'actualBig' && !hasExpr(e.target.value)) rawInputs[id].stickyBigExpr = null;
+    if (field === 'actualSmall' && !hasExpr(e.target.value)) rawInputs[id].stickySmallExpr = null;
     if (field === 'actualSmall') normalizeActualSmall(id);
     recomputeMaterial(id);
     if (id === 'napukasauce' && field === 'actualBig') applyNapukaCreditBack();
@@ -2677,8 +2685,8 @@ function bindMaterialInputDelegation(container){
     if (id && (field === 'actualBig' || field === 'actualSmall')) {
       const ri = rawInputs[id];
       if (ri && (!ri.userNote || ri.noteIsAutoFilled)) {
-        const bigPart = ri.actualBig && hasExpr(ri.actualBig) ? ri.actualBig : '';
-        const smallPart = ri.actualSmall && hasExpr(ri.actualSmall) ? ri.actualSmall : '';
+        const bigPart = ri.actualBig && isCompleteExpr(ri.actualBig) ? ri.actualBig : '';
+        const smallPart = ri.actualSmall && isCompleteExpr(ri.actualSmall) ? ri.actualSmall : '';
         const summary = [bigPart, smallPart].filter(Boolean).join('|');
         if (summary) {
           ri.userNote = summary;
@@ -5065,8 +5073,8 @@ async function savePastDailyCount(matId){
     && (ri.posSale === undefined || ri.posSale === '')
     && !ri.userNote;
   if (nothingTyped) return;
-  if (hasExpr(ri.actualBig)) ri.stickyBigExpr = ri.actualBig;
-  if (hasExpr(ri.actualSmall)) ri.stickySmallExpr = ri.actualSmall;
+  if (hasExpr(ri.actualBig)) ri.stickyBigExpr = isCompleteExpr(ri.actualBig) ? ri.actualBig : null;
+  if (hasExpr(ri.actualSmall)) ri.stickySmallExpr = isCompleteExpr(ri.actualSmall) ? ri.actualSmall : null;
   setSyncStatus('syncing');
   try {
     await sb('daily_counts?on_conflict=branch,count_date,material_id', {
@@ -5149,6 +5157,8 @@ pastListWrap.addEventListener('input', (e) => {
   if (!pastInputs[id]) pastInputs[id] = {};
   pastInputs[id][field] = e.target.value;
   if (field === 'userNote') pastInputs[id].noteIsAutoFilled = false;
+  if (field === 'actualBig' && !hasExpr(e.target.value)) pastInputs[id].stickyBigExpr = null;
+  if (field === 'actualSmall' && !hasExpr(e.target.value)) pastInputs[id].stickySmallExpr = null;
   scheduleSavePastDailyCount(id);
   if (id === 'napukasauce' && field === 'actualBig') applyNapukaCreditBackPast();
 });
@@ -5161,8 +5171,8 @@ pastListWrap.addEventListener('change', (e) => {
   if (field === 'actualBig' || field === 'actualSmall') {
     const ri = pastInputs[id];
     if (ri && (!ri.userNote || ri.noteIsAutoFilled)) {
-      const bigPart = ri.actualBig && hasExpr(ri.actualBig) ? ri.actualBig : '';
-      const smallPart = ri.actualSmall && hasExpr(ri.actualSmall) ? ri.actualSmall : '';
+      const bigPart = ri.actualBig && isCompleteExpr(ri.actualBig) ? ri.actualBig : '';
+      const smallPart = ri.actualSmall && isCompleteExpr(ri.actualSmall) ? ri.actualSmall : '';
       const summary = [bigPart, smallPart].filter(Boolean).join('|');
       if (summary) {
         ri.userNote = summary;
@@ -6735,3 +6745,5 @@ document.getElementById('adminTabTrace').addEventListener('click', function(e){
 </script>
 </body>
 </html>
+
+

@@ -3101,11 +3101,13 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
       if (acctListEmpty) acctListEmpty.style.display = 'block';
     }
     if (acctListTotal) {
+      // ยอดรวมตัวหนาเด่นสุด — เขียนชัดว่าเป็น "เงินที่จ่ายออกทั้งหมด" (รวมคืนเงินยืม) ไม่ใช่ค่าใช้จ่าย
+      var totStyle = 'font-family:\'DM Mono\',monospace;font-weight:700;font-size:15px;color:var(--accent);';
       acctListTotal.innerHTML = tLoanRepay > 0
-        ? 'ค่าใช้จ่าย <b style="font-family:\'DM Mono\',monospace;color:var(--red);">' + fmtS(tAcctExp) + '</b>'
+        ? 'ค่าใช้จ่าย <span style="font-family:\'DM Mono\',monospace;color:var(--red);">' + fmtS(tAcctExp) + '</span>'
           + ' · คืนเงินยืม <span style="font-family:\'DM Mono\',monospace;">' + fmtS(tLoanRepay) + '</span>'
-          + ' · รวม <span style="font-family:\'DM Mono\',monospace;">' + fmtS(tAcctExp + tLoanRepay) + '</span>'
-        : 'ค่าใช้จ่าย <b style="font-family:\'DM Mono\',monospace;color:var(--red);">' + fmtS(tAcctExp) + '</b>';
+          + ' · <b style="color:var(--text);">รวมเงินที่จ่ายออกทั้งหมด</b> <span style="' + totStyle + '">' + fmtS(tAcctExp + tLoanRepay) + '</span>'
+        : '<b style="color:var(--text);">รวมค่าใช้จ่าย</b> <span style="' + totStyle + '">' + fmtS(tAcctExp) + '</span>';
     }
   }
 
@@ -5292,5 +5294,3 @@ window.addEventListener('beforeunload', function(e) {
 </div>
 </body>
 </html>
-
-

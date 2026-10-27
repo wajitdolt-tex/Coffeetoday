@@ -676,9 +676,16 @@ tr:hover td{background:var(--bg3);}
         <div class="grid-3" id="ss-acctexp-expenses">
           <div class="stat-box" style="grid-column:span 3;text-align:center;color:var(--text3);font-size:13px;padding:16px;">ยังไม่มีข้อมูล</div>
         </div>
-        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-size:12px;color:var(--text2);">รวมคืนเงินยืมเดือนนี้</span>
-          <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--yellow);font-size:14px;" id="ss-loan-repay">฿0</span>
+        <!-- ยอดหลัก = ค่าใช้จ่ายบัญชีร้านที่นับเป็นรายจ่ายจริง · คืนเงินยืมแสดงเป็นบรรทัดเล็ก "ไม่รวม" กันสับสน -->
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;font-weight:700;color:var(--text);">รวมค่าใช้จ่ายบัญชีร้าน</span>
+            <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--red);font-size:15px;" id="ss-acctexp-card-total">฿0</span>
+          </div>
+          <div id="ss-loan-repay-row" style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;font-size:11px;color:var(--text3);">
+            <span>ไม่รวม: คืนเงินยืม (ใช้หนี้ ไม่ใช่รายจ่าย — ดูที่แถบกระแสเงินสด)</span>
+            <span style="font-family:'DM Mono',monospace;" id="ss-loan-repay">฿0</span>
+          </div>
         </div>
       </div>
 
@@ -686,7 +693,7 @@ tr:hover td{background:var(--bg3);}
       <div class="card" style="padding:0;overflow:hidden;margin-top:13px;">
         <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
           <span style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);">รายการบัญชีร้านเดือนนี้</span>
-          <span style="font-family:'DM Mono',monospace;font-weight:600;color:var(--accent);font-size:13px;" id="ss-acctexp-list-total">฿0.00</span>
+          <span style="font-size:12px;color:var(--text2);text-align:right;" id="ss-acctexp-list-total">฿0.00</span>
         </div>
         <div class="tbl-wrap">
           <table>
@@ -3058,6 +3065,10 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
   if (salTotEl) salTotEl.textContent = fmtS(tSalary);
   var loanRepayEl = document.getElementById('ss-loan-repay');
   if (loanRepayEl) loanRepayEl.textContent = fmtS(tLoanRepay);
+  var loanRowEl = document.getElementById('ss-loan-repay-row');
+  if (loanRowEl) loanRowEl.style.display = tLoanRepay > 0 ? 'flex' : 'none';
+  var acctCardTotEl = document.getElementById('ss-acctexp-card-total');
+  if (acctCardTotEl) acctCardTotEl.textContent = fmtS(tAcctExp);
 
   var acctTbody = document.getElementById('ss-acctexp-tbody');
   var acctListEmpty = document.getElementById('ss-acctexp-list-empty');
@@ -3089,7 +3100,13 @@ function renderSummary(rows, acctExpRows, branchKey, payableRowsRaw, salaryRowsR
     } else {
       if (acctListEmpty) acctListEmpty.style.display = 'block';
     }
-    if (acctListTotal) acctListTotal.textContent = fmtS(tAcctExp + tLoanRepay);
+    if (acctListTotal) {
+      acctListTotal.innerHTML = tLoanRepay > 0
+        ? 'ค่าใช้จ่าย <b style="font-family:\'DM Mono\',monospace;color:var(--red);">' + fmtS(tAcctExp) + '</b>'
+          + ' · คืนเงินยืม <span style="font-family:\'DM Mono\',monospace;">' + fmtS(tLoanRepay) + '</span>'
+          + ' · รวม <span style="font-family:\'DM Mono\',monospace;">' + fmtS(tAcctExp + tLoanRepay) + '</span>'
+        : 'ค่าใช้จ่าย <b style="font-family:\'DM Mono\',monospace;color:var(--red);">' + fmtS(tAcctExp) + '</b>';
+    }
   }
 
   // ── ค่าใช้จ่ายหน้าร้าน: ซ่อนน้ำแข็งเมื่อเป็นโลตัส (น้ำแข็งโลตัสเป็นวางบิล ไม่ใช่หน้าร้าน)

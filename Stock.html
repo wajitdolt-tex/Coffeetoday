@@ -2747,6 +2747,20 @@ function ozRecipeToStockQty(mat, ozQty){
   return mat.smallUnit === 'ออนซ์' ? ozQty : ozQty * 30;
 }
 
+// ===== วัตถุดิบแทนรายสาขา =====
+// ing.branchSub = { 'สาขาโลตัสระยอง': { materialId, qty } } — qty ว่าง/null = ใช้ปริมาณเดิมของสูตรหลัก
+// qty เก็บเป็นหน่วยหลักของวัตถุดิบตัวแทน (หน่วยเดียวกับที่แสดงข้างช่อง)
+const RECIPE_BRANCHES = ['สาขาแพชชั่นระยอง', 'สาขาโลตัสระยอง'];
+function branchShortName(b){ return String(b || '').replace(/^สาขา/, '').replace(/ระยอง$/, ''); }
+function resolveIngredientForBranch(ing, branch){
+  const sub = ing && ing.branchSub && branch ? ing.branchSub[branch] : null;
+  if (sub && sub.materialId && materialById(sub.materialId)) {
+    const hasQty = sub.qty !== undefined && sub.qty !== null && sub.qty !== '';
+    return { materialId: sub.materialId, qty: hasQty ? Number(sub.qty) : ing.qty, isSub: true };
+  }
+  return { materialId: ing.materialId, qty: ing.qty, isSub: false };
+}
+
 // ===== ระบบเลือกหน่วยอิสระต่อรายการวัตถุดิบในสูตร =====
 // หน่วยมาตรฐานให้เลือกในหน้ากรอกสูตร (นอกเหนือจากนี้พิมพ์เพิ่มเองได้ผ่าน "อื่นๆ...")
 const RECIPE_STANDARD_UNITS = ['ออนซ์', 'กรัม', 'ถุง', 'ห่อ', 'ใบ', 'มล.', 'กก.'];
@@ -2782,7 +2796,13 @@ function recipeUnitOptionsHTML(mat, selectedUnit){
 }
 
 function ingredientListHTML(recipe){
+  const branch = branchSelectEl ? branchSelectEl.value : '';
   return recipe.ingredients.map(i => {
+    const r = resolveIngredientForBranch(i, branch);
+    if (r.isSub) {
+      const subMat = materialById(r.materialId);
+      return `<li class="flex justify-between gap-2"><span>${subMat.name} <span class="text-accent-700">(${branchShortName(branch)})</span></span><span class="font-num text-slate-500">${fmtNum(r.qty)} ${recipeUnitLabel(subMat)}</span></li>`;
+    }
     const mat = materialById(i.materialId);
     if (!mat) return '';
     const unit = i.unit || recipeUnitLabel(mat);
@@ -2957,7 +2977,47 @@ function recipeIngredientRowHTML(recipe, idx){
       </select>
       <button data-removeing-recipe="${recipe.id}" data-removeing-idx="${idx}" title="ลบวัตถุดิบนี้ออกจากสูตร" class="text-red-400 hover:text-red-600 shrink-0 w-7 h-7 flex items-center justify-center">✕</button>
     </div>
+    ${branchSubToggleHTML(recipe, idx)}
   </div>`;
+}
+
+// ปุ่ม "แยกสาขา" ใต้แต่ละวัตถุดิบในสูตร — render dropdown เฉพาะตอนเปิด (กัน DOM หนักบน iPad)
+function branchSubSummary(ing){
+  const subs = ing.branchSub || {};
+  return RECIPE_BRANCHES.filter(b => subs[b] && subs[b].materialId && materialById(subs[b].materialId))
+    .map(b => branchShortName(b) + ': ' + materialById(subs[b].materialId).name).join(' · ');
+}
+function branchSubToggleHTML(recipe, idx){
+  const ing = recipe.ingredients[idx];
+  const summary = branchSubSummary(ing);
+  const key = recipe.id + '_' + idx;
+  return `
+    <button type="button" data-togglebranchsub="${key}" class="mt-1.5 text-[10px] ${summary ? 'text-accent-700 font-semibold' : 'text-slate-400'} text-left w-full">
+      ⇄ แยกสาขา ${summary ? '— ' + summary : '(ถ้าสาขาไหนใช้วัตถุดิบอื่นแทน)'}
+    </button>
+    <div id="branchsub_${key}" class="${summary ? '' : 'hidden'} mt-1 space-y-1">${summary ? branchSubAreaHTML(recipe, idx) : ''}</div>`;
+}
+function branchSubAreaHTML(recipe, idx){
+  const ing = recipe.ingredients[idx];
+  const baseMat = materialById(ing.materialId);
+  const baseQtyLabel = baseMat ? fmtNum(ing.qty) + ' ' + recipeUnitLabel(baseMat) : '';
+  return RECIPE_BRANCHES.map(b => {
+    const sub = (ing.branchSub || {})[b] || {};
+    const subMat = sub.materialId ? materialById(sub.materialId) : null;
+    return `
+      <div class="flex items-center gap-1.5">
+        <span class="text-[10px] text-slate-500 shrink-0" style="width:3.2rem">${branchShortName(b)}</span>
+        <select data-recipeid="${recipe.id}" data-ingidx="${idx}" data-subbranch="${b}" data-recipefield="submat" class="input-base input-sm !h-8 !px-1 text-[11px] bg-white min-w-0 flex-1">
+          <option value="" ${subMat ? '' : 'selected'}>— เหมือนสูตรหลัก —</option>
+          ${materialOptionsHTML(subMat ? subMat.id : '')}
+        </select>
+        <input type="number" min="0" step="any" value="${subMat && sub.qty !== undefined && sub.qty !== null && sub.qty !== '' ? fmtNum(sub.qty) : ''}" ${subMat ? '' : 'disabled'}
+          placeholder="${subMat ? 'เดิม' : ''}" title="ว่าง = ใช้ปริมาณเดิม (${baseQtyLabel})"
+          data-recipeid="${recipe.id}" data-ingidx="${idx}" data-subbranch="${b}" data-recipefield="subqty"
+          class="input-base input-sm !h-8 !px-1 font-num text-xs text-center bg-white shrink-0" style="width:4rem">
+        <span class="text-[10px] text-slate-400 shrink-0" style="width:2.6rem">${subMat ? recipeUnitLabel(subMat) : ''}</span>
+      </div>`;
+  }).join('') + `<p class="text-[10px] text-slate-400">ช่องปริมาณว่าง = ใช้ปริมาณเดิม (${baseQtyLabel}) · ใส่ปริมาณเป็นหน่วยของวัตถุดิบตัวแทน</p>`;
 }
 
 function recipeCategoryOptionsHTML(selectedCat){
@@ -3068,6 +3128,26 @@ recipeEditListWrap.addEventListener('input', (e) => {
     const displayVal = parseFloat(e.target.value) || 0;
     // แปลงจากหน่วยที่กำลังแสดง (ing.unit) กลับเป็นหน่วยหลักของวัตถุดิบก่อนเก็บจริง
     ing.qty = (mat && ing.unit) ? recipeStoredQty(mat, displayVal, ing.unit) : displayVal;
+  } else if (field === 'submat' || field === 'subqty') {
+    const idx = parseInt(e.target.dataset.ingidx, 10);
+    const ing = recipe.ingredients[idx];
+    const b = e.target.dataset.subbranch;
+    if (!ing || !b) return;
+    if (!ing.branchSub) ing.branchSub = {};
+    if (field === 'submat') {
+      if (!e.target.value) delete ing.branchSub[b];
+      else ing.branchSub[b] = { materialId: e.target.value, qty: null }; // เปลี่ยนตัวแทนแล้ว ล้างปริมาณเดิม (หน่วยอาจไม่ตรง)
+    } else if (ing.branchSub[b]) {
+      ing.branchSub[b].qty = e.target.value === '' ? null : (parseFloat(e.target.value) || 0);
+    }
+    if (!Object.keys(ing.branchSub).length) delete ing.branchSub;
+    if (field === 'submat') {
+      const area = document.getElementById('branchsub_' + recipe.id + '_' + idx);
+      if (area) { area.innerHTML = branchSubAreaHTML(recipe, idx); area.classList.remove('hidden'); }
+      const tbtn = recipeEditListWrap.querySelector(`[data-togglebranchsub="${recipe.id}_${idx}"]`);
+      if (tbtn) { const sm = branchSubSummary(ing); tbtn.textContent = '⇄ แยกสาขา ' + (sm ? '— ' + sm : '(ถ้าสาขาไหนใช้วัตถุดิบอื่นแทน)'); tbtn.classList.toggle('text-accent-700', !!sm); tbtn.classList.toggle('font-semibold', !!sm); tbtn.classList.toggle('text-slate-400', !sm); }
+    }
+    applyRecipeUsageToMaterials();
   } else if (field === 'ingmat') {
     const idx = parseInt(e.target.dataset.ingidx, 10);
     recipe.ingredients[idx].materialId = e.target.value;
@@ -3139,6 +3219,21 @@ recipeEditListWrap.addEventListener('change', (e) => {
 });
 
 recipeEditListWrap.addEventListener('click', async (e) => {
+  const subToggle = e.target.closest('[data-togglebranchsub]');
+  if (subToggle) {
+    const key = subToggle.dataset.togglebranchsub;
+    const cut = key.lastIndexOf('_');
+    const recipe = RECIPES.find(r => r.id === key.slice(0, cut));
+    const idx = parseInt(key.slice(cut + 1), 10);
+    const area = document.getElementById('branchsub_' + key);
+    if (!recipe || !area) return;
+    if (area.classList.contains('hidden')) {
+      requestAnimationFrame(() => { area.innerHTML = branchSubAreaHTML(recipe, idx); area.classList.remove('hidden'); });
+    } else {
+      area.classList.add('hidden');
+    }
+    return;
+  }
   const delBtn = e.target.closest('[data-deleterecipe]');
   if (delBtn) {
     const recipeId = delBtn.dataset.deleterecipe;
@@ -3225,7 +3320,8 @@ function applyRecipeUsageToMaterials(){
     if (!sold) return;
     // รีฟิล = ลูกค้าเอาแก้วมาเอง ไม่นับแก้วร้าน
     const isRefill = recipe.name.includes('รีฟิล') || recipe.name.toLowerCase().includes('refill');
-    recipe.ingredients.forEach(ing => {
+    recipe.ingredients.forEach(rawIng => {
+      const ing = resolveIngredientForBranch(rawIng, branchSelectEl.value); // ใช้วัตถุดิบแทนของสาขานี้ (ถ้าตั้งไว้)
       if (isRefill && CUP_IDS_SET.has(ing.materialId)) return; // skip cup สำหรับ refill
       const mat = materialById(ing.materialId);
       const stockQty = mat ? ozRecipeToStockQty(mat, ing.qty) : ing.qty;
@@ -3294,7 +3390,8 @@ async function saveMenuSaleForDate(recipeId, _retry){
       if (!sold) return;
       const recipe = RECIPES.find(r => r.id === rid);
       if (!recipe) return;
-      recipe.ingredients.forEach(ing => {
+      recipe.ingredients.forEach(rawIng => {
+        const ing = resolveIngredientForBranch(rawIng, branch);
         const mat = materialById(ing.materialId);
         const stockQty = mat ? ozRecipeToStockQty(mat, ing.qty) : ing.qty;
         totals[ing.materialId] = (totals[ing.materialId] || 0) + stockQty * sold;
@@ -3983,7 +4080,8 @@ async function applyOcrImportForDate(date, confirmed){
       const recipe = RECIPES.find(r => r.id === rid);
       if (!recipe) return;
       const sold = dateSales[rid];
-      recipe.ingredients.forEach(ing => {
+      recipe.ingredients.forEach(rawIng => {
+        const ing = resolveIngredientForBranch(rawIng, branch);
         const mat = materialById(ing.materialId);
         const stockQty = mat ? ozRecipeToStockQty(mat, ing.qty) : ing.qty;
         totals[ing.materialId] = (totals[ing.materialId] || 0) + stockQty * sold;

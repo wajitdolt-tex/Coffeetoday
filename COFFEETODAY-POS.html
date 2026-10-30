@@ -3682,7 +3682,28 @@ function linkRecipes(map){
   var p=Promise.resolve();for(var j=0;j<rows.length;j+=150)(function(c){p=p.then(function(){return upsert('pos_menu',c);});})(rows.slice(j,j+150));
   return p.then(function(){toast('ผูกสูตรแล้ว '+rows.length+' เมนู','ok');if(S.atab==='cost')drawCostAdmin();},function(e){toast('บันทึกไม่สำเร็จ: '+e.message,'err');});
 }
-function linkSel(el){var o={};o[el.getAttribute('data-lk')]=el.value;linkRecipes(o);}
+function linkSel(el){var mid=el.getAttribute('data-lk');if(el.value==='__pick'){el.value='';openRecipePick(mid);return;}var o={};o[mid]=el.value;linkRecipes(o);}
+// เลือกสูตรจาก Stock ทั้งหมด (ค้นหา + กรองขนาด) สำหรับเมนูที่ชื่อต่างจากสูตรมาก
+var RPK=null;
+function openRecipePick(mid){var it=menuById(mid);if(!it)return;var s=lkS(it.variant+' '+it.receipt_name);RPK={mid:mid,q:'',sz:s?s+'oz':''};
+  var sz={},i;for(i=0;i<RECIPES.length;i++){var z=String(RECIPES[i].size||'').replace(/\s/g,'').toLowerCase();if(/^\d+oz$/.test(z))sz[z]=1;}
+  RPK.sizes=Object.keys(sz).sort(function(a,b){return (parseFloat(b)||0)-(parseFloat(a)||0)||a.localeCompare(b);});if(RPK.sz&&!sz[RPK.sz])RPK.sz='';
+  var h='<div class="mh"><h2>ผูกสูตรให้: '+esc(it.receipt_name)+'</h2><button class="x" data-act="close">✕</button></div><div class="mb">'+
+    '<input class="in" id="rpkq" placeholder="🔍 พิมพ์ค้นหา เช่น องุ่น / kyoho" style="width:100%;margin-bottom:8px"><div class="seg" id="rpkSz" style="display:flex;flex-wrap:wrap;margin-bottom:10px"></div><div id="rpkList"></div></div>';
+  $('modal').className='';$('modal').innerHTML=h;showModal();
+  $('rpkq').oninput=function(){RPK.q=this.value;drawRecipePick();};drawRecipePick();
+}
+function drawRecipePick(){
+  if(!RPK)return;var szEl=$('rpkSz'),el=$('rpkList');if(!el)return;
+  szEl.innerHTML=[''].concat(RPK.sizes).map(function(z){return '<button data-act="rpkSz" data-v="'+esc(z)+'" class="'+(RPK.sz===z?'on':'')+'">'+(z?esc(z):'ทั้งหมด')+'</button>';}).join('');
+  var q=RPK.q.trim().toLowerCase(),gq=gnorm(q),h='',last=null,n=0;
+  for(var i=0;i<RECIPES.length;i++){var r=RECIPES[i],z=String(r.size||'').replace(/\s/g,'').toLowerCase();
+    if(RPK.sz&&z!==RPK.sz)continue;
+    if(q){var t=(r.name+' '+(r.category||'')).toLowerCase();if(t.indexOf(q)<0&&gnorm(t).indexOf(gq)<0)continue;}
+    var c=r.category||'อื่นๆ';if(c!==last){h+='<div class="sec" style="margin-top:10px">'+esc(c)+'</div>';last=c;}
+    h+='<div class="cqrow" data-act="rpkPick" data-v="'+esc(r.id)+'"><div class="n">'+esc(r.name)+'</div><div class="r">'+esc(r.size||'')+'</div><div class="ch">›</div></div>';n++;}
+  el.innerHTML=n?h:'<div class="empty">ไม่พบสูตร — ถ้ายังไม่มีสูตรนี้ใน Stock ให้สร้างในแอป Stock ก่อน หรือใส่ต้นทุนเองในกล่อง ✍️</div>';
+}
 function linkRows(){var c=costCfg();return MENU.filter(function(it){return it.active!==false&&it.price!=null&&!it.recipe_id&&!(c.man.hasOwnProperty(it.id)&&c.man[it.id]!=null);});}
 function linkAllGood(){var o={},L=linkRows(),n=0;for(var i=0;i<L.length;i++){var sg=recipeSugg(L[i]);if(sg[0]&&sg[0].v>=0.85&&(!sg[1]||sg[1].v<sg[0].v)){o[L[i].id]=sg[0].id;n++;}}
   if(!n){toast('ไม่มีรายการที่ตรงชัดเจน','err');return;}if(!confirm('ผูกสูตรให้ '+n+' เมนูที่ชื่อตรงชัดเจน (≥85%)?\nแก้ทีหลังได้ที่ช่อง "ผูกกับสูตรใน Stock" ของเมนู'))return;linkRecipes(o);}
@@ -3696,6 +3717,7 @@ function linkBox(){
   var lim=S.lkAll?R.length:Math.min(R.length,40);
   for(i=0;i<lim;i++){var x=R[i],it=x.it,o='<option value="">— ยังไม่ผูก —</option>';
     for(var j=0;j<x.sg.length;j++)o+='<option value="'+esc(x.sg[j].id)+'">'+esc(x.sg[j].n)+' · '+Math.round(x.sg[j].v*100)+'%</option>';
+    o+='<option value="__pick">🔍 เลือกจากสูตรทั้งหมด…</option>';
     h+='<div class="cmrow"><div class="n">'+esc(it.receipt_name)+'<small>'+esc(it.category||'')+(x.sg[0]?' · แนะนำ: '+esc(x.sg[0].n)+' ('+Math.round(x.v*100)+'%)':' · ไม่พบสูตรที่ใกล้เคียง')+'</small></div>'+
       '<select class="in" data-lk="'+esc(it.id)+'" onchange="linkSel(this)">'+o+'</select>'+
       '<div class="cst">'+(x.sg[0]?'<button class="mini" data-act="linkOne" data-v="'+esc(it.id)+'">✓ ใช้ที่แนะนำ</button>':'')+'</div></div>';}
@@ -4822,6 +4844,8 @@ document.addEventListener('click',function(e){
     case 'costMigSkip':if(confirm('เริ่มกรอกราคาวัตถุดิบเองทั้งหมด (ไม่คัดลอกจากแอปต้นทุน)?')){var oc=SET.cost||{};SET.cost={on:true,price:{},pack:packDefault(),man:oc.man||{}};costDirty();pushSettings(true);renderCostAdmin();}break;
     case 'cpAll':S.cpAll=!S.cpAll;drawCostAdmin();break;
     case 'costDet':costDetail(v);break;
+    case 'rpkSz':if(RPK){RPK.sz=v||'';drawRecipePick();}break;
+    case 'rpkPick':if(RPK){var lo={};lo[RPK.mid]=v;RPK=null;closeModal();linkRecipes(lo);}break;
     case 'cqF':S.cqF=v;S.cqAll=false;drawCostAdmin();break;
     case 'cqMore':S.cqAll=true;drawCostList();break;
     case 'linkAll':linkAllGood();break;

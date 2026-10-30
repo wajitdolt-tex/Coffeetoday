@@ -3500,7 +3500,7 @@ function autoF(su,cu){var a=uN(su),b=uN(cu);if(a===b)return 1;var W={g:1,ml:1,kg
 function cIng(id){if(!CSRC)return null;var L=String(id).indexOf('sr_')===0?CSRC.sr:CSRC.ing;for(var i=0;i<L.length;i++)if(String(L[i].id)===String(id))return L[i];return null;}
 function isSr(id){return String(id).indexOf('sr_')===0;}
 function refUnit(id){var x=cIng(id);return !x?'':isSr(id)?(x.yieldUnit||'oz'):x.unit;}
-function refName(id){var x=cIng(id);return x?x.name:'';}
+function refName(id){if(id==='__self')return 'ซื้อเอง (ราคาใส่ใน POS)';var x=cIng(id);return x?x.name:'';}
 // ราคาเป็นต่อชิ้นหรือต่อแพ็ค: แก้ว/ฝา ในแอปต้นทุนกรอกราคาต่อใบ แต่ช่องจำนวนเป็นจำนวนต่อแถว
 function ppAuto(x){return /\d+\s*ใบ\s*\/\s*แถว/.test(x.name||'');}
 function isPP(id){var x=cIng(id),c=costCfg();if(!x||isSr(id))return false;return c.pp.hasOwnProperty(id)?!!c.pp[id]:ppAuto(x);}
@@ -3534,12 +3534,13 @@ function autoRef(mid){
   for(i=0;i<CSRC.ing.length;i++){var kk=cNrm(CSRC.ing[i].name);if(kk.length>=3&&(kk.indexOf(k)>=0||k.indexOf(kk)>=0)){hit.push(CSRC.ing[i].id);if(+CSRC.ing[i].price>0)pr.push(CSRC.ing[i].id);}}
   return pr.length===1?pr[0]:hit.length===1?hit[0]:'';
 }
-function matRef(mid){var c=costCfg(),m=c.map[mid];if(m&&m.hasOwnProperty('r'))return {r:m.r||'',f:m.f!=null?+m.f:null,auto:false};return {r:autoRef(mid),f:null,auto:true};}
+function matRef(mid){var c=costCfg(),m=c.map[mid];if(m&&m.hasOwnProperty('r'))return {r:m.r||'',f:m.f!=null?+m.f:null,sp:m.sp,sq:m.sq,auto:false};return {r:autoRef(mid),f:null,auto:true};}
 // ต้นทุนต่อ 1 หน่วยในสูตร (เช่น ต่อ 1 กรัม / ต่อ 1 ออนซ์)
 function matCost(mid){
   var k='m:'+mid;if(COSTC.hasOwnProperty(k))return COSTC[k];
   var R=matRef(mid),o={mid:mid,r:R.r,cpu:null,why:''};
-  if(!matById(mid))o.why='ไม่มีใน Stock';
+  if(R.r==='__self'){if(+R.sp>0&&+R.sq>0){o.cpu=(+R.sp)/(+R.sq);o.f=1;}else o.why='ยังไม่ใส่ราคา';}
+  else if(!matById(mid))o.why='ไม่มีใน Stock';
   else if(!R.r)o.why='ไม่ได้จับคู่';
   else{var cp=ingCpu(R.r),f=R.f!=null?R.f:autoF(matUnit(mid),refUnit(R.r));
     if(cp==null)o.why='ไม่มีราคา';else if(f==null)o.why='หน่วยไม่ตรง';else{o.cpu=cp*f;o.f=f;}}
@@ -3629,7 +3630,9 @@ function costFetch(force){
   return p;
 }
 function costSave(patch,redraw){SET.cost=ext(clone(SET.cost||{}),patch);costDirty();pushSettings(true);if(redraw!==false&&S.view==='admin'&&S.atab==='cost')drawCostAdmin();}
-function costMapSet(el){var mid=el.getAttribute('data-cm'),c=costCfg(),m=clone(c.map),cur=m[mid]||{};m[mid]={r:el.value,f:cur.r===el.value?cur.f:null};costSave({map:m});}
+function costMapSet(el){var mid=el.getAttribute('data-cm'),c=costCfg(),m=clone(c.map),cur=m[mid]||{};m[mid]={r:el.value,f:cur.r===el.value?cur.f:null};if(el.value==='__self'){m[mid].sp=cur.sp;m[mid].sq=cur.sq;}costSave({map:m});}
+// ซื้อเอง: ราคา ___ บาท ได้ ___ หน่วย (หน่วยตามสูตร Stock)
+function costSelfSet(el){var mid=el.getAttribute('data-cs'),f=el.getAttribute('data-f'),c=costCfg(),m=clone(c.map),cur=m[mid]||{r:'__self'},v=num(el.value);if(el.value.trim()!==''&&(v==null||v<0)){toast('ใส่ตัวเลข','err');return;}cur.r='__self';cur[f==='p'?'sp':'sq']=el.value.trim()===''?null:v;m[mid]=cur;costSave({map:m});}
 function costFSet(el){var mid=el.getAttribute('data-cf'),c=costCfg(),m=clone(c.map),R=matRef(mid),v=num(el.value);m[mid]={r:R.r,f:v!=null&&v>0?v:null};costSave({map:m});}
 function costPP(id){var c=costCfg(),p=clone(c.pp);p[id]=!isPP(id);costSave({pp:p});}
 function costPackSet(el){var k=el.getAttribute('data-pk'),i=+el.getAttribute('data-i'),f=el.getAttribute('data-f'),P=clone(packRules());if(!P[k]||!P[k][i])return;if(f==='q'){var v=num(el.value);P[k][i].q=v!=null&&v>=0?v:1;}else P[k][i].r=el.value;costSave({pack:P});}
@@ -3637,7 +3640,7 @@ function costPackSet(el){var k=el.getAttribute('data-pk'),i=+el.getAttribute('da
 function costExpr(t){t=String(t||'').replace(/,/g,'').trim();var m=t.match(/^(\d+(?:\.\d+)?)\s*[\/÷]\s*(\d+(?:\.\d+)?)$/);if(m){var d=+m[2];return d>0?Math.round(+m[1]/d*10000)/10000:null;}return num(t);}
 function costManSet(el){var mid=el.getAttribute('data-cman'),c=costCfg(),m=clone(c.man),t=el.value.trim(),v=costExpr(t);if(t===''){delete m[mid];}else if(v==null||v<0){toast('ใส่ตัวเลข เช่น 4.08 หรือ 49/12','err');return;}else m[mid]=v;costSave({man:m});if(t.indexOf('/')>=0||t.indexOf('÷')>=0)toast(t+' = '+cNum(v)+' บาท/ชิ้น','ok');}
 function ingOpts(sel,withSr){
-  var h='<option value="">— ไม่ใช้ / ยังไม่เลือก —</option>',i;if(!CSRC)return h;
+  var h='<option value="">— ไม่ใช้ / ยังไม่เลือก —</option>'+(withSr?'<option value="__self"'+(sel==='__self'?' selected':'')+'>✍️ ซื้อเอง — ใส่ราคาเอง</option>':''),i;if(!CSRC)return h;
   if(withSr)for(i=0;i<CSRC.sr.length;i++)h+='<option value="'+esc(CSRC.sr[i].id)+'"'+(CSRC.sr[i].id===sel?' selected':'')+'>🧪 '+esc(CSRC.sr[i].name)+' (สูตรย่อย)</option>';
   for(i=0;i<CSRC.ing.length;i++){var x=CSRC.ing[i];h+='<option value="'+esc(x.id)+'"'+(x.id===sel?' selected':'')+'>'+esc(x.name)+(x.price>0?' · ฿'+x.price+'/'+x.qty+' '+esc(x.unit):' · ไม่มีราคา')+'</option>';}
   return h;
@@ -3761,11 +3764,12 @@ function drawCostAdmin(){
   var mids=Object.keys(use).map(function(k){var mc=matCost(k);return {k:k,n:use[k],bad:mc.cpu==null};}).sort(function(a,b){return (b.bad-a.bad)||(b.n-a.n);});
   var nb=mids.filter(function(x){return x.bad;}).length;
   h+='<div class="box"><h3>🧾 จับคู่วัตถุดิบ Stock ↔ แอปต้นทุน</h3><div class="note" style="margin-bottom:8px">'+mids.length+' วัตถุดิบที่สูตรใช้ · ยังคิดไม่ได้ '+nb+' รายการ (อยู่บนสุด) · ระบบจับคู่ชื่อให้อัตโนมัติ ถ้าผิดเลือกใหม่ได้ · บันทึกทันทีที่เลือก</div>';
-  for(i=0;i<mids.length;i++){var mid=mids[i].k,m=matById(mid),R=matRef(mid),mc=matCost(mid),u=matUnit(mid),af=R.r?autoF(u,refUnit(R.r)):1;
+  for(i=0;i<mids.length;i++){var mid=mids[i].k,m=matById(mid),R=matRef(mid),mc=matCost(mid),u=matUnit(mid),af=R.r&&R.r!=='__self'?autoF(u,refUnit(R.r)):1;
     h+='<div class="cmrow"><div class="n">'+esc(m?m.name:mid)+'<small>ใช้ใน '+mids[i].n+' สูตร · หน่วยในสูตร: '+esc(u||'-')+(R.auto&&R.r?' · จับคู่อัตโนมัติ':'')+'</small></div>'+
       '<select class="in" data-cm="'+esc(mid)+'" onchange="costMapSet(this)">'+ingOpts(R.r,true)+'</select>'+
       '<div class="cst">'+(mc.cpu!=null?'<b style="color:var(--ok)">✓</b> ฿'+(mc.cpu<1?mc.cpu.toFixed(3):money(mc.cpu))+'/'+esc(u):'<b style="color:var(--warn)">⚠️ '+esc(mc.why)+'</b>')+ppBtn(R.r)+
-      (R.r&&(af==null||R.f!=null)?'<div style="margin-top:4px">1 '+esc(u)+' = <input class="in" data-cf="'+esc(mid)+'" onchange="costFSet(this)" inputmode="decimal" style="width:70px;padding:5px" value="'+(R.f!=null?R.f:'')+'" placeholder="?"> '+esc(refUnit(R.r))+'</div>':'')+'</div></div>';}
+      (R.r==='__self'?'<div style="margin-top:4px">ราคา <input class="in" data-cs="'+esc(mid)+'" data-f="p" onchange="costSelfSet(this)" inputmode="decimal" style="width:70px;padding:5px" value="'+(R.sp!=null?R.sp:'')+'" placeholder="฿"> บาท ได้ <input class="in" data-cs="'+esc(mid)+'" data-f="q" onchange="costSelfSet(this)" inputmode="decimal" style="width:70px;padding:5px" value="'+(R.sq!=null?R.sq:'')+'" placeholder="?"> '+esc(u||'หน่วย')+'</div>':'')+
+      (R.r&&R.r!=='__self'&&(af==null||R.f!=null)?'<div style="margin-top:4px">1 '+esc(u)+' = <input class="in" data-cf="'+esc(mid)+'" onchange="costFSet(this)" inputmode="decimal" style="width:70px;padding:5px" value="'+(R.f!=null?R.f:'')+'" placeholder="?"> '+esc(refUnit(R.r))+'</div>':'')+'</div></div>';}
   h+='</div>';
   // แก้ว ฝา หลอด
   var P=packRules();

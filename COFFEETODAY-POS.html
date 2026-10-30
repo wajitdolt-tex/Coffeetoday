@@ -211,6 +211,8 @@ main{height:calc(100% - 60px - env(safe-area-inset-top));overflow:hidden}
 .cmrow .n{font-weight:700;font-size:14px;line-height:1.3}.cmrow .n small{display:block;font-weight:500;color:var(--muted);font-size:11px}
 .cmrow select.in,.cmrow input.in{width:100%;min-width:0;padding:7px 6px;font-size:13px}.cmrow .cst{font-size:12px}
 .cqrow{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line2);cursor:pointer}.cqrow .n{flex:1;font-weight:700;font-size:14px;line-height:1.3}.cqrow .n small{display:block;font-weight:500;color:var(--muted);font-size:11px}.cqrow .r{text-align:right;font-size:12px;line-height:1.5}.cqrow .ch{color:var(--muted);font-size:20px}
+.cghd{display:flex;align-items:center;gap:8px;padding:12px 4px;border-bottom:1px solid var(--line2);cursor:pointer;font-size:15px}.cghd .cgar{width:14px;color:var(--muted)}.cghd .note{margin-left:auto;text-align:right}.cgbd{padding:0 0 6px 18px;border-bottom:1px solid var(--line2)}
+.ctabs{display:flex;flex-wrap:wrap;margin:4px 0 12px}.cbadge{display:inline-block;min-width:20px;padding:1px 6px;border-radius:10px;background:var(--warnBg,#fdecc8);color:var(--warn);font-size:11px;font-weight:800;margin-left:3px}
 .pkrow{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}.pkrow select.in{flex:1;min-width:160px;padding:7px 6px;font-size:13px}
 @media (max-width:600px){.cmrow{grid-template-columns:1fr 1fr}.cmrow .cst{grid-column:1/-1}}
 .mhd{font-size:11px;color:var(--brandL);font-weight:800}
@@ -3707,23 +3709,6 @@ function drawRecipePick(){
 function linkRows(){var c=costCfg();return MENU.filter(function(it){return it.active!==false&&it.price!=null&&!it.recipe_id&&!(c.man.hasOwnProperty(it.id)&&c.man[it.id]!=null);});}
 function linkAllGood(){var o={},L=linkRows(),n=0;for(var i=0;i<L.length;i++){var sg=recipeSugg(L[i]);if(sg[0]&&sg[0].v>=0.85&&(!sg[1]||sg[1].v<sg[0].v)){o[L[i].id]=sg[0].id;n++;}}
   if(!n){toast('ไม่มีรายการที่ตรงชัดเจน','err');return;}if(!confirm('ผูกสูตรให้ '+n+' เมนูที่ชื่อตรงชัดเจน (≥85%)?\nแก้ทีหลังได้ที่ช่อง "ผูกกับสูตรใน Stock" ของเมนู'))return;linkRecipes(o);}
-function linkBox(){
-  var L=linkRows();if(!L.length)return '';
-  var cx={},cl=menuCats(),i;for(i=0;i<cl.length;i++)cx[cl[i]]=i;
-  var R=L.map(function(it){var sg=recipeSugg(it);return {it:it,sg:sg,v:sg[0]?sg[0].v:0};}).sort(function(a,b){return (b.v>=0.85)-(a.v>=0.85)||((cx[a.it.category]||0)-(cx[b.it.category]||0))||((a.it.sort||0)-(b.it.sort||0));});
-  var good=R.filter(function(x){return x.v>=0.85&&(!x.sg[1]||x.sg[1].v<x.v);}).length;
-  var h='<div class="box"><h3>🔗 ผูกเมนูกับสูตรใน Stock</h3><div class="note" style="margin-bottom:8px">เมนู '+L.length+' รายการยังไม่ได้ผูกสูตร จึงคิดต้นทุนไม่ได้ · ระบบแนะนำสูตรจากชื่อ ขนาด ร้อน/เย็น/ปั่น — <b>ต้องยืนยันก่อนถึงจะใช้</b> · เมนูที่ไม่มีสูตรใน Stock (เช่น ขนมซื้อมาขาย) ใส่ต้นทุนเองในกล่องถัดไป</div>'+
-    (good?'<button class="mini" data-act="linkAll" style="margin-bottom:8px">✓ ยืนยันที่ตรงชัดเจนทั้งหมด ('+good+' เมนู)</button>':'');
-  var lim=S.lkAll?R.length:Math.min(R.length,40);
-  for(i=0;i<lim;i++){var x=R[i],it=x.it,o='<option value="">— ยังไม่ผูก —</option>';
-    for(var j=0;j<x.sg.length;j++)o+='<option value="'+esc(x.sg[j].id)+'">'+esc(x.sg[j].n)+' · '+Math.round(x.sg[j].v*100)+'%</option>';
-    o+='<option value="__pick">🔍 เลือกจากสูตรทั้งหมด…</option>';
-    h+='<div class="cmrow"><div class="n">'+esc(it.receipt_name)+'<small>'+esc(it.category||'')+(x.sg[0]?' · แนะนำ: '+esc(x.sg[0].n)+' ('+Math.round(x.v*100)+'%)':' · ไม่พบสูตรที่ใกล้เคียง')+'</small></div>'+
-      '<select class="in" data-lk="'+esc(it.id)+'" onchange="linkSel(this)">'+o+'</select>'+
-      '<div class="cst">'+(x.sg[0]?'<button class="mini" data-act="linkOne" data-v="'+esc(it.id)+'">✓ ใช้ที่แนะนำ</button>':'')+'</div></div>';}
-  if(lim<R.length)h+='<button class="mini" style="margin-top:8px" data-act="lkMore">แสดงอีก '+(R.length-lim)+' เมนู</button>';
-  return h+'</div>';
-}
 /* ตรวจต้นทุนรายเมนู: รายการเมนู + หน้ารายละเอียดว่าคิดจากอะไรบ้าง */
 function cNum(n){n=+n||0;return n<1&&n>0?n.toFixed(3).replace(/(\.\d\d)0$/,'$1'):money(n);}
 function costDetail(mid){
@@ -3756,23 +3741,6 @@ function costDetail(mid){
   h+='</table><div class="note" style="margin-top:10px">ราคาวัตถุดิบแก้ได้ในกล่อง 🧾 ราคาวัตถุดิบ ของแท็บต้นทุน</div></div>';
   $('modal').className='';$('modal').innerHTML=h;showModal();
 }
-function costListBox(){
-  return '<div class="box"><h3>🔍 ตรวจต้นทุนรายเมนู</h3><div class="note" style="margin-bottom:8px">แตะเมนูเพื่อดูว่าคิดต้นทุนจากอะไรบ้าง</div>'+
-    '<div class="tools"><input class="in" id="cq" placeholder="ค้นหาเมนู…" value="'+esc(S.cq||'')+'" style="flex:1;min-width:140px"><div class="seg">'+
-    [['all','ทั้งหมด'],['ok','✓ ครบ'],['bad','⚠️ ไม่ครบ']].map(function(x){return '<button data-act="cqF" data-v="'+x[0]+'" class="'+((S.cqF||'all')===x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div></div><div id="cqList"></div></div>';
-}
-function drawCostList(){
-  var el=$('cqList');if(!el)return;var q=(S.cq||'').trim().toLowerCase(),f=S.cqF||'all',cx={},cl=menuCats(),i,h='',n=0,lim=S.cqAll?9999:40;
-  for(i=0;i<cl.length;i++)cx[cl[i]]=i;
-  var L=MENU.filter(function(it){return it.active!==false&&it.price!=null;}).sort(function(a,b){return ((cx[a.category]||0)-(cx[b.category]||0))||((a.sort||0)-(b.sort||0));});
-  for(i=0;i<L.length;i++){var it=L[i];if(q&&(it.receipt_name+' '+it.grp).toLowerCase().indexOf(q)<0)continue;var ic=itemCost(it.id,it.is_addon);
-    if(f==='ok'&&ic.c==null||f==='bad'&&ic.c!=null)continue;n++;if(n>lim)continue;
-    var p=+it.price,pc=ic.c!=null&&p>0?Math.round((p-ic.c)/p*100):null;
-    h+='<div class="cqrow" data-act="costDet" data-v="'+esc(it.id)+'"><div class="n">'+esc(it.receipt_name)+'<small>'+esc(it.category||'')+(ic.man?' · ใส่เอง':'')+'</small></div><div class="r">'+
-      (ic.c!=null?'ต้นทุน <b>'+money(ic.c)+'</b> / '+money(p)+'<br><span style="color:'+(pc>=60?'var(--ok)':pc>=45?'var(--warn)':'var(--err)')+'">กำไร '+pc+'%</span>':'<span style="color:var(--warn)">⚠️ ไม่ครบ</span>')+'</div><div class="ch">›</div></div>';}
-  if(!n)h='<div class="empty">ไม่พบเมนู</div>';else if(n>lim)h+='<button class="mini" style="margin-top:8px" data-act="cqMore">แสดงอีก '+(n-lim)+' เมนู</button>';
-  el.innerHTML=h;
-}
 function renderCostAdmin(){
   var c=costCfg(),h='';
   if(!costOn()){
@@ -3795,46 +3763,103 @@ function priceRows(){
   if(S.cpAll)for(i=0;i<MATS.length;i++)ids[MATS[i].id]=1;
   return Object.keys(ids).map(function(id){return {k:id,n:use[id]||0,bad:matCost(id).cpu==null};});
 }
-function drawPriceList(){
-  var el=$('cpList');if(!el)return;var q=(S.cpq||'').trim().toLowerCase(),c=costCfg(),R=priceRows().filter(function(x){return !q||matName(x.k).toLowerCase().indexOf(q)>=0;}).sort(function(a,b){return (b.bad-a.bad)||(b.n-a.n)||matName(a.k).localeCompare(matName(b.k));}),h='';
-  for(var i=0;i<R.length;i++){var mid=R[i].k,p=priceOfMat(mid)||{},mc=matCost(mid),u=matUnit(mid)||'หน่วย',us=selfUnits(mid),uo='',k=p.su||'r';
-    for(var z=0;z<us.length;z++)uo+='<option value="'+us[z].k+'"'+(us[z].k===k?' selected':'')+'>'+esc(us[z].l)+'</option>';
-    var uf=selfUnitF(mid,k);
-    h+='<div class="cmrow"><div class="n">'+esc(matName(mid))+'<small>'+(R[i].n?'ใช้ใน '+R[i].n+' สูตร':'แก้ว/ฝา/หลอด หรือยังไม่มีสูตรใช้')+' · หน่วยในสูตร: '+esc(u)+(p.at?' · แก้ '+dtStr(new Date(p.at).toISOString()).slice(0,10):'')+'</small></div>'+
-      '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">ราคา <input class="in" data-cp="'+esc(mid)+'" data-f="p" onchange="costPriceSet(this)" inputmode="decimal" style="width:68px;padding:6px" value="'+(p.sp!=null?p.sp:'')+'" placeholder="฿"> บาท ต่อ <input class="in" data-cp="'+esc(mid)+'" data-f="q" onchange="costPriceSet(this)" style="width:72px;padding:6px" value="'+esc(p.sqt!=null?p.sqt:(p.sq!=null?fmtQ(p.sq):''))+'" placeholder="6 / 6x250"> <select class="in" data-cp="'+esc(mid)+'" data-f="u" onchange="costPriceSet(this)" style="width:auto;padding:6px">'+uo+'</select></div>'+
-      '<div class="cst">'+(mc.cpu!=null?'<b style="color:var(--ok)">✓</b> ฿'+cNum(mc.cpu)+'/'+esc(u)+(+p.sq>0&&uf&&k!=='r'?'<div class="note">'+esc(p.sqt||fmtQ(p.sq))+' '+esc(selfUnitL(mid,k))+' = '+fmtQ(p.sq*uf)+' '+esc(u)+'</div>':''):'<b style="color:var(--warn)">⚠️ '+esc(mc.why)+'</b>')+'</div></div>';}
-  if(!R.length)h='<div class="empty">ไม่พบวัตถุดิบ</div>';
-  el.innerHTML=h;
+/* แท็บต้นทุน: แท็บย่อย + ย่อ/ขยายตามหมวด (เปิดมาย่อทุกหมวด · ค้นหาแล้วกางหมวดที่เจอ) */
+var CTABS=[['check','🔍 ตรวจต้นทุน'],['price','🧾 ราคาวัตถุดิบ'],['pack','🥤 แก้ว/ฝา/หลอด'],['link','🔗 ผูกสูตร'],['man','✍️ ใส่เอง']];
+function cgOpen(tab,cat,force){return !!force||!!(S.cgOpen&&S.cgOpen[tab+'|'+cat]);}
+function cgRender(tab,items,catOf,rowFn,labelFn,force,catSort){
+  var g={},order=[],i,h='';
+  for(i=0;i<items.length;i++){var c=catOf(items[i])||'อื่นๆ';if(!g[c]){g[c]=[];order.push(c);}g[c].push(items[i]);}
+  if(catSort)order.sort(function(a,b){return catSort(a,b,g);});
+  for(i=0;i<order.length;i++){var c2=order[i],L=g[c2],op=cgOpen(tab,c2,force);
+    h+='<div class="cghd" data-act="cgT" data-v="'+esc(tab+'|'+c2)+'"><span class="cgar">'+(op?'▾':'▸')+'</span><b>'+esc(c2)+'</b><span class="note">'+labelFn(L)+'</span></div>';
+    if(op){h+='<div class="cgbd">';for(var j=0;j<L.length;j++)h+=rowFn(L[j]);h+='</div>';}}
+  return h;
 }
+function menuSorted(L){var cx={},cl=menuCats();for(var i=0;i<cl.length;i++)cx[cl[i]]=i;return L.sort(function(a,b){return ((cx[a.category]==null?999:cx[a.category])-(cx[b.category]==null?999:cx[b.category]))||((a.sort||0)-(b.sort||0));});}
+function manRows(){return MENU.filter(function(it){if(it.active===false||it.price==null)return false;var ic=itemCost(it.id,it.is_addon);if(ic.man)return true;if(ic.c!=null)return false;if(!it.recipe_id){var sg=recipeSugg(it);return !(sg[0]&&sg[0].v>=0.6);}return true;});}
 function drawCostAdmin(){
-  var el=$('costBody');if(!el)return;var c=costCfg();
+  var el=$('costBody');if(!el)return;
   if(!costReady()){el.innerHTML='<div class="note">กำลังโหลดสูตรและวัตถุดิบจาก Stock…</div>';return;}
   var ok=0,bad=0,i;for(i=0;i<MENU.length;i++){var it=MENU[i];if(it.active===false||it.price==null)continue;var ic=itemCost(it.id,it.is_addon);if(ic.c==null)bad++;else ok++;}
-  var h='<div class="stats">'+stat('✅','a','คิดต้นทุนได้',ok+' เมนู')+stat('⚠️','d','ต้นทุนไม่ครบ',bad+' เมนู')+'</div>'+costListBox();
-  var nb=priceRows().filter(function(x){return x.bad;}).length;
-  h+='<div class="box"><h3>🧾 ราคาวัตถุดิบ</h3><div class="note" style="margin-bottom:8px">กรอกตามที่ซื้อจริง เช่น ราคา 51 บาท ต่อ 6 ขวด · ช่อง "ต่อ" พิมพ์ 6x250 ได้ (6 กล่อง × 250 มล.) · ระบบแปลงเป็นหน่วยในสูตรให้เอง · ยังไม่มีราคา '+nb+' รายการ (อยู่บนสุด) · บันทึกทันทีที่แก้</div>'+
-    '<div class="tools"><input class="in" id="cpq" placeholder="ค้นหาวัตถุดิบ…" value="'+esc(S.cpq||'')+'" style="flex:1;min-width:140px"><button class="mini" data-act="cpAll">'+(S.cpAll?'แสดงเฉพาะที่ใช้':'แสดงวัตถุดิบทั้งหมดใน Stock')+'</button></div><div id="cpList"></div></div>';
-  var P=packRules();
-  h+='<div class="box"><h3>🥤 แก้ว · ฝา · หลอด (บวกให้อัตโนมัติตามขนาด)</h3><div class="note" style="margin-bottom:8px">ดูขนาดและร้อน/เย็น/ปั่น จากชื่อแบบของเมนู · ถ้าสูตรใน Stock มีแก้วอยู่แล้วจะไม่บวกซ้ำ · ไม่บวกให้ขนม แอดเพิ่ม เมนูรีฟิล (ลูกค้าใช้แก้วเดิม) และเมนูทานร้าน (ใช้แก้วของร้าน) · ราคามาจากกล่อง 🧾 ราคาวัตถุดิบ</div>';
-  for(i=0;i<PACK_KEYS.length;i++){var k=PACK_KEYS[i][0],L2=P[k]||[],pc=packCost(k);
-    h+='<div class="sec" style="margin-top:10px">'+PACK_KEYS[i][1]+' · รวม '+(pc.miss.length?'<span style="color:var(--warn)">⚠️ ไม่ครบ</span>':'฿'+money(pc.c))+'</div>';
-    for(var q=0;q<L2.length;q++)h+='<div class="pkrow"><select class="in" data-pk="'+k+'" data-i="'+q+'" data-f="m" onchange="costPackSet(this)">'+matOpts(L2[q].m)+'</select><input class="in" data-pk="'+k+'" data-i="'+q+'" data-f="q" onchange="costPackSet(this)" inputmode="decimal" value="'+L2[q].q+'" style="width:56px;text-align:right"><span class="note">'+(L2[q].m?cpuTxt(L2[q].m):'')+'</span><button class="mini del" data-act="costPackDel" data-v="'+k+'" data-i="'+q+'">✕</button></div>';
-    h+='<button class="mini" data-act="costPackAdd" data-v="'+k+'">+ เพิ่ม</button>';}
-  h+='</div>';
-  h+=linkBox();
-  // ต้นทุนใส่เอง
-  var cx={},cl=menuCats();for(i=0;i<cl.length;i++)cx[cl[i]]=i;
-  var list=MENU.filter(function(it){if(it.active===false||it.price==null)return false;var ic=itemCost(it.id,it.is_addon);if(ic.man)return true;if(ic.c!=null)return false;if(!it.recipe_id){var sg=recipeSugg(it);return !(sg[0]&&sg[0].v>=0.6);}return true;}).sort(function(a,b){return ((cx[a.category]||0)-(cx[b.category]||0))||((a.sort||0)-(b.sort||0));});
-  h+='<div class="box"><h3>✍️ เมนูที่ต้นทุนไม่ครบ / ใส่ต้นทุนเอง</h3><div class="note" style="margin-bottom:8px">เมนูที่สูตรยังคิดไม่ครบ หรือไม่มีสูตรใน Stock · ใส่ต้นทุนต่อชิ้นเองได้ (เช่น ขนมที่ซื้อมาขาย) · ซื้อเป็นแพ็คพิมพ์ ราคาแพ็ค/จำนวนชิ้น เช่น 49/12 ระบบหารให้ · ช่องที่ใส่ไว้จะใช้แทนสูตร · ลบตัวเลขออก = กลับไปคิดจากสูตร</div>';
-  if(!list.length)h+='<div class="empty">ทุกเมนูคิดต้นทุนได้ครบแล้ว 🎉</div>';
-  for(i=0;i<list.length;i++){var it2=list[i],ic2=itemCost(it2.id,it2.is_addon);
-    h+='<div class="cmrow"><div class="n">'+esc(it2.receipt_name)+'<small>'+(ic2.man?'ใส่เอง':esc(ic2.miss.slice(0,3).join(', '))+(ic2.miss.length>3?' …':'')+(ic2.part?' · คิดได้แล้ว ฿'+money(ic2.part):''))+'</small></div>'+
-      '<input class="in" data-cman="'+esc(it2.id)+'" onchange="costManSet(this)" placeholder="ต้นทุน ฿ หรือ 49/12" value="'+(ic2.man?c.man[it2.id]:'')+'" style="text-align:right"><div class="cst">ราคาขาย ฿'+money(it2.price)+'</div></div>';}
-  h+='</div>';
-  el.innerHTML=h;
-  drawCostList();drawPriceList();
-  var cq=$('cq');if(cq)cq.oninput=function(){S.cq=this.value;S.cqAll=false;drawCostList();};
-  var cp=$('cpq');if(cp)cp.oninput=function(){S.cpq=this.value;drawPriceList();};
+  var cnt={price:priceRows().filter(function(x){return x.bad;}).length,link:linkRows().length,man:manRows().filter(function(it){return !itemCost(it.id,it.is_addon).man;}).length,pack:0};
+  for(i=0;i<PACK_KEYS.length;i++)if(packCost(PACK_KEYS[i][0]).miss.length)cnt.pack++;
+  var t=S.ctab||'check',h='<div class="stats">'+stat('✅','a','คิดต้นทุนได้',ok+' เมนู')+stat('⚠️','d','ต้นทุนไม่ครบ',bad+' เมนู')+'</div><div class="seg ctabs">';
+  for(i=0;i<CTABS.length;i++){var k=CTABS[i][0];h+='<button data-act="ctab" data-v="'+k+'" class="'+(t===k?'on':'')+'">'+CTABS[i][1]+(cnt[k]?' <span class="cbadge">'+cnt[k]+'</span>':'')+'</button>';}
+  el.innerHTML=h+'</div><div id="ctBody"></div>';drawCostTab();
+}
+function drawCostTab(){
+  var el=$('ctBody');if(!el)return;var t=S.ctab||'check',h='',i;
+  if(t==='check'){
+    h='<div class="box"><div class="note" style="margin-bottom:8px">แตะเมนูเพื่อดูว่าคิดต้นทุนจากอะไรบ้าง</div><div class="tools"><input class="in" id="cq" placeholder="ค้นหาเมนู…" value="'+esc(S.cq||'')+'" style="flex:1;min-width:140px"><div class="seg">'+
+      [['all','ทั้งหมด'],['ok','✓ ครบ'],['bad','⚠️ ไม่ครบ']].map(function(x){return '<button data-act="cqF" data-v="'+x[0]+'" class="'+((S.cqF||'all')===x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div></div><div id="cqList"></div></div>';
+    el.innerHTML=h;drawCostList();$('cq').oninput=function(){S.cq=this.value;drawCostList();};return;}
+  if(t==='price'){
+    h='<div class="box"><div class="note" style="margin-bottom:8px">กรอกตามที่ซื้อจริง เช่น ราคา 51 บาท ต่อ 6 ขวด · ช่อง "ต่อ" พิมพ์ 6x250 ได้ (6 กล่อง × 250 มล.) · ระบบแปลงเป็นหน่วยในสูตรให้เอง · บันทึกทันทีที่แก้</div>'+
+      '<div class="tools"><input class="in" id="cpq" placeholder="ค้นหาวัตถุดิบ…" value="'+esc(S.cpq||'')+'" style="flex:1;min-width:140px"><button class="mini" data-act="cpAll">'+(S.cpAll?'แสดงเฉพาะที่ใช้':'แสดงวัตถุดิบทั้งหมดใน Stock')+'</button></div><div id="cpList"></div></div>';
+    el.innerHTML=h;drawPriceList();$('cpq').oninput=function(){S.cpq=this.value;drawPriceList();};return;}
+  if(t==='pack'){
+    var P=packRules();
+    h='<div class="box"><div class="note" style="margin-bottom:8px">ดูขนาดและร้อน/เย็น/ปั่น จากชื่อแบบของเมนู · ถ้าสูตรใน Stock มีแก้วอยู่แล้วจะไม่บวกซ้ำ · ไม่บวกให้ขนม แอดเพิ่ม เมนูรีฟิล (ลูกค้าใช้แก้วเดิม) และเมนูทานร้าน (ใช้แก้วของร้าน) · ราคามาจากแท็บ 🧾 ราคาวัตถุดิบ</div>';
+    for(i=0;i<PACK_KEYS.length;i++){var k=PACK_KEYS[i][0],L2=P[k]||[],pc=packCost(k);
+      h+='<div class="sec" style="margin-top:10px">'+PACK_KEYS[i][1]+' · รวม '+(pc.miss.length?'<span style="color:var(--warn)">⚠️ ไม่ครบ</span>':'฿'+money(pc.c))+'</div>';
+      for(var q=0;q<L2.length;q++)h+='<div class="pkrow"><select class="in" data-pk="'+k+'" data-i="'+q+'" data-f="m" onchange="costPackSet(this)">'+matOpts(L2[q].m)+'</select><input class="in" data-pk="'+k+'" data-i="'+q+'" data-f="q" onchange="costPackSet(this)" inputmode="decimal" value="'+L2[q].q+'" style="width:56px;text-align:right"><span class="note">'+(L2[q].m?cpuTxt(L2[q].m):'')+'</span><button class="mini del" data-act="costPackDel" data-v="'+k+'" data-i="'+q+'">✕</button></div>';
+      h+='<button class="mini" data-act="costPackAdd" data-v="'+k+'">+ เพิ่ม</button>';}
+    el.innerHTML=h+'</div>';return;}
+  if(t==='link'){
+    var R=linkRows(),good=0;for(i=0;i<R.length;i++){var sg=recipeSugg(R[i]);if(sg[0]&&sg[0].v>=0.85&&(!sg[1]||sg[1].v<sg[0].v))good++;}
+    h='<div class="box"><div class="note" style="margin-bottom:8px">เมนู '+R.length+' รายการยังไม่ได้ผูกสูตร จึงคิดต้นทุนไม่ได้ · ระบบแนะนำสูตรจากชื่อ ขนาด ร้อน/เย็น/ปั่น — <b>ต้องยืนยันก่อนถึงจะใช้</b> · ไม่มีในคำแนะนำ เลือก "🔍 เลือกจากสูตรทั้งหมด…" · เมนูที่ไม่มีสูตรใน Stock ใส่ต้นทุนเองในแท็บ ✍️</div>'+
+      (good?'<button class="mini" data-act="linkAll" style="margin-bottom:8px">✓ ยืนยันที่ตรงชัดเจนทั้งหมด ('+good+' เมนู)</button>':'')+
+      '<div class="tools"><input class="in" id="lkq" placeholder="ค้นหาเมนู…" value="'+esc(S.lkq||'')+'" style="flex:1;min-width:140px"></div><div id="lkList"></div></div>';
+    el.innerHTML=h;drawLinkList();$('lkq').oninput=function(){S.lkq=this.value;drawLinkList();};return;}
+  if(t==='man'){
+    h='<div class="box"><div class="note" style="margin-bottom:8px">เมนูที่สูตรยังคิดไม่ครบ หรือไม่มีสูตรใน Stock · ใส่ต้นทุนต่อชิ้นเองได้ (เช่น ขนมที่ซื้อมาขาย) · ซื้อเป็นแพ็คพิมพ์ ราคาแพ็ค/จำนวนชิ้น เช่น 49/12 ระบบหารให้ · ช่องที่ใส่ไว้จะใช้แทนสูตร · ลบตัวเลขออก = กลับไปคิดจากสูตร</div>'+
+      '<div class="tools"><input class="in" id="mnq" placeholder="ค้นหาเมนู…" value="'+esc(S.mnq||'')+'" style="flex:1;min-width:140px"></div><div id="mnList"></div></div>';
+    el.innerHTML=h;drawManList();$('mnq').oninput=function(){S.mnq=this.value;drawManList();};return;}
+}
+function qMatch(q,t){q=q.trim().toLowerCase();if(!q)return true;t=String(t||'').toLowerCase();return t.indexOf(q)>=0||gnorm(t).indexOf(gnorm(q))>=0;}
+function drawCostList(){
+  var el=$('cqList');if(!el)return;var q=(S.cq||'').trim(),f=S.cqF||'all';
+  var L=menuSorted(MENU.filter(function(it){if(it.active===false||it.price==null||!qMatch(q,it.receipt_name+' '+it.grp))return false;var ic=itemCost(it.id,it.is_addon);return !(f==='ok'&&ic.c==null||f==='bad'&&ic.c!=null);}));
+  el.innerHTML=L.length?cgRender('check',L,function(it){return it.category;},function(it){var ic=itemCost(it.id,it.is_addon),p=+it.price,pc=ic.c!=null&&p>0?Math.round((p-ic.c)/p*100):null;
+    return '<div class="cqrow" data-act="costDet" data-v="'+esc(it.id)+'"><div class="n">'+esc(it.receipt_name)+(ic.man?'<small>ใส่เอง</small>':'')+'</div><div class="r">'+
+      (ic.c!=null?'ต้นทุน <b>'+money(ic.c)+'</b> / '+money(p)+'<br><span style="color:'+(pc>=60?'var(--ok)':pc>=45?'var(--warn)':'var(--err)')+'">กำไร '+pc+'%</span>':'<span style="color:var(--warn)">⚠️ ไม่ครบ</span>')+'</div><div class="ch">›</div></div>';},
+    function(G){var b=G.filter(function(it){return itemCost(it.id,it.is_addon).c==null;}).length;return G.length+' เมนู'+(b?' · <span style="color:var(--warn)">ไม่ครบ '+b+'</span>':'');},!!q):'<div class="empty">ไม่พบเมนู</div>';
+}
+function drawPriceList(){
+  var el=$('cpList');if(!el)return;var q=(S.cpq||'').trim();
+  var R=priceRows().filter(function(x){return qMatch(q,matName(x.k));}).sort(function(a,b){return (b.bad-a.bad)||(b.n-a.n)||matName(a.k).localeCompare(matName(b.k));});
+  el.innerHTML=R.length?cgRender('price',R,function(x){var m=matById(x.k);return (m&&m.cat)||'อื่นๆ';},priceRowHtml,
+    function(G){var b=G.filter(function(x){return x.bad;}).length;return G.length+' รายการ'+(b?' · <span style="color:var(--warn)">ยังไม่มีราคา '+b+'</span>':' · ✓ ครบ');},!!q,
+    function(a,b,g){var ba=g[a].filter(function(x){return x.bad;}).length,bb=g[b].filter(function(x){return x.bad;}).length;return (bb>0)-(ba>0)||a.localeCompare(b);}):'<div class="empty">ไม่พบวัตถุดิบ</div>';
+}
+function priceRowHtml(x){
+  var mid=x.k,p=priceOfMat(mid)||{},mc=matCost(mid),u=matUnit(mid)||'หน่วย',us=selfUnits(mid),uo='',k=p.su||'r';
+  for(var z=0;z<us.length;z++)uo+='<option value="'+us[z].k+'"'+(us[z].k===k?' selected':'')+'>'+esc(us[z].l)+'</option>';
+  var uf=selfUnitF(mid,k);
+  return '<div class="cmrow"><div class="n">'+esc(matName(mid))+'<small>'+(x.n?'ใช้ใน '+x.n+' สูตร':'แก้ว/ฝา/หลอด หรือยังไม่มีสูตรใช้')+' · หน่วยในสูตร: '+esc(u)+(p.at?' · แก้ '+dtStr(new Date(p.at).toISOString()).slice(0,10):'')+'</small></div>'+
+    '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">ราคา <input class="in" data-cp="'+esc(mid)+'" data-f="p" onchange="costPriceSet(this)" inputmode="decimal" style="width:68px;padding:6px" value="'+(p.sp!=null?p.sp:'')+'" placeholder="฿"> บาท ต่อ <input class="in" data-cp="'+esc(mid)+'" data-f="q" onchange="costPriceSet(this)" style="width:72px;padding:6px" value="'+esc(p.sqt!=null?p.sqt:(p.sq!=null?fmtQ(p.sq):''))+'" placeholder="6 / 6x250"> <select class="in" data-cp="'+esc(mid)+'" data-f="u" onchange="costPriceSet(this)" style="width:auto;padding:6px">'+uo+'</select></div>'+
+    '<div class="cst">'+(mc.cpu!=null?'<b style="color:var(--ok)">✓</b> ฿'+cNum(mc.cpu)+'/'+esc(u)+(+p.sq>0&&uf&&k!=='r'?'<div class="note">'+esc(p.sqt||fmtQ(p.sq))+' '+esc(selfUnitL(mid,k))+' = '+fmtQ(p.sq*uf)+' '+esc(u)+'</div>':''):'<b style="color:var(--warn)">⚠️ '+esc(mc.why)+'</b>')+'</div></div>';
+}
+function drawLinkList(){
+  var el=$('lkList');if(!el)return;var q=(S.lkq||'').trim();
+  var L=menuSorted(linkRows().filter(function(it){return qMatch(q,it.receipt_name+' '+it.grp);}));
+  el.innerHTML=L.length?cgRender('link',L,function(it){return it.category;},function(it){var sg=recipeSugg(it),o='<option value="">— ยังไม่ผูก —</option>';
+      for(var j=0;j<sg.length;j++)o+='<option value="'+esc(sg[j].id)+'">'+esc(sg[j].n)+' · '+Math.round(sg[j].v*100)+'%</option>';
+      o+='<option value="__pick">🔍 เลือกจากสูตรทั้งหมด…</option>';
+      return '<div class="cmrow"><div class="n">'+esc(it.receipt_name)+'<small>'+(sg[0]?'แนะนำ: '+esc(sg[0].n)+' ('+Math.round(sg[0].v*100)+'%)':'ไม่พบสูตรที่ใกล้เคียง')+'</small></div>'+
+        '<select class="in" data-lk="'+esc(it.id)+'" onchange="linkSel(this)">'+o+'</select>'+
+        '<div class="cst">'+(sg[0]?'<button class="mini" data-act="linkOne" data-v="'+esc(it.id)+'">✓ ใช้ที่แนะนำ</button>':'')+'</div></div>';},
+    function(G){var s=G.filter(function(it){var sg=recipeSugg(it);return sg[0]&&sg[0].v>=0.85;}).length;return G.length+' เมนูยังไม่ผูก'+(s?' · แนะนำตรง '+s:'');},!!q)
+    :'<div class="empty">'+(q?'ไม่พบเมนู':'ทุกเมนูผูกสูตรแล้ว 🎉')+'</div>';
+}
+function drawManList(){
+  var el=$('mnList');if(!el)return;var q=(S.mnq||'').trim(),c=costCfg();
+  var L=menuSorted(manRows().filter(function(it){return qMatch(q,it.receipt_name+' '+it.grp);}));
+  el.innerHTML=L.length?cgRender('man',L,function(it){return it.category;},function(it){var ic=itemCost(it.id,it.is_addon);
+      return '<div class="cmrow"><div class="n">'+esc(it.receipt_name)+'<small>'+(ic.man?'ใส่เอง':esc(ic.miss.slice(0,3).join(', '))+(ic.miss.length>3?' …':'')+(ic.part?' · คิดได้แล้ว ฿'+money(ic.part):''))+'</small></div>'+
+        '<input class="in" data-cman="'+esc(it.id)+'" onchange="costManSet(this)" placeholder="ต้นทุน ฿ หรือ 49/12" value="'+(ic.man?c.man[it.id]:'')+'" style="text-align:right"><div class="cst">ราคาขาย ฿'+money(it.price)+'</div></div>';},
+    function(G){var m=G.filter(function(it){return itemCost(it.id,it.is_addon).man;}).length;return G.length+' เมนู'+(m?' · ใส่แล้ว '+m:'');},!!q)
+    :'<div class="empty">'+(q?'ไม่พบเมนู':'ทุกเมนูคิดต้นทุนได้ครบแล้ว 🎉')+'</div>';
 }
 
 /* ---- admin ---- */
@@ -4842,14 +4867,14 @@ document.addEventListener('click',function(e){
     case 'costStart':costSave({on:true,price:{},pack:packDefault()},false);renderCostAdmin();break;
     case 'costMigRetry':CSRC=null;renderCostAdmin();break;
     case 'costMigSkip':if(confirm('เริ่มกรอกราคาวัตถุดิบเองทั้งหมด (ไม่คัดลอกจากแอปต้นทุน)?')){var oc=SET.cost||{};SET.cost={on:true,price:{},pack:packDefault(),man:oc.man||{}};costDirty();pushSettings(true);renderCostAdmin();}break;
-    case 'cpAll':S.cpAll=!S.cpAll;drawCostAdmin();break;
+    case 'cpAll':S.cpAll=!S.cpAll;drawCostTab();break;
     case 'costDet':costDetail(v);break;
     case 'rpkSz':if(RPK){RPK.sz=v||'';drawRecipePick();}break;
     case 'rpkPick':if(RPK){var lo={};lo[RPK.mid]=v;RPK=null;closeModal();linkRecipes(lo);}break;
-    case 'cqF':S.cqF=v;S.cqAll=false;drawCostAdmin();break;
-    case 'cqMore':S.cqAll=true;drawCostList();break;
+    case 'cqF':S.cqF=v;drawCostTab();break;
+    case 'ctab':S.ctab=v;drawCostAdmin();break;
+    case 'cgT':S.cgOpen=S.cgOpen||{};S.cgOpen[v]=!S.cgOpen[v];(function(){var tb=v.split('|')[0];if(tb==='check')drawCostList();else if(tb==='price')drawPriceList();else if(tb==='link')drawLinkList();else if(tb==='man')drawManList();})();break;
     case 'linkAll':linkAllGood();break;
-    case 'lkMore':S.lkAll=true;drawCostAdmin();break;
     case 'linkOne':(function(){var it=menuById(v),sg=it&&recipeSugg(it);if(sg&&sg[0]){var o={};o[v]=sg[0].id;linkRecipes(o);}})();break;
     case 'costPackAdd':(function(){var P=clone(packRules());(P[v]=P[v]||[]).push({m:'',q:1});costSave({pack:P});})();break;
     case 'costPackDel':(function(){var P=clone(packRules());if(P[v])P[v].splice(i,1);costSave({pack:P});})();break;

@@ -3557,7 +3557,7 @@ function itemCost(mid,addon){
   if(!it)o.miss.push('ไม่พบเมนู');
   else if(!it.recipe_id)o.miss.push('ไม่ได้ผูกสูตร');
   else{var rc=recipeCost(it.recipe_id),r=recipeById(it.recipe_id);o.miss=rc.miss.slice();o.part=rc.c!=null?rc.c:(rc.part||0);
-    if(!addon&&!it.is_addon&&(it.kind||'drink')==='drink'&&!/รีฟิล/.test(it.receipt_name+' '+(it.variant||''))){var pk=packKey(it,r);if(pk){var pc=packCost(pk,rc.refs);o.pack=pc.c;o.part+=pc.c;o.miss=o.miss.concat(pc.miss);o.pk=pk;}}
+    if(!addon&&!it.is_addon&&(it.kind||'drink')==='drink'&&!/รีฟิล|ทาน\s*(ที่)?ร้าน/.test(it.receipt_name+' '+(it.variant||''))){var pk=packKey(it,r);if(pk){var pc=packCost(pk,rc.refs);o.pack=pc.c;o.part+=pc.c;o.miss=o.miss.concat(pc.miss);o.pk=pk;}}
     if(!o.miss.length)o.c=o.part;}
   return (COSTC[k]=o);
 }
@@ -3748,7 +3748,7 @@ function costDetail(mid){
       else if(pm.cpu==null)h+=row(nm2,P[i].q+' '+esc(pu),'','⚠️ '+esc(pm.why),true);
       else h+=row(nm2,P[i].q+' '+esc(pu)+' × ฿'+cNum(pm.cpu),priceTxt(P[i].m),money(pm.cpu*P[i].q));}
     if(!P.length)h+='<tr><td class="note">ไม่ได้ตั้งรายการแก้ว/ฝา/หลอดสำหรับขนาดนี้</td><td></td></tr>';}
-  else if(!ic.man&&it.recipe_id)h+='<tr><td class="note" colspan="2">ไม่บวกแก้ว/ฝา/หลอด ('+(it.is_addon?'แอดเพิ่ม':it.kind==='snack'?'ขนม':/รีฟิล/.test(it.receipt_name)?'เมนูรีฟิล':'ไม่พบขนาดแก้วในชื่อเมนู')+')</td></tr>';
+  else if(!ic.man&&it.recipe_id)h+='<tr><td class="note" colspan="2">ไม่บวกแก้ว/ฝา/หลอด ('+(it.is_addon?'แอดเพิ่ม':it.kind==='snack'?'ขนม':/รีฟิล/.test(it.receipt_name)?'เมนูรีฟิล':/ทาน\s*(ที่)?ร้าน/.test(it.receipt_name+' '+(it.variant||''))?'ทานร้าน ใช้แก้วของร้าน':'ไม่พบขนาดแก้วในชื่อเมนู')+')</td></tr>';
   var p=+it.price||0;
   if(ic.c!=null){var g=p-ic.c,pc=p>0?Math.round(g/p*100):0;h+='<tr class="big"><td>ต้นทุนรวม</td><td class="r">'+money(ic.c)+'</td></tr><tr><td>ราคาขายหน้าร้าน</td><td class="r">'+money(p)+'</td></tr><tr class="h"><td>กำไรต่อชิ้น</td><td class="r">'+money(g)+' ('+pc+'%)</td></tr>';
     if(lmOn(it)&&lmCfg().gp){var pl=it.price_lm!=null?+it.price_lm:p,gl=pl-lmGp(pl)-ic.c;h+='<tr class="s"><td>LINE MAN ฿'+money(pl)+' หัก GP แล้ว</td><td class="r">'+money(gl)+' ('+(pl>0?Math.round(gl/pl*100):0)+'%)</td></tr>';}}
@@ -3815,7 +3815,7 @@ function drawCostAdmin(){
   h+='<div class="box"><h3>🧾 ราคาวัตถุดิบ</h3><div class="note" style="margin-bottom:8px">กรอกตามที่ซื้อจริง เช่น ราคา 51 บาท ต่อ 6 ขวด · ช่อง "ต่อ" พิมพ์ 6x250 ได้ (6 กล่อง × 250 มล.) · ระบบแปลงเป็นหน่วยในสูตรให้เอง · ยังไม่มีราคา '+nb+' รายการ (อยู่บนสุด) · บันทึกทันทีที่แก้</div>'+
     '<div class="tools"><input class="in" id="cpq" placeholder="ค้นหาวัตถุดิบ…" value="'+esc(S.cpq||'')+'" style="flex:1;min-width:140px"><button class="mini" data-act="cpAll">'+(S.cpAll?'แสดงเฉพาะที่ใช้':'แสดงวัตถุดิบทั้งหมดใน Stock')+'</button></div><div id="cpList"></div></div>';
   var P=packRules();
-  h+='<div class="box"><h3>🥤 แก้ว · ฝา · หลอด (บวกให้อัตโนมัติตามขนาด)</h3><div class="note" style="margin-bottom:8px">ดูขนาดและร้อน/เย็น/ปั่น จากชื่อแบบของเมนู · ถ้าสูตรใน Stock มีแก้วอยู่แล้วจะไม่บวกซ้ำ · ไม่บวกให้ขนม แอดเพิ่ม และเมนูรีฟิล (ลูกค้าใช้แก้วเดิม) · ราคามาจากกล่อง 🧾 ราคาวัตถุดิบ</div>';
+  h+='<div class="box"><h3>🥤 แก้ว · ฝา · หลอด (บวกให้อัตโนมัติตามขนาด)</h3><div class="note" style="margin-bottom:8px">ดูขนาดและร้อน/เย็น/ปั่น จากชื่อแบบของเมนู · ถ้าสูตรใน Stock มีแก้วอยู่แล้วจะไม่บวกซ้ำ · ไม่บวกให้ขนม แอดเพิ่ม เมนูรีฟิล (ลูกค้าใช้แก้วเดิม) และเมนูทานร้าน (ใช้แก้วของร้าน) · ราคามาจากกล่อง 🧾 ราคาวัตถุดิบ</div>';
   for(i=0;i<PACK_KEYS.length;i++){var k=PACK_KEYS[i][0],L2=P[k]||[],pc=packCost(k);
     h+='<div class="sec" style="margin-top:10px">'+PACK_KEYS[i][1]+' · รวม '+(pc.miss.length?'<span style="color:var(--warn)">⚠️ ไม่ครบ</span>':'฿'+money(pc.c))+'</div>';
     for(var q=0;q<L2.length;q++)h+='<div class="pkrow"><select class="in" data-pk="'+k+'" data-i="'+q+'" data-f="m" onchange="costPackSet(this)">'+matOpts(L2[q].m)+'</select><input class="in" data-pk="'+k+'" data-i="'+q+'" data-f="q" onchange="costPackSet(this)" inputmode="decimal" value="'+L2[q].q+'" style="width:56px;text-align:right"><span class="note">'+(L2[q].m?cpuTxt(L2[q].m):'')+'</span><button class="mini del" data-act="costPackDel" data-v="'+k+'" data-i="'+q+'">✕</button></div>';

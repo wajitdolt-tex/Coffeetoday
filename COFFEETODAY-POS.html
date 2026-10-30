@@ -2697,8 +2697,6 @@ function openBill(id){
   for(var p=0;p<o.payments.length;p++)h+='<tr class="s"><td>'+esc(o.payments[p].name)+'</td><td></td><td class="r">'+money(o.payments[p].amt)+'</td></tr>';
   if(o.change_amt!=null)h+='<tr class="s"><td>รับ '+money(o.cash_received)+' · ทอน</td><td></td><td class="r">'+money(o.change_amt)+'</td></tr>';
   h+='</table>';
-  if(costOn()&&o.status!=='void'){var bc=billCost(o),bg=o.channel==='lineman'?lmGp(o.total):0;
-    h+=bc.any?'<div class="note" style="margin-top:8px">💹 ต้นทุน '+money(bc.c)+(bg?' · GP '+money(bg):'')+' · กำไรขั้นต้น <b>'+money(r2(o.total-bc.c-bg))+'</b>'+(bc.miss?'<br><span style="color:var(--warn)">⚠️ บางรายการไม่มีต้นทุน ('+money(bc.miss)+')</span>':'')+'</div>':'<div class="note" style="margin-top:8px">💹 ต้นทุน: – (บิลนี้ขายก่อนเปิดใช้ต้นทุน)</div>';}
   h+='<div class="btns"><button class="btn ghost sm" data-act="printPrev" data-v="'+o.id+'">🖨️ พิมพ์ใบเสร็จ</button>'+
     (o.status!=='void'?'<button class="btn danger sm" data-act="voidO" data-v="'+o.id+'">ยกเลิกบิล</button>':'<span></span>')+'</div></div>';
   $('modal').className='';$('modal').innerHTML=h;showModal();
@@ -2787,7 +2785,7 @@ function renderSummary(){
     h+='<tr><td>ยอดรวม</td><td class="r">'+money(A.sub)+'</td></tr><tr><td>ส่วนลด</td><td class="r">'+money(A.disc)+'</td></tr><tr><td>จำนวนปัดเศษ</td><td class="r">'+money(A.round)+'</td></tr>';
     h+='<tr class="big"><td>ยอดรวมสุทธิ</td><td class="r">'+money(A.net)+'</td></tr></table>';
     h+='<div class="note" style="margin-top:8px">หน้าร้าน '+money(A.ch.walkin||0)+' ('+(A.chCnt.walkin||0)+' บิล) · LINE MAN '+money(A.ch.lineman||0)+' ('+(A.chCnt.lineman||0)+' บิล)'+(A.voids?' · ยกเลิก '+A.voids+' บิล ('+money(A.voidAmt)+')':'')+'</div>';
-    h+='</div>'+lmBox(A)+costBox(A)+sumOptBox();
+    h+='</div>'+lmBox(A)+sumOptBox();
     h+='<div class="box"><h3>🏬 สรุปรายงานรายวันขาย</h3><table class="sumtbl">'+
       '<tr><td>Sub Total / ยอดขายก่อนลด</td><td class="r">'+money(A.sub)+'</td></tr>'+
       '<tr><td>− Discount / ส่วนลด</td><td class="r">'+money(A.disc)+'</td></tr>'+

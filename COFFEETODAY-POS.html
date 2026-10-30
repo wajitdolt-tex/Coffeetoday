@@ -210,6 +210,7 @@ main{height:calc(100% - 60px - env(safe-area-inset-top));overflow:hidden}
 .cmrow{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line2)}
 .cmrow .n{font-weight:700;font-size:14px;line-height:1.3}.cmrow .n small{display:block;font-weight:500;color:var(--muted);font-size:11px}
 .cmrow select.in,.cmrow input.in{width:100%;min-width:0;padding:7px 6px;font-size:13px}.cmrow .cst{font-size:12px}
+.cqrow{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line2);cursor:pointer}.cqrow .n{flex:1;font-weight:700;font-size:14px;line-height:1.3}.cqrow .n small{display:block;font-weight:500;color:var(--muted);font-size:11px}.cqrow .r{text-align:right;font-size:12px;line-height:1.5}.cqrow .ch{color:var(--muted);font-size:20px}
 .pkrow{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}.pkrow select.in{flex:1;min-width:160px;padding:7px 6px;font-size:13px}
 @media (max-width:600px){.cmrow{grid-template-columns:1fr 1fr}.cmrow .cst{grid-column:1/-1}}
 .mhd{font-size:11px;color:var(--brandL);font-weight:800}
@@ -3549,7 +3550,7 @@ function matCost(mid){
 function recipeById(id){for(var i=0;i<RECIPES.length;i++)if(RECIPES[i].id===id)return RECIPES[i];return null;}
 function recipeIngs(r){var br=BR().name,out=[],L=(r&&r.ingredients)||[];
   for(var i=0;i<L.length;i++){var g=L[i],s=g.branchSub&&g.branchSub[br];
-    if(s&&s.materialId&&matById(s.materialId))out.push({mid:s.materialId,qty:s.qty!=null&&s.qty!==''?+s.qty:+g.qty});else out.push({mid:g.materialId,qty:+g.qty});}
+    if(s&&s.materialId&&matById(s.materialId))out.push({mid:s.materialId,qty:s.qty!=null&&s.qty!==''?+s.qty:+g.qty,sub:true});else out.push({mid:g.materialId,qty:+g.qty});}
   return out;}
 function recipeCost(rid){
   var k='r:'+rid;if(COSTC.hasOwnProperty(k))return COSTC[k];
@@ -3688,6 +3689,55 @@ function linkBox(){
   if(lim<R.length)h+='<button class="mini" style="margin-top:8px" data-act="lkMore">แสดงอีก '+(R.length-lim)+' เมนู</button>';
   return h+'</div>';
 }
+/* ตรวจต้นทุนรายเมนู: รายการเมนู + หน้ารายละเอียดว่าคิดจากอะไรบ้าง */
+function cNum(n){n=+n||0;return n<1&&n>0?n.toFixed(3).replace(/(\.\d\d)0$/,'$1'):money(n);}
+function costDetail(mid){
+  var it=menuById(mid);if(!it)return;var c=costCfg(),ic=itemCost(mid,it.is_addon),h='',L,i;
+  h+='<div class="mh"><h2>'+esc(it.receipt_name)+'</h2><button class="x" data-act="close">✕</button></div><div class="mb">';
+  var r=it.recipe_id?recipeById(it.recipe_id):null;
+  h+='<div class="note" style="margin-bottom:10px">'+(ic.man?'ใส่ต้นทุนเอง (ไม่ได้คิดจากสูตร)':it.recipe_id?'ผูกกับสูตร Stock: <b>'+esc(r?r.name+(r.size?' '+r.size:''):it.recipe_id)+'</b>':'ยังไม่ได้ผูกกับสูตร Stock')+' · คิดตาม'+esc(BR().name)+'</div><table class="sumtbl">';
+  function row(n,d,src,amt,bad){return '<tr><td>'+esc(n)+'<div class="note">'+d+(src?' · จาก: '+esc(src):'')+'</div></td><td class="r"'+(bad?' style="color:var(--warn)"':'')+'>'+amt+'</td></tr>';}
+  if(ic.man){h+=row('ต้นทุนที่ใส่เอง','แก้ได้ในกล่อง ✍️ ของแท็บต้นทุน','',money(c.man[mid]));}
+  else if(r&&r.ingredients){
+    h+='<tr class="h"><td>วัตถุดิบ (จากสูตร Stock)</td><td></td></tr>';L=recipeIngs(r);
+    for(i=0;i<L.length;i++){var m=matById(L[i].mid),mc=matCost(L[i].mid),u=matUnit(L[i].mid),nm=(m?m.name:L[i].mid)+(L[i].sub?' (แทนเฉพาะสาขา)':'');
+      if(mc.cpu==null)h+=row(nm,L[i].qty+' '+esc(u),mc.r?refName(mc.r):'','⚠️ '+esc(mc.why),true);
+      else h+=row(nm,L[i].qty+' '+esc(u)+' × ฿'+cNum(mc.cpu),refName(mc.r),money(mc.cpu*L[i].qty));}
+    if(!L.length)h+='<tr><td class="note">สูตรนี้ไม่มีวัตถุดิบ</td><td></td></tr>';
+  } else if(it.recipe_id)h+=row('ไม่พบสูตรนี้ใน Stock','รหัส '+esc(it.recipe_id),'','⚠️',true);
+  else h+=row('ยังไม่ได้ผูกสูตร','ผูกได้ในกล่อง 🔗 หรือใส่ต้นทุนเองในกล่อง ✍️','','⚠️',true);
+  if(!ic.man&&ic.pk){var rc=recipeCost(it.recipe_id),P=packRules()[ic.pk]||[],lab=ic.pk;for(i=0;i<PACK_KEYS.length;i++)if(PACK_KEYS[i][0]===ic.pk)lab=PACK_KEYS[i][1];
+    h+='<tr class="h"><td>แก้ว ฝา หลอด ('+esc(lab)+')</td><td></td></tr>';
+    for(i=0;i<P.length;i++){var cp=ingCpu(P[i].r),nm2=refName(P[i].r)||'(ยังไม่ได้เลือก)';
+      if(rc.refs&&rc.refs[P[i].r])h+=row(nm2,'มีในสูตร Stock แล้ว ไม่บวกซ้ำ','','—');
+      else if(cp==null)h+=row(nm2,P[i].q+' ชิ้น','','⚠️ ไม่มีราคา',true);
+      else h+=row(nm2,P[i].q+' '+(isPP(P[i].r)?'ชิ้น':esc(refUnit(P[i].r)))+' × ฿'+cNum(cp),'',money(cp*P[i].q));}
+    if(!P.length)h+='<tr><td class="note">ไม่ได้ตั้งรายการแก้ว/ฝา/หลอดสำหรับขนาดนี้</td><td></td></tr>';}
+  else if(!ic.man&&it.recipe_id)h+='<tr><td class="note" colspan="2">ไม่บวกแก้ว/ฝา/หลอด ('+(it.is_addon?'แอดเพิ่ม':it.kind==='snack'?'ขนม':/รีฟิล/.test(it.receipt_name)?'เมนูรีฟิล':'ไม่พบขนาดแก้วในชื่อเมนู')+')</td></tr>';
+  var p=+it.price||0;
+  if(ic.c!=null){var g=p-ic.c,pc=p>0?Math.round(g/p*100):0;h+='<tr class="big"><td>ต้นทุนรวม</td><td class="r">'+money(ic.c)+'</td></tr><tr><td>ราคาขายหน้าร้าน</td><td class="r">'+money(p)+'</td></tr><tr class="h"><td>กำไรต่อชิ้น</td><td class="r">'+money(g)+' ('+pc+'%)</td></tr>';
+    if(lmOn(it)){var pl=it.price_lm!=null?+it.price_lm:p,gl=pl-lmGp(pl)-ic.c;h+='<tr class="s"><td>LINE MAN ฿'+money(pl)+' หัก GP แล้ว</td><td class="r">'+money(gl)+' ('+(pl>0?Math.round(gl/pl*100):0)+'%)</td></tr>';}}
+  else h+='<tr class="big"><td>ต้นทุนรวม</td><td class="r" style="color:var(--warn)">⚠️ ยังไม่ครบ'+(ic.part?' (คิดได้แล้ว '+money(ic.part)+')':'')+'</td></tr>';
+  h+='</table><div class="note" style="margin-top:10px">ราคาวัตถุดิบดึงจากแอปต้นทุน '+(CSRC?dtStr(new Date(CSRC.at).toISOString()).slice(0,16):'')+' · ถ้าคู่ไหนผิด แก้ได้ในกล่อง 🧾 จับคู่วัตถุดิบ</div></div>';
+  $('modal').className='';$('modal').innerHTML=h;showModal();
+}
+function costListBox(){
+  return '<div class="box"><h3>🔍 ตรวจต้นทุนรายเมนู</h3><div class="note" style="margin-bottom:8px">แตะเมนูเพื่อดูว่าคิดต้นทุนจากอะไรบ้าง</div>'+
+    '<div class="tools"><input class="in" id="cq" placeholder="ค้นหาเมนู…" value="'+esc(S.cq||'')+'" style="flex:1;min-width:140px"><div class="seg">'+
+    [['all','ทั้งหมด'],['ok','✓ ครบ'],['bad','⚠️ ไม่ครบ']].map(function(x){return '<button data-act="cqF" data-v="'+x[0]+'" class="'+((S.cqF||'all')===x[0]?'on':'')+'">'+x[1]+'</button>';}).join('')+'</div></div><div id="cqList"></div></div>';
+}
+function drawCostList(){
+  var el=$('cqList');if(!el)return;var q=(S.cq||'').trim().toLowerCase(),f=S.cqF||'all',cx={},cl=menuCats(),i,h='',n=0,lim=S.cqAll?9999:40;
+  for(i=0;i<cl.length;i++)cx[cl[i]]=i;
+  var L=MENU.filter(function(it){return it.active!==false&&it.price!=null;}).sort(function(a,b){return ((cx[a.category]||0)-(cx[b.category]||0))||((a.sort||0)-(b.sort||0));});
+  for(i=0;i<L.length;i++){var it=L[i];if(q&&(it.receipt_name+' '+it.grp).toLowerCase().indexOf(q)<0)continue;var ic=itemCost(it.id,it.is_addon);
+    if(f==='ok'&&ic.c==null||f==='bad'&&ic.c!=null)continue;n++;if(n>lim)continue;
+    var p=+it.price,pc=ic.c!=null&&p>0?Math.round((p-ic.c)/p*100):null;
+    h+='<div class="cqrow" data-act="costDet" data-v="'+esc(it.id)+'"><div class="n">'+esc(it.receipt_name)+'<small>'+esc(it.category||'')+(ic.man?' · ใส่เอง':'')+'</small></div><div class="r">'+
+      (ic.c!=null?'ต้นทุน <b>'+money(ic.c)+'</b> / '+money(p)+'<br><span style="color:'+(pc>=60?'var(--ok)':pc>=45?'var(--warn)':'var(--err)')+'">กำไร '+pc+'%</span>':'<span style="color:var(--warn)">⚠️ ไม่ครบ</span>')+'</div><div class="ch">›</div></div>';}
+  if(!n)h='<div class="empty">ไม่พบเมนู</div>';else if(n>lim)h+='<button class="mini" style="margin-top:8px" data-act="cqMore">แสดงอีก '+(n-lim)+' เมนู</button>';
+  el.innerHTML=h;
+}
 function renderCostAdmin(){
   var c=costCfg();
   var h='<div class="box"><h3>🔗 เชื่อมแอปต้นทุน</h3><div class="note" style="margin-bottom:8px">ต้นทุน = สูตรจากแอป Stock × ราคาวัตถุดิบจากแอปต้นทุน · POS อ่านราคาอย่างเดียว ไม่แก้ข้อมูลในชีต · ดึงราคาใหม่เองทุก 3 ชม.</div>'+
@@ -3705,7 +3755,7 @@ function drawCostAdmin(){
   if(!costReady()){el.innerHTML='<div class="note">กำลังโหลดราคา / สูตร / วัตถุดิบ…</div>';return;}
   // สรุปเมนู
   var ok=0,bad=0,man=0,i;for(i=0;i<MENU.length;i++){var it=MENU[i];if(it.active===false||it.price==null)continue;var ic=itemCost(it.id,it.is_addon);if(ic.c==null)bad++;else{ok++;if(ic.man)man++;}}
-  var h='<div class="stats">'+stat('✅','a','คิดต้นทุนได้',ok+' เมนู')+stat('⚠️','d','ต้นทุนไม่ครบ',bad+' เมนู')+'</div>';
+  var h='<div class="stats">'+stat('✅','a','คิดต้นทุนได้',ok+' เมนู')+stat('⚠️','d','ต้นทุนไม่ครบ',bad+' เมนู')+'</div>'+costListBox();
   // วัตถุดิบที่สูตรใช้
   var use={},br=BR().name;for(i=0;i<RECIPES.length;i++){var L=RECIPES[i].ingredients||[];for(var j=0;j<L.length;j++){use[L[j].materialId]=(use[L[j].materialId]||0)+1;var bs=L[j].branchSub&&L[j].branchSub[br];if(bs&&bs.materialId)use[bs.materialId]=(use[bs.materialId]||0)+1;}}
   var mids=Object.keys(use).map(function(k){var mc=matCost(k);return {k:k,n:use[k],bad:mc.cpu==null};}).sort(function(a,b){return (b.bad-a.bad)||(b.n-a.n);});
@@ -3736,6 +3786,7 @@ function drawCostAdmin(){
       '<input class="in" data-cman="'+esc(it2.id)+'" onchange="costManSet(this)" inputmode="decimal" placeholder="ต้นทุน ฿" value="'+(ic2.man?c.man[it2.id]:'')+'" style="text-align:right"><div class="cst">ราคาขาย ฿'+money(it2.price)+'</div></div>';}
   h+='</div>';
   el.innerHTML=h;
+  drawCostList();var cq=$('cq');if(cq)cq.oninput=function(){S.cq=this.value;S.cqAll=false;drawCostList();};
 }
 
 /* ---- admin ---- */
@@ -4742,6 +4793,9 @@ document.addEventListener('click',function(e){
     case 'mAdd':editMenu(null);break;
     case 'costUrl':(function(){var u=($('cUrl').value||'').trim();if(u&&!costUrlOk(u)){toast(/\/edit|projects/.test(u)?'ลิงก์นี้เป็นหน้าแก้โค้ด — ต้องใช้ลิงก์ที่ลงท้ายด้วย /exec':'ลิงก์ต้องเป็น https://script.google.com/macros/s/…/exec','err');return;}CSRC=null;lsSet('cost_src',null);costSave({url:u},false);renderCostAdmin();toast(u?'บันทึกลิงก์แล้ว กำลังดึงราคา…':'ปิดการคิดต้นทุนแล้ว','ok');})();break;
     case 'costFetch':costFetch(true);break;
+    case 'costDet':costDetail(v);break;
+    case 'cqF':S.cqF=v;S.cqAll=false;drawCostAdmin();break;
+    case 'cqMore':S.cqAll=true;drawCostList();break;
     case 'linkAll':linkAllGood();break;
     case 'lkMore':S.lkAll=true;drawCostAdmin();break;
     case 'linkOne':(function(){var it=menuById(v),sg=it&&recipeSugg(it);if(sg&&sg[0]){var o={};o[v]=sg[0].id;linkRecipes(o);}})();break;
@@ -4905,4 +4959,3 @@ startApp();
 </script>
 </body>
 </html>
-

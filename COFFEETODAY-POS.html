@@ -213,6 +213,7 @@ main{height:calc(100% - 60px - env(safe-area-inset-top));overflow:hidden}
 .cqrow{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line2);cursor:pointer}.cqrow .n{flex:1;font-weight:700;font-size:14px;line-height:1.3}.cqrow .n small{display:block;font-weight:500;color:var(--muted);font-size:11px}.cqrow .r{text-align:right;font-size:12px;line-height:1.5}.cqrow .ch{color:var(--muted);font-size:20px}
 .cghd{display:flex;align-items:center;gap:8px;padding:12px 4px;border-bottom:1px solid var(--line2);cursor:pointer;font-size:15px}.cghd .cgar{width:14px;color:var(--muted)}.cghd .note{margin-left:auto;text-align:right}.cgbd{padding:0 0 6px 18px;border-bottom:1px solid var(--line2)}
 .ctabs{display:flex;flex-wrap:wrap;margin:4px 0 12px}.cbadge{display:inline-block;min-width:20px;padding:1px 6px;border-radius:10px;background:var(--warnBg,#fdecc8);color:var(--warn);font-size:11px;font-weight:800;margin-left:3px}
+.povbox{background:var(--line2);border-radius:12px;padding:10px 12px;margin:4px 0}.povr{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin-bottom:8px;font-size:14px}.povr label,.povg{display:inline-flex;gap:5px;align-items:center;cursor:pointer}.povg{font-size:13px}
 .pkrow{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}.pkrow select.in{flex:1;min-width:160px;padding:7px 6px;font-size:13px}
 @media (max-width:600px){.cmrow{grid-template-columns:1fr 1fr}.cmrow .cst{grid-column:1/-1}}
 .mhd{font-size:11px;color:var(--brandL);font-weight:800}
@@ -3546,12 +3547,32 @@ function packKey(it,r){
   var t=/ปั่น/.test(txt)?'blend':/เย็น|โซดา/.test(txt)?'iced':/ร้อน|รอน/.test(txt)?'hot':(sz<=12?'hot':'iced');
   return t+sz;
 }
-function packCost(key,skip){
-  var L=(packRules()[key])||[],o={c:0,miss:[]};
-  for(var i=0;i<L.length;i++){if(!L[i].m||(skip&&skip[L[i].m]))continue;var mc=matCost(L[i].m);if(mc.cpu==null)o.miss.push(matName(L[i].m)+' ('+mc.why+')');else o.c+=mc.cpu*(+L[i].q||0);}
+// ชนิดบรรจุภัณฑ์จากชื่อ: แก้ว / ฝา / หลอด
+function packType(mid){var n=matName(mid);return /^แก้ว/.test(n)?'cup':/^ฝา/.test(n)?'lid':/^หลอด/.test(n)?'straw':'other';}
+// ฝา/หลอดตั้งเองรายเมนู: SET.cost.pov['m:'+id] หรือทั้งการ์ด (เฉพาะร้อน/เย็น/ปั่นแบบเดียวกัน) ['g:'+การ์ด+'|'+iced] = {lid:matId|'none', straw:...}
+function povKeyG(it,pk){return 'g:'+gk(it.category,it.grp)+'|'+String(pk||'').replace(/\d+/g,'');}
+function povFor(it,pk){var P=(SET.cost&&SET.cost.pov)||{};return ext(ext({},P[povKeyG(it,pk)]||{}),P['m:'+it.id]||{});}
+function hasPov(it,pk){var P=(SET.cost&&SET.cost.pov)||{};return !!(P['m:'+it.id]||P[povKeyG(it,pk)]);}
+// รายการแก้ว/ฝา/หลอดจริงของเมนูนี้: ตามขนาด → แทนด้วยที่ตั้งเอง → ตัดชนิดที่สูตร Stock มีอยู่แล้ว
+function packLines(key,refs,ov){
+  var L=(packRules()[key])||[],out=[],seen={},rt={},i,t;ov=ov||{};
+  for(var r in (refs||{}))if(refs.hasOwnProperty(r)){t=packType(r);if(t!=='other')rt[t]=r;}
+  for(i=0;i<L.length;i++){if(!L[i].m)continue;t=packType(L[i].m);var ln={m:L[i].m,q:+L[i].q||0,t:t};
+    if(rt[t]&&t!=='other'){ln.skip=rt[t];out.push(ln);continue;}
+    if(refs&&refs[L[i].m]){ln.skip=L[i].m;out.push(ln);continue;}
+    if(ov[t]){if(seen[t])continue;seen[t]=1;if(ov[t]==='none'){ln.none=1;out.push(ln);continue;}ln.m=ov[t];ln.ov=1;}
+    out.push(ln);}
+  ['lid','straw'].forEach(function(t2){if(ov[t2]&&ov[t2]!=='none'&&!seen[t2]&&!rt[t2]){var has=out.some(function(x){return x.t===t2;});if(!has)out.push({m:ov[t2],q:1,t:t2,ov:1});}});
+  return out;
+}
+function packCost(key,skip,ov){
+  var L=packLines(key,skip,ov),o={c:0,miss:[]};
+  for(var i=0;i<L.length;i++){if(L[i].skip||L[i].none)continue;var mc=matCost(L[i].m);if(mc.cpu==null)o.miss.push(matName(L[i].m)+' ('+mc.why+')');else o.c+=mc.cpu*L[i].q;}
   return o;
 }
 // ต้นทุนต่อ 1 ชิ้นของเมนู: ใส่เอง > สูตร Stock + แก้ว/ฝา/หลอด ตามขนาด
+// รีฟิล / ทานร้าน: ไม่คิดแก้ว ฝา หลอดแบบใช้แล้วทิ้ง (ทั้งที่บวกตามขนาด และที่อยู่ในสูตร Stock)
+function noDispo(it){return /รีฟิล|ทาน\s*(ที่)?ร้าน/.test(it.receipt_name+' '+(it.variant||''));}
 function itemCost(mid,addon){
   var k='i:'+mid+(addon?'|a':'');if(COSTC.hasOwnProperty(k))return COSTC[k];
   var c=costCfg(),it=menuById(mid),o={c:null,part:0,miss:[],pack:0,man:false};
@@ -3559,7 +3580,8 @@ function itemCost(mid,addon){
   if(!it)o.miss.push('ไม่พบเมนู');
   else if(!it.recipe_id)o.miss.push('ไม่ได้ผูกสูตร');
   else{var rc=recipeCost(it.recipe_id),r=recipeById(it.recipe_id);o.miss=rc.miss.slice();o.part=rc.c!=null?rc.c:(rc.part||0);
-    if(!addon&&!it.is_addon&&(it.kind||'drink')==='drink'&&!/รีฟิล|ทาน\s*(ที่)?ร้าน/.test(it.receipt_name+' '+(it.variant||''))){var pk=packKey(it,r);if(pk){var pc=packCost(pk,rc.refs);o.pack=pc.c;o.part+=pc.c;o.miss=o.miss.concat(pc.miss);o.pk=pk;}}
+    if(noDispo(it)){o.nodisp=true;var RL=recipeIngs(r);for(var z=0;z<RL.length;z++)if(packType(RL[z].mid)!=='other'){var zc=matCost(RL[z].mid),zn=matName(RL[z].mid);if(zc.cpu!=null)o.part-=zc.cpu*(RL[z].qty||0);o.miss=o.miss.filter(function(x){return x.indexOf(zn+' (')!==0;});}}
+    else if(!addon&&!it.is_addon&&(it.kind||'drink')==='drink'){var pk=packKey(it,r);if(pk){var pc=packCost(pk,rc.refs,povFor(it,pk));o.pack=pc.c;o.part+=pc.c;o.miss=o.miss.concat(pc.miss);o.pk=pk;}}
     if(!o.miss.length)o.c=o.part;}
   return (COSTC[k]=o);
 }
@@ -3611,12 +3633,29 @@ function phLast(mid){var p=priceOfMat(mid),mc=matCost(mid);if(!p||!p.hist||!p.hi
 // ต้นทุนต่อหน่วย ณ เวลา T (ใช้ราคาที่มีผลตอนนั้น)
 function cpuAt(mid,T){var p=priceOfMat(mid);if(!p)return null;if(!p.at||p.at<=T)return matCost(mid).cpu;var H=p.hist||[];for(var i=0;i<H.length;i++)if(!H[i].at||H[i].at<=T)return H[i].cpu;return null;}
 function itemLines(mid,addon){var it=menuById(mid),c=costCfg(),out=[];if(!it||!it.recipe_id||(c.man.hasOwnProperty(mid)&&c.man[mid]!=null))return out;var r=recipeById(it.recipe_id);if(!r||!r.ingredients)return out;
-  var L=recipeIngs(r),refs={},i;for(i=0;i<L.length;i++){out.push({m:L[i].mid,q:L[i].qty||0});refs[L[i].mid]=1;}
-  var ic=itemCost(mid,addon);if(ic.pk){var P=packRules()[ic.pk]||[];for(i=0;i<P.length;i++)if(P[i].m&&!refs[P[i].m])out.push({m:P[i].m,q:+P[i].q||0});}return out;}
+  var L=recipeIngs(r),refs={},i,nd=noDispo(it);for(i=0;i<L.length;i++){if(nd&&packType(L[i].mid)!=='other')continue;out.push({m:L[i].mid,q:L[i].qty||0});refs[L[i].mid]=1;}
+  var ic=itemCost(mid,addon);if(ic.pk){var P=packLines(ic.pk,refs,povFor(it,ic.pk));for(i=0;i<P.length;i++)if(!P[i].skip&&!P[i].none)out.push({m:P[i].m,q:P[i].q});}return out;}
 // ต้นทุนเมนูเปลี่ยนเท่าไหร่เทียบกับ 30 วันก่อน (นับเฉพาะวัตถุดิบที่มีราคาทั้งสองช่วง)
 function itemDelta(mid,addon){var k='d:'+mid+(addon?'|a':'');if(COSTC.hasOwnProperty(k))return COSTC[k];var T=Date.now()-PH_DAYS*864e5,L=itemLines(mid,addon),d=0;
   for(var i=0;i<L.length;i++){var a=matCost(L[i].m).cpu,b=cpuAt(L[i].m,T);if(a!=null&&b!=null)d+=(a-b)*L[i].q;}return (COSTC[k]=Math.abs(d)<0.005?0:d);}
 function deltaTag(d){return d?'<span style="color:'+(d>0?'var(--err)':'var(--ok)')+'">'+(d>0?'↑ ต้นทุนขึ้น ฿':'↓ ต้นทุนลด ฿')+money(Math.abs(d))+' ใน '+PH_DAYS+' วัน</span>':'';}
+function povForm(it,pk){
+  var P=(SET.cost&&SET.cost.pov)||{},cur=povFor(it,pk),useG=!P['m:'+it.id],tw=/^blend/.test(pk)?'ปั่น':/^hot/.test(pk)?'ร้อน':'เย็น',h='<div class="povbox">';
+  [['lid','ฝา'],['straw','หลอด']].forEach(function(x){var t=x[0],L=MATS.filter(function(m){return packType(m.id)===t;}),v=cur[t]||'';
+    h+='<div class="povr"><b>'+x[1]+':</b> <label><input type="radio" name="pov_'+t+'" value=""'+(v===''?' checked':'')+'> ตามขนาด</label>';
+    for(var i=0;i<L.length;i++)h+='<label><input type="radio" name="pov_'+t+'" value="'+esc(L[i].id)+'"'+(v===L[i].id?' checked':'')+'> '+esc(L[i].name)+'</label>';
+    h+='<label><input type="radio" name="pov_'+t+'" value="none"'+(v==='none'?' checked':'')+'> ไม่ใช้</label></div>';});
+  h+='<label class="povg"><input type="checkbox" id="povG"'+(useG?' checked':'')+'> ใช้กับทุกขนาดของการ์ด "'+esc(it.grp||it.receipt_name)+'" ที่เป็น'+tw+'</label>'+
+    '<div class="btns" style="margin-top:8px"><button class="mini" data-act="povCancel">ยกเลิก</button><button class="mini" data-act="povSave" data-v="'+esc(it.id)+'" style="background:var(--brand);color:#fff">💾 บันทึก</button></div></div>';
+  return h;
+}
+function povSave(mid){
+  var it=menuById(mid);if(!it)return;var ic=itemCost(mid,it.is_addon);if(!ic.pk)return;var o={};
+  ['lid','straw'].forEach(function(t){var r=document.querySelector('input[name="pov_'+t+'"]:checked');if(r&&r.value)o[t]=r.value;});
+  var P=clone((SET.cost&&SET.cost.pov)||{}),gkk=povKeyG(it,ic.pk),useG=$('povG')&&$('povG').checked;
+  delete P['m:'+mid];if(useG){if(Object.keys(o).length)P[gkk]=o;else delete P[gkk];}else if(Object.keys(o).length)P['m:'+mid]=o;
+  S.povEdit=null;costSave({pov:P},false);if(S.atab==='cost')drawCostAdmin();costDetail(mid);toast('บันทึกฝา/หลอดแล้ว','ok');
+}
 function openPriceHist(mid){var p=priceOfMat(mid);if(!p)return;var u=matUnit(mid)||'หน่วย',mc=matCost(mid),H=p.hist||[],h='<div class="mh"><h2>🕘 ประวัติราคา · '+esc(matName(mid))+'</h2><button class="x" data-act="close">✕</button></div><div class="mb"><table class="sumtbl">';
   var rows=[{t:'ปัจจุบัน',x:p,cpu:mc.cpu,at:p.at}].concat(H.map(function(x){return {t:'',x:x,cpu:x.cpu,at:x.at};}));
   for(var i=0;i<rows.length;i++){var r=rows[i],nx=rows[i+1],ch=nx&&nx.cpu>0&&r.cpu!=null?(r.cpu-nx.cpu)/nx.cpu*100:null;
@@ -3756,17 +3795,20 @@ function costDetail(mid){
   else if(r&&r.ingredients){
     h+='<tr class="h"><td>วัตถุดิบ (จากสูตร Stock)</td><td></td></tr>';L=recipeIngs(r);
     for(i=0;i<L.length;i++){var mc=matCost(L[i].mid),u=matUnit(L[i].mid),nm=matName(L[i].mid)+(L[i].sub?' (แทนเฉพาะสาขา)':'');
-      if(mc.cpu==null)h+=row(nm,L[i].qty+' '+esc(u),'','⚠️ '+esc(mc.why),true);
+      if(ic.nodisp&&packType(L[i].mid)!=='other')h+=row(nm,L[i].qty+' '+esc(u)+' · '+(/รีฟิล/.test(it.receipt_name)?'รีฟิล':'ทานร้าน')+' ไม่คิดแก้ว/ฝา/หลอด','','—');
+      else if(mc.cpu==null)h+=row(nm,L[i].qty+' '+esc(u),'','⚠️ '+esc(mc.why),true);
       else{var pl=phLast(L[i].mid),pn=pl&&pl.at&&Date.now()-pl.at<PH_DAYS*864e5?' <span style="color:'+(pl.now>pl.h.cpu?'var(--err)':'var(--ok)')+'">(เดิม ฿'+cNum(pl.h.cpu)+')</span>':'';h+=row(nm,L[i].qty+' '+esc(u)+' × ฿'+cNum(mc.cpu)+pn,priceTxt(L[i].mid),money(mc.cpu*L[i].qty));}}
     if(!L.length)h+='<tr><td class="note">สูตรนี้ไม่มีวัตถุดิบ</td><td></td></tr>';
   } else if(it.recipe_id)h+=row('ไม่พบสูตรนี้ใน Stock','รหัส '+esc(it.recipe_id),'','⚠️',true);
   else h+=row('ยังไม่ได้ผูกสูตร','ผูกได้ในกล่อง 🔗 หรือใส่ต้นทุนเองในกล่อง ✍️','','⚠️',true);
-  if(!ic.man&&ic.pk){var rc=recipeCost(it.recipe_id),P=packRules()[ic.pk]||[],lab=ic.pk;for(i=0;i<PACK_KEYS.length;i++)if(PACK_KEYS[i][0]===ic.pk)lab=PACK_KEYS[i][1];
-    h+='<tr class="h"><td>แก้ว ฝา หลอด ('+esc(lab)+')</td><td></td></tr>';
-    for(i=0;i<P.length;i++){if(!P[i].m)continue;var pm=matCost(P[i].m),nm2=matName(P[i].m),pu=matUnit(P[i].m)||'ชิ้น';
-      if(rc.refs&&rc.refs[P[i].m])h+=row(nm2,'มีในสูตร Stock แล้ว ไม่บวกซ้ำ','','—');
-      else if(pm.cpu==null)h+=row(nm2,P[i].q+' '+esc(pu),'','⚠️ '+esc(pm.why),true);
-      else h+=row(nm2,P[i].q+' '+esc(pu)+' × ฿'+cNum(pm.cpu),priceTxt(P[i].m),money(pm.cpu*P[i].q));}
+  if(!ic.man&&ic.pk){var rc=recipeCost(it.recipe_id),P=packLines(ic.pk,rc.refs,povFor(it,ic.pk)),lab=ic.pk,cus=hasPov(it,ic.pk);for(i=0;i<PACK_KEYS.length;i++)if(PACK_KEYS[i][0]===ic.pk)lab=PACK_KEYS[i][1];
+    h+='<tr class="h"><td>แก้ว ฝา หลอด ('+esc(lab)+')'+(cus?' <span class="tag q">ตั้งเอง</span>':'')+'</td><td class="r"><button class="mini" data-act="povEdit" data-v="'+esc(mid)+'" style="padding:4px 9px;font-size:12px">✏️ เปลี่ยนฝา/หลอด</button></td></tr>';
+    if(S.povEdit===mid)h+='<tr><td colspan="2">'+povForm(it,ic.pk)+'</td></tr>';
+    for(i=0;i<P.length;i++){var pm=matCost(P[i].m),nm2=matName(P[i].m),pu=matUnit(P[i].m)||'ชิ้น';
+      if(P[i].skip)h+=row(nm2,'สูตร Stock มี'+(P[i].t==='cup'?'แก้ว':P[i].t==='lid'?'ฝา':P[i].t==='straw'?'หลอด':'')+'อยู่แล้ว ('+esc(matName(P[i].skip))+') ไม่บวกซ้ำ','','—');
+      else if(P[i].none)h+=row((P[i].t==='lid'?'ฝา':'หลอด')+': ไม่ใช้','ตั้งเองสำหรับเมนูนี้','','—');
+      else if(pm.cpu==null)h+=row(nm2,P[i].q+' '+esc(pu)+(P[i].ov?' · ตั้งเอง':''),'','⚠️ '+esc(pm.why),true);
+      else h+=row(nm2,P[i].q+' '+esc(pu)+' × ฿'+cNum(pm.cpu)+(P[i].ov?' · ตั้งเอง':''),priceTxt(P[i].m),money(pm.cpu*P[i].q));}
     if(!P.length)h+='<tr><td class="note">ไม่ได้ตั้งรายการแก้ว/ฝา/หลอดสำหรับขนาดนี้</td><td></td></tr>';}
   else if(!ic.man&&it.recipe_id)h+='<tr><td class="note" colspan="2">ไม่บวกแก้ว/ฝา/หลอด ('+(it.is_addon?'แอดเพิ่ม':it.kind==='snack'?'ขนม':/รีฟิล/.test(it.receipt_name)?'เมนูรีฟิล':/ทาน\s*(ที่)?ร้าน/.test(it.receipt_name+' '+(it.variant||''))?'ทานร้าน ใช้แก้วของร้าน':'ไม่พบขนาดแก้วในชื่อเมนู')+')</td></tr>';
   var p=+it.price||0;
@@ -3856,7 +3898,7 @@ function drawCostList(){
   var el=$('cqList');if(!el)return;var q=(S.cq||'').trim(),f=S.cqF||'all';
   var L=menuSorted(MENU.filter(function(it){if(it.active===false||it.price==null||!qMatch(q,it.receipt_name+' '+it.grp))return false;var ic=itemCost(it.id,it.is_addon);return !(f==='ok'&&ic.c==null||f==='bad'&&ic.c!=null||f==='chg'&&!itemDelta(it.id,it.is_addon));}));
   el.innerHTML=L.length?cgRender('check',L,function(it){return it.category;},function(it){var ic=itemCost(it.id,it.is_addon),p=+it.price,pc=ic.c!=null&&p>0?Math.round((p-ic.c)/p*100):null;
-    return '<div class="cqrow" data-act="costDet" data-v="'+esc(it.id)+'"><div class="n">'+esc(it.receipt_name)+(ic.man||itemDelta(it.id,it.is_addon)?'<small>'+(ic.man?'ใส่เอง ':'')+deltaTag(itemDelta(it.id,it.is_addon))+'</small>':'')+'</div><div class="r">'+
+    return '<div class="cqrow" data-act="costDet" data-v="'+esc(it.id)+'"><div class="n">'+esc(it.receipt_name)+(ic.man||itemDelta(it.id,it.is_addon)||(ic.pk&&hasPov(it,ic.pk))?'<small>'+(ic.man?'ใส่เอง ':'')+(ic.pk&&hasPov(it,ic.pk)?'ฝา/หลอดตั้งเอง ':'')+deltaTag(itemDelta(it.id,it.is_addon))+'</small>':'')+'</div><div class="r">'+
       (ic.c!=null?'ต้นทุน <b>'+money(ic.c)+'</b> / '+money(p)+'<br><span style="color:'+(pc>=60?'var(--ok)':pc>=45?'var(--warn)':'var(--err)')+'">กำไร '+pc+'%</span>':'<span style="color:var(--warn)">⚠️ ไม่ครบ</span>')+'</div><div class="ch">›</div></div>';},
     function(G){var b=G.filter(function(it){return itemCost(it.id,it.is_addon).c==null;}).length,u=G.filter(function(it){return itemDelta(it.id,it.is_addon)>0;}).length;return G.length+' เมนู'+(b?' · <span style="color:var(--warn)">ไม่ครบ '+b+'</span>':'')+(u?' · <span style="color:var(--err)">ต้นทุนขึ้น '+u+'</span>':'');},!!q||f==='chg'):'<div class="empty">ไม่พบเมนู</div>';
 }
@@ -4906,8 +4948,11 @@ document.addEventListener('click',function(e){
     case 'costMigRetry':CSRC=null;renderCostAdmin();break;
     case 'costMigSkip':if(confirm('เริ่มกรอกราคาวัตถุดิบเองทั้งหมด (ไม่คัดลอกจากแอปต้นทุน)?')){var oc=SET.cost||{};SET.cost={on:true,price:{},pack:packDefault(),man:oc.man||{}};costDirty();pushSettings(true);renderCostAdmin();}break;
     case 'cpAll':S.cpAll=!S.cpAll;drawCostTab();break;
-    case 'costDet':costDetail(v);break;
+    case 'costDet':S.povEdit=null;costDetail(v);break;
     case 'phOpen':openPriceHist(v);break;
+    case 'povEdit':S.povEdit=S.povEdit===v?null:v;costDetail(v);break;
+    case 'povCancel':(function(){var m=S.povEdit;S.povEdit=null;if(m)costDetail(m);})();break;
+    case 'povSave':povSave(v);break;
     case 'rpkSz':if(RPK){RPK.sz=v||'';drawRecipePick();}break;
     case 'rpkPick':if(RPK){var lo={};lo[RPK.mid]=v;RPK=null;closeModal();linkRecipes(lo);}break;
     case 'cqF':S.cqF=v;drawCostTab();break;
@@ -5074,4 +5119,3 @@ startApp();
 </script>
 </body>
 </html>
-

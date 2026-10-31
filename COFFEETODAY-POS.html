@@ -3599,8 +3599,8 @@ function stampCost(items){
 function costBox(A){
   if(!costOn())return '';var gp=lmGp(A.ch.lineman||0),pf=r2(A.net-A.cost-gp),pc=A.net>0?Math.round(pf/A.net*1000)/10:0;
   var h='<div class="box"><h3>💹 ต้นทุน & กำไรขั้นต้น</h3><table class="sumtbl"><tr><td>ยอดขายสุทธิ</td><td class="r">'+money(A.net)+'</td></tr>'+
-    '<tr><td>− ต้นทุนสินค้า <span class="note">(วัตถุดิบ + แก้ว/ฝา/หลอด)</span></td><td class="r">−'+money(A.cost)+'</td></tr>'+
-    (gp?'<tr><td>− GP LINE MAN</td><td class="r">−'+money(gp)+'</td></tr>':'')+
+    '<tr><td>หัก ต้นทุนสินค้า <span class="note">(วัตถุดิบ + แก้ว/ฝา/หลอด)</span></td><td class="r" style="color:var(--muted)">'+money(A.cost)+'</td></tr>'+
+    (gp?'<tr><td>หัก GP LINE MAN</td><td class="r" style="color:var(--muted)">'+money(gp)+'</td></tr>':'')+
     '<tr class="h"><td>กำไรขั้นต้น</td><td class="r">'+money(pf)+' ('+pc+'%)</td></tr></table>';
   if(A.costMiss>0)h+='<div class="note" style="margin-top:8px;color:var(--warn)">⚠️ ยอดขาย '+money(A.costMiss)+' ยังไม่มีต้นทุน (บิลก่อนเปิดใช้ หรือเมนูที่ต้นทุนไม่ครบ) — กำไรจริงจะต่ำกว่านี้</div>';
   return h+'</div>';

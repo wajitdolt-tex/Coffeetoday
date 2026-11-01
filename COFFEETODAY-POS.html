@@ -2754,9 +2754,11 @@ function aggregate(rows){
     var tt=kd.drink+kd.snack+kd.other;if(bpd>0&&tt>0){var f=1-bpd/tt;kd.drink*=f;kd.snack*=f;kd.other*=f;}
     kd.drink+=+(o.rounding||0);
     A.drink+=kd.drink;A.snack+=kd.snack;A.other+=kd.other;
-    for(var p=0;p<o.payments.length;p++){var py=o.payments[p];
+    var hc=false,ho=false;
+    for(var p=0;p<o.payments.length;p++){var py=o.payments[p];if(py.type==='cash')hc=true;else ho=true;
       if(!A.pay[py.m]){A.pay[py.m]={name:py.name,type:py.type,amt:0,cnt:0};A.payOrder.push(py.m);}A.pay[py.m].amt+=+py.amt;A.pay[py.m].cnt++;
       if(py.type==='cash')A.cash+=+py.amt;else A.online+=+py.amt;}
+    if(hc)A.cashCnt=(A.cashCnt||0)+1;if(ho)A.onCnt=(A.onCnt||0)+1;
   }
   A.cost=r2(A.cost);A.costMiss=r2(A.costMiss);
   return A;
@@ -2782,8 +2784,9 @@ function renderSummary(){
     h+='<div class="box"><h3>📋 สรุปยอดขาย '+thDate(S.sumDate)+' · '+(S.sumAll?'ทุกสาขา':esc(BR().name))+'</h3><table class="sumtbl">';
     var IO=itemsByCat(A);for(var i=0;i<IO.length;i++){var it=A.items[IO[i]];h+='<tr><td>'+(i+1)+'. '+esc(it.name)+'</td><td class="r">'+money(it.amt)+' ('+it.qty+')</td></tr>';}
     if(!A.itemOrder.length)h+='<tr><td class="note">ยังไม่มีรายการขาย</td><td></td></tr>';
-    h+='<tr class="h"><td>เงินสด</td><td class="r">'+money(A.cash)+'</td></tr><tr class="h"><td>ออนไลน์</td><td class="r">'+money(A.online)+'</td></tr>';
-    for(var p=0;p<A.payOrder.length;p++){var py=A.pay[A.payOrder[p]];if(py.type!=='cash')h+='<tr class="s"><td>• '+esc(py.name)+'</td><td class="r">'+money(py.amt)+'</td></tr>';}
+    function bc(n){return ' <span class="note">('+(n||0)+' บิล)</span>';}
+    h+='<tr class="h"><td>เงินสด'+bc(A.cashCnt)+'</td><td class="r">'+money(A.cash)+'</td></tr><tr class="h"><td>ออนไลน์'+bc(A.onCnt)+'</td><td class="r">'+money(A.online)+'</td></tr>';
+    for(var p=0;p<A.payOrder.length;p++){var py=A.pay[A.payOrder[p]];if(py.type!=='cash')h+='<tr class="s"><td>• '+esc(py.name)+bc(py.cnt)+'</td><td class="r">'+money(py.amt)+'</td></tr>';}
     h+='<tbody id="sumExRow"></tbody>';
     h+='<tr><td>ยอดรวม</td><td class="r">'+money(A.sub)+'</td></tr><tr><td>ส่วนลด</td><td class="r">'+money(A.disc)+'</td></tr><tr><td>จำนวนปัดเศษ</td><td class="r">'+money(A.round)+'</td></tr>';
     h+='<tr class="big"><td>ยอดรวมสุทธิ</td><td class="r">'+money(A.net)+'</td></tr></table>';
@@ -3950,18 +3953,22 @@ function renderAdmin(){
   $('adminPad').innerHTML=h;
   if(S.atab==='dash')renderDash();else if(S.atab==='menu')renderMenuAdmin();else if(S.atab==='promo')renderPromoAdmin();else if(S.atab==='shifts')renderShiftAdmin();else if(S.atab==='report')renderReport();else if(S.atab==='cost')renderCostAdmin();else renderSettings();
 }
-function dashRange(){var t=ymd();if(S.dashRange==='today')return [t,t];if(S.dashRange==='7d')return [addDays(t,-6),t];return [t.slice(0,8)+'01',t];}
+function dashRange(){var t=ymd();if(S.dashRange==='today')return [t,t];if(S.dashRange==='7d')return [addDays(t,-6),t];
+  if(S.dashRange==='last'){var f=addDays(t.slice(0,8)+'01',-1);return [f.slice(0,8)+'01',f];}
+  if(S.dashRange==='custom'&&S.dashFrom&&S.dashTo)return [S.dashFrom,S.dashTo];return [t.slice(0,8)+'01',t];}
 function renderDash(){
   var r=dashRange();
-  var h='<div class="tools"><div class="seg"><button data-act="dr" data-v="today" class="'+(S.dashRange==='today'?'on':'')+'">วันนี้</button><button data-act="dr" data-v="7d" class="'+(S.dashRange==='7d'?'on':'')+'">7 วัน</button><button data-act="dr" data-v="month" class="'+(S.dashRange==='month'?'on':'')+'">เดือนนี้</button></div>'+
-    allSeg('dAll',S.dashAll)+'</div><div id="dBody"><div class="note">กำลังโหลด…</div></div>';
+  var h='<div class="tools"><div class="seg"><button data-act="dr" data-v="today" class="'+(S.dashRange==='today'?'on':'')+'">วันนี้</button><button data-act="dr" data-v="7d" class="'+(S.dashRange==='7d'?'on':'')+'">7 วัน</button><button data-act="dr" data-v="month" class="'+(S.dashRange==='month'?'on':'')+'">เดือนนี้</button><button data-act="dr" data-v="last" class="'+(S.dashRange==='last'?'on':'')+'">เดือนก่อน</button></div>'+
+    allSeg('dAll',S.dashAll)+'</div><div class="tools"><input class="in" type="date" id="dF" value="'+r[0]+'"><span class="note">ถึง</span><input class="in" type="date" id="dT" value="'+r[1]+'"></div><div id="dBody"><div class="note">กำลังโหลด…</div></div>';
   $('aBody').innerHTML=h;
+  $('dF').onchange=function(){var f=this.value||ymd(),t2=$('dT').value||f;if(t2<f)t2=f;S.dashRange='custom';S.dashFrom=f;S.dashTo=t2;renderDash();};
+  $('dT').onchange=function(){var t2=this.value||ymd(),f=$('dF').value||t2;if(t2<f)f=t2;S.dashRange='custom';S.dashFrom=f;S.dashTo=t2;renderDash();};
   fetchOrders(r[0],r[1],S.dashAll?null:CFG.branch).then(function(res){
     var A=aggregate(res.rows),h2='';
     if(res.offline)h2+='<div class="warnbox">ออฟไลน์ — แสดงเฉพาะข้อมูลในเครื่อง</div>';
     h2+='<div class="stats">'+stat('💰','a','ยอดสุทธิ',baht(A.net))+stat('🧾','b','จำนวนบิล',A.bills+' บิล')+stat('📈','c','เฉลี่ย/บิล',baht(A.bills?A.net/A.bills:0))+stat('🏷️','d','ส่วนลด',baht(A.disc))+'</div>';
     h2+=costBox(A);
-    h2+='<div class="box"><h3>💳 แยกช่องทางชำระ</h3>'+bars(A.payOrder.map(function(k){return [A.pay[k].name,A.pay[k].amt];}))+'</div>';
+    h2+='<div class="box"><h3>💳 แยกช่องทางชำระ</h3>'+bars(A.payOrder.map(function(k){return [A.pay[k].name+' ('+A.pay[k].cnt+' บิล)',A.pay[k].amt];}))+'</div>';
     h2+='<div class="box"><h3>🛵 แยกช่องขาย</h3>'+bars([['หน้าร้าน',A.ch.walkin||0],['LINE MAN',A.ch.lineman||0]])+'</div>';
     if(S.dashAll)h2+='<div class="box"><h3>🏪 แยกสาขา</h3>'+bars([[BRANCHES.PS.short,A.branch.PS||0],[BRANCHES.LT.short,A.branch.LT||0]])+'</div>';
     var mx=Math.max.apply(null,A.hours)||1,hh='<div class="hours">';

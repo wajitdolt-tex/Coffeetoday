@@ -2792,17 +2792,8 @@ function renderSummary(){
     h+='<tr class="big"><td>ยอดรวมสุทธิ</td><td class="r">'+money(A.net)+'</td></tr></table>';
     h+='<div class="note" style="margin-top:8px">หน้าร้าน '+money(A.ch.walkin||0)+' ('+(A.chCnt.walkin||0)+' บิล) · LINE MAN '+money(A.ch.lineman||0)+' ('+(A.chCnt.lineman||0)+' บิล)'+(A.voids?' · ยกเลิก '+A.voids+' บิล ('+money(A.voidAmt)+')':'')+'</div>';
     h+='</div>'+lmBox(A)+sumOptBox();
-    h+='<div class="box"><h3>🏬 สรุปรายงานรายวันขาย</h3><table class="sumtbl">'+
-      '<tr><td>Sub Total / ยอดขายก่อนลด</td><td class="r">'+money(A.sub)+'</td></tr>'+
-      '<tr><td>− Discount / ส่วนลด</td><td class="r">'+money(A.disc)+'</td></tr>'+
-      '<tr><td>ยอดหลังหักส่วนลด'+(SET.vat===true?' (รวม VAT)':'')+'</td><td class="r">'+money(A.net)+'</td></tr>'+
-      (SET.vat===true?'<tr class="s"><td>ยอดก่อน VAT / VAT 7%</td><td class="r">'+money(A.vatable)+' / '+money(A.vat)+'</td></tr>':'')+
-      '<tr><td>Total Rounding / ปัดเศษ</td><td class="r">'+money(A.round)+'</td></tr>'+
-      '<tr class="h"><td>Total Sales / ยอดขายทั้งหมด</td><td class="r">'+money(A.net)+'</td></tr>'+
-      '<tr><td>แยก *** ยอดขายขนม/ของว่าง</td><td class="r">'+money(r2(A.snack))+'</td></tr>'+
-      '<tr><td>ส่งเสริมการขาย <span class="note">(บัตรสมาชิก/แก้ว/ห้องประชุม)</span></td><td class="r">'+(r2(A.other)?money(r2(A.other)):'-')+'</td></tr>'+
-      '<tr class="h"><td>ยอดขายเครื่องดื่ม <span class="note">(ยอดขายทั้งหมด − ขนม − ส่งเสริมการขาย)</span></td><td class="r">'+money(r2(A.net-r2(A.snack)-r2(A.other)))+'</td></tr></table>'+
-      '<div class="note" style="margin-top:8px">จำนวนบิล '+A.bills+' · ยอดขนม/ส่งเสริมการขาย เป็นยอดหลังหักส่วนลดแล้ว · ยอดเครื่องดื่ม = ยอดขายทั้งหมด − ขนม − ส่งเสริมการขาย</div></div>';
+    h+=mallBox(A);
+    sumShiftInfo(S.sumDate,S.sumAll?null:CFG.branch).then(function(si){var el=$('mallTail');if(el&&SUMCACHE&&SUMCACHE.date===S.sumDate)el.innerHTML=mallTail(A,si);});
     $('sumBody').innerHTML=h;sumPreview();
   });
 }
@@ -2827,6 +2818,43 @@ function sumExpenses(d,br){
   if(MODE!=='live')return Promise.resolve(local());
   return sb('GET','pos_shifts?select=id,status,expense_total,opened_at,branch_code&opened_at=gte.'+encodeURIComponent(locISO(d))+'&opened_at=lt.'+encodeURIComponent(locISO(addDays(d,1)))+(br?'&branch_code=eq.'+br:'')).then(function(r){
     var t=0;(r||[]).forEach(function(s){t+=(SHIFT&&SHIFT.id===s.id&&s.status==='open')?exTotal():(+s.expense_total||0);});return r2(t);},function(){return local();});
+}
+// กล่องสรุปรายงานรายวันขาย — เรียงตามใบ "รายวันขาย" ที่ส่งห้าง
+function mallBox(A){
+  function tr(l,v,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+l+'</td><td class="r">'+v+'</td></tr>';}
+  function dash(v){v=r2(v);return v?money(v):'-';}
+  var drink=r2(A.net-r2(A.snack)-r2(A.other)),h='<div class="box"><h3>🏬 สรุปรายงานรายวันขาย</h3><table class="sumtbl">'+
+    tr('Sub Total / ยอดขายก่อนลด',money(A.sub))+tr('− Discount / ส่วนลด',money(A.disc))+
+    tr('Sales before TAX / ยอดขายก่อนหักภาษี',money(r2(A.sub-A.disc)))+
+    (SET.vat===true?tr('<span class="note">ยอดก่อน VAT / VAT 7%</span>',money(A.vatable)+' / '+money(A.vat),'s'):'')+
+    tr('Total Rounding / ปัดเศษ',money(A.round))+tr('Total Sales / ยอดขายทั้งหมด',money(A.net),'h')+
+    tr('แยก *** ยอดขายเครื่องดื่ม',money(drink))+tr('ยอดขายขนม/ของว่าง',dash(A.snack))+tr('ส่งเสริมการขาย <span class="note">(บัตรสมาชิก/แก้ว/ห้องประชุม)</span>',dash(A.other))+
+    tr('Total Sales / ยอดขายทั้งหมด',money(A.net),'h');
+  // หักช่องทางที่ไม่ใช่เงินสด: อื่นๆ (เช่น ไทยพลัส) → LINE MAN → QR
+  var oth=[],qr=[],lm=0;for(var i=0;i<A.payOrder.length;i++){var py=A.pay[A.payOrder[i]];if(py.type==='cash')continue;if(py.type==='lineman'){lm+=py.amt;continue;}(py.type==='qr'?qr:oth).push(py);}
+  oth.forEach(function(py){h+=tr('− หัก '+esc(py.name),dash(py.amt));});
+  h+=tr('− Delivery / หัก LINE MAN',dash(lm));
+  if(qr.length)qr.forEach(function(py){h+=tr('− Online / หัก '+esc(py.name),dash(py.amt));});else h+=tr('− Online / หัก QR Payment','-');
+  h+=tr('By Cash / ยอดปิดกะ (เงินสด)',money(A.cash),'h');
+  h+='<tbody id="mallTail">'+mallTail(A,null)+'</tbody></table>';
+  return h+'<div class="note" style="margin-top:8px">จำนวนบิล '+A.bills+(A.voids?' · บิลเสีย (ยกเลิก) '+A.voids+' บิล':'')+' · ยอดขนม/ส่งเสริมการขาย เป็นยอดหลังหักส่วนลดแล้ว · ยอดเครื่องดื่ม = ยอดขายทั้งหมด − ขนม − ส่งเสริมการขาย</div></div>';
+}
+function mallTail(A,si){
+  function tr(l,v,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+l+'</td><td class="r">'+v+'</td></tr>';}
+  if(!si)return tr('− หัก ค่าใช้จ่ายหน้าร้าน','…')+tr('Difference / เงินขาด / เงินเกิน','…')+tr('Pay In / คงเหลือเงินส่งจริง','…','big');
+  var allClosed=si.n>0&&si.open===0,d=r2(si.diff);
+  return tr('− หัก ค่าใช้จ่ายหน้าร้าน',si.ex?money(si.ex):'-')+
+    tr('Difference / เงินขาด / เงินเกิน',allClosed?(d?'<span style="color:'+(d<0?'var(--err)':'var(--warn)')+'">'+(d>0?'+':'')+money(d)+'</span>':'0.00'):'-')+
+    tr('Pay In / คงเหลือเงินส่งจริง',allClosed?money(r2(A.cash-si.ex+d)):'-','big')+
+    (allClosed?'':'<tr><td colspan="2" class="note">'+(si.n?'ยังมีกะที่ยังไม่ปิด':'ยังไม่มีการเปิดกะ')+' — เงินขาด/เกิน และ Pay In จะแสดงหลังปิดกะ</td></tr>');
+}
+// ค่าใช้จ่าย + เงินขาด/เกิน ของกะทั้งหมดในวันนั้น
+function sumShiftInfo(d,br){
+  function calc(a){var o={ex:0,diff:0,n:0,open:0},seen={};a.forEach(function(s){if(!s||seen[s.id]||ymd(new Date(s.opened_at))!==d||(br&&s.branch_code!==br))return;seen[s.id]=1;o.n++;
+    if(s.status==='open'){o.open++;o.ex+=SHIFT&&SHIFT.id===s.id?exTotal():(+s.expense_total||0);}else{o.ex+=+s.expense_total||0;o.diff+=+s.diff||0;}});o.ex=r2(o.ex);o.diff=r2(o.diff);return o;}
+  function local(){var a=lsGet('shift_hist',[]).slice();if(SHIFT)a.push(SHIFT);return calc(a);}
+  if(MODE!=='live')return Promise.resolve(local());
+  return sb('GET','pos_shifts?select=id,status,expense_total,diff,opened_at,branch_code&opened_at=gte.'+encodeURIComponent(locISO(d))+'&opened_at=lt.'+encodeURIComponent(locISO(addDays(d,1)))+(br?'&branch_code=eq.'+br:'')).then(function(r){return calc(r||[]);},function(){return local();});
 }
 function sumExRows(A,ex){if(!ex)return '';return '<tr><td>ค่าใช้จ่ายหน้าร้าน</td><td class="r">'+money(ex)+'</td></tr><tr class="h"><td>เงินสดหลังหักค่าใช้จ่าย</td><td class="r">'+money(r2(A.cash-ex))+'</td></tr>';}
 function summaryHTML(){

@@ -3787,7 +3787,8 @@ function linkRecipes(map){
   for(var k in map)if(map.hasOwnProperty(k)){var m=menuById(k);if(!m)continue;m.recipe_id=map[k]||null;m.updated_at=now;var r=clone(m);if(r.img&&r.img.indexOf('data:')===0&&MODE!=='demo')r.img=null;rows.push(r);}
   lsSet('menu',MENU);costDirty();
   var p=Promise.resolve();for(var j=0;j<rows.length;j+=150)(function(c){p=p.then(function(){return upsert('pos_menu',c);});})(rows.slice(j,j+150));
-  return p.then(function(){toast('ผูกสูตรแล้ว '+rows.length+' เมนู','ok');if(S.atab==='cost')drawCostAdmin();},function(e){toast('บันทึกไม่สำเร็จ: '+e.message,'err');});
+  var un=rows.length&&rows.every(function(x){return !x.recipe_id;});
+  return p.then(function(){toast(un?'ยกเลิกการผูกสูตรแล้ว':'ผูกสูตรแล้ว '+rows.length+' เมนู','ok');if(S.atab==='cost')drawCostAdmin();},function(e){toast('บันทึกไม่สำเร็จ: '+e.message,'err');});
 }
 function linkSel(el){var mid=el.getAttribute('data-lk');if(el.value==='__pick'){el.value='';openRecipePick(mid);return;}var o={};o[mid]=el.value;linkRecipes(o);}
 // เลือกสูตรจาก Stock ทั้งหมด (ค้นหา + กรองขนาด) สำหรับเมนูที่ชื่อต่างจากสูตรมาก
@@ -3796,6 +3797,7 @@ function openRecipePick(mid){var it=menuById(mid);if(!it)return;var s=lkS(it.var
   var sz={},i;for(i=0;i<RECIPES.length;i++){var z=String(RECIPES[i].size||'').replace(/\s/g,'').toLowerCase();if(/^\d+oz$/.test(z))sz[z]=1;}
   RPK.sizes=Object.keys(sz).sort(function(a,b){return (parseFloat(b)||0)-(parseFloat(a)||0)||a.localeCompare(b);});if(RPK.sz&&!sz[RPK.sz])RPK.sz='';
   var h='<div class="mh"><h2>ผูกสูตรให้: '+esc(it.receipt_name)+'</h2><button class="x" data-act="close">✕</button></div><div class="mb">'+
+    (it.recipe_id?'<div class="note" style="margin-bottom:8px">ตอนนี้ผูกกับ: <b>'+esc((function(){var r0=recipeById(it.recipe_id);return r0?r0.name+(r0.size?' '+r0.size:''):it.recipe_id;})())+'</b> <button class="mini del" data-act="rpkUnlink" style="padding:3px 9px;font-size:12px;margin-left:4px">ยกเลิกการผูก</button></div>':'')+
     '<input class="in" id="rpkq" placeholder="🔍 พิมพ์ค้นหา เช่น องุ่น / kyoho" style="width:100%;margin-bottom:8px"><div class="seg" id="rpkSz" style="display:flex;flex-wrap:wrap;margin-bottom:10px"></div><div id="rpkList"></div></div>';
   $('modal').className='';$('modal').innerHTML=h;showModal();
   $('rpkq').oninput=function(){RPK.q=this.value;drawRecipePick();};drawRecipePick();
@@ -3820,7 +3822,7 @@ function costDetail(mid){
   var it=menuById(mid);if(!it)return;var c=costCfg(),ic=itemCost(mid,it.is_addon),h='',L,i;
   h+='<div class="mh"><h2>'+esc(it.receipt_name)+'</h2><button class="x" data-act="close">✕</button></div><div class="mb">';
   var r=it.recipe_id?recipeById(it.recipe_id):null;
-  h+='<div class="note" style="margin-bottom:10px">'+(ic.man?'ใส่ต้นทุนเอง (ไม่ได้คิดจากสูตร)':it.recipe_id?'ผูกกับสูตร Stock: <b>'+esc(r?r.name+(r.size?' '+r.size:''):it.recipe_id)+'</b>':'ยังไม่ได้ผูกกับสูตร Stock')+' · คิดตาม'+esc(BR().name)+'</div><table class="sumtbl">';
+  h+='<div class="note" style="margin-bottom:10px">'+(ic.man?'ใส่ต้นทุนเอง (ไม่ได้คิดจากสูตร)':it.recipe_id?'ผูกกับสูตร Stock: <b>'+esc(r?r.name+(r.size?' '+r.size:''):it.recipe_id)+'</b>':'ยังไม่ได้ผูกกับสูตร Stock')+' · คิดตาม'+esc(BR().name)+' <button class="mini" data-act="relink" data-v="'+esc(mid)+'" style="padding:3px 9px;font-size:12px;margin-left:4px">🔗 '+(it.recipe_id?'เปลี่ยนสูตร':'ผูกสูตร')+'</button></div><table class="sumtbl">';
   function row(n,d,src,amt,bad){return '<tr><td>'+esc(n)+'<div class="note">'+d+(src?' · ราคา: '+src:'')+'</div></td><td class="r"'+(bad?' style="color:var(--warn)"':'')+'>'+amt+'</td></tr>';}
   if(ic.man){h+=row('ต้นทุนที่ใส่เอง','แก้ได้ในกล่อง ✍️ ของแท็บต้นทุน','',money(c.man[mid]));}
   else if(r&&r.ingredients){
@@ -4989,7 +4991,8 @@ document.addEventListener('click',function(e){
     case 'povCancel':(function(){var m=S.povEdit;S.povEdit=null;if(m)costDetail(m);})();break;
     case 'povSave':povSave(v);break;
     case 'rpkSz':if(RPK){RPK.sz=v||'';drawRecipePick();}break;
-    case 'rpkPick':if(RPK){var lo={};lo[RPK.mid]=v;RPK=null;closeModal();linkRecipes(lo);}break;
+    case 'rpkPick':case 'rpkUnlink':if(RPK){var lo={},bm=RPK.back?RPK.mid:null;lo[RPK.mid]=a==='rpkUnlink'?'':v;RPK=null;closeModal();linkRecipes(lo).then(function(){if(bm)costDetail(bm);});}break;
+    case 'relink':S.povEdit=null;openRecipePick(v);if(RPK)RPK.back=true;break;
     case 'cqF':S.cqF=v;drawCostTab();break;
     case 'ctab':S.ctab=v;drawCostAdmin();break;
     case 'cgT':S.cgOpen=S.cgOpen||{};S.cgOpen[v]=!S.cgOpen[v];(function(){var tb=v.split('|')[0];if(tb==='check')drawCostList();else if(tb==='price')drawPriceList();else if(tb==='link')drawLinkList();else if(tb==='man')drawManList();})();break;

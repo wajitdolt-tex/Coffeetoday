@@ -5231,7 +5231,7 @@ function exportCouponPDF() {
 // ════ หน้าต่างรายงาน (พิมพ์ / แชร์) ════
 var poState = { title: '', css: '' };
 function showPrintOverlay(title, bodyHtml, paperClass, fileCss) {
-  poState = { title: title, css: fileCss || '' };
+  poState = { title: title, css: fileCss || '', prevTitle: poState.prevTitle || '' };
   var paper = document.getElementById('po-paper');
   paper.className = 'po-paper' + (paperClass ? ' ' + paperClass : '');
   paper.innerHTML = bodyHtml;
@@ -5240,22 +5240,20 @@ function showPrintOverlay(title, bodyHtml, paperClass, fileCss) {
   if (ov.parentElement !== document.body) document.body.appendChild(ov);
   ov.classList.add('show'); ov.scrollTop = 0;
   document.body.style.overflow = 'hidden';
+  // เปิดโหมดพิมพ์ไว้ตลอดที่หน้าต่างเปิดอยู่ — iPad สร้างหน้าตัวอย่างพิมพ์ช้า ถ้าปิดเร็วจะได้ภาพทั้งหน้าจอ
+  document.body.classList.add('po-printing');
+  if (!poState.prevTitle) poState.prevTitle = document.title;
+  document.title = title || document.title;   // ชื่อไฟล์ตอนบันทึก PDF
 }
 function closePrintOverlay() {
   document.getElementById('print-overlay').classList.remove('show');
   document.body.classList.remove('po-printing');
   document.body.style.overflow = '';
+  if (poState.prevTitle) { document.title = poState.prevTitle; poState.prevTitle = ''; }
 }
 function printOverlay() {
-  var prevTitle = document.title;
-  document.title = poState.title || prevTitle;   // ชื่อไฟล์ตอนบันทึก PDF
-  document.body.classList.add('po-printing');
-  var done = function() { document.body.classList.remove('po-printing'); document.title = prevTitle; };
-  window.addEventListener('afterprint', done, { once: true });
-  setTimeout(function() {
-    try { window.print(); } catch (e) { toast('พิมพ์ไม่สำเร็จ: ' + e.message, 'error'); }
-    setTimeout(done, 1500);   // บาง iOS ไม่ส่ง afterprint
-  }, 50);
+  // โหมดพิมพ์และชื่อไฟล์ตั้งไว้ตั้งแต่เปิดหน้าต่างแล้ว — ไม่ต้องจับเวลา (เดิมปิดเองใน 1.5 วิ ทำให้ iPad พิมพ์ได้ภาพทั้งหน้าจอ)
+  try { window.print(); } catch (e) { toast('พิมพ์ไม่สำเร็จ: ' + e.message, 'error'); }
 }
 // แชร์เป็นไฟล์ HTML (เปิดได้ทุกเครื่อง) — ไม่รองรับการแชร์ไฟล์ จะดาวน์โหลดแทน
 function shareOverlay() {
@@ -5327,4 +5325,5 @@ window.addEventListener('beforeunload', function(e) {
 </div>
 </body>
 </html>
+
 

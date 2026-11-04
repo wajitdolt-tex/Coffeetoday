@@ -490,14 +490,15 @@ tr:hover td{background:var(--bg3);}
 .po-coupon th, .po-coupon td { border:1px solid #333; padding:4px 8px; text-align:center; }
 #print-overlay th, #print-overlay td { color:#222; text-transform:none; letter-spacing:normal; }
 .po-coupon th { background:#f0f0f0; font-weight:bold; font-size:12px; }
-@page { margin: 12mm; }
+/* ขอบกระดาษ 0 = เบราว์เซอร์ไม่มีที่วางหัว/ท้ายกระดาษ (ที่อยู่เว็บ วันที่) — เว้นขอบด้วย padding ของเนื้อหาแทน */
+@page { margin: 0; }
 .po-coupon .print-summary { margin-top:16px; font-size:14px; font-weight:bold; text-align:center; border:2px solid #333; padding:6px 24px; }
 @media print {
   body.po-printing > *:not(#print-overlay) { display:none !important; }
   body.po-printing { background:#fff !important; }
   body.po-printing #print-overlay { position:static; background:#fff; overflow:visible; display:block; }
   body.po-printing #print-overlay .po-bar { display:none !important; }
-  body.po-printing #print-overlay .po-paper { margin:0; padding:0; max-width:none; border-radius:0; }
+  body.po-printing #print-overlay .po-paper { margin:0; padding:12mm; max-width:none; border-radius:0; box-sizing:border-box; }
   .po-coupon th, .po-coupon tfoot tr { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 }
 </style>
@@ -5325,5 +5326,3 @@ window.addEventListener('beforeunload', function(e) {
 </div>
 </body>
 </html>
-
-

@@ -4439,7 +4439,51 @@ function editRowHTML(mat){
     <p id="edithint_${mat.id}" class="text-[11px] text-slate-400 mt-1.5">${editHintText(mat)}</p>
     ${isFrac ? branchUnitOverrideHTML(mat) : ''}
     ${quickFillAdminHTML(mat)}
+    ${recipesUsingMaterialHTML(mat)}
   </div>`;
+}
+
+// รายชื่อเมนูที่ใช้วัตถุดิบนี้ในสูตร (รวมกรณีที่สาขาไหนตั้งให้ใช้เป็นตัวแทน) — ไว้เช็คว่าสูตรไหนมี/ขาด
+function recipesUsingMaterial(matId){
+  const out = [];
+  RECIPES.forEach(r => {
+    (r.ingredients || []).forEach(ing => {
+      const subs = ing.branchSub || {};
+      if (ing.materialId === matId) {
+        const replacedIn = RECIPE_BRANCHES.filter(b => subs[b] && subs[b].materialId && subs[b].materialId !== matId && materialById(subs[b].materialId));
+        out.push({ recipe: r, qty: ing.qty, unit: ing.unit, onlyBranch: null, exceptBranches: replacedIn });
+      }
+      RECIPE_BRANCHES.forEach(b => {
+        const sub = subs[b];
+        if (sub && sub.materialId === matId && ing.materialId !== matId) {
+          const hasQty = sub.qty !== undefined && sub.qty !== null && sub.qty !== '';
+          out.push({ recipe: r, qty: hasQty ? Number(sub.qty) : null, unit: null, onlyBranch: b, exceptBranches: [] });
+        }
+      });
+    });
+  });
+  return out;
+}
+function recipesUsingMaterialHTML(mat){
+  const list = recipesUsingMaterial(mat.id);
+  const rows = list.map(x => {
+    const unit = x.unit || recipeUnitLabel(mat);
+    const qty = x.qty === null ? 'เท่าสูตรหลัก' : fmtNum(x.unit ? recipeDisplayQty(mat, x.qty, x.unit) : x.qty) + ' ' + unit;
+    const tag = x.onlyBranch ? ` <span class="text-accent-700">(เฉพาะ${branchShortName(x.onlyBranch)})</span>`
+      : (x.exceptBranches.length ? ` <span class="text-slate-400">(ยกเว้น${x.exceptBranches.map(branchShortName).join(', ')})</span>` : '');
+    const hidden = x.recipe.hideFromSales ? ' <span class="text-slate-300">· ซ่อนจากหน้าขาย</span>' : '';
+    return `<li class="flex justify-between gap-2 py-1" style="border-top:1px solid #f1f5f9"><span class="min-w-0">${x.recipe.name}${x.recipe.size ? ' <span class="text-slate-400">(' + x.recipe.size + ')</span>' : ''}${tag}${hidden}</span><span class="font-num text-slate-500 shrink-0">${qty}</span></li>`;
+  }).join('');
+  return `
+    <details class="mt-2 border border-slate-100 rounded-lg overflow-hidden">
+      <summary class="px-2.5 py-1.5 cursor-pointer text-[11px] font-medium text-slate-500 hover:bg-slate-50 list-none flex items-center gap-1">
+        <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 6l6 6-6 6"/></svg>
+        <span>🍵 เมนูที่ใช้วัตถุดิบนี้ (${list.length})</span>
+      </summary>
+      <div class="px-3 pb-2" style="padding-top:.25rem">
+        ${list.length ? `<ul class="text-[11px] text-slate-600">${rows}</ul>` : '<p class="text-[11px] text-slate-400">ยังไม่มีเมนูไหนใช้วัตถุดิบนี้ในสูตร</p>'}
+      </div>
+    </details>`;
 }
 
 function branchUnitOverrideHTML(mat){
@@ -6974,6 +7018,3 @@ document.getElementById('adminTabTrace').addEventListener('click', function(e){
 </script>
 </body>
 </html>
-
-
-  

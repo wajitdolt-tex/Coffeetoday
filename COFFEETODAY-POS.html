@@ -2314,8 +2314,13 @@ function repriceCart(){
 function activePay(){return SET.pay.filter(function(m){return m.active&&m.type!=='lineman';});}
 function promoById(id){for(var i=0;i<PROMOS.length;i++)if(PROMOS[i].id===id)return PROMOS[i];return null;}
 function discAmt(sub){var md=memberDiscAmt();return r2(md+promoAmt(r2(sub-md)));}
+// โปรขนม: ตั้งใน SET.promoKind {promoId:'snack'} · ไม่ได้ตั้ง = โปรเครื่องดื่ม (คิดจากทั้งบิล ส่วนลดหักจากเครื่องดื่ม)
+function promoKind(id){return ((SET.promoKind||{})[id]==='snack')?'snack':'drink';}
+function cartSnackSub(){var t=0;for(var i=0;i<S.cart.length;i++)if(S.cart[i].kind==='snack')t+=lineTotal(S.cart[i]);return r2(t);}
+function promoIsSnack(){return !!(P&&P.disc&&P.disc.id&&P.disc.id!=='__custom'&&promoKind(P.disc.id)==='snack');}
 function promoAmt(sub){
   if(!P||!P.disc)return 0;var d=P.disc,v=Number(d.value)||0;
+  if(promoIsSnack())sub=Math.min(sub,cartSnackSub());
   var a=roundDisc(d.type==='pct'?r2(sub*v/100):r2(v));return Math.max(0,Math.min(a,sub));
 }
 function openPay(){
@@ -2347,8 +2352,9 @@ function renderPay(){
   h+='<div class="sec">โปรส่วนลด</div><div class="opts">';
   h+='<button class="opt'+(!P.disc?' on':'')+'" data-act="pDisc" data-v="">ไม่ใช้โปร</button>';
   var ps=PROMOS.filter(function(p){return p.active!==false;});
-  for(var i=0;i<ps.length;i++)h+='<button class="opt'+(P.disc&&P.disc.id===ps[i].id?' on':'')+'" data-act="pDisc" data-v="'+esc(ps[i].id)+'">'+esc(ps[i].name)+'<small>'+(ps[i].type==='pct'?ps[i].value+'%':'−'+baht(ps[i].value))+'</small></button>';
+  for(var i=0;i<ps.length;i++)h+='<button class="opt'+(P.disc&&P.disc.id===ps[i].id?' on':'')+'" data-act="pDisc" data-v="'+esc(ps[i].id)+'">'+esc(ps[i].name)+'<small>'+(promoKind(ps[i].id)==='snack'?'🍰 ขนม · ':'')+(ps[i].type==='pct'?ps[i].value+'%':'−'+baht(ps[i].value))+'</small></button>';
   h+='<button class="opt'+(P.disc&&P.disc.id==='__custom'?' on':'')+'" data-act="pDisc" data-v="__custom">กำหนดเอง</button></div>';
+  if(promoIsSnack())h+='<div class="note" style="margin:-6px 0 14px;'+(cartSnackSub()>0?'':'color:var(--warn)')+'">'+(cartSnackSub()>0?'🍰 โปรขนม — คิดส่วนลดจากยอดขนมในบิล ('+baht(cartSnackSub())+')':'⚠️ บิลนี้ไม่มีขนม โปรขนมนี้จึงไม่ลด')+'</div>';
   if(P.disc&&P.disc.id==='__custom'){
     h+='<div style="display:flex;gap:8px;margin:-6px 0 14px"><input class="in" id="cdVal" inputmode="decimal" placeholder="จำนวน" style="flex:1" value="'+esc(P.custom.value)+'"><div class="seg"><button data-act="cdType" data-v="baht" class="'+(P.custom.type==='baht'?'on':'')+'">บาท</button><button data-act="cdType" data-v="pct" class="'+(P.custom.type==='pct'?'on':'')+'">%</button></div></div>';
   }
@@ -2470,6 +2476,7 @@ function confirmPay(){
     items.push({mid:l.mid,rid:l.rid,name:l.name,qty:l.qty,price:l.price,kind:l.kind,addon:false,note:[l.sweet,l.note].filter(function(x){return !!x;}).join(' · ')});
     for(var k=0;k<l.addons.length;k++){var ad=l.addons[k];items.push({mid:ad.mid,rid:ad.rid,name:ad.name,qty:ad.qty*l.qty,price:ad.price,kind:ad.kind||l.kind,addon:true,note:''});}}
   stampCost(items);
+  if(promoIsSnack()){var spd=r2(dis-memberDiscAmt());if(spd>0)for(var q=0;q<items.length;q++)if(items[q].kind==='snack'){items[q].pdisc=spd;break;}}
   var vatable=SET.vat===true?r2(net/1.07):net,vat=SET.vat===true?r2(net-vatable):0,mdisc=memberDiscAmt(),pdisc=r2(dis-mdisc);
   var o={id:uid('o'),bill_no:null,branch:BR().name,branch_code:CFG.branch,device:CFG.dev,channel:S.ch,business_date:bd,created_at:now.toISOString(),
     items:items,subtotal:sub,discount:dis,promo_name:pdisc>0?(P.disc.id==='__custom'?('ส่วนลด'+(P.disc.type==='pct'?' '+P.disc.value+'%':'')):P.disc.name):null,rounding:rnd,total:net,vatable:vatable,vat:vat,
@@ -2747,11 +2754,10 @@ function aggregate(rows){
       if(!A.items[k]){var mi=menuById(it.mid);A.items[k]={name:itemName(it),qty:0,amt:0,cost:0,cmiss:false,cat:(mi&&mi.category)||'อื่นๆ'};A.itemOrder.push(k);}A.items[k].qty+=it.qty;A.items[k].amt+=amt;
       if(it.cost!=null){A.cost+=it.cost*it.qty;A.items[k].cost+=it.cost*it.qty;}else if(amt>0){A.costMiss+=amt;A.items[k].cmiss=true;}
       kd[it.kind==='snack'?'snack':it.kind==='other'?'other':'drink']+=amt;}
-    // แยกประเภทเป็นยอดหลังหักส่วนลด: ส่วนลดสมาชิกหักจากเครื่องดื่ม(+ขนมถ้าตั้งไว้) · ส่วนลดอื่นเฉลี่ยตามสัดส่วน · ปัดเศษรวมในเครื่องดื่ม
-    var bmd=(o.member&&+o.member.disc)||0,bpd=Math.max(0,(+o.discount||0)-bmd),allSc=memCfg().scope==='all';
-    var el=kd.drink+(allSc?kd.snack:0);
-    if(bmd>0&&el>0){var dd=bmd*kd.drink/el,ds=allSc?bmd*kd.snack/el:0;kd.drink-=dd;kd.snack-=ds;}
-    var tt=kd.drink+kd.snack+kd.other;if(bpd>0&&tt>0){var f=1-bpd/tt;kd.drink*=f;kd.snack*=f;kd.other*=f;}
+    // แยกประเภทเป็นยอดหลังหักส่วนลด: ส่วนลดทุกแบบหักจากเครื่องดื่มก่อน · ถ้าบิลนั้นยอดเครื่องดื่มไม่พอ (เช่น มีแต่ขนม) ส่วนที่เหลือหักจากขนม แล้วค่อยส่งเสริมการขาย
+    var sp=0;for(var q=0;q<o.items.length;q++)sp+=+o.items[q].pdisc||0;sp=Math.min(sp,+o.discount||0);
+    var rs=sp;['snack','drink','other'].forEach(function(t){var x=Math.min(rs,kd[t]);if(x>0){kd[t]-=x;rs-=x;}});   // โปรขนม: หักจากขนม
+    var rd=(+o.discount||0)-sp+rs;['drink','snack','other'].forEach(function(t){var x=Math.min(rd,kd[t]);if(x>0){kd[t]-=x;rd-=x;}});
     kd.drink+=+(o.rounding||0);
     A.drink+=kd.drink;A.snack+=kd.snack;A.other+=kd.other;
     var hc=false,ho=false;
@@ -2837,7 +2843,7 @@ function mallBox(A){
   if(qr.length)qr.forEach(function(py){h+=tr('− Online / หัก '+esc(py.name),dash(py.amt));});else h+=tr('− Online / หัก QR Payment','-');
   h+=tr('By Cash / ยอดปิดกะ (เงินสด)',money(A.cash),'h');
   h+='<tbody id="mallTail">'+mallTail(A,null)+'</tbody></table>';
-  return h+'<div class="note" style="margin-top:8px">จำนวนบิล '+A.bills+(A.voids?' · บิลเสีย (ยกเลิก) '+A.voids+' บิล':'')+' · ยอดขนม/ส่งเสริมการขาย เป็นยอดหลังหักส่วนลดแล้ว · ยอดเครื่องดื่ม = ยอดขายทั้งหมด − ขนม − ส่งเสริมการขาย</div></div>';
+  return h+'<div class="note" style="margin-top:8px">จำนวนบิล '+A.bills+(A.voids?' · บิลเสีย (ยกเลิก) '+A.voids+' บิล':'')+' · ส่วนลดหักจากยอดเครื่องดื่ม · โปรขนมหักจากยอดขนม · ยอดเครื่องดื่ม = ยอดขายทั้งหมด − ขนม − ส่งเสริมการขาย</div></div>';
 }
 function mallTail(A,si){
   function tr(l,v,cls){return '<tr'+(cls?' class="'+cls+'"':'')+'><td>'+l+'</td><td class="r">'+v+'</td></tr>';}
@@ -4201,7 +4207,7 @@ function loadRecipesQuiet(){return sb('GET','recipes?select=id,name,size,categor
 function renderPromoAdmin(){
   var h='<div class="box"><h3>โปรส่วนลด</h3>';
   for(var i=0;i<PROMOS.length;i++){var p=PROMOS[i];
-    h+='<div class="adl"><div><div class="an">'+esc(p.name)+'</div><div class="ap">'+(p.type==='pct'?p.value+'%':'ลด '+baht(p.value))+'</div></div><div style="display:flex;gap:8px;align-items:center"><button class="tg'+(p.active!==false?' on':'')+'" data-act="prAct" data-v="'+esc(p.id)+'"></button><button class="mini" data-act="prEdit" data-v="'+esc(p.id)+'">✏️</button></div></div>';}
+    h+='<div class="adl"><div><div class="an">'+esc(p.name)+'</div><div class="ap">'+(promoKind(p.id)==='snack'?'🍰 โปรขนม · ':'')+(p.type==='pct'?p.value+'%':'ลด '+baht(p.value))+'</div></div><div style="display:flex;gap:8px;align-items:center"><button class="tg'+(p.active!==false?' on':'')+'" data-act="prAct" data-v="'+esc(p.id)+'"></button><button class="mini" data-act="prEdit" data-v="'+esc(p.id)+'">✏️</button></div></div>';}
   if(!PROMOS.length)h+='<div class="note">ยังไม่มีโปร</div>';
   h+='<button class="btn sm" style="margin-top:12px" data-act="prEdit" data-v="">+ เพิ่มโปร</button></div><div class="note" style="margin-bottom:12px">ชื่อโปรจะพิมพ์บนใบเสร็จ และแสดงในสรุปยอด</div>'+memSettingsHTML();
   $('aBody').innerHTML=h;
@@ -4211,6 +4217,8 @@ function editPromo(id){
   var h='<div class="mh"><h2>'+(id?'แก้ไขโปร':'เพิ่มโปร')+'</h2><button class="x" data-act="close">✕</button></div><div class="mb">'+
     '<div class="fld"><label class="lbl">ชื่อโปร (พิมพ์บนใบเสร็จ)</label><input class="in" id="p_n" value="'+esc(p.name)+'"></div>'+
     '<div class="row2"><div class="fld"><label class="lbl">ประเภท</label><select class="in" id="p_t"><option value="baht">ลดเป็นบาท</option><option value="pct"'+(p.type==='pct'?' selected':'')+'>ลดเป็น %</option></select></div><div class="fld"><label class="lbl">จำนวน</label><input class="in" id="p_v" inputmode="decimal" value="'+esc(p.value)+'"></div></div>'+
+    '<div class="fld"><label class="lbl">ใช้กับ</label><div class="seg" id="p_k"><button data-act="pKind" data-v="drink" class="'+(promoKind(p.id)==='drink'?'on':'')+'">☕ เครื่องดื่ม</button><button data-act="pKind" data-v="snack" class="'+(promoKind(p.id)==='snack'?'on':'')+'">🍰 ขนม</button></div>'+
+    '<div class="note" style="margin-top:6px">โปรขนม: แบบ % คิดจากยอดขนมในบิลเท่านั้น · แบบบาทลดได้ไม่เกินยอดขนม · ในรายงานหักจากยอดขนม</div></div>'+
     '<button class="btn" data-act="prSave" data-v="'+esc(p.id)+'">บันทึก</button></div>';
   EDIT_ITEM=p;$('modal').className='';$('modal').innerHTML=h;showModal();
 }
@@ -5034,7 +5042,10 @@ document.addEventListener('click',function(e){
     case 'mSo':var ms=menuById(v);if(!ms.so)ms.so={};ms.so[CFG.branch]=!ms.so[CFG.branch];saveMenuItem(ms);t.classList.toggle('on',!!ms.so[CFG.branch]);break;
     case 'seedPrompt':adminGate(function(){if(confirm('ดึงเมนูจากสูตรใน Stock (recipes)?\nจะเพิ่มเฉพาะเมนูที่ยังไม่มี ไม่แก้ราคาที่ตั้งไว้แล้ว'))seedFromRecipes();});break;
     case 'prEdit':editPromo(v);break;
-    case 'prSave':var pp=EDIT_ITEM;pp.name=$('p_n').value.trim();pp.type=$('p_t').value;pp.value=num($('p_v').value)||0;if(!pp.name){toast('ใส่ชื่อโปร','err');break;}savePromo(pp,function(){closeModal();renderPromoAdmin();});break;
+    case 'pKind':[].forEach.call(document.querySelectorAll('#p_k button'),function(b){b.className=b.getAttribute('data-v')===v?'on':'';});break;
+    case 'prSave':var pp=EDIT_ITEM;pp.name=$('p_n').value.trim();pp.type=$('p_t').value;pp.value=num($('p_v').value)||0;if(!pp.name){toast('ใส่ชื่อโปร','err');break;}
+      (function(){var kb=document.querySelector('#p_k button.on'),kk=kb?kb.getAttribute('data-v'):'drink',PK=clone(SET.promoKind||{});if(kk==='snack')PK[pp.id]='snack';else delete PK[pp.id];if(JSON.stringify(PK)!==JSON.stringify(SET.promoKind||{})){SET.promoKind=PK;pushSettings(true);}})();
+      savePromo(pp,function(){closeModal();renderPromoAdmin();});break;
     case 'prAct':var pr=promoById(v);pr.active=pr.active===false;savePromo(pr,renderPromoAdmin);break;
     case 'payTg':for(var k=0;k<SET.pay.length;k++)if(SET.pay[k].id===v){SET.pay[k].active=!SET.pay[k].active;t.classList.toggle('on',SET.pay[k].active);}pushSettings();break;
     case 'payAdd':$('modal').className='';$('modal').innerHTML='<div class="mh"><h2>💳 เพิ่มช่องทางชำระเงิน</h2><button class="x" data-act="close">✕</button></div><div class="mb"><div class="fld"><label class="lbl">ชื่อช่องทาง (พิมพ์บนใบเสร็จและสรุปยอด)</label><input class="in" id="pa_n" placeholder="เช่น Grab, ShopeeFood, บัตรเครดิต, คนละครึ่ง"></div><div class="fld"><label class="lbl">ประเภท</label><select class="in" id="pa_t"><option value="online">ออนไลน์ / โอน (ไม่เปิดลิ้นชัก)</option><option value="qr">แสดง QR พร้อมเพย์ของสาขา</option></select></div><button class="btn" data-act="payAddOk">เพิ่ม</button></div>';showModal();setTimeout(function(){$('pa_n').focus();},50);break;
@@ -5157,3 +5168,4 @@ startApp();
 </script>
 </body>
 </html>
+

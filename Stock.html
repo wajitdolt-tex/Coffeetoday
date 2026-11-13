@@ -2760,9 +2760,22 @@ function resolveIngredientForBranch(ing, branch){
   const sub = ing && ing.branchSub && branch ? ing.branchSub[branch] : null;
   if (sub && sub.materialId && materialById(sub.materialId)) {
     const hasQty = sub.qty !== undefined && sub.qty !== null && sub.qty !== '';
-    return { materialId: sub.materialId, qty: hasQty ? Number(sub.qty) : ing.qty, isSub: true };
+    return { materialId: sub.materialId, qty: hasQty ? Number(sub.qty) : ing.qty, unit: null, isSub: true };
   }
-  return { materialId: ing.materialId, qty: ing.qty, isSub: false };
+  return { materialId: ing.materialId, qty: ing.qty, unit: ing.unit || null, isSub: false };
+}
+// ปริมาณที่หักจากสต็อก (หน่วยเศษ) — ถ้าสูตรเขียนเป็นหน่วยใหญ่ของการ์ด และสาขานี้ตั้งหน่วยเฉพาะสาขาไว้
+// ให้หักตามขนาดแพ็คของสาขานั้น (เช่น "1 กล่อง" = 1 กล่องของสาขานี้)
+function ingredientStockQty(mat, ing){
+  let q = ing.qty;
+  if (ing.unit && ing.unit === baseBigUnitOf(mat) && !mat.noFraction) {
+    const br = baseRatioOf(mat);
+    if (br > 0 && mat.ratio > 0 && mat.ratio !== br) q = q / br * mat.ratio;
+  }
+  // เลือกหน่วยในสูตรไว้แล้ว (เช่น กล่อง/กรัม/ออนซ์) → ค่าที่เก็บเป็นหน่วยเศษของการ์ดอยู่แล้ว ห้ามคูณ 30 ซ้ำ
+  // ไม่ได้เลือกหน่วย → สูตรเดิมของนม/ไซรัปที่เขียนเป็น oz ให้แปลงเป็นหน่วยเศษตามปกติ
+  if (ing.unit) return q;
+  return ozRecipeToStockQty(mat, q);
 }
 
 // ===== ระบบเลือกหน่วยอิสระต่อรายการวัตถุดิบในสูตร =====
@@ -2773,8 +2786,14 @@ const RECIPE_STANDARD_UNITS = ['ออนซ์', 'กรัม', 'ถุง', '
 const RECIPE_FIXED_CONVERSIONS = { 'ออนซ์': 30, 'กก.': 1000 }; // 1 ออนซ์ = 30 กรัม/มล., 1 กก. = 1000 กรัม
 
 // หาอัตราแปลง "1 หน่วยนี้ = ? หน่วยหลักของวัตถุดิบ" — เช็คอัตราตายตัวก่อน แล้วค่อยเช็คที่เคยตั้งไว้เอง (unitConversions)
+// หน่วยใหญ่/อัตราของการ์ด (ค่ากลาง ไม่ใช่ค่าที่ override รายสาขา) — ใช้เป็นตัวแปลงหน่วยใหญ่ในสูตร
+function baseBigUnitOf(mat){ return mat._baseBigUnit !== undefined ? mat._baseBigUnit : mat.bigUnit; }
+function baseRatioOf(mat){ return mat._baseRatio !== undefined ? mat._baseRatio : mat.ratio; }
 function getUnitConversionRate(mat, unit){
   if (!unit || unit === mat.smallUnit) return 1;
+  // หน่วยในสูตรตรงกับหน่วยใหญ่ของการ์ด (เช่น กล่อง/ถุง/ขวด) → ใช้อัตราของการ์ดเลย ไม่ใช้ค่าที่เคยพิมพ์แยกไว้
+  const bu = baseBigUnitOf(mat);
+  if (bu && unit === bu && baseRatioOf(mat) > 0 && !mat.noFraction) return Number(baseRatioOf(mat));
   if (RECIPE_FIXED_CONVERSIONS[unit] !== undefined) return RECIPE_FIXED_CONVERSIONS[unit];
   if (mat.unitConversions && mat.unitConversions[unit] !== undefined) return Number(mat.unitConversions[unit]);
   return null; // ยังไม่เคยตั้งไว้ ต้องถามผู้ใช้ก่อน
@@ -2793,7 +2812,8 @@ function recipeStoredQty(mat, displayQty, unit){
   return Math.round((displayQty * rate) * 10000) / 10000;
 }
 function recipeUnitOptionsHTML(mat, selectedUnit){
-  const units = [...new Set([mat.smallUnit, ...RECIPE_STANDARD_UNITS])];
+  const bu = baseBigUnitOf(mat);
+  const units = [...new Set([mat.smallUnit, ...(bu && !mat.noFraction && bu !== mat.smallUnit ? [bu] : []), ...RECIPE_STANDARD_UNITS])];
   const opts = units.map(u => `<option value="${u}" ${u === selectedUnit ? 'selected' : ''}>${u}</option>`).join('');
   const isCustom = selectedUnit && !units.includes(selectedUnit);
   return opts + (isCustom ? `<option value="${selectedUnit}" selected>${selectedUnit}</option>` : '') + `<option value="__custom__">อื่นๆ…</option>`;
@@ -2981,6 +3001,7 @@ function recipeIngredientRowHTML(recipe, idx){
       </select>
       <button data-removeing-recipe="${recipe.id}" data-removeing-idx="${idx}" title="ลบวัตถุดิบนี้ออกจากสูตร" class="text-red-400 hover:text-red-600 shrink-0 w-7 h-7 flex items-center justify-center">✕</button>
     </div>
+    ${(() => { if (!mat || !ing.unit || ing.unit === mat.smallUnit) return ''; const r = getUnitConversionRate(mat, ing.unit); return r ? `<p class="text-[10px] text-slate-400 mt-1">1 ${ing.unit} = ${fmtNum(r)} ${mat.smallUnit}${ing.unit === baseBigUnitOf(mat) ? ' (ตามการ์ด)' : ''}</p>` : ''; })()}
     ${branchSubToggleHTML(recipe, idx)}
   </div>`;
 }
@@ -3328,7 +3349,7 @@ function applyRecipeUsageToMaterials(){
       const ing = resolveIngredientForBranch(rawIng, branchSelectEl.value); // ใช้วัตถุดิบแทนของสาขานี้ (ถ้าตั้งไว้)
       if (isRefill && CUP_IDS_SET.has(ing.materialId)) return; // skip cup สำหรับ refill
       const mat = materialById(ing.materialId);
-      const stockQty = mat ? ozRecipeToStockQty(mat, ing.qty) : ing.qty;
+      const stockQty = mat ? ingredientStockQty(mat, ing) : ing.qty;
       // สำหรับแก้ว: หักจำนวนรีฟิลที่กรอกแยกออก
       const effectiveSold = CUP_IDS_SET.has(ing.materialId)
         ? Math.max(0, sold - getMenuRefill(recipe.id))
@@ -3397,7 +3418,7 @@ async function saveMenuSaleForDate(recipeId, _retry){
       recipe.ingredients.forEach(rawIng => {
         const ing = resolveIngredientForBranch(rawIng, branch);
         const mat = materialById(ing.materialId);
-        const stockQty = mat ? ozRecipeToStockQty(mat, ing.qty) : ing.qty;
+        const stockQty = mat ? ingredientStockQty(mat, ing) : ing.qty;
         totals[ing.materialId] = (totals[ing.materialId] || 0) + stockQty * sold;
       });
     });
@@ -4214,7 +4235,7 @@ async function applyOcrImportForDate(date, confirmed){
       recipe.ingredients.forEach(rawIng => {
         const ing = resolveIngredientForBranch(rawIng, branch);
         const mat = materialById(ing.materialId);
-        const stockQty = mat ? ozRecipeToStockQty(mat, ing.qty) : ing.qty;
+        const stockQty = mat ? ingredientStockQty(mat, ing) : ing.qty;
         totals[ing.materialId] = (totals[ing.materialId] || 0) + stockQty * sold;
       });
     });
@@ -6549,6 +6570,35 @@ async function upsertRecipeSilent(recipe){
   } catch(e){ console.warn('upsertRecipeSilent failed:', e); } // ไม่ set sync status
 }
 
+// ซ่อมสูตรที่เคยพิมพ์อัตราหน่วยใหญ่เอง (เช่น 1 กล่อง = 6000) ไม่ตรงกับการ์ด (1 กล่อง = 200)
+// คงจำนวนที่ผู้ใช้เห็นในสูตรไว้ (เช่น "1 กล่อง") แล้วคำนวณค่าเก็บจริงใหม่ตามอัตราการ์ด จากนั้นลบอัตราที่พิมพ์ไว้ทิ้ง
+async function repairBigUnitRecipeRates(){
+  const bad = MATERIALS.filter(m => {
+    const bu = baseBigUnitOf(m);
+    const typed = m.unitConversions && bu ? m.unitConversions[bu] : undefined;
+    return !m.noFraction && typed !== undefined && Number(typed) > 0 && Math.abs(Number(typed) - baseRatioOf(m)) > 1e-9;
+  });
+  if (!bad.length) return;
+  for (const mat of bad) {
+    const bu = baseBigUnitOf(mat), oldRate = Number(mat.unitConversions[bu]), newRate = Number(baseRatioOf(mat));
+    const touched = RECIPES.filter(r => (r.ingredients || []).some(i => i.materialId === mat.id && i.unit === bu));
+    let ok = true;
+    for (const r of touched) {
+      const fixed = r.ingredients.map(i => (i.materialId === mat.id && i.unit === bu)
+        ? Object.assign({}, i, { qty: Math.round((i.qty / oldRate) * newRate * 10000) / 10000 }) : i);
+      try {
+        await sb('recipes?id=eq.' + encodeURIComponent(r.id), { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ ingredients: fixed }) });
+        r.ingredients = fixed;
+      } catch (e) { ok = false; console.warn('repairBigUnitRecipeRates recipe', r.id, e); }
+    }
+    if (ok) {
+      delete mat.unitConversions[bu];
+      try { await upsertMaterial(mat); } catch (e) { console.warn('repairBigUnitRecipeRates material', mat.id, e); }
+      console.log('ซ่อมอัตรา', mat.name, bu, oldRate, '→', newRate, 'สูตร', touched.length);
+    }
+  }
+}
+
 async function fixMissingCupsOnce(){
   // รันทุก session — filter เฉพาะ recipe ที่ยังไม่มี cup จะ upsert แค่ที่จำเป็น
   // หมวดที่ไม่ใช้แก้วในสูตร (ของกินที่ขาย / add-on / เครื่องดื่มสำเร็จรูปขวด)
@@ -6986,6 +7036,7 @@ document.getElementById('adminTabTrace').addEventListener('click', function(e){
     await loadMaterialsFromDB();
     await seedRecipesIfEmpty();
     await loadRecipesFromDB();
+    await repairBigUnitRecipeRates().catch(e => console.warn('repairBigUnitRecipeRates:', e));
     // กำหนด sortOrder เริ่มต้น ถ้ายังไม่มี (แค่ในหน่วยความจำ ไม่บันทึก DB จนกว่าจะขยับ)
     const catCounters = {};
     RECIPES.forEach(r => {
@@ -7018,3 +7069,6 @@ document.getElementById('adminTabTrace').addEventListener('click', function(e){
 </script>
 </body>
 </html>
+
+
+  
